@@ -4,13 +4,13 @@ import io.github.hulang1024.chinesechess.rule.AbstractChess;
 import io.github.hulang1024.chinesechess.rule.ChessPosition;
 
 /**
- * 车
  * @author Hu Lang
  */
-public class ChessR extends AbstractChess {
+public class Chess extends AbstractChess {
+    public static Chess NULL = new Chess();
+
+    private Chess() {}
+
     @Override
-    public boolean canGoTo(ChessPosition destPos) {
-        // 车 的移动规则已被全局移动规则完全包括
-        return true;
-    }
+    public boolean canGoTo(ChessPosition destPos) { return false; }
 }

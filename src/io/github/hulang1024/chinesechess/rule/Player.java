@@ -1,10 +1,9 @@
 package io.github.hulang1024.chinesechess.rule;
 
 /**
- * 军方
+ * 玩家
  * @author Hu Lang
  */
-public enum HostEnum {
-    BLACK,
-    RED
+public class Player {
+    private HostEnum host;
 }

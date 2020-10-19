@@ -5,25 +5,20 @@ package io.github.hulang1024.chinesechess.rule;
  * @author Hu Lang
  */
 public abstract class AbstractChess {
-    private Chessboard chessboard;
+    /** 游戏 */
+    public ChineseChessGame game;
+    /** 棋盘 */
+    public Chessboard chessboard;
     /** 当前位置 */
-    private ChessPosition pos;
-    /** 所属队伍 */
-    private HostEnum host;
+    public ChessPosition pos;
+    /** 所属军方 */
+    public HostEnum host;
 
     /**
-     * 判断指定位置是否可走
+     * 判断指定位置是否可走。
+     * 不考虑指定位置是否为空或有棋子，不应包含全局规则。
      * @param destPos
      * @return
      */
     public abstract boolean canGoTo(ChessPosition destPos);
-
-    /**
-     * 判断是否可吃指定棋
-     * @param chess
-     * @return
-     */
-    public boolean canEat(AbstractChess chess) {
-        return this.host != chess.host;
-    }
 }
