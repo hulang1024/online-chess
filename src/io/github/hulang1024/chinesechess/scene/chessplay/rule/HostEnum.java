@@ -1,4 +1,4 @@
-package io.github.hulang1024.chinesechess.rule;
+package io.github.hulang1024.chinesechess.scene.chessplay.rule;
 
 /**
  * 军方

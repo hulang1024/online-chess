@@ -1,4 +1,7 @@
-package io.github.hulang1024.chinesechess.rule;
+package io.github.hulang1024.chinesechess.scene.chessplay.rule;
+
+import io.github.hulang1024.chinesechess.scene.chessplay.Chessboard;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.AbstractChess;
 
 /**
  * 象棋的一些全局规则

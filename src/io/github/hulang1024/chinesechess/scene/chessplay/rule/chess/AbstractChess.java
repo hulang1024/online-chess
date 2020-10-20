@@ -1,4 +1,8 @@
-package io.github.hulang1024.chinesechess.rule;
+package io.github.hulang1024.chinesechess.scene.chessplay.rule.chess;
+
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.HostEnum;
 
 /**
  * 抽象的棋子
@@ -17,5 +21,5 @@ public abstract class AbstractChess {
      * @param game
      * @return
      */
-    public abstract boolean canGoTo(ChessPosition destPos, ChineseChessGame game);
+    public abstract boolean canGoTo(ChessPosition destPos, RoundGame game);
 }

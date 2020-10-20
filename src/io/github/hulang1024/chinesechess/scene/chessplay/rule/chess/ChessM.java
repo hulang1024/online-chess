@@ -1,8 +1,7 @@
-package io.github.hulang1024.chinesechess.rule.chess;
+package io.github.hulang1024.chinesechess.scene.chessplay.rule.chess;
 
-import io.github.hulang1024.chinesechess.rule.AbstractChess;
-import io.github.hulang1024.chinesechess.rule.ChessPosition;
-import io.github.hulang1024.chinesechess.rule.ChineseChessGame;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
 
 /**
  * 象
@@ -10,7 +9,7 @@ import io.github.hulang1024.chinesechess.rule.ChineseChessGame;
  */
 public class ChessM extends AbstractChess {
     @Override
-    public boolean canGoTo(ChessPosition destPos, ChineseChessGame game) {
+    public boolean canGoTo(ChessPosition destPos, RoundGame game) {
         int rowOffset = destPos.row - pos.row;
         int colOffset = destPos.col - pos.col;
 
