@@ -14,6 +14,11 @@ public abstract class AbstractChess {
     /** 所属军方 */
     public HostEnum host;
 
+    public AbstractChess(ChessPosition pos, HostEnum host) {
+        this.pos = pos;
+        this.host = host;
+    }
+
     /**
      * 判断指定位置是否可走。
      * 不考虑指定位置是否为空或有棋子，不应包含全局规则。

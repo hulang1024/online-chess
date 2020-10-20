@@ -15,7 +15,7 @@ public class ChineseChessApplication extends Application {
     public void start(Stage primaryStage) throws Exception {
         BorderPane root = new BorderPane();
         primaryStage.setWidth(800);
-        primaryStage.setHeight(600);
+        primaryStage.setHeight(640);
         primaryStage.setTitle("中国象棋");
         primaryStage.setScene(new Scene(new ChessPlayScene()));
         primaryStage.show();

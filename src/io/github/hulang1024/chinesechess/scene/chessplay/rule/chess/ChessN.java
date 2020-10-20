@@ -1,6 +1,7 @@
 package io.github.hulang1024.chinesechess.scene.chessplay.rule.chess;
 
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.HostEnum;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
 
 /**
@@ -8,6 +9,10 @@ import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
  * @author Hu Lang
  */
 public class ChessN extends AbstractChess {
+    public ChessN(ChessPosition pos, HostEnum host) {
+        super(pos, host);
+    }
+
     @Override
     public boolean canGoTo(ChessPosition destPos, RoundGame game) {
         // 马走“日”，蹩马腿

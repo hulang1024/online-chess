@@ -1,13 +1,14 @@
-package io.github.hulang1024.chinesechess.scene.chessplay.rule.chess;
+package io.github.hulang1024.chinesechess.scene.chessplay.rule;
 
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.*;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.AbstractChess;
 
 /**
  * 移动规则函数
  * @author Hu Lang
  */
-class MoveRules {
+public class MoveRules {
     public static final int MAX_DISTANCE = 10;
 
     /**
