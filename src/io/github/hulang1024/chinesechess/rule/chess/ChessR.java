@@ -2,6 +2,7 @@ package io.github.hulang1024.chinesechess.rule.chess;
 
 import io.github.hulang1024.chinesechess.rule.AbstractChess;
 import io.github.hulang1024.chinesechess.rule.ChessPosition;
+import io.github.hulang1024.chinesechess.rule.ChineseChessGame;
 
 /**
  * 车
@@ -9,8 +10,30 @@ import io.github.hulang1024.chinesechess.rule.ChessPosition;
  */
 public class ChessR extends AbstractChess {
     @Override
-    public boolean canGoTo(ChessPosition destPos) {
-        // 车 的移动规则已被全局移动规则完全包括
+    public boolean canGoTo(ChessPosition destPos, ChineseChessGame game) {
+        int rowOffset = destPos.row - pos.row;
+        int colOffset = destPos.col - pos.col;
+
+        // 进退都可以，但必须直线走
+        if (!MoveRules.isStraightLineMove(rowOffset, colOffset, MoveRules.MAX_DISTANCE)) {
+            return false;
+        }
+
+        // 只要到目标位置之间没有棋子
+        if (Math.abs(rowOffset) > 0) {
+            for (int row = pos.row; row != destPos.row; row += rowOffset) {
+                if (!game.chessboard.isEmpty(row, pos.col)) {
+                    return false;
+                }
+            }
+        } else {
+            for (int col = pos.col; col != destPos.col; col += colOffset) {
+                if (!game.chessboard.isEmpty(pos.row, col)) {
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 }
