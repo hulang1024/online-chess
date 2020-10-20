@@ -14,4 +14,9 @@ public class ChessPosition {
      * 列，从0开始数
      */
     public int col;
+
+    public ChessPosition(int row, int col) {
+        this.row = row;
+        this.col = col;
+    }
 }

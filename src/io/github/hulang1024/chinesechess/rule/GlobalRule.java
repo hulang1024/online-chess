@@ -1,7 +1,5 @@
 package io.github.hulang1024.chinesechess.rule;
 
-import io.github.hulang1024.chinesechess.rule.chess.Chess;
-
 /**
  * 象棋的一些全局规则
  * @author Hu Lang
@@ -17,7 +15,7 @@ public class GlobalRule {
     public static boolean canGoTo(Chessboard chessboard, AbstractChess chess, ChessPosition destPos) {
         AbstractChess chessAtDestPos = chessboard.chessAt(destPos);
         // 目标位置上已有自己人
-        if (chessAtDestPos != Chess.NULL && chessAtDestPos.host == chess.host) {
+        if (chessAtDestPos != null && chessAtDestPos.host == chess.host) {
             return false;
         }
 

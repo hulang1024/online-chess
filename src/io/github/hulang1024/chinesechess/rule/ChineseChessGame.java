@@ -6,7 +6,7 @@ import java.util.Scanner;
  * @author Hu Lang
  */
 public class ChineseChessGame {
-    private Chessboard chessboard = new Chessboard();
+    public Chessboard chessboard = new Chessboard();
     private Player player1;
     private Player player2;
 
