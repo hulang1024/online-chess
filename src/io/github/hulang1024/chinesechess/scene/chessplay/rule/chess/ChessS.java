@@ -18,16 +18,16 @@ public class ChessS extends AbstractChess {
     public boolean canGoTo(ChessPosition destPos, RoundGame game) {
         // 是否向前单步
         boolean isForward = game.isHostAtChessboardTop(host)
-            ? pos.col + 1 == destPos.col
-            : pos.col - 1 == destPos.col;
+            ? pos.row + 1 == destPos.row
+            : pos.row - 1 == destPos.row;
 
         // 判断是否过了河
         if (MoveRules.isInBoundary(game, host, destPos)) {
-            // 过河之后既可以向前单步，也可以左或右移单步
-            return isForward || Math.abs(destPos.col - pos.col) == 1;
-        } else {
             // 过河之前只可以向前单步
             return isForward;
+        } else {
+            // 过河之后既可以向前单步，也可以左或右移单步
+            return isForward || Math.abs(destPos.col - pos.col) == 1;
         }
     }
 }

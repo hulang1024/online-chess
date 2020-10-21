@@ -1,20 +1,23 @@
 package io.github.hulang1024.chinesechess.scene.chessplay;
 
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.Chessboard;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.AbstractChess;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.ChessGhost;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * 棋盘
  * @author Hu Lang
  */
-public class Chessboard extends StackPane {
-    public static final int ROW_NUM = 10;
-    public static final int COL_NUM = 9;
+public class DrawableChessboard extends Pane implements Chessboard {
     // 交叉点之间的距离
     public static final int GAP = DrawableChess.SIZE + 8;
     // 外边框位置
@@ -31,7 +34,9 @@ public class Chessboard extends StackPane {
     
     private AbstractChess[][] chessArray = new AbstractChess[ROW_NUM][COL_NUM];
 
-    public Chessboard() {
+    private List<DrawableChess> drawableChesses = new ArrayList<>();
+
+    public DrawableChessboard() {
         Canvas canvas = new Canvas(
             BORDER_LEFT + GRID_WIDTH + GRID_MARGIN * 2 + BORDER_LINE_WIDTH,
             BORDER_TOP + GRID_HEIGHT * 2 + GAP + GRID_MARGIN * 2 + BORDER_LINE_WIDTH);
@@ -73,32 +78,67 @@ public class Chessboard extends StackPane {
         getChildren().add(canvas);
     }
 
-    
     /**
-     * 指定位置是否为空位
-     * @param row
-     * @param col
-     * @return
+     * 清空棋盘棋子
      */
-    public boolean isEmpty(int row, int col) {
-        return chessAt(row, col) == null;
+    public void clear() {
+        getChildren().removeIf(node -> node instanceof DrawableChess);
     }
 
     /**
-     * 获取指定位置上棋子
-     * @param pos
+     * 加一个棋子
+     * @param drawableChess
+     */
+    public void addChess(DrawableChess drawableChess) {
+        drawableChess.setTranslateX(GRID_X + drawableChess.chess.pos.col * GAP);
+        drawableChess.setTranslateY(GRID_Y + drawableChess.chess.pos.row * GAP);
+        getChildren().add(drawableChess);
+        AbstractChess chess = drawableChess.chess;
+        chessArray[chess.pos.row][chess.pos.col] = chess;
+        drawableChesses.add(drawableChess);
+    }
+
+    /**
+     * 移除棋子
+     * @param drawableChess
+     */
+    public void removeChess(DrawableChess drawableChess) {
+        AbstractChess chess = drawableChess.chess;
+        getChildren().remove(drawableChess);
+        chessArray[chess.pos.row][chess.pos.col] = null;
+        drawableChesses.remove(chess);
+    }
+
+    /**
+     * 移动棋子
+     * @param drawableChess
+     * @param destPos
+     */
+    public void moveChess(DrawableChess drawableChess, ChessPosition destPos) {
+        chessArray[destPos.row][destPos.col] = drawableChess.chess;
+        drawableChess.setTranslateX(GRID_X + destPos.col * GAP);
+        drawableChess.setTranslateY(GRID_Y + destPos.row * GAP);
+    }
+
+    /**
+     * 所有棋子
      * @return
      */
+    public List<DrawableChess> getDrawableChesses() {
+        return drawableChesses;
+    }
+
+    @Override
+    public boolean isEmpty(int row, int col) {
+        return chessAt(row, col) == null || chessAt(row, col) instanceof ChessGhost;
+    }
+
+    @Override
     public AbstractChess chessAt(ChessPosition pos) {
         return chessAt(pos.row, pos.col);
     }
 
-    /**
-     * 获取指定位置上棋子
-     * @param row
-     * @param col
-     * @return
-     */
+    @Override
     public AbstractChess chessAt(int row, int col) {
         return chessArray[row][col];
     }

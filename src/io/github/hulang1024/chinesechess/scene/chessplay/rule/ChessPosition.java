@@ -19,4 +19,8 @@ public class ChessPosition {
         this.row = row;
         this.col = col;
     }
+
+    public ChessPosition copy() {
+        return new ChessPosition(row, col);
+    }
 }

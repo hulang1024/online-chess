@@ -24,7 +24,7 @@ public class ChessM extends AbstractChess {
             // 只能走“田”
             && Math.abs(rowOffset) == 2 && Math.abs(colOffset) == 2
             // 同时“田”中心不能有棋子
-            && (game.chessboard.isEmpty(
+            && (game.getChessboard().isEmpty(
                 pos.row + (rowOffset > 0 ? +1 : -1), pos.col + (colOffset > 0 ? +1 : -1)));
     }
 }

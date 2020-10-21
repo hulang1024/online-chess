@@ -27,24 +27,23 @@ public class ChessC extends AbstractChess {
         // 到目标位置之间的存在的棋子数量
         int chessCount = 0;
         if (Math.abs(rowOffset) > 0) {
-            for (int row = pos.row; row != destPos.row; row += rowOffset) {
-                if (!game.chessboard.isEmpty(row, pos.col)) {
+            for (int row = pos.row + rowOffset; row != destPos.row; row += rowOffset) {
+                if (!game.getChessboard().isEmpty(row, pos.col)) {
                     chessCount++;
                 }
             }
         } else {
-            for (int col = pos.col; col != destPos.col; col += colOffset) {
-                if (!game.chessboard.isEmpty(pos.row, col)) {
+            for (int col = pos.col + colOffset; col != destPos.col; col += colOffset) {
+                if (!game.getChessboard().isEmpty(pos.row, col)) {
                     chessCount++;
                 }
             }
         }
 
-        AbstractChess chessAtDestPos = game.chessboard.chessAt(destPos);
-        return chessAtDestPos != null && chessAtDestPos.host != host
-            // 如果目标位置上有棋子，是准备吃子，则中间必选有且只有一个棋子
-            ? chessCount == 1
-            // 否则，可以到目标位置之间必须没有棋子
-            : chessCount == 0;
+        return game.getChessboard().isEmpty(destPos.row, destPos.col)
+            // 如果目标位置上有棋子，那么到目标位置之间必须没有棋子
+            ? chessCount == 0
+            // 否则，是准备吃子，则中间必选有且只有一个棋子
+            : chessCount == 1;
     }
 }

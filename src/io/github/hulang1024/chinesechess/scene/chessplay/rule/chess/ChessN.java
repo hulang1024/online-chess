@@ -20,9 +20,9 @@ public class ChessN extends AbstractChess {
         int colOffset = destPos.col - pos.col;
 
         if (Math.abs(rowOffset) == 2 && Math.abs(colOffset) == 1) {
-            return game.chessboard.isEmpty(pos.row + (rowOffset > 0 ? +1 : -1), pos.col);
+            return game.getChessboard().isEmpty(pos.row + (rowOffset > 0 ? +1 : -1), pos.col);
         } else if (Math.abs(rowOffset) == 1 && Math.abs(colOffset) == 2) {
-            return game.chessboard.isEmpty(pos.row, pos.col + (colOffset > 0 ? +1 : -1));
+            return game.getChessboard().isEmpty(pos.row, pos.col + (colOffset > 0 ? +1 : -1));
         } else {
             return false;
         }

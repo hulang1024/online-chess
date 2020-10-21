@@ -1,80 +1,168 @@
 package io.github.hulang1024.chinesechess.scene.chessplay;
 
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.HostEnum;
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.Player;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.*;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
-import javafx.scene.Parent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 
 import java.util.Arrays;
+import java.util.function.BiConsumer;
 
 /**
  * 游戏下棋主场景
  * @author Hu Lang
  */
-public class ChessPlayScene extends GridPane {
-    public Chessboard chessboard = new Chessboard();
-    private Player player1;
-    private Player player2;
+public class ChessPlayScene extends FlowPane implements RoundGame {
+    private DrawableChessboard chessboard = new DrawableChessboard();
+    private HostEnum activeHost;
+    private DrawableChess lastSelected;
+    private Text ruleMessageText;
 
     public ChessPlayScene() {
-        add(chessboard, 0, 0);
+        getChildren().add(chessboard);
 
-        HostEnum topHost = HostEnum.BLACK;
-        HostEnum bottomHost = HostEnum.RED;
-        Arrays.stream(new AbstractChess[]{
-            // 顶部方
-            new ChessR(new ChessPosition(0, 0), topHost),
-            new ChessN(new ChessPosition(0, 1), topHost),
-            new ChessM(new ChessPosition(0, 2), topHost),
-            new ChessG(new ChessPosition(0, 3), topHost),
-            new ChessK(new ChessPosition(0, 4), topHost),
-            new ChessG(new ChessPosition(0, 5), topHost),
-            new ChessM(new ChessPosition(0, 6), topHost),
-            new ChessN(new ChessPosition(0, 7), topHost),
-            new ChessR(new ChessPosition(0, 8), topHost),
-
-            new ChessC(new ChessPosition(2, 1), topHost),
-            new ChessC(new ChessPosition(2, 7), topHost),
-
-            new ChessS(new ChessPosition(3, 0), topHost),
-            new ChessS(new ChessPosition(3, 2), topHost),
-            new ChessS(new ChessPosition(3, 4), topHost),
-            new ChessS(new ChessPosition(3, 6), topHost),
-            new ChessS(new ChessPosition(3, 8), topHost),
-
-            // 底部方
-            new ChessR(new ChessPosition(9, 0), bottomHost),
-            new ChessN(new ChessPosition(9, 1), bottomHost),
-            new ChessM(new ChessPosition(9, 2), bottomHost),
-            new ChessG(new ChessPosition(9, 3), bottomHost),
-            new ChessK(new ChessPosition(9, 4), bottomHost),
-            new ChessG(new ChessPosition(9, 5), bottomHost),
-            new ChessM(new ChessPosition(9, 6), bottomHost),
-            new ChessN(new ChessPosition(9, 7), bottomHost),
-            new ChessR(new ChessPosition(9, 8), bottomHost),
-
-            new ChessC(new ChessPosition(7, 1), bottomHost),
-            new ChessC(new ChessPosition(7, 7), bottomHost),
-
-            new ChessS(new ChessPosition(6, 0), bottomHost),
-            new ChessS(new ChessPosition(6, 2), bottomHost),
-            new ChessS(new ChessPosition(6, 4), bottomHost),
-            new ChessS(new ChessPosition(6, 6), bottomHost),
-            new ChessS(new ChessPosition(6, 8), bottomHost),
-        }).forEach(chess -> {
-            chessboard.getChildren().addAll(new DrawableChess(chess));
-        });
+        ruleMessageText = new Text("无提示");
+        ruleMessageText.setFill(Color.BLACK);
+        getChildren().add(ruleMessageText);
+        startRound();
     }
 
     public void startRound() {
         resetChessLayout();
-
+        activeHost = HostEnum.BLACK;
+        turnHost();
     }
 
     private void resetChessLayout() {
+        BiConsumer<HostEnum, int[]> addChessGroup = (host, rows) -> {
+            Arrays.stream(new AbstractChess[]{
+                new ChessR(new ChessPosition(rows[0], 0), host),
+                new ChessN(new ChessPosition(rows[0], 1), host),
+                new ChessM(new ChessPosition(rows[0], 2), host),
+                new ChessG(new ChessPosition(rows[0], 3), host),
+                new ChessK(new ChessPosition(rows[0], 4), host),
+                new ChessG(new ChessPosition(rows[0], 5), host),
+                new ChessM(new ChessPosition(rows[0], 6), host),
+                new ChessN(new ChessPosition(rows[0], 7), host),
+                new ChessR(new ChessPosition(rows[0], 8), host),
+                new ChessC(new ChessPosition(rows[1], 1), host),
+                new ChessC(new ChessPosition(rows[1], 7), host),
+                new ChessS(new ChessPosition(rows[2], 0), host),
+                new ChessS(new ChessPosition(rows[2], 2), host),
+                new ChessS(new ChessPosition(rows[2], 4), host),
+                new ChessS(new ChessPosition(rows[2], 6), host),
+                new ChessS(new ChessPosition(rows[2], 8), host)
+            }).forEach(chess -> {
+                DrawableChess drawableChess = new DrawableChess(chess);
+                setChessEventHandlers(drawableChess);
+                chessboard.addChess(drawableChess);
+            });
+        };
 
+        chessboard.clear();
+        // 顶部方
+        addChessGroup.accept(HostEnum.BLACK, new int[]{0, 2, 3});
+        // 底部方
+        addChessGroup.accept(HostEnum.RED, new int[]{9, 7, 6});
+
+        for (int row = 0; row < Chessboard.ROW_NUM; row++) {
+            for (int col = 0; col < Chessboard.COL_NUM; col++) {
+                if (chessboard.isEmpty(row, col)) {
+                    DrawableChess ghostChess = new DrawableChess(
+                        new ChessGhost(new ChessPosition(row, col), null));
+                    ghostChess.setOnMouseClicked(event -> {
+                        if (lastSelected != null) {
+                            onGoTo(lastSelected, ghostChess);
+                        }
+                    });
+                    chessboard.addChess(ghostChess);
+                }
+            }
+        }
+    }
+
+    private void turnHost() {
+        activeHost = activeHost == HostEnum.BLACK ? HostEnum.RED : HostEnum.BLACK;
+        ruleMessageText.setFill(Color.BLACK);
+        ruleMessageText.setText("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
+    }
+
+    private void onGoTo(DrawableChess selected, DrawableChess target) {
+        // 目标位置上是否有棋子
+        if (target.chess instanceof ChessGhost) {
+            // 目标位置无棋子
+            // 判断目标位置是否可走
+            if (selected.chess.canGoTo(target.chess.pos, this)) {
+                // 目标位置可走
+                chessboard.moveChess(selected, target.chess.pos);
+                chessboard.moveChess(target, selected.chess.pos);
+                ChessPosition pos = target.chess.pos;
+                target.chess.pos = selected.chess.pos;
+                selected.chess.pos = pos;
+                turnHost();
+            } else {
+                ruleMessageText.setFill(Color.RED);
+                ruleMessageText.setText("走法不符规则");
+            }
+        } else {
+            if (target.chess.host != selected.chess.host) {
+                // 目标位置上有敌方棋子
+                if (selected.chess.canGoTo(target.chess.pos, this)) {
+                    // 目标位置棋子可吃
+                    chessboard.removeChess(target);
+                    chessboard.moveChess(selected, target.chess.pos);
+                    chessboard.addChess(new DrawableChess(new ChessGhost(selected.chess.pos.copy(), null)));
+                    turnHost();
+                    ruleMessageText.setFill(Color.BLACK);
+                    ruleMessageText.setText("无提示");
+                } else {
+                    ruleMessageText.setFill(Color.RED);
+                    ruleMessageText.setText("走法不符规则");
+                }
+            } else {
+                // 目标位置上有本方棋子
+                ruleMessageText.setFill(Color.RED);
+                ruleMessageText.setText("走法不符规则");
+            }
+        }
+        selected.setSelected(false);
+        this.lastSelected = null;
+    }
+
+    private void setChessEventHandlers(DrawableChess drawableChess) {
+        drawableChess.setOnMouseClicked(event -> {
+            if (lastSelected == null) {
+                if (drawableChess.chess.host != activeHost) {
+                    return;
+                }
+                drawableChess.setSelected(true);
+                lastSelected = drawableChess;
+            } else if (drawableChess.isSelected()) {
+                drawableChess.setSelected(false);
+                lastSelected = null;
+            } else {
+                if (drawableChess.chess.host != lastSelected.chess.host) {
+                    onGoTo(lastSelected, drawableChess);
+                } else {
+                    chessboard.getDrawableChesses().forEach(chess -> {
+                        chess.setSelected(false);
+                    });
+                    drawableChess.setSelected(true);
+                    lastSelected = drawableChess;
+                }
+            }
+        });
+    }
+
+    @Override
+    public DrawableChessboard getChessboard() {
+        return chessboard;
+    }
+
+    @Override
+    public boolean isHostAtChessboardTop(HostEnum host) {
+        //TODO: 暂定黑方在顶部（最顶部纵坐标是0），后面支持变化
+        return host == HostEnum.BLACK;
     }
 }

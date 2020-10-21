@@ -1,7 +1,5 @@
 package io.github.hulang1024.chinesechess.scene.chessplay.rule;
 
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.*;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.AbstractChess;
 
 /**
@@ -32,7 +30,7 @@ public class MoveRules {
      * @return
      */
     public static boolean isInBoundary(RoundGame game, HostEnum host, ChessPosition destPos) {
-        return game.isHostAtChessboardTop(host) ? destPos.row < 4 : destPos.row > 3;
+        return game.isHostAtChessboardTop(host) ? destPos.row < 4 : destPos.row > 4;
     }
 
     /**
