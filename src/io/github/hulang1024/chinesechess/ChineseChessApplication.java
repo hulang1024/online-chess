@@ -1,8 +1,9 @@
 package io.github.hulang1024.chinesechess;
 
-import io.github.hulang1024.chinesechess.scene.chessplay.ChessPlayScene;
+import io.github.hulang1024.chinesechess.scene.SceneContext;
+import io.github.hulang1024.chinesechess.scene.SceneManager;
+import io.github.hulang1024.chinesechess.scene.home.HomeScene;
 import javafx.application.Application;
-import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
@@ -13,11 +14,11 @@ import javafx.stage.Stage;
 public class ChineseChessApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
-        BorderPane root = new BorderPane();
         primaryStage.setWidth(800);
         primaryStage.setHeight(640);
         primaryStage.setTitle("中国象棋");
-        primaryStage.setScene(new Scene(new ChessPlayScene()));
+        SceneContext sceneContext = new SceneContext(primaryStage);
+        SceneManager.of(sceneContext).pushScene(new HomeScene(sceneContext));
         primaryStage.show();
     }
 

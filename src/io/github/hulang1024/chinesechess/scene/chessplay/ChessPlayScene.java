@@ -1,8 +1,9 @@
 package io.github.hulang1024.chinesechess.scene.chessplay;
 
+import io.github.hulang1024.chinesechess.scene.AbstractScene;
+import io.github.hulang1024.chinesechess.scene.SceneContext;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.*;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
@@ -13,13 +14,15 @@ import java.util.function.BiConsumer;
  * 游戏下棋主场景
  * @author Hu Lang
  */
-public class ChessPlayScene extends FlowPane implements RoundGame {
+public class ChessPlayScene extends AbstractScene implements RoundGame {
     private DrawableChessboard chessboard = new DrawableChessboard();
     private HostEnum activeHost;
     private DrawableChess lastSelected;
     private Text ruleMessageText;
 
-    public ChessPlayScene() {
+    public ChessPlayScene(SceneContext sceneContext) {
+        super(sceneContext);
+
         getChildren().add(chessboard);
 
         ruleMessageText = new Text("无提示");
