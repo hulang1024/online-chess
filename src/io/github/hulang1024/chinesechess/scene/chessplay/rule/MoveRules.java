@@ -30,7 +30,7 @@ public class MoveRules {
      * @return
      */
     public static boolean isInBoundary(RoundGame game, HostEnum host, ChessPosition destPos) {
-        return game.isHostAtChessboardTop(host) ? destPos.row < 4 : destPos.row > 4;
+        return game.isHostAtChessboardTop(host) ? destPos.row < 5 : destPos.row > 4;
     }
 
     /**
@@ -41,8 +41,8 @@ public class MoveRules {
      */
     public static boolean isInKingHome(AbstractChess chess, ChessPosition destPos, RoundGame game) {
         return (3 <= destPos.col && destPos.col <= 5)
-            && game.isHostAtChessboardTop(chess.host)
+            && (game.isHostAtChessboardTop(chess.host)
                 ? (0 <= destPos.row && destPos.row <= 2)
-                : (7 <= destPos.row && destPos.row <= 9);
+                : (7 <= destPos.row && destPos.row <= 9));
     }
 }

@@ -124,6 +124,9 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
                     chessboard.removeChess(target);
                     chessboard.moveChess(selected, target.chess.pos);
                     chessboard.addChess(new DrawableChess(new ChessGhost(selected.chess.pos.copy(), null)));
+                    ChessPosition pos = target.chess.pos;
+                    target.chess.pos = selected.chess.pos;
+                    selected.chess.pos = pos;
                     turnHost();
                 } else {
                     ruleMessageText.setFill(Color.RED);

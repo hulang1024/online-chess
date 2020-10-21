@@ -17,7 +17,7 @@ public class ChessK extends AbstractChess {
     @Override
     public boolean canGoTo(ChessPosition destPos, RoundGame game) {
         // 可以在九宫内走单步，不限制方向（不包括斜着走）
-        return Math.abs(destPos.row - pos.row) <= 1 && Math.abs(destPos.col - pos.col) <= 1
+        return MoveRules.isStraightLineMove(destPos.row - pos.row,destPos.col - pos.col, 1)
             && MoveRules.isInKingHome(this, destPos, game);
     }
 }
