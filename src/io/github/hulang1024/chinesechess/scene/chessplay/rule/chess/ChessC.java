@@ -27,13 +27,15 @@ public class ChessC extends AbstractChess {
         // 到目标位置之间的存在的棋子数量
         int chessCount = 0;
         if (Math.abs(rowOffset) > 0) {
-            for (int row = pos.row + rowOffset; row != destPos.row; row += rowOffset) {
+            int k = rowOffset > 0 ? +1 : -1;
+            for (int row = pos.row + k; row != destPos.row; row += k) {
                 if (!game.getChessboard().isEmpty(row, pos.col)) {
                     chessCount++;
                 }
             }
         } else {
-            for (int col = pos.col + colOffset; col != destPos.col; col += colOffset) {
+            int k = colOffset > 0 ? +1 : -1;
+            for (int col = pos.col + k; col != destPos.col; col += k) {
                 if (!game.getChessboard().isEmpty(pos.row, col)) {
                     chessCount++;
                 }
