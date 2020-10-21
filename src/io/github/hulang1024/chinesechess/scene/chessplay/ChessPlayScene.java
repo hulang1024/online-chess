@@ -114,8 +114,6 @@ public class ChessPlayScene extends FlowPane implements RoundGame {
                     chessboard.moveChess(selected, target.chess.pos);
                     chessboard.addChess(new DrawableChess(new ChessGhost(selected.chess.pos.copy(), null)));
                     turnHost();
-                    ruleMessageText.setFill(Color.BLACK);
-                    ruleMessageText.setText("无提示");
                 } else {
                     ruleMessageText.setFill(Color.RED);
                     ruleMessageText.setText("走法不符规则");
