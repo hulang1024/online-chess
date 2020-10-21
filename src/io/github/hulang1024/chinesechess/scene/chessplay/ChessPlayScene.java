@@ -25,6 +25,7 @@ public class ChessPlayScene extends FlowPane implements RoundGame {
         ruleMessageText = new Text("无提示");
         ruleMessageText.setFill(Color.BLACK);
         getChildren().add(ruleMessageText);
+
         startRound();
     }
 
@@ -85,6 +86,13 @@ public class ChessPlayScene extends FlowPane implements RoundGame {
     private void turnHost() {
         activeHost = activeHost == HostEnum.BLACK ? HostEnum.RED : HostEnum.BLACK;
         ruleMessageText.setFill(Color.BLACK);
+        // 将当前持棋方棋子启用，非持棋方的棋子全部禁用
+        chessboard.getDrawableChesses().forEach(drawableChess -> {
+            if (drawableChess.chess instanceof ChessGhost) {
+                return;
+            }
+            drawableChess.setDisable(drawableChess.chess.host != activeHost);
+        });
         ruleMessageText.setText("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
     }
 
@@ -128,26 +136,39 @@ public class ChessPlayScene extends FlowPane implements RoundGame {
         this.lastSelected = null;
     }
 
-    private void setChessEventHandlers(DrawableChess drawableChess) {
-        drawableChess.setOnMouseClicked(event -> {
+    private void setChessEventHandlers(DrawableChess eventDrawableChess) {
+        eventDrawableChess.setOnMouseClicked(event -> {
             if (lastSelected == null) {
-                if (drawableChess.chess.host != activeHost) {
+                // 如果当前没有任何棋子选中，现在是选择要走的棋子，只能先选中持棋方棋子
+                if (eventDrawableChess.chess.host != activeHost) {
                     return;
                 }
-                drawableChess.setSelected(true);
-                lastSelected = drawableChess;
-            } else if (drawableChess.isSelected()) {
-                drawableChess.setSelected(false);
+                eventDrawableChess.setSelected(true);
+                lastSelected = eventDrawableChess;
+
+                // 将非持棋方的棋子全部启用（这样才能点击要吃的目标棋子）
+                chessboard.getDrawableChesses().forEach(drawableChess -> {
+                    if (drawableChess.chess instanceof ChessGhost) {
+                        return;
+                    }
+                    if (drawableChess.chess.host != activeHost) {
+                        drawableChess.setDisable(false);
+                    }
+                });
+            } else if (eventDrawableChess.isSelected()) {
+                // 重复点击，取消选中
+                eventDrawableChess.setSelected(false);
                 lastSelected = null;
             } else {
-                if (drawableChess.chess.host != lastSelected.chess.host) {
-                    onGoTo(lastSelected, drawableChess);
+                // 当选择了两个棋子（包括了空棋子），并且两个棋子属于不同棋方，可能要移动或者吃子
+                if (eventDrawableChess.chess.host != lastSelected.chess.host) {
+                    onGoTo(lastSelected, eventDrawableChess);
                 } else {
                     chessboard.getDrawableChesses().forEach(chess -> {
                         chess.setSelected(false);
                     });
-                    drawableChess.setSelected(true);
-                    lastSelected = drawableChess;
+                    eventDrawableChess.setSelected(true);
+                    lastSelected = eventDrawableChess;
                 }
             }
         });
