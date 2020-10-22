@@ -15,7 +15,7 @@ public class ChineseChessApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setWidth(800);
-        primaryStage.setHeight(640);
+        primaryStage.setHeight(630);
         primaryStage.setTitle("中国象棋");
         SceneContext sceneContext = new SceneContext(primaryStage);
         SceneManager.of(sceneContext).pushScene(new HomeScene(sceneContext));

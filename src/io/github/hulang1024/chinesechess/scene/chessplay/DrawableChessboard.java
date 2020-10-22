@@ -4,9 +4,12 @@ import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.Chessboard;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.AbstractChess;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.ChessGhost;
+import javafx.geometry.Insets;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
@@ -17,15 +20,17 @@ import java.util.ArrayList;
  * 棋盘
  * @author Hu Lang
  */
-public class DrawableChessboard extends Pane implements Chessboard {
+public class DrawableChessboard extends BorderPane implements Chessboard {
     // 交叉点之间的距离
-    public static final int GAP = DrawableChess.SIZE + 8;
-    // 外边框位置
-    public static final int BORDER_LEFT = 32;
-    public static final int BORDER_TOP = 32;
+    public static final int GAP = DrawableChess.SIZE + 4;
+    // 棋盘画板外边距
+    public static final int CANVAS_MARGIN = 32;
+    // 外边框
     public static final int BORDER_LINE_WIDTH = 2;
+    public static final int BORDER_LEFT = BORDER_LINE_WIDTH;
+    public static final int BORDER_TOP = BORDER_LINE_WIDTH;
     // 网格距离边框边距
-    public static final int GRID_MARGIN = 8;
+    public static final int GRID_MARGIN = 20;
     // 网格尺寸
     public static final int GRID_WIDTH = GAP * (COL_NUM - 1);
     public static final int GRID_HEIGHT = GAP * (ROW_NUM / 2 - 1);
@@ -37,18 +42,25 @@ public class DrawableChessboard extends Pane implements Chessboard {
     private List<DrawableChess> drawableChesses = new ArrayList<>();
 
     public DrawableChessboard() {
+        setBackground(new Background(new BackgroundFill(Color.rgb(250, 250, 250), null ,null)));
+
         Canvas canvas = new Canvas(
-            BORDER_LEFT + GRID_WIDTH + GRID_MARGIN * 2 + BORDER_LINE_WIDTH,
-            BORDER_TOP + GRID_HEIGHT * 2 + GAP + GRID_MARGIN * 2 + BORDER_LINE_WIDTH);
+            BORDER_LEFT + GRID_WIDTH + GRID_MARGIN * 2 + BORDER_LINE_WIDTH * 2,
+            BORDER_TOP + GRID_HEIGHT * 2 + GAP + GRID_MARGIN * 2 + BORDER_LINE_WIDTH * 2);
+        setMargin(canvas, new Insets(CANVAS_MARGIN, CANVAS_MARGIN, CANVAS_MARGIN, CANVAS_MARGIN));
+
         GraphicsContext ctx = canvas.getGraphicsContext2D();
+
+        ctx.setStroke(Color.GRAY);
         // 画外边框
-        ctx.setLineWidth(BORDER_LINE_WIDTH);
+        ctx.setLineWidth(1);
         ctx.strokeRect(BORDER_LEFT, BORDER_TOP,
             GRID_WIDTH + GRID_MARGIN * 2, GRID_HEIGHT * 2 + GAP + GRID_MARGIN * 2);
 
         /// 画内部棋格
-        ctx.setLineWidth(1);
+        ctx.setLineWidth(2);
         ctx.strokeRect(GRID_X, GRID_Y,GRID_WIDTH, GRID_HEIGHT * 2 + GAP);
+        ctx.setLineWidth(1);
         for (int p = 0; p < 2; p++) {
             // 画横线
             for (int row = 0; row < ROW_NUM / 2; row++) {
@@ -69,13 +81,12 @@ public class DrawableChessboard extends Pane implements Chessboard {
             ctx.strokeLine(x1, baseY + GRID_Y + 2 * GAP, x2, baseY + GRID_Y);
         }
         // 画河界
-        ctx.setFont(Font.font(GAP * 0.4));
-        ctx.setFill(Color.GRAY);
+        ctx.setFont(Font.font(GAP * 0.6));
+        ctx.setFill(Color.gray(0.1, 0.2));
         double textY = GRID_Y + GAP * 4.5 + ctx.getFont().getSize() / 3;
-        ctx.fillText("楚河", GRID_X + GAP * 2, textY);
-        ctx.fillText("汉界", GRID_X + GAP * 5.2, textY);
-
-        getChildren().add(canvas);
+        ctx.fillText("楚 河", GRID_X + GAP * 1.1, textY);
+        ctx.fillText("汉 界", GRID_X + GAP * 5.6, textY);
+        setCenter(canvas);
     }
 
     /**
@@ -90,8 +101,8 @@ public class DrawableChessboard extends Pane implements Chessboard {
      * @param drawableChess
      */
     public void addChess(DrawableChess drawableChess) {
-        drawableChess.setTranslateX(GRID_X + drawableChess.chess.pos.col * GAP);
-        drawableChess.setTranslateY(GRID_Y + drawableChess.chess.pos.row * GAP);
+        drawableChess.setTranslateX(CANVAS_MARGIN + GRID_X + drawableChess.chess.pos.col * GAP);
+        drawableChess.setTranslateY(CANVAS_MARGIN + GRID_Y + drawableChess.chess.pos.row * GAP);
         getChildren().add(drawableChess);
         AbstractChess chess = drawableChess.chess;
         chessArray[chess.pos.row][chess.pos.col] = chess;
@@ -116,8 +127,8 @@ public class DrawableChessboard extends Pane implements Chessboard {
      */
     public void moveChess(DrawableChess drawableChess, ChessPosition destPos) {
         chessArray[destPos.row][destPos.col] = drawableChess.chess;
-        drawableChess.setTranslateX(GRID_X + destPos.col * GAP);
-        drawableChess.setTranslateY(GRID_Y + destPos.row * GAP);
+        drawableChess.setTranslateX(CANVAS_MARGIN + GRID_X + destPos.col * GAP);
+        drawableChess.setTranslateY(CANVAS_MARGIN + GRID_Y + destPos.row * GAP);
     }
 
     /**

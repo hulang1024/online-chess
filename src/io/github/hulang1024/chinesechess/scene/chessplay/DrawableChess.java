@@ -2,9 +2,10 @@ package io.github.hulang1024.chinesechess.scene.chessplay;
 
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.HostEnum;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
-import javafx.scene.Cursor;
 import javafx.scene.control.Control;
-import javafx.scene.layout.Pane;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
@@ -22,20 +23,27 @@ public class DrawableChess extends Pane {
     private Circle circle;
     private Text text;
 
-    private static final Color CIRCLE_FILL_COLOR = Color.WHEAT;
+    private static final Color CIRCLE_FILL_COLOR = Color.valueOf("#f2c27d");
 
     public DrawableChess(AbstractChess chess) {
         this.chess = chess;
 
-        setCursor(Cursor.HAND);
-
+        setMinSize(SIZE, SIZE);
         setPrefSize(Control.USE_PREF_SIZE , Control.USE_PREF_SIZE);
-        circle = new Circle(SIZE / 2f, chess instanceof ChessGhost ? null : Color.WHEAT);
+
+        circle = new Circle(SIZE / 2f, chess instanceof ChessGhost ? null : CIRCLE_FILL_COLOR);
+        DropShadow shadow = new DropShadow();
+        shadow.setBlurType(BlurType.GAUSSIAN);
+        shadow.setColor(Color.color(0.1, 0.1, 0.1, 0.2));
+        shadow.setHeight(SIZE / 2f);
+        shadow.setWidth(SIZE / 2f);
+        shadow.setRadius(SIZE / 2f);
+        circle.setEffect(shadow);
         getChildren().add(circle);
 
         //TODO:文字居中
-        text = new Text(-10, 6, getNameText());
-        text.setFont(Font.font(SIZE / 2.6f));
+        text = new Text(-14, 10, getNameText());
+        text.setFont(Font.font(SIZE / 1.8f));
         text.setFill(getFillColor());
         getChildren().add(text);
 
@@ -43,15 +51,13 @@ public class DrawableChess extends Pane {
             if (selected || chess instanceof ChessGhost) {
                 return;
             }
-            circle.setFill(Color.ORANGE);
-            text.setFill(Color.WHITE);
+            setOpacity(0.6);
         });
         setOnMouseExited(event -> {
             if (selected || chess instanceof ChessGhost) {
                 return;
             }
-            circle.setFill(CIRCLE_FILL_COLOR);
-            text.setFill(getFillColor());
+            setOpacity(1.0);
         });
     }
 
@@ -65,11 +71,9 @@ public class DrawableChess extends Pane {
         }
         this.selected = selected;
         if (selected) {
-            circle.setFill(Color.ORANGE);
-            text.setFill(Color.WHITE);
+            setOpacity(0.6);
         } else {
-            circle.setFill(CIRCLE_FILL_COLOR);
-            text.setFill(getFillColor());
+            setOpacity(1.0);
         }
     }
 
