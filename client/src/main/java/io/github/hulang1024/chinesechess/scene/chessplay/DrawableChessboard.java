@@ -101,10 +101,9 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
      * @param drawableChess
      */
     public void addChess(DrawableChess drawableChess) {
-        drawableChess.setTranslateX(CANVAS_MARGIN + GRID_X + drawableChess.chess.pos.col * GAP);
-        drawableChess.setTranslateY(CANVAS_MARGIN + GRID_Y + drawableChess.chess.pos.row * GAP);
-        getChildren().add(drawableChess);
         AbstractChess chess = drawableChess.chess;
+        setChessPositionInChessboard(drawableChess, chess.pos);
+        getChildren().add(drawableChess);
         chessArray[chess.pos.row][chess.pos.col] = chess;
         drawableChesses.add(drawableChess);
     }
@@ -127,8 +126,7 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
      */
     public void moveChess(DrawableChess drawableChess, ChessPosition destPos) {
         chessArray[destPos.row][destPos.col] = drawableChess.chess;
-        drawableChess.setTranslateX(CANVAS_MARGIN + GRID_X + destPos.col * GAP);
-        drawableChess.setTranslateY(CANVAS_MARGIN + GRID_Y + destPos.row * GAP);
+        setChessPositionInChessboard(drawableChess, destPos);
     }
 
     /**
@@ -137,6 +135,11 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
      */
     public List<DrawableChess> getDrawableChesses() {
         return drawableChesses;
+    }
+
+    private void setChessPositionInChessboard(DrawableChess drawableChess, ChessPosition pos) {
+        drawableChess.setTranslateX(CANVAS_MARGIN + GRID_X + pos.col * GAP);
+        drawableChess.setTranslateY(CANVAS_MARGIN + GRID_Y + pos.row * GAP);
     }
 
     @Override
