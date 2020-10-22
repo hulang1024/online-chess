@@ -18,12 +18,19 @@ public class MainMenu extends VBox {
             eventHandler.onP2();
         });
 
+        Button onlineButton = new Button("游戏大厅");
+        onlineButton.setMinWidth(200);
+        onlineButton.setOnMouseClicked(event -> {
+            eventHandler.onOnline();
+        });
+
         Button exitButton = new Button("退出");
         exitButton.setMinWidth(200);
         exitButton.setOnMouseClicked(event -> {
             eventHandler.onExit();
         });
 
+        getChildren().add(onlineButton);
         getChildren().add(p2Button);
         getChildren().add(exitButton);
     }

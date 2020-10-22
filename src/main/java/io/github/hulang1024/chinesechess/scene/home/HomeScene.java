@@ -2,10 +2,10 @@ package io.github.hulang1024.chinesechess.scene.home;
 
 import io.github.hulang1024.chinesechess.scene.AbstractScene;
 import io.github.hulang1024.chinesechess.scene.SceneContext;
-import io.github.hulang1024.chinesechess.scene.SceneManager;
 import io.github.hulang1024.chinesechess.scene.chessplay.ChessPlayScene;
 import io.github.hulang1024.chinesechess.scene.home.menu.MainMenu;
 import io.github.hulang1024.chinesechess.scene.home.menu.MenuMainEventHandler;
+import io.github.hulang1024.chinesechess.scene.lobby.LobbyScene;
 import javafx.scene.control.Control;
 import javafx.scene.layout.BorderPane;
 
@@ -28,7 +28,7 @@ public class HomeScene extends AbstractScene {
 
             @Override
             public void onOnline() {
-
+                pushScene(new LobbyScene(sceneContext));
             }
 
             @Override
