@@ -1,9 +1,7 @@
 package io.github.hulang1024.chinesechess.scene.chessplay.rule;
 
-import io.github.hulang1024.chinesechess.scene.chessplay.DrawableChessboard;
-
 /**
- * 游戏局
+ * 游戏对局
  * @author Hu Lang
  */
 public interface RoundGame {
@@ -11,7 +9,7 @@ public interface RoundGame {
      * 棋盘
      * @return
      */
-    DrawableChessboard getChessboard();
+    Chessboard getChessboard();
 
     /**
      * 查看指定方是否布局在棋盘顶部
