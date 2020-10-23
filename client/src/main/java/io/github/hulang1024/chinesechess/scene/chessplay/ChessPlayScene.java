@@ -94,7 +94,7 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
             if (drawableChess.chess instanceof ChessGhost) {
                 return;
             }
-            drawableChess.setDisable(drawableChess.chess.host != activeHost);
+            drawableChess.setDisable(drawableChess.chess.host() != activeHost);
         });
         ruleMessageText.setText("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
     }
@@ -104,29 +104,29 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
         if (target.chess instanceof ChessGhost) {
             // 目标位置无棋子
             // 判断目标位置是否可走
-            if (selected.chess.canGoTo(target.chess.pos, this)) {
+            if (selected.chess.canGoTo(target.chess.pos(), this)) {
                 // 目标位置可走
-                chessboard.moveChess(selected, target.chess.pos);
-                chessboard.moveChess(target, selected.chess.pos);
-                ChessPosition pos = target.chess.pos;
-                target.chess.pos = selected.chess.pos;
-                selected.chess.pos = pos;
+                chessboard.moveChess(selected, target.chess.pos());
+                chessboard.moveChess(target, selected.chess.pos());
+                ChessPosition pos = target.chess.pos();
+                target.chess.setPos(selected.chess.pos());
+                selected.chess.setPos(pos);
                 turnHost();
             } else {
                 ruleMessageText.setFill(Color.RED);
                 ruleMessageText.setText("走法不符规则");
             }
         } else {
-            if (target.chess.host != selected.chess.host) {
+            if (target.chess.host() != selected.chess.host()) {
                 // 目标位置上有敌方棋子
-                if (selected.chess.canGoTo(target.chess.pos, this)) {
+                if (selected.chess.canGoTo(target.chess.pos(), this)) {
                     // 目标位置棋子可吃
                     chessboard.removeChess(target);
-                    chessboard.moveChess(selected, target.chess.pos);
-                    chessboard.addChess(new DrawableChess(new ChessGhost(selected.chess.pos.copy())));
-                    ChessPosition pos = target.chess.pos;
-                    target.chess.pos = selected.chess.pos;
-                    selected.chess.pos = pos;
+                    chessboard.moveChess(selected, target.chess.pos());
+                    chessboard.addChess(new DrawableChess(new ChessGhost(selected.chess.pos().copy())));
+                    ChessPosition pos = target.chess.pos();
+                    target.chess.setPos(selected.chess.pos());
+                    selected.chess.setPos(pos);
                     turnHost();
                 } else {
                     ruleMessageText.setFill(Color.RED);
@@ -146,7 +146,7 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
         eventDrawableChess.setOnMouseClicked(event -> {
             if (lastSelected == null) {
                 // 如果当前没有任何棋子选中，现在是选择要走的棋子，只能先选中持棋方棋子
-                if (eventDrawableChess.chess.host != activeHost) {
+                if (eventDrawableChess.chess.host() != activeHost) {
                     return;
                 }
                 eventDrawableChess.setSelected(true);
@@ -157,7 +157,7 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
                     if (drawableChess.chess instanceof ChessGhost) {
                         return;
                     }
-                    if (drawableChess.chess.host != activeHost) {
+                    if (drawableChess.chess.host() != activeHost) {
                         drawableChess.setDisable(false);
                     }
                 });
@@ -167,7 +167,7 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
                 lastSelected = null;
             } else {
                 // 当选择了两个棋子（包括了空棋子），并且两个棋子属于不同棋方，可能要移动或者吃子
-                if (eventDrawableChess.chess.host != lastSelected.chess.host) {
+                if (eventDrawableChess.chess.host() != lastSelected.chess.host()) {
                     onGoTo(lastSelected, eventDrawableChess);
                 } else {
                     chessboard.getDrawableChesses().forEach(chess -> {

@@ -103,7 +103,7 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
      */
     public void addChess(DrawableChess drawableChess) {
         AbstractChess chess = drawableChess.chess;
-        setChessPositionInChessboard(drawableChess, chess.pos);
+        setChessPositionInChessboard(drawableChess, chess.pos());
         getChildren().add(drawableChess);
         drawableChesses.add(drawableChess);
         addChess(chess);
@@ -116,7 +116,7 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
     public void removeChess(DrawableChess drawableChess) {
         AbstractChess chess = drawableChess.chess;
         getChildren().remove(drawableChess);
-        chessArray[chess.pos.row][chess.pos.col] = null;
+        chessArray[chess.pos().row][chess.pos().col] = null;
         drawableChesses.remove(chess);
     }
 
@@ -150,7 +150,7 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
 
     @Override
     public void addChess(AbstractChess chess) {
-        chessArray[chess.pos.row][chess.pos.col] = chess;
+        chessArray[chess.pos().row][chess.pos().col] = chess;
     }
 
     /**

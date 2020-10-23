@@ -41,7 +41,7 @@ public class MoveRules {
      */
     public static boolean isInKingHome(AbstractChess chess, ChessPosition destPos, RoundGame game) {
         return (3 <= destPos.col && destPos.col <= 5)
-            && (game.isHostAtChessboardTop(chess.host)
+            && (game.isHostAtChessboardTop(chess.host())
                 ? (0 <= destPos.row && destPos.row <= 2)
                 : (7 <= destPos.row && destPos.row <= 9));
     }

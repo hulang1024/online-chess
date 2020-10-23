@@ -78,12 +78,12 @@ public class DrawableChess extends Pane {
     }
 
     private Color getFillColor() {
-        return chess.host == HostEnum.RED ? Color.RED : Color.BLACK;
+        return chess.host() == HostEnum.RED ? Color.RED : Color.BLACK;
     }
 
     public String getNameText() {
         if (chess instanceof ChessS) {
-            return chess.host == HostEnum.RED ? "兵" : "卒";
+            return chess.host() == HostEnum.RED ? "兵" : "卒";
         }
         if (chess instanceof ChessC) {
             return "炮";
@@ -95,13 +95,13 @@ public class DrawableChess extends Pane {
             return "馬";
         }
         if (chess instanceof ChessM) {
-            return chess.host == HostEnum.RED ? "相" : "象";
+            return chess.host() == HostEnum.RED ? "相" : "象";
         }
         if (chess instanceof ChessG) {
-            return chess.host == HostEnum.RED ? "仕" : "士";
+            return chess.host() == HostEnum.RED ? "仕" : "士";
         }
         if (chess instanceof ChessK) {
-            return chess.host == HostEnum.RED ? "帥" : "將";
+            return chess.host() == HostEnum.RED ? "帥" : "將";
         }
         return null;
     }
