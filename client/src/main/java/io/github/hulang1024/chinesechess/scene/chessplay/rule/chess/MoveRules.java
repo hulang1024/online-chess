@@ -1,12 +1,15 @@
-package io.github.hulang1024.chinesechess.scene.chessplay.rule;
+package io.github.hulang1024.chinesechess.scene.chessplay.rule.chess;
 
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.AbstractChess;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.Chess;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.HostEnum;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
 
 /**
  * 移动规则函数
  * @author Hu Lang
  */
-public class MoveRules {
+/*package*/ class MoveRules {
     public static final int MAX_DISTANCE = 10;
 
     /**
@@ -39,7 +42,7 @@ public class MoveRules {
      * @param destPos
      * @return
      */
-    public static boolean isInKingHome(AbstractChess chess, ChessPosition destPos, RoundGame game) {
+    public static boolean isInKingHome(Chess chess, ChessPosition destPos, RoundGame game) {
         return (3 <= destPos.col && destPos.col <= 5)
             && (game.isHostAtChessboardTop(chess.host())
                 ? (0 <= destPos.row && destPos.row <= 2)

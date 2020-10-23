@@ -1,8 +1,8 @@
 package io.github.hulang1024.chinesechess.scene.chessplay;
 
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.Chess;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.Chessboard;
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.AbstractChess;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.ChessGhost;
 import javafx.geometry.Insets;
 import javafx.scene.canvas.Canvas;
@@ -37,9 +37,7 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
     private static final int GRID_X = BORDER_LEFT + GRID_MARGIN;
     private static final int GRID_Y = BORDER_TOP + GRID_MARGIN;
     /** 棋子状态矩阵 */
-    private AbstractChess[][] chessArray = new AbstractChess[ROW_NUM][COL_NUM];
-    /** 棋子组件列表 */
-    private final List<DrawableChess> drawableChesses = new ArrayList<>();
+    private Chess[][] chessArray = new Chess[ROW_NUM][COL_NUM];
 
     public DrawableChessboard() {
         // 设置背景
@@ -98,39 +96,6 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
     }
 
     /**
-     * 加一个棋子
-     * @param drawableChess
-     */
-    public void addChess(DrawableChess drawableChess) {
-        AbstractChess chess = drawableChess.chess;
-        setChessPositionInChessboard(drawableChess, chess.pos());
-        getChildren().add(drawableChess);
-        drawableChesses.add(drawableChess);
-        addChess(chess);
-    }
-
-    /**
-     * 移除棋子
-     * @param drawableChess
-     */
-    public void removeChess(DrawableChess drawableChess) {
-        AbstractChess chess = drawableChess.chess;
-        getChildren().remove(drawableChess);
-        chessArray[chess.pos().row][chess.pos().col] = null;
-        drawableChesses.remove(chess);
-    }
-
-    /**
-     * 移动棋子
-     * @param drawableChess
-     * @param destPos
-     */
-    public void moveChess(DrawableChess drawableChess, ChessPosition destPos) {
-        chessArray[destPos.row][destPos.col] = drawableChess.chess;
-        setChessPositionInChessboard(drawableChess, destPos);
-    }
-
-    /**
      * 设置棋子位置
      * @param drawableChess
      * @param pos
@@ -140,22 +105,40 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
         drawableChess.setTranslateY(CANVAS_MARGIN + GRID_Y + pos.row * GAP);
     }
 
-    /**
-     * 获取所有棋子
-     * @return
-     */
-    public List<DrawableChess> getDrawableChesses() {
-        return drawableChesses;
-    }
-
     @Override
-    public void addChess(AbstractChess chess) {
+    public void addChess(Chess chess) {
+        setChessPositionInChessboard((DrawableChess)chess, chess.pos());
+        getChildren().add((DrawableChess)chess);
         chessArray[chess.pos().row][chess.pos().col] = chess;
     }
 
-    /**
-     * 清空棋盘棋子
-     */
+    @Override
+    public void removeChess(Chess chess) {
+        getChildren().remove(chess);
+        chessArray[chess.pos().row][chess.pos().col] = null;
+    }
+
+
+    @Override
+    public void moveChess(Chess chess, ChessPosition destPos) {
+        assert chessArray[chess.pos().row][chess.pos().col] == null;
+        chessArray[destPos.row][destPos.col] = chess;
+        chess.setPos(destPos);
+        setChessPositionInChessboard((DrawableChess)chess, destPos);
+    }
+
+
+    @Override
+    public List<Chess> getChessList() {
+        List<Chess> list = new ArrayList<>();
+        for (int row = 0; row < Chessboard.ROW_NUM; row++) {
+            for (int col = 0; col < Chessboard.COL_NUM; col++) {
+                list.add(chessArray[row][col]);
+            }
+        }
+        return list;
+    }
+
     @Override
     public void clear() {
         getChildren().removeIf(node -> node instanceof DrawableChess);
@@ -163,16 +146,11 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
 
     @Override
     public boolean isEmpty(int row, int col) {
-        return chessAt(row, col) == null || chessAt(row, col) instanceof ChessGhost;
+        return chessAt(row, col) == null || ((DrawableChess)chessAt(row, col)).getChess() instanceof ChessGhost;
     }
 
     @Override
-    public AbstractChess chessAt(ChessPosition pos) {
-        return chessAt(pos.row, pos.col);
-    }
-
-    @Override
-    public AbstractChess chessAt(int row, int col) {
+    public Chess chessAt(int row, int col) {
         return chessArray[row][col];
     }
 }

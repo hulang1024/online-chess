@@ -1,6 +1,9 @@
 package io.github.hulang1024.chinesechess.scene.chessplay;
 
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.Chess;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.HostEnum;
+import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
 import javafx.scene.control.Control;
 import javafx.scene.effect.BlurType;
@@ -15,17 +18,16 @@ import javafx.scene.text.Text;
 /**
  * @author Hu Lang
  */
-public class DrawableChess extends Pane {
+public class DrawableChess extends Pane implements Chess {
     public static final int SIZE = 50;
-    public AbstractChess chess;
-
+    private Chess chess;
     private boolean selected = false;
     private Circle circle;
     private Text text;
 
     private static final Color CIRCLE_FILL_COLOR = Color.valueOf("#f2c27d");
 
-    public DrawableChess(AbstractChess chess) {
+    public DrawableChess(Chess chess) {
         this.chess = chess;
 
         setMinSize(SIZE, SIZE);
@@ -104,5 +106,34 @@ public class DrawableChess extends Pane {
             return chess.host() == HostEnum.RED ? "帥" : "將";
         }
         return null;
+    }
+
+    public Chess getChess() {
+        return chess;
+    }
+
+    @Override
+    public void setPos(ChessPosition pos) {
+        chess.setPos(pos);
+    }
+
+    @Override
+    public void setHost(HostEnum host) {
+        chess.setHost(host);
+    }
+
+    @Override
+    public ChessPosition pos() {
+        return chess.pos();
+    }
+
+    @Override
+    public HostEnum host() {
+        return chess.host();
+    }
+
+    @Override
+    public boolean canGoTo(ChessPosition destPos, RoundGame game) {
+        return chess.canGoTo(destPos, game);
     }
 }

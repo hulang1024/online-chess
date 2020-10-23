@@ -2,7 +2,6 @@ package io.github.hulang1024.chinesechess.scene.chessplay.rule.chess;
 
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.HostEnum;
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.MoveRules;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
 
 /**
@@ -28,14 +27,14 @@ public class ChessC extends AbstractChess {
         int chessCount = 0;
         if (Math.abs(rowOffset) > 0) {
             int k = rowOffset > 0 ? +1 : -1;
-            for (int row = pos.row + k; row != destPos.row; row += k) {
+            for (int row = pos.row + k; row != destPos.row + k; row += k) {
                 if (!game.getChessboard().isEmpty(row, pos.col)) {
                     chessCount++;
                 }
             }
         } else {
             int k = colOffset > 0 ? +1 : -1;
-            for (int col = pos.col + k; col != destPos.col; col += k) {
+            for (int col = pos.col + k; col != destPos.col + k; col += k) {
                 if (!game.getChessboard().isEmpty(pos.row, col)) {
                     chessCount++;
                 }

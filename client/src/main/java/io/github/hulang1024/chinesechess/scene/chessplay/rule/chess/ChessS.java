@@ -2,7 +2,6 @@ package io.github.hulang1024.chinesechess.scene.chessplay.rule.chess;
 
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.HostEnum;
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.MoveRules;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
 
 /**

@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.scene.chessplay.rule;
 
-import io.github.hulang1024.chinesechess.scene.chessplay.DrawableChess;
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.AbstractChess;
+
+import java.util.List;
 
 /**
  * 棋盘
@@ -21,24 +21,35 @@ public interface Chessboard {
 
     /**
      * 获取指定位置上棋子
-     * @param pos
-     * @return
-     */
-    AbstractChess chessAt(ChessPosition pos);
-
-    /**
-     * 获取指定位置上棋子
      * @param row
      * @param col
      * @return
      */
-    AbstractChess chessAt(int row, int col);
+    Chess chessAt(int row, int col);
 
     /**
      * 加一个棋子
      * @param chess
      */
-    void addChess(AbstractChess chess);
+    void addChess(Chess chess);
+
+    /**
+     * 移动棋子，并能修改chess本身的位置为destPos
+     * @param chess
+     * @param destPos
+     */
+    void moveChess(Chess chess, ChessPosition destPos);
+
+    /**
+     * 移除棋子
+     * @param chess
+     */
+    void removeChess(Chess chess);
+
+    /**
+     * 获取棋子列表
+     */
+    List<Chess> getChessList();
 
     /**
      * 清空棋盘棋子
