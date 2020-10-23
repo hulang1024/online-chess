@@ -74,7 +74,7 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
             for (int col = 0; col < Chessboard.COL_NUM; col++) {
                 if (chessboard.isEmpty(row, col)) {
                     DrawableChess ghostChess = new DrawableChess(
-                        new ChessGhost(new ChessPosition(row, col), null));
+                        new ChessGhost(new ChessPosition(row, col)));
                     ghostChess.setOnMouseClicked(event -> {
                         if (lastSelected != null) {
                             onGoTo(lastSelected, ghostChess);
@@ -123,7 +123,7 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
                     // 目标位置棋子可吃
                     chessboard.removeChess(target);
                     chessboard.moveChess(selected, target.chess.pos);
-                    chessboard.addChess(new DrawableChess(new ChessGhost(selected.chess.pos.copy(), null)));
+                    chessboard.addChess(new DrawableChess(new ChessGhost(selected.chess.pos.copy())));
                     ChessPosition pos = target.chess.pos;
                     target.chess.pos = selected.chess.pos;
                     selected.chess.pos = pos;

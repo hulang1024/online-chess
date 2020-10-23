@@ -98,13 +98,6 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
     }
 
     /**
-     * 清空棋盘棋子
-     */
-    public void clear() {
-        getChildren().removeIf(node -> node instanceof DrawableChess);
-    }
-
-    /**
      * 加一个棋子
      * @param drawableChess
      */
@@ -112,8 +105,8 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
         AbstractChess chess = drawableChess.chess;
         setChessPositionInChessboard(drawableChess, chess.pos);
         getChildren().add(drawableChess);
-        chessArray[chess.pos.row][chess.pos.col] = chess;
         drawableChesses.add(drawableChess);
+        addChess(chess);
     }
 
     /**
@@ -153,6 +146,19 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
      */
     public List<DrawableChess> getDrawableChesses() {
         return drawableChesses;
+    }
+
+    @Override
+    public void addChess(AbstractChess chess) {
+        chessArray[chess.pos.row][chess.pos.col] = chess;
+    }
+
+    /**
+     * 清空棋盘棋子
+     */
+    @Override
+    public void clear() {
+        getChildren().removeIf(node -> node instanceof DrawableChess);
     }
 
     @Override

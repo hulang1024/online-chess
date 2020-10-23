@@ -9,6 +9,10 @@ import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
  * @author Hu Lang
  */
 public class ChessGhost extends AbstractChess {
+    public ChessGhost(ChessPosition pos) {
+        super(pos, null);
+    }
+
     public ChessGhost(ChessPosition pos, HostEnum host) {
         super(pos, host);
     }
