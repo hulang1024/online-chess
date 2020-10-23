@@ -9,6 +9,7 @@ import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
  * @author Hu Lang
  */
 public class ChessN extends AbstractChess {
+    private static final int MAX_DISTANCE = 2;
     public ChessN(ChessPosition pos, HostEnum host) {
         super(pos, host);
     }
@@ -19,9 +20,9 @@ public class ChessN extends AbstractChess {
         int rowOffset = destPos.row - pos.row;
         int colOffset = destPos.col - pos.col;
 
-        if (Math.abs(rowOffset) == 2 && Math.abs(colOffset) == 1) {
+        if (Math.abs(rowOffset) == MAX_DISTANCE && Math.abs(colOffset) == 1) {
             return game.getChessboard().isEmpty(pos.row + (rowOffset > 0 ? +1 : -1), pos.col);
-        } else if (Math.abs(rowOffset) == 1 && Math.abs(colOffset) == 2) {
+        } else if (Math.abs(rowOffset) == 1 && Math.abs(colOffset) == MAX_DISTANCE) {
             return game.getChessboard().isEmpty(pos.row, pos.col + (colOffset > 0 ? +1 : -1));
         } else {
             return false;

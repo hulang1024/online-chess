@@ -4,7 +4,6 @@ import io.github.hulang1024.chinesechess.scene.SceneContext;
 import io.github.hulang1024.chinesechess.scene.SceneManager;
 import io.github.hulang1024.chinesechess.scene.home.HomeScene;
 import javafx.application.Application;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 /**
@@ -13,7 +12,7 @@ import javafx.stage.Stage;
  */
 public class ChineseChessApplication extends Application {
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         // 设置窗口尺寸
         primaryStage.setWidth(800);
         primaryStage.setHeight(630);

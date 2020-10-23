@@ -21,25 +21,25 @@ import java.util.ArrayList;
  * @author Hu Lang
  */
 public class DrawableChessboard extends BorderPane implements Chessboard {
-    // 交叉点之间的距离
+    /** 交叉点之间的距离 */
     private static final int GAP = DrawableChess.SIZE + 4;
-    // 棋盘画板外边距
+    /** 棋盘画板外边距 */
     private static final int CANVAS_MARGIN = 32;
-    // 外边框
+    /** 外边框 */
     private static final int BORDER_LINE_WIDTH = 2;
     private static final int BORDER_LEFT = BORDER_LINE_WIDTH;
     private static final int BORDER_TOP = BORDER_LINE_WIDTH;
-    // 网格距离外边框的边距
+    /** 网格距离外边框的边距 */
     private static final int GRID_MARGIN = 20;
-    // 网格尺寸
+    /** 网格尺寸和位置 */
     private static final int GRID_WIDTH = GAP * (COL_NUM - 1);
     private static final int GRID_HEIGHT = GAP * (ROW_NUM / 2 - 1);
     private static final int GRID_X = BORDER_LEFT + GRID_MARGIN;
     private static final int GRID_Y = BORDER_TOP + GRID_MARGIN;
-    // 棋子状态矩阵
+    /** 棋子状态矩阵 */
     private AbstractChess[][] chessArray = new AbstractChess[ROW_NUM][COL_NUM];
-    // 棋子组件列表
-    private List<DrawableChess> drawableChesses = new ArrayList<>();
+    /** 棋子组件列表 */
+    private final List<DrawableChess> drawableChesses = new ArrayList<>();
 
     public DrawableChessboard() {
         // 设置背景
