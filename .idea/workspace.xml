@@ -4,51 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="849ce8f9-b4cd-4516-b750-77b7d05b7d52" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/.mvn/wrapper/MavenWrapperDownloader.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/.mvn/wrapper/maven-wrapper.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/mvnw" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/mvnw.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/src/main/java/io/github/hulang1024/chinesechessserver/ChineseChessServerApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/src/main/java/io/github/hulang1024/chinesechessserver/ChineseChessServerEndpoint.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/src/main/java/io/github/hulang1024/chinesechessserver/message/RetMessage.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/src/main/java/io/github/hulang1024/chinesechessserver/message/client/ClientMessage.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/src/main/resources/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/chinese-chess-server/src/test/java/io/github/hulang1024/chinesechessserver/ChineseChessServerApplicationTests.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/ChineseChessApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/client/ChineseChessClient.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/client/WebSocketMessageHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/AbstractScene.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/SceneContext.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/SceneManager.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/ChessPlayScene.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/DrawableChess.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/DrawableChessboard.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/ChessPosition.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/Chessboard.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/HostEnum.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/MoveRules.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/Player.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/RoundGame.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/chess/AbstractChess.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/chess/ChessC.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/chess/ChessG.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/chess/ChessGhost.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/chess/ChessK.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/chess/ChessM.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/chess/ChessN.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/chess/ChessR.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/chessplay/rule/chess/ChessS.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/home/HomeScene.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/home/menu/MainMenu.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/home/menu/MenuMainEventHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/io/github/hulang1024/chinesechess/scene/lobby/LobbyScene.java" beforeDir="false" />
-    </list>
+    <list default="true" id="849ce8f9-b4cd-4516-b750-77b7d05b7d52" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -106,6 +62,7 @@
       <workItem from="1603369899496" duration="730000" />
       <workItem from="1603370705423" duration="125000" />
       <workItem from="1603371221470" duration="4000" />
+      <workItem from="1603456802576" duration="8000" />
     </task>
     <servers />
   </component>
