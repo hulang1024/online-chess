@@ -1,6 +1,5 @@
 package io.github.hulang1024.chinesechess.scene.home.menu;
 
-import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 
 /**
@@ -12,19 +11,17 @@ public class MainMenu extends VBox {
     public MainMenu(MenuMainEventHandler eventHandler) {
         this.eventHandler = eventHandler;
 
-        Button p2Button = new Button("本地2人");
-        p2Button.setMinWidth(200);
+        MenuButton p2Button = new MenuButton("本地2人");
         p2Button.setOnMouseClicked(event -> {
             eventHandler.onP2();
         });
 
-        Button onlineButton = new Button("游戏大厅");
-        onlineButton.setMinWidth(200);
+        MenuButton onlineButton = new MenuButton("游戏大厅");
         onlineButton.setOnMouseClicked(event -> {
             eventHandler.onOnline();
         });
 
-        Button exitButton = new Button("退出");
+        MenuButton exitButton = new MenuButton("退出");
         exitButton.setMinWidth(200);
         exitButton.setOnMouseClicked(event -> {
             eventHandler.onExit();

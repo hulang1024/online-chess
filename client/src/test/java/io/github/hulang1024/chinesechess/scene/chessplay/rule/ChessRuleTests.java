@@ -1,6 +1,5 @@
 package io.github.hulang1024.chinesechess.scene.chessplay.rule;
 
-import io.github.hulang1024.chinesechess.scene.chessplay.DrawableChessboard;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.ChessGhost;
 import org.junit.Before;
 
@@ -8,7 +7,7 @@ import org.junit.Before;
  * @author Hu Lang
  */
 public class ChessRuleTests {
-    private Chessboard chessboard = new DrawableChessboard();
+    private Chessboard chessboard = null;
 
     @Before
     public void init() {

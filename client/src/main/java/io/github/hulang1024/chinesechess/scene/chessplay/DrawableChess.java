@@ -5,7 +5,6 @@ import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.HostEnum;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
-import javafx.scene.control.Control;
 import javafx.scene.effect.BlurType;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
@@ -30,10 +29,10 @@ public class DrawableChess extends Pane implements Chess {
     public DrawableChess(Chess chess) {
         this.chess = chess;
 
-        setMinSize(SIZE, SIZE);
-        setPrefSize(Control.USE_PREF_SIZE , Control.USE_PREF_SIZE);
+        setMaxSize(SIZE, SIZE);
 
         circle = new Circle(SIZE / 2f, chess instanceof ChessGhost ? null : CIRCLE_FILL_COLOR);
+
         DropShadow shadow = new DropShadow();
         shadow.setBlurType(BlurType.GAUSSIAN);
         shadow.setColor(Color.color(0.1, 0.1, 0.1, 0.2));
@@ -43,7 +42,6 @@ public class DrawableChess extends Pane implements Chess {
         circle.setEffect(shadow);
         getChildren().add(circle);
 
-        //TODO:文字居中
         text = new Text(-14, 10, getNameText());
         text.setFont(Font.font(SIZE / 1.8f));
         text.setFill(getFillColor());

@@ -6,7 +6,6 @@ import io.github.hulang1024.chinesechess.scene.chessplay.ChessPlayScene;
 import io.github.hulang1024.chinesechess.scene.home.menu.MainMenu;
 import io.github.hulang1024.chinesechess.scene.home.menu.MenuMainEventHandler;
 import io.github.hulang1024.chinesechess.scene.lobby.LobbyScene;
-import javafx.scene.control.Control;
 import javafx.scene.layout.BorderPane;
 
 /**
@@ -18,7 +17,8 @@ public class HomeScene extends AbstractScene {
         super(sceneContext);
 
         BorderPane pane = new BorderPane();
-        pane.setPrefSize(Control.USE_PREF_SIZE, Control.USE_PREF_SIZE);
+        pane.prefWidthProperty().bind(this.widthProperty());
+        pane.prefHeightProperty().bind(this.heightProperty());
 
         MainMenu mainMenu = new MainMenu(new MenuMainEventHandler() {
             @Override

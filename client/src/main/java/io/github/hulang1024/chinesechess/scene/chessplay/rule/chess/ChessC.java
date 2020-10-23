@@ -42,9 +42,9 @@ public class ChessC extends AbstractChess {
         }
 
         return game.getChessboard().isEmpty(destPos.row, destPos.col)
-            // 如果目标位置上有棋子，那么到目标位置之间必须没有棋子
+            // 如果目标位置上无棋子，那么到目标位置之间必须没有棋子
             ? chessCount == 0
-            // 否则，是准备吃子，则中间必选有且只有一个棋子
-            : chessCount == 1;
+            // 否则，是准备吃子，则中间必选有且只有一个棋子（为2是因为目标棋子被计入）
+            : chessCount == 2;
     }
 }

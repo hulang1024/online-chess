@@ -1,5 +1,6 @@
 package io.github.hulang1024.chinesechess.scene.chessplay;
 
+import io.github.hulang1024.chinesechess.scene.AbstractScene;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.Chess;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.Chessboard;
@@ -39,14 +40,15 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
     /** 棋子状态矩阵 */
     private Chess[][] chessArray = new Chess[ROW_NUM][COL_NUM];
 
-    public DrawableChessboard() {
+    public DrawableChessboard(AbstractScene scene) {
         // 设置背景
         setBackground(new Background(new BackgroundFill(Color.rgb(250, 250, 250), null ,null)));
 
         // 创建画板
         Canvas canvas = new Canvas(
             BORDER_LEFT + GRID_WIDTH + GRID_MARGIN * 2 + BORDER_LINE_WIDTH * 2,
-            BORDER_TOP + GRID_HEIGHT * 2 + GAP + GRID_MARGIN * 2 + BORDER_LINE_WIDTH * 2);
+            //BORDER_TOP + GRID_HEIGHT * 2 + GAP + GRID_MARGIN * 2 + BORDER_LINE_WIDTH * 2
+            scene.getPrefHeight());
         setMargin(canvas, new Insets(CANVAS_MARGIN, CANVAS_MARGIN, CANVAS_MARGIN, CANVAS_MARGIN));
 
         GraphicsContext ctx = canvas.getGraphicsContext2D();

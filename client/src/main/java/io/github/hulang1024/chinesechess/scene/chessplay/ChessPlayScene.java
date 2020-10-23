@@ -15,7 +15,7 @@ import java.util.function.BiConsumer;
  * @author Hu Lang
  */
 public class ChessPlayScene extends AbstractScene implements RoundGame {
-    private DrawableChessboard chessboard = new DrawableChessboard();
+    private DrawableChessboard chessboard = new DrawableChessboard(this);
     private HostEnum activeHost;
     private DrawableChess lastSelected;
     private Text ruleMessageText;
@@ -106,10 +106,8 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
             // 判断目标位置是否可走
             if (selected.canGoTo(target.pos(), this)) {
                 // 目标位置可走
-                ChessPosition oldSelectedPos = selected.pos();
                 chessboard.removeChess(target);
                 chessboard.moveChess(selected, target.pos());
-                target.setPos(oldSelectedPos);
                 chessboard.addChess(target);
                 turnHost();
             } else {
