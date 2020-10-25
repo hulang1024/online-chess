@@ -69,17 +69,13 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
         addChessGroup.accept(HostEnum.BLACK, new int[]{0, 2, 3});
         // 底部方
         addChessGroup.accept(HostEnum.RED, new int[]{9, 7, 6});
-
+        // 加空棋
         for (int row = 0; row < Chessboard.ROW_NUM; row++) {
             for (int col = 0; col < Chessboard.COL_NUM; col++) {
                 if (chessboard.isEmpty(row, col)) {
                     DrawableChess ghostChess = new DrawableChess(
                         new ChessGhost(new ChessPosition(row, col)));
-                    ghostChess.setOnMouseClicked(event -> {
-                        if (lastSelected != null) {
-                            onGoTo(lastSelected, ghostChess);
-                        }
-                    });
+                    setChessEventHandlers(ghostChess);
                     chessboard.addChess(ghostChess);
                 }
             }
@@ -121,7 +117,9 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
                     // 目标位置棋子可吃
                     chessboard.removeChess(target);
                     chessboard.moveChess(selected, target.pos());
-                    chessboard.addChess(new DrawableChess(new ChessGhost(selected.pos().copy())));
+                    DrawableChess ghostChess = new DrawableChess(new ChessGhost(selected.pos().copy()));
+                    setChessEventHandlers(ghostChess);
+                    chessboard.addChess(ghostChess);
                     turnHost();
                 } else {
                     ruleMessageText.setFill(Color.RED);
@@ -138,6 +136,14 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
     }
 
     private void setChessEventHandlers(DrawableChess eventDrawableChess) {
+        if (eventDrawableChess.getChess() instanceof ChessGhost) {
+            eventDrawableChess.setOnMouseClicked(event -> {
+                if (lastSelected != null) {
+                    onGoTo(lastSelected, eventDrawableChess);
+                }
+            });
+            return;
+        }
         eventDrawableChess.setOnMouseClicked(event -> {
             if (lastSelected == null) {
                 // 如果当前没有任何棋子选中，现在是选择要走的棋子，只能先选中持棋方棋子
