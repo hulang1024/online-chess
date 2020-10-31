@@ -22,7 +22,11 @@ public class AbstractScene extends FlowPane {
         setBackground(new Background(new BackgroundFill(Color.GRAY, null ,null)));
     }
 
-    protected void pushScene(AbstractScene scene) {
-        sceneManager.pushScene(scene);
+    protected void pushScene(SceneBuilder sceneBuilder) {
+        sceneManager.pushScene(sceneBuilder);
+    }
+
+    protected void popScene() {
+        sceneManager.popScene();
     }
 }

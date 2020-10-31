@@ -4,6 +4,7 @@ import io.github.hulang1024.chinesechess.scene.AbstractScene;
 import io.github.hulang1024.chinesechess.scene.SceneContext;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.*;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
+import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
@@ -28,6 +29,12 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
         ruleMessageText = new Text("无提示");
         ruleMessageText.setFill(Color.BLACK);
         getChildren().add(ruleMessageText);
+
+        Button backButton = new Button("返回");
+        backButton.setOnMouseClicked((event) -> {
+            popScene();
+        });
+        getChildren().add(backButton);
 
         startRound();
     }

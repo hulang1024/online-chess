@@ -16,12 +16,20 @@ public class ChineseChessApplication extends Application {
         // 设置窗口尺寸
         primaryStage.setWidth(800);
         primaryStage.setHeight(630);
+        primaryStage.setResizable(false);
+        primaryStage.setOnCloseRequest((event) -> {
+            try {
+                stop();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
         // 设置标题
         primaryStage.setTitle("中国象棋");
         // 创建场景上下文
         SceneContext sceneContext = new SceneContext(primaryStage);
         // 进入home场景
-        SceneManager.of(sceneContext).pushScene(new HomeScene(sceneContext));
+        SceneManager.of(sceneContext).pushScene((context) -> new HomeScene(context));
         // 显示窗口
         primaryStage.show();
     }

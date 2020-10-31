@@ -6,11 +6,8 @@ import javafx.scene.layout.VBox;
  * @author Hu Lang
  */
 public class MainMenu extends VBox {
-    private MenuMainEventHandler eventHandler;
 
     public MainMenu(MenuMainEventHandler eventHandler) {
-        this.eventHandler = eventHandler;
-
         MenuButton p2Button = new MenuButton("本地2人");
         p2Button.setOnMouseClicked(event -> {
             eventHandler.onP2();
@@ -27,8 +24,6 @@ public class MainMenu extends VBox {
             eventHandler.onExit();
         });
 
-        getChildren().add(onlineButton);
-        getChildren().add(p2Button);
-        getChildren().add(exitButton);
+        getChildren().addAll(onlineButton, p2Button, exitButton);
     }
 }

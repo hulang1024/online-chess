@@ -1,8 +1,11 @@
 package io.github.hulang1024.chinesechessserver;
 
 
+import io.github.hulang1024.chinesechessserver.message.ClientMessageDispatcher;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.timeout.IdleStateEvent;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.util.MultiValueMap;
 import org.yeauty.annotation.*;
 import org.yeauty.pojo.Session;
@@ -13,46 +16,34 @@ import java.util.Map;
 /**
  * @author Hu Lang
  */
-@ServerEndpoint(path = "/ws/{arg}", port = "7777")
+@ServerEndpoint(path = "/ws/{arg}", port = "${websocket.port}")
+@Slf4j
 public class ChineseChessServerEndpoint {
     @BeforeHandshake
     public void handshake(Session session, HttpHeaders headers, @RequestParam String req, @RequestParam MultiValueMap reqMap, @PathVariable String arg, @PathVariable Map pathMap){
         session.setSubprotocols("stomp");
-        /*
-        if (!req.equals("ok")){
-            System.out.println("Authentication failed!");
-            session.close();
-        }*/
     }
 
     @OnOpen
     public void onOpen(Session session, HttpHeaders headers, @RequestParam String req, @RequestParam MultiValueMap reqMap, @PathVariable String arg, @PathVariable Map pathMap){
-        System.out.println("new connection");
-        System.out.println(req);
+        log.info("一个连接打开");
+
     }
 
     @OnClose
     public void onClose(Session session) throws IOException {
-        System.out.println("one connection closed");
+        log.info("一个连接关闭");
     }
 
     @OnError
-    public void onError(Session session, Throwable throwable) {
-        throwable.printStackTrace();
+    public void onError(Session session, Throwable e) {
+        log.info("错误: {}", e);
     }
 
     @OnMessage
     public void onMessage(Session session, String message) {
-        System.out.println(message);
-        session.sendText("Hello Netty!");
-    }
-
-    @OnBinary
-    public void onBinary(Session session, byte[] bytes) {
-        for (byte b : bytes) {
-            System.out.println(b);
-        }
-        session.sendBinary(bytes);
+        log.info("onMessage: {}", message);
+        ClientMessageDispatcher.dispatch(message, session);
     }
 
     @OnEvent

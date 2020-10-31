@@ -1,5 +1,6 @@
 package io.github.hulang1024.chinesechess.scene.home;
 
+import io.github.hulang1024.chinesechess.client.ChineseChessClient;
 import io.github.hulang1024.chinesechess.scene.AbstractScene;
 import io.github.hulang1024.chinesechess.scene.SceneContext;
 import io.github.hulang1024.chinesechess.scene.chessplay.ChessPlayScene;
@@ -23,12 +24,12 @@ public class HomeScene extends AbstractScene {
         MainMenu mainMenu = new MainMenu(new MenuMainEventHandler() {
             @Override
             public void onP2() {
-                pushScene(new ChessPlayScene(sceneContext));
+                pushScene((context) -> new ChessPlayScene(context));
             }
 
             @Override
             public void onOnline() {
-                pushScene(new LobbyScene(sceneContext));
+                pushScene((context) -> new LobbyScene(context));
             }
 
             @Override
@@ -38,5 +39,7 @@ public class HomeScene extends AbstractScene {
         });
         pane.setCenter(mainMenu);
         getChildren().add(pane);
+
+        ChineseChessClient.getInstance();
     }
 }

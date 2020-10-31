@@ -1,9 +1,5 @@
 package io.github.hulang1024.chinesechess.scene.chessplay.rule;
 
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.ChessPosition;
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.HostEnum;
-import io.github.hulang1024.chinesechess.scene.chessplay.rule.RoundGame;
-
 /**
  * 棋子
  * @author Hu Lang
