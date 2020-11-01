@@ -116,7 +116,7 @@ public class DrawableChessboard extends BorderPane implements Chessboard {
 
     @Override
     public void removeChess(Chess chess) {
-        getChildren().remove(chess);
+        getChildren().remove((DrawableChess)chess);
         chessArray[chess.pos().row][chess.pos().col] = null;
     }
 

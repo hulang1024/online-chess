@@ -31,7 +31,8 @@ public class LobbyRoom {
      * 房间玩家信息
      */
     @Data
-    public class LobbyRoomPlayerInfo {
+    public static class LobbyRoomPlayerInfo {
+        private long id;
         /**
          * 玩家昵称
          */
@@ -40,6 +41,6 @@ public class LobbyRoom {
         /**
          * 准备状态：0=未准备，1=已准备
          */
-        private int readyState;
+        private boolean readyed;
     }
 }

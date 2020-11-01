@@ -8,25 +8,31 @@ import javafx.scene.paint.Color;
 /**
  * @author Hu Lang
  */
-public class AbstractScene extends FlowPane {
-    private SceneContext sceneContext;
+public abstract class AbstractScene extends FlowPane {
+    private SceneContext context;
     private SceneManager sceneManager;
 
-    public AbstractScene(SceneContext sceneContext) {
-        this.sceneContext = sceneContext;
-        this.sceneManager = SceneManager.of(sceneContext);
+    public AbstractScene(SceneContext context) {
+        this.context = context;
+        this.sceneManager = SceneManager.of(context);
 
-        prefWidthProperty().bind(this.sceneContext.getPrimaryStage().widthProperty());
-        prefHeightProperty().bind(this.sceneContext.getPrimaryStage().heightProperty());
+        prefWidthProperty().bind(this.context.getPrimaryStage().widthProperty());
+        prefHeightProperty().bind(this.context.getPrimaryStage().heightProperty());
 
         setBackground(new Background(new BackgroundFill(Color.GRAY, null ,null)));
     }
 
+    public void onSceneExit() {
+        
+    }
+
     protected void pushScene(SceneBuilder sceneBuilder) {
+        onSceneExit();
         sceneManager.pushScene(sceneBuilder);
     }
 
     protected void popScene() {
+        onSceneExit();
         sceneManager.popScene();
     }
 }

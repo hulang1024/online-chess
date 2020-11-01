@@ -32,7 +32,7 @@ public class ChineseChessClient {
 
                 @Override
                 public void onMessage(String message) {
-                    log.info("onMessage: {}", message);
+                    log.info("收到消息: {}", message);
                     ServerMessageDispatcher.dispatch(message);
                 }
 
@@ -67,8 +67,16 @@ public class ChineseChessClient {
         webSocketClient.send(messageJson);
     }
 
+    public <T> void addMessageOnceHandler(Class<T> type, MessageHandler<T> handler) {
+        ServerMessageDispatcher.addMessageOnceHandler(type, handler);
+    }
+
     public <T> void addMessageHandler(Class<T> type, MessageHandler<T> handler) {
         ServerMessageDispatcher.addMessageHandler(type, handler);
+    }
+
+    public <T> void removeMessageHandler(Class<T> type, MessageHandler<T> handler) {
+        ServerMessageDispatcher.removeMessageHandler(type, handler);
     }
 
     public static ChineseChessClient getInstance() {

@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ServerMessageDispatcher {
     private static Map<Class<?>, List<MessageHandler<?>>> messageHandlerMap = new HashMap<>();
+    private static Map<MessageHandler<?>, Boolean> onceHandlerMap = new HashMap<>();
     private static Gson gson = new Gson();
     
     @SuppressWarnings("all")
@@ -35,10 +36,21 @@ public class ServerMessageDispatcher {
         if (handlers != null) {
             ServerMessage message = (ServerMessage)gson.fromJson(jsonObject, typeClass);
 
+            List<MessageHandler<?>> handlersToRemove = new ArrayList<>();
             handlers.forEach((MessageHandler handler) -> {
                 handler.handle(message);
+                if (onceHandlerMap.containsKey(handler)) {
+                    onceHandlerMap.remove(handler);
+                    handlersToRemove.add(handler);
+                }
             });
+            handlers.removeAll(handlersToRemove);
         }
+    }
+
+    public static <T> void addMessageOnceHandler(Class<T> type, MessageHandler<T> handler) {
+        addMessageHandler(type, handler);
+        onceHandlerMap.put(handler, true);
     }
 
     public static <T> void addMessageHandler(Class<T> type, MessageHandler<T> handler) {
@@ -48,5 +60,12 @@ public class ServerMessageDispatcher {
             messageHandlerMap.put(type, handlers);
         }
         handlers.add(handler);
+    }
+
+    public static <T> void removeMessageHandler(Class<T> type, MessageHandler<T> handler) {
+        List<MessageHandler<?>> handlers = messageHandlerMap.get(type);
+        if (handlers != null) {
+            handlers.remove(handler);
+        }
     }
 }

@@ -6,11 +6,19 @@ package io.github.hulang1024.chinesechess.scene.chessplay.rule;
  */
 public enum HostEnum {
     /**
-     * 后手
-     */
-    BLACK,
-    /**
      * 先手
      */
-    RED
+    RED,
+    /**
+     * 后手
+     */
+    BLACK;
+
+    public static HostEnum fromCode(int code) {
+        return code == 1 ? RED : code == 2 ? BLACK : null;
+    }
+
+    public static int toCode(HostEnum host) {
+        return host == BLACK ? 2 : 1;
+    }
 }

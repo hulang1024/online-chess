@@ -3,7 +3,7 @@ package io.github.hulang1024.chinesechess.scene.home;
 import io.github.hulang1024.chinesechess.client.ChineseChessClient;
 import io.github.hulang1024.chinesechess.scene.AbstractScene;
 import io.github.hulang1024.chinesechess.scene.SceneContext;
-import io.github.hulang1024.chinesechess.scene.chessplay.ChessPlayScene;
+import io.github.hulang1024.chinesechess.scene.chessplay.OfflineChessPlayScene;
 import io.github.hulang1024.chinesechess.scene.home.menu.MainMenu;
 import io.github.hulang1024.chinesechess.scene.home.menu.MenuMainEventHandler;
 import io.github.hulang1024.chinesechess.scene.lobby.LobbyScene;
@@ -24,7 +24,7 @@ public class HomeScene extends AbstractScene {
         MainMenu mainMenu = new MainMenu(new MenuMainEventHandler() {
             @Override
             public void onP2() {
-                pushScene((context) -> new ChessPlayScene(context));
+                pushScene((context) -> new OfflineChessPlayScene(context));
             }
 
             @Override

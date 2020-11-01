@@ -1,9 +1,15 @@
 package io.github.hulang1024.chinesechess.scene.chessplay;
 
+import io.github.hulang1024.chinesechess.client.ChineseChessClient;
+import io.github.hulang1024.chinesechess.client.message.client.chessplay.ChessPlayReady;
+import io.github.hulang1024.chinesechess.client.message.client.room.RoomLeave;
+import io.github.hulang1024.chinesechess.client.message.server.chessplay.ChessPlayReadyResult;
+import io.github.hulang1024.chinesechess.client.message.server.chessplay.ChessPlayRoundStart;
 import io.github.hulang1024.chinesechess.scene.AbstractScene;
 import io.github.hulang1024.chinesechess.scene.SceneContext;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.*;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
+import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -15,14 +21,14 @@ import java.util.function.BiConsumer;
  * 游戏下棋主场景
  * @author Hu Lang
  */
-public class ChessPlayScene extends AbstractScene implements RoundGame {
+public class OfflineChessPlayScene extends AbstractScene implements RoundGame {
     private DrawableChessboard chessboard = new DrawableChessboard(this);
     private HostEnum activeHost;
     private DrawableChess lastSelected;
     private Text ruleMessageText;
 
-    public ChessPlayScene(SceneContext sceneContext) {
-        super(sceneContext);
+    public OfflineChessPlayScene(SceneContext context) {
+        super(context);
 
         getChildren().add(chessboard);
 
@@ -30,7 +36,7 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
         ruleMessageText.setFill(Color.BLACK);
         getChildren().add(ruleMessageText);
 
-        Button backButton = new Button("返回");
+        Button backButton = new Button("离开");
         backButton.setOnMouseClicked((event) -> {
             popScene();
         });
@@ -92,6 +98,8 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
     private void turnHost() {
         activeHost = activeHost == HostEnum.BLACK ? HostEnum.RED : HostEnum.BLACK;
         ruleMessageText.setFill(Color.BLACK);
+        ruleMessageText.setText("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
+
         // 将当前持棋方棋子启用，非持棋方的棋子全部禁用
         chessboard.getChessList().forEach(chess -> {
             if (((DrawableChess)chess).getChess() instanceof ChessGhost) {
@@ -99,7 +107,6 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
             }
             ((DrawableChess)chess).setDisable(chess.host() != activeHost);
         });
-        ruleMessageText.setText("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
     }
 
     private void onGoTo(DrawableChess selected, DrawableChess target) {
@@ -109,8 +116,10 @@ public class ChessPlayScene extends AbstractScene implements RoundGame {
             // 判断目标位置是否可走
             if (selected.canGoTo(target.pos(), this)) {
                 // 目标位置可走
+                ChessPosition sourcePos = selected.pos().copy();
                 chessboard.removeChess(target);
                 chessboard.moveChess(selected, target.pos());
+                target.setPos(sourcePos);
                 chessboard.addChess(target);
                 turnHost();
             } else {

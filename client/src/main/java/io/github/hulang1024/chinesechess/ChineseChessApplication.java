@@ -4,6 +4,7 @@ import io.github.hulang1024.chinesechess.scene.SceneContext;
 import io.github.hulang1024.chinesechess.scene.SceneManager;
 import io.github.hulang1024.chinesechess.scene.home.HomeScene;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 
 /**
@@ -19,7 +20,8 @@ public class ChineseChessApplication extends Application {
         primaryStage.setResizable(false);
         primaryStage.setOnCloseRequest((event) -> {
             try {
-                stop();
+                Platform.exit();
+                System.exit(0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
