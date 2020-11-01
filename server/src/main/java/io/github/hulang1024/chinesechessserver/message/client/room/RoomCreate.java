@@ -1,7 +1,9 @@
 package io.github.hulang1024.chinesechessserver.message.client.room;
 
 import io.github.hulang1024.chinesechessserver.message.ClientMessage;
+import lombok.Data;
 
-public class Leave extends ClientMessage {
-
+@Data
+public class RoomCreate extends ClientMessage {
+    private String roomName;
 }

@@ -2,6 +2,7 @@ package io.github.hulang1024.chinesechessserver.message.server.lobby;
 
 import java.util.List;
 
+import io.github.hulang1024.chinesechessserver.message.server.RoomPlayerInfo;
 import lombok.Data;
 
 /**
@@ -25,21 +26,5 @@ public class LobbyRoom {
     /**
      * 房间玩家信息
      */
-    private List<LobbyRoomPlayerInfo> players;
-
-    /**
-     * 房间玩家信息
-     */
-    @Data
-    public class LobbyRoomPlayerInfo {
-        /**
-         * 玩家昵称
-         */
-        private String nickname;
-
-        /**
-         * 准备状态：0=未准备，1=已准备
-         */
-        private int readyState;
-    }
+    private List<RoomPlayerInfo> players;
 }

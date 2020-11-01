@@ -33,6 +33,8 @@ public class ChineseChessServerEndpoint {
     @OnClose
     public void onClose(Session session) throws IOException {
         log.info("一个连接关闭");
+
+        ClientEventManager.emitSessionCloseEvent(session);
     }
 
     @OnError
@@ -42,7 +44,7 @@ public class ChineseChessServerEndpoint {
 
     @OnMessage
     public void onMessage(Session session, String message) {
-        log.info("onMessage: {}", message);
+        log.info("收到消息: {}", message);
         ClientMessageDispatcher.dispatch(message, session);
     }
 
