@@ -211,6 +211,14 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
                 PositionUtils.remoteRowToLocalRow(isOtherHost, message.getTargetChessRow()),
                 PositionUtils.remoteColToLocalCol(isOtherHost, message.getTargetChessCol()));
             Platform.runLater(() -> {
+                this.context.getPrimaryStage().requestFocus();
+                ChessPosition sourcePos = source.pos().copy();
+                chessboard.removeChess(target);
+                chessboard.moveChess(source, target.pos());
+                DrawableChess ghostChess = new DrawableChess(new ChessGhost(sourcePos));
+                setChessEventHandlers(ghostChess);
+                chessboard.addChess(ghostChess);
+
                 // 清除高亮对方移动了哪个棋子
                 chessboard.getChessList().forEach(chess -> {
                     if (((DrawableChess)chess).isSelected()) {
@@ -220,16 +228,8 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
                 // 高亮对方移动了哪个棋子
                 if (isOtherHost) {
                     source.setSelected(true);
-                    target.setSelected(true);
+                    ghostChess.setSelected(true);
                 }
-
-                this.context.getPrimaryStage().requestFocus();
-                ChessPosition sourcePos = source.pos().copy();
-                chessboard.removeChess(target);
-                chessboard.moveChess(source, target.pos());
-                DrawableChess ghostChess = new DrawableChess(new ChessGhost(sourcePos));
-                setChessEventHandlers(ghostChess);
-                chessboard.addChess(ghostChess);
                 turnHost();
             });
         });

@@ -52,7 +52,7 @@ public class DrawableChess extends Pane implements Chess {
             if (selected) return;
             if (chess instanceof ChessGhost) {
                 circle.setFill(CIRCLE_FILL_COLOR);
-                setOpacity(0.2);
+                setOpacity(0.3);
             } else {
                 setOpacity(0.6);
             }
@@ -78,7 +78,7 @@ public class DrawableChess extends Pane implements Chess {
         if (chess instanceof ChessGhost) {
             if (selected) {
                 circle.setFill(CIRCLE_FILL_COLOR);
-                setOpacity(0.2);
+                setOpacity(0.3);
             } else {
                 circle.setFill(null);
                 setOpacity(1.0);

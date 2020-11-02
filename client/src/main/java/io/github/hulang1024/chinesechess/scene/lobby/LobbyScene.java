@@ -23,11 +23,15 @@ import java.util.Optional;
 import io.github.hulang1024.chinesechess.ChineseChessClient;
 import io.github.hulang1024.chinesechess.message.server.room.RoomCreateResult;
 import io.github.hulang1024.chinesechess.message.server.lobby.LobbyRoom;
+import io.github.hulang1024.chinesechess.message.server.lobby.LobbyRoomRemove;
+import io.github.hulang1024.chinesechess.message.server.lobby.LobbyRoomUpdate;
 import io.github.hulang1024.chinesechess.message.server.lobby.QuickMatchResult;
 import io.github.hulang1024.chinesechess.message.server.lobby.SearchRoomsResult;
 import io.github.hulang1024.chinesechess.message.server.player.PlayerNicknameSetResult;
 import io.github.hulang1024.chinesechess.message.server.room.RoomJoinResult;
 import io.github.hulang1024.chinesechess.message.MessageHandler;
+import io.github.hulang1024.chinesechess.message.client.lobby.LobbyEnter;
+import io.github.hulang1024.chinesechess.message.client.lobby.LobbyExit;
 import io.github.hulang1024.chinesechess.message.client.lobby.QuickMatch;
 import io.github.hulang1024.chinesechess.message.client.lobby.SearchRooms;
 import io.github.hulang1024.chinesechess.message.client.player.PlayerNicknameSet;
@@ -40,8 +44,13 @@ import io.github.hulang1024.chinesechess.message.client.room.RoomJoin;
 public class LobbyScene extends AbstractScene {
     private ChineseChessClient client = ChineseChessClient.getInstance();
     private MessageHandler<SearchRoomsResult> searchRoomsMessageHandler;
+    private MessageHandler<RoomCreateResult> roomCreateMessageHandler;
     private MessageHandler<RoomJoinResult> roomJoinMessageHandler;
-    FlowPane roomContainer = new FlowPane();
+    private MessageHandler<LobbyRoomUpdate> lobbyRoomUpdateMessageHandler;
+    private MessageHandler<LobbyRoomRemove> lobbyRoomRemoveMessageHandler;
+
+    private FlowPane roomContainer = new FlowPane();
+    private ScrollPane roomScrollPane = new ScrollPane();
 
     public LobbyScene(SceneContext sceneContext) {
         super(sceneContext);
@@ -49,18 +58,11 @@ public class LobbyScene extends AbstractScene {
         client.send(new SearchRooms());
         
         roomContainer.setPadding(new Insets(40, 40, 40, 40));
+        roomContainer.minWidthProperty().bind(this.widthProperty());
 
         Button createButton = new Button("创建房间");
         createButton.setMinSize(100, 30);
         createButton.setOnMouseClicked((event) -> {
-            client.addMessageOnceHandler(RoomCreateResult.class, (message) -> {
-                if (message.getCode() != 0) {
-                    return;
-                }
-                Platform.runLater(() -> {
-                    addRoom(message.getRoom());
-                });
-            });
             client.send(new RoomCreate());
         });
 
@@ -123,7 +125,6 @@ public class LobbyScene extends AbstractScene {
         lobbyHead.setAlignment(Pos.CENTER);
         lobbyHead.getChildren().addAll(backButton, createButton, quickMatchButton, nicknameSetButton);
 
-        ScrollPane roomScrollPane = new ScrollPane();
         roomScrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
         roomScrollPane.setContent(roomContainer);
 
@@ -135,12 +136,15 @@ public class LobbyScene extends AbstractScene {
 
         getChildren().add(child);
 
+        client.send(new LobbyEnter());
+
         client.addMessageHandler(SearchRoomsResult.class, searchRoomsMessageHandler = (message) -> {
             Platform.runLater(() -> {
                 roomContainer.getChildren().clear();
                 if (message.getRooms().isEmpty()) {
-                    roomContainer.getChildren().add(new Text("未找到房间"));
+                    showNoRooms();
                 } else {
+                    roomScrollPane.setContent(roomContainer);
                     message.getRooms().forEach(this::addRoom);
                 }
             });
@@ -174,15 +178,54 @@ public class LobbyScene extends AbstractScene {
                 pushScene((context) -> new OnlineChessPlayScene(context, message.getRoom()));
             });
         });
+
+        client.addMessageHandler(RoomCreateResult.class, roomCreateMessageHandler = (message) -> {
+            if (message.getCode() != 0) {
+                return;
+            }
+            Platform.runLater(() -> {
+                addRoom(message.getRoom());
+            });
+        });
+
+        client.addMessageHandler(LobbyRoomUpdate.class, lobbyRoomUpdateMessageHandler = (message) -> {
+            if (message.getCode() != 0) {
+                return;
+            }
+            Platform.runLater(() -> {
+                DrawableLobbyRoom drawableRoom = (DrawableLobbyRoom)roomContainer.getChildren()
+                    .filtered(c -> ((DrawableLobbyRoom)c).getRoom().getId() == message.getRoom().getId())
+                    .get(0);
+                drawableRoom.update(message.getRoom());
+            });
+        });
+
+        client.addMessageHandler(LobbyRoomRemove.class, lobbyRoomRemoveMessageHandler = (message) -> {
+            if (message.getCode() != 0) {
+                return;
+            }
+            Platform.runLater(() -> {
+                roomContainer.getChildren()
+                    .removeIf(c -> ((DrawableLobbyRoom)c).getRoom().getId() == message.getRoomId());
+                if (roomContainer.getChildren().isEmpty()) {
+                    showNoRooms();
+                }
+            });
+        });
     }
 
     @Override
     public void onSceneExit() {
         client.removeMessageHandler(SearchRoomsResult.class, searchRoomsMessageHandler);
+        client.removeMessageHandler(RoomCreateResult.class, roomCreateMessageHandler);
         client.removeMessageHandler(RoomJoinResult.class, roomJoinMessageHandler);
+        client.removeMessageHandler(LobbyRoomUpdate.class, lobbyRoomUpdateMessageHandler);
+        client.removeMessageHandler(LobbyRoomRemove.class, lobbyRoomRemoveMessageHandler);
+
+        client.send(new LobbyExit());
     }
 
-    public void addRoom(LobbyRoom room) {
+    private void addRoom(LobbyRoom room) {
         DrawableLobbyRoom drawableRoom = new DrawableLobbyRoom(
             room,
             (event) -> {
@@ -190,6 +233,11 @@ public class LobbyScene extends AbstractScene {
                 roomJoin.setRoomId(room.getId());
                 client.send(roomJoin);
             });
-        this.roomContainer.getChildren().add(drawableRoom);
+        roomScrollPane.setContent(roomContainer);
+        roomContainer.getChildren().add(drawableRoom);
+    }
+
+    private void showNoRooms() {
+        roomScrollPane.setContent(new Text("没有房间"));
     }
 }
