@@ -24,7 +24,7 @@ public class ChineseChessClient {
 
     private ChineseChessClient() {
         try {
-            webSocketClient = new WebSocketClient(new URI("ws://service.loveonline.net.cn:9097/ws/xxx"), new Draft_6455()) {
+            webSocketClient = new WebSocketClient(new URI("ws://127.0.0.1:9097"), new Draft_6455()) {
                 @Override
                 public void onOpen(ServerHandshake serverHandshake) {
                     log.info("连接打开");
@@ -58,6 +58,7 @@ public class ChineseChessClient {
      */
     public void send(ClientMessage message) {
         if (!webSocketClient.isOpen()) {
+            webSocketClient.connect();
             log.info("连接未打开");
             return;
         }

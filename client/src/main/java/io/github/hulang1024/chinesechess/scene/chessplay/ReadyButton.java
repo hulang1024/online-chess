@@ -1,14 +1,14 @@
 package io.github.hulang1024.chinesechess.scene.chessplay;
 
 import javafx.scene.control.Button;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.paint.Color;
 
 public class ReadyButton extends Button {
     private boolean readyed;
 
     public ReadyButton(boolean readyed) {
+        setMinWidth(80);
+        setMinHeight(30);
         this.readyed = readyed;
         update();
     }
@@ -19,7 +19,7 @@ public class ReadyButton extends Button {
     }
 
     private void update() {
-        setBackground(new Background(new BackgroundFill(readyed ? Color.RED : Color.GREENYELLOW, null, null)));
-        setText(readyed ? "不准备" : "准备");
+        setTextFill(readyed ? Color.RED : Color.GREENYELLOW);
+        setText(readyed ? "取消准备" : "准备");
     }
 }

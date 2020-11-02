@@ -8,17 +8,27 @@ public enum HostEnum {
     /**
      * 先手
      */
-    RED,
+    RED(1),
     /**
      * 后手
      */
-    BLACK;
+    BLACK(2);
+
+    private int code;
+
+    HostEnum(int code) {
+        this.code = code;
+    }
+
+    public int code() {
+        return code;
+    }
+
+    public HostEnum reverse() {
+        return this == BLACK ? RED : BLACK;
+    }
 
     public static HostEnum fromCode(int code) {
         return code == 1 ? RED : code == 2 ? BLACK : null;
-    }
-
-    public static int toCode(HostEnum host) {
-        return host == BLACK ? 2 : 1;
     }
 }

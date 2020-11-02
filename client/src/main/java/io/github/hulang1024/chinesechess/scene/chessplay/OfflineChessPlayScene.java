@@ -1,15 +1,9 @@
 package io.github.hulang1024.chinesechess.scene.chessplay;
 
-import io.github.hulang1024.chinesechess.client.ChineseChessClient;
-import io.github.hulang1024.chinesechess.client.message.client.chessplay.ChessPlayReady;
-import io.github.hulang1024.chinesechess.client.message.client.room.RoomLeave;
-import io.github.hulang1024.chinesechess.client.message.server.chessplay.ChessPlayReadyResult;
-import io.github.hulang1024.chinesechess.client.message.server.chessplay.ChessPlayRoundStart;
 import io.github.hulang1024.chinesechess.scene.AbstractScene;
 import io.github.hulang1024.chinesechess.scene.SceneContext;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.*;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
-import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -96,7 +90,7 @@ public class OfflineChessPlayScene extends AbstractScene implements RoundGame {
     }
 
     private void turnHost() {
-        activeHost = activeHost == HostEnum.BLACK ? HostEnum.RED : HostEnum.BLACK;
+        activeHost = activeHost.reverse();
         ruleMessageText.setFill(Color.BLACK);
         ruleMessageText.setText("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
 
@@ -131,9 +125,10 @@ public class OfflineChessPlayScene extends AbstractScene implements RoundGame {
                 // 目标位置上有敌方棋子
                 if (selected.canGoTo(target.pos(), this)) {
                     // 目标位置棋子可吃
+                    ChessPosition sourcePos = selected.pos().copy();
                     chessboard.removeChess(target);
                     chessboard.moveChess(selected, target.pos());
-                    DrawableChess ghostChess = new DrawableChess(new ChessGhost(selected.pos().copy()));
+                    DrawableChess ghostChess = new DrawableChess(new ChessGhost(sourcePos));
                     setChessEventHandlers(ghostChess);
                     chessboard.addChess(ghostChess);
                     turnHost();

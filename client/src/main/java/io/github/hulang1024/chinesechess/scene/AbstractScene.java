@@ -9,7 +9,7 @@ import javafx.scene.paint.Color;
  * @author Hu Lang
  */
 public abstract class AbstractScene extends FlowPane {
-    private SceneContext context;
+    protected SceneContext context;
     private SceneManager sceneManager;
 
     public AbstractScene(SceneContext context) {

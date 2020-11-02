@@ -20,10 +20,10 @@ import io.github.hulang1024.chinesechess.scene.SessionManager;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.*;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 
 import java.util.Arrays;
 import java.util.function.BiConsumer;
@@ -46,7 +46,6 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
     private HostEnum host;
     private HostEnum activeHost;
     private DrawableChess lastSelected;
-    private Text ruleMessageText;
 
     public OnlineChessPlayScene(SceneContext context, LobbyRoom room) {
         super(context);
@@ -71,27 +70,30 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
         thisPlayerInfoContainer.load(thisPlayer);
         vbox.getChildren().add(thisPlayerInfoContainer);
 
+        HBox roomOpContainer = new HBox();
+        roomOpContainer.setPadding(new Insets(0, 0, 0, 16));
+        vbox.getChildren().add(roomOpContainer);
+
         ReadyButton readyButton = new ReadyButton(false);
         readyButton.setOnMouseClicked((event) -> {
             client.send(new ChessPlayReady());
         });
-        vbox.getChildren().add(readyButton);
+        roomOpContainer.getChildren().add(readyButton);
 
         Button backButton = new Button("离开");
+        backButton.setMinWidth(80);
+        backButton.setMinHeight(30);
         backButton.setOnMouseClicked((event) -> {
             client.send(new RoomLeave());
         });
-        vbox.getChildren().add(backButton);
-
-        ruleMessageText = new Text("无提示");
-        ruleMessageText.setFill(Color.BLACK);
-        vbox.getChildren().add(ruleMessageText);
+        roomOpContainer.getChildren().add(backButton);
 
         client.addMessageHandler(RoomJoinResult.class, roomJoinMessageHandler = (message) -> {
             if (message.getCode() != 0) {
                 return;
             }
             Platform.runLater(() -> {
+                this.context.getPrimaryStage().requestFocus();
                 otherPlayerInfoContainer.load(message.getPlayer());
             });
         });
@@ -136,8 +138,10 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
             }
 
             Platform.runLater(() -> {
-                readyButton.setDisable(true);
-                thisPlayerInfoContainer.setHost(HostEnum.fromCode(message.getHost()));
+                readyButton.setVisible(false);
+                HostEnum thisHost = HostEnum.fromCode(message.getHost());
+                thisPlayerInfoContainer.setHost(thisHost);
+                otherPlayerInfoContainer.setHost(thisHost.reverse());
                 startRound(message);
             });
         });
@@ -151,12 +155,13 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
         client.addMessageHandler(ChessMoveResult.class, chessMoveMessageHandler = (message) -> {
             boolean isOtherHost = HostEnum.fromCode(message.getHost()) != host;
             Chess source = chessboard.chessAt(
-                PositionUtils.convertToLocalRow(isOtherHost, message.getSourceChessRow()),
-                message.getSourceChessCol());
+                PositionUtils.remoteRowToLocalRow(isOtherHost, message.getSourceChessRow()),
+                PositionUtils.remoteColToLocalCol(isOtherHost, message.getSourceChessCol()));
             Chess target = chessboard.chessAt(
-                PositionUtils.convertToLocalRow(isOtherHost, message.getTargetChessRow()),
-                message.getTargetChessCol());
+                PositionUtils.remoteRowToLocalRow(isOtherHost, message.getTargetChessRow()),
+                PositionUtils.remoteColToLocalCol(isOtherHost, message.getTargetChessCol()));
             Platform.runLater(() -> {
+                this.context.getPrimaryStage().requestFocus();
                 ChessPosition sourcePos = source.pos().copy();
                 chessboard.removeChess(target);
                 chessboard.moveChess(source, target.pos());
@@ -169,15 +174,17 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
         client.addMessageHandler(ChessEatResult.class, chessEatMessageHandler = (message) -> {
             boolean isOtherHost = HostEnum.fromCode(message.getHost()) != host;
             Chess source = chessboard.chessAt(
-                PositionUtils.convertToLocalRow(isOtherHost, message.getSourceChessRow()),
-                message.getSourceChessCol());
+                PositionUtils.remoteRowToLocalRow(isOtherHost, message.getSourceChessRow()),
+                PositionUtils.remoteColToLocalCol(isOtherHost, message.getSourceChessCol()));
             Chess target = chessboard.chessAt(
-                PositionUtils.convertToLocalRow(isOtherHost, message.getTargetChessRow()),
-                message.getTargetChessCol());
+                PositionUtils.remoteRowToLocalRow(isOtherHost, message.getTargetChessRow()),
+                PositionUtils.remoteColToLocalCol(isOtherHost, message.getTargetChessCol()));
             Platform.runLater(() -> {
+                this.context.getPrimaryStage().requestFocus();
+                ChessPosition sourcePos = source.pos().copy();
                 chessboard.removeChess(target);
                 chessboard.moveChess(source, target.pos());
-                DrawableChess ghostChess = new DrawableChess(new ChessGhost(source.pos().copy()));
+                DrawableChess ghostChess = new DrawableChess(new ChessGhost(sourcePos));
                 setChessEventHandlers(ghostChess);
                 chessboard.addChess(ghostChess);
                 turnHost();
@@ -214,7 +221,7 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
         chessboard.clear();
         
         // 顶部方
-        addChessGroup.accept(host == HostEnum.BLACK ? HostEnum.RED : HostEnum.BLACK, new int[]{0, 2, 3});
+        addChessGroup.accept(host.reverse(), new int[]{0, 2, 3});
         // 底部方
         addChessGroup.accept(host, new int[]{9, 7, 6});
         // 加空棋
@@ -234,10 +241,10 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
         if (activeHost == null) {
             activeHost = HostEnum.RED;
         } else {
-            activeHost = activeHost == HostEnum.RED ? HostEnum.BLACK : HostEnum.RED;
+            activeHost = activeHost.reverse();
         }
-        ruleMessageText.setFill(Color.BLACK);
-        ruleMessageText.setText("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
+
+        System.out.println("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
 
         chessboard.getChessList().forEach(chess -> {
             if (((DrawableChess)chess).getChess() instanceof ChessGhost) {
@@ -256,15 +263,14 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
             if (selected.canGoTo(target.pos(), this)) {
                 // 目标位置可走
                 ChessMove chessMove = new ChessMove();
-                chessMove.setHost(HostEnum.toCode(host));
+                chessMove.setHost(host.code());
                 chessMove.setSourceChessRow(selected.pos().row);
                 chessMove.setSourceChessCol(selected.pos().col);
                 chessMove.setTargetChessRow(target.pos().row);
                 chessMove.setTargetChessCol(target.pos().col);
                 client.send(chessMove);
             } else {
-                ruleMessageText.setFill(Color.RED);
-                ruleMessageText.setText("走法不符规则");
+                System.out.println("走法不符规则");
             }
         } else {
             if (target.host() != selected.host()) {
@@ -272,20 +278,18 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
                 if (selected.canGoTo(target.pos(), this)) {
                     // 目标位置棋子可吃
                     ChessEat chessEat = new ChessEat();
-                    chessEat.setHost(HostEnum.toCode(host));
+                    chessEat.setHost(host.code());
                     chessEat.setSourceChessRow(selected.pos().row);
                     chessEat.setSourceChessCol(selected.pos().col);
                     chessEat.setTargetChessRow(target.pos().row);
                     chessEat.setTargetChessCol(target.pos().col);
                     client.send(chessEat);
                 } else {
-                    ruleMessageText.setFill(Color.RED);
-                    ruleMessageText.setText("走法不符规则");
+                    System.out.println("走法不符规则");
                 }
             } else {
                 // 目标位置上有本方棋子
-                ruleMessageText.setFill(Color.RED);
-                ruleMessageText.setText("走法不符规则");
+                System.out.println("走法不符规则");
             }
         }
         selected.setSelected(false);
