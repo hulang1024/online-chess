@@ -21,6 +21,7 @@ import io.github.hulang1024.chinesechess.scene.chessplay.rule.*;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -29,8 +30,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.BiConsumer;
+
 
 /**
  * 游戏下棋主场景
@@ -118,20 +119,19 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
                 if (message.getPlayer().getId() == thisPlayer.getId()) {
                     popScene();
                 } else {
+                    otherPlayerInfoContainer.clear();
+                    chessboard.getChessList().forEach(chess -> {
+                        ((DrawableChess)chess).setDisable(true);
+                    });
+                    chessboard.setDisable(true);
+                    readyButton.setVisible(true);
+
                     Alert alert = new Alert(AlertType.INFORMATION);
                     alert.initOwner(this.context.getPrimaryStage());
                     alert.setTitle("提示");
                     alert.setHeaderText("");
                     alert.setContentText("对方已离开房间");
                     alert.show();
-
-                    otherPlayerInfoContainer.clear();
-                    chessboard.getChessList().forEach(chess -> {
-                        if (((DrawableChess)chess).getChess() instanceof ChessGhost) {
-                            return;
-                        }
-                        ((DrawableChess)chess).setDisable(true);
-                    });
                 }
             });
         });
@@ -168,8 +168,14 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
 
     public void startRound(ChessPlayRoundStart roundStart) {
         host = HostEnum.fromCode(roundStart.getHost());
+        activeHost = null;
+        lastSelected = null;
+        chessboard.setDisable(false);
         resetChessLayout();
         turnHost();
+
+        // 重新开始一局，删除上次的绑定
+        client.removeMessageHandler(ChessMoveResult.class, chessMoveMessageHandler);
 
         client.addMessageHandler(ChessMoveResult.class, chessMoveMessageHandler = (message) -> {
             boolean isOtherHost = HostEnum.fromCode(message.getHost()) != host;
@@ -202,6 +208,7 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
             });
         });
 
+        client.removeMessageHandler(ChessEatResult.class, chessEatMessageHandler);
         client.addMessageHandler(ChessEatResult.class, chessEatMessageHandler = (message) -> {
             boolean isOtherHost = HostEnum.fromCode(message.getHost()) != host;
             DrawableChess source = (DrawableChess)chessboard.chessAt(
@@ -289,10 +296,9 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
 
         System.out.println("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
         
+        chessboard.setCursor(activeHost == host ? Cursor.DEFAULT : Cursor.WAIT);
+
         chessboard.getChessList().forEach(chess -> {
-            if (((DrawableChess)chess).getChess() instanceof ChessGhost) {
-                return;
-            }
             // 如果当前是本方走，将敌方棋子禁用；否则，全部禁用
             ((DrawableChess)chess).setDisable(activeHost == host ? chess.host() != host : true);
         });
@@ -360,14 +366,11 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
 
                 // 将非持棋方的棋子全部启用（这样才能点击要吃的目标棋子）
                 chessboard.getChessList().forEach(chess -> {
-                    if (((DrawableChess)chess).getChess() instanceof ChessGhost) {
-                        return;
-                    }
                     if (chess.host() != host) {
                         ((DrawableChess)chess).setDisable(false);
                     }
                 });
-            } else if (eventDrawableChess.isSelected()) {
+            } else if (eventDrawableChess.isSelected() && eventDrawableChess.host() == host) {
                 // 重复点击，取消选中
                 eventDrawableChess.setSelected(false);
                 lastSelected = null;

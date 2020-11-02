@@ -25,7 +25,7 @@ public class Room {
 
     @Setter
     @Getter
-    private Player creator;
+    private Player owner;
 
     private List<Player> players = new ArrayList<>();
 

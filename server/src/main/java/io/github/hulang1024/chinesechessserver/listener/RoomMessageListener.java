@@ -105,7 +105,7 @@ public class RoomMessageListener extends MessageListener {
         // 根据请求创建房间
         Room room = roomService.create(create);
         
-        room.setCreator(player);
+        room.setOwner(player);
 
         // 创建成功结果
         result.setRoom(new RoomConvert().toLobbyRoom(room));
@@ -198,6 +198,8 @@ public class RoomMessageListener extends MessageListener {
         playerToLeave.leaveRoom();
         // 对局状态置为空
         room.setRound(null);
+        // 房主变成留下的人
+        room.setOwner(room.getPlayers().get(0));
 
         // 如果全部离开了
         if (room.getPlayerCount() == 0) {

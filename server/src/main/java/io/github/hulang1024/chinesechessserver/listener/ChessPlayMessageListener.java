@@ -98,8 +98,8 @@ public class ChessPlayMessageListener extends MessageListener {
         if (room.getRound() == null) {
             // 第一局红方默认是房主
             Player other = room.getPlayers().stream()
-                .filter(player -> player != room.getCreator()).findFirst().get();
-            round = new ChessPlayRound(room.getCreator(), other);
+                .filter(player -> player != room.getOwner()).findFirst().get();
+            round = new ChessPlayRound(room.getOwner(), other);
             room.setRound(round);
         } else {
             // 后面局交换先手

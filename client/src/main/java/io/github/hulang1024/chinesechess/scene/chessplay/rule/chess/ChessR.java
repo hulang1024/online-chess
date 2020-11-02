@@ -26,14 +26,14 @@ public class ChessR extends AbstractChess {
         // 只要到目标位置之间没有棋子
         if (Math.abs(rowOffset) > 0) {
             int k = rowOffset > 0 ? +1 : -1;
-            for (int row = pos.row + k; row != destPos.row + k; row += k) {
+            for (int row = pos.row + k; row != destPos.row; row += k) {
                 if (!game.getChessboard().isEmpty(row, pos.col)) {
                     return false;
                 }
             }
         } else {
             int k = colOffset > 0 ? +1 : -1;
-            for (int col = pos.col + k; col != destPos.col + k; col += k) {
+            for (int col = pos.col + k; col != destPos.col; col += k) {
                 if (!game.getChessboard().isEmpty(pos.row, col)) {
                     return false;
                 }
