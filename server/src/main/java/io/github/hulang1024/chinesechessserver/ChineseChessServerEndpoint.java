@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * @author Hu Lang
  */
-@ServerEndpoint(path = "/ws/{arg}", port = "${websocket.port}")
+@ServerEndpoint(port = "${websocket.port}")
 @Slf4j
 public class ChineseChessServerEndpoint {
     @BeforeHandshake

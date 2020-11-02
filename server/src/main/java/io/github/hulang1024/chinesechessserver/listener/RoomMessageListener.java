@@ -1,6 +1,7 @@
 package io.github.hulang1024.chinesechessserver.listener;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.yeauty.pojo.Session;
@@ -9,11 +10,13 @@ import io.github.hulang1024.chinesechessserver.ClientEventManager;
 import io.github.hulang1024.chinesechessserver.convert.PlayerConvert;
 import io.github.hulang1024.chinesechessserver.domain.Player;
 import io.github.hulang1024.chinesechessserver.domain.Room;
+import io.github.hulang1024.chinesechessserver.message.client.lobby.QuickMatch;
 import io.github.hulang1024.chinesechessserver.message.client.lobby.SearchRooms;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomCreate;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomLeave;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomJoin;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoom;
+import io.github.hulang1024.chinesechessserver.message.server.lobby.QuickMatchResult;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.RoomCreateResult;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.SearchRoomsResult;
 import io.github.hulang1024.chinesechessserver.message.server.room.RoomJoinResult;
@@ -28,6 +31,7 @@ public class RoomMessageListener extends MessageListener {
     @Override
     public void init() {
         addMessageHandler(SearchRooms.class, this::searchRooms);
+        addMessageHandler(QuickMatch.class, this::quickMatch);
         addMessageHandler(RoomCreate.class, this::createRoom);
         addMessageHandler(RoomJoin.class, this::joinRoom);
         addMessageHandler(RoomLeave.class, this::leaveRoom);
@@ -63,6 +67,23 @@ public class RoomMessageListener extends MessageListener {
 
         // 这里做个"登录"的逻辑，暂时支持游客登录
         playerSessionService.login(searchParams.getSession());
+    }
+
+    private void quickMatch(QuickMatch quickMatch) {
+        Optional<Room> roomOpt = roomService.getAllRooms().stream()
+            .filter(room -> room.getPlayerCount() < 2).findAny();
+        if (roomOpt.isPresent()) {
+            // 加入房间
+            RoomJoin roomJoin = new RoomJoin();
+            roomJoin.setSession(quickMatch.getSession());
+            roomJoin.setRoomId(roomOpt.get().getId());
+            joinRoom(roomJoin);
+        } else {
+            // 匹配失败
+            QuickMatchResult result = new QuickMatchResult();
+            result.setCode(1);
+            send(result, quickMatch.getSession());
+        }
     }
 
     private void createRoom(RoomCreate create) {

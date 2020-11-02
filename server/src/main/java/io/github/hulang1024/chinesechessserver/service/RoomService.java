@@ -16,6 +16,10 @@ public class RoomService {
         return roomMap.values();
     }
 
+    public Collection<Room> getAllRooms() {
+        return roomMap.values();
+    }
+
     public Room create(RoomCreate create) {
         Room room = new Room();
         room.setId(roomId++);
