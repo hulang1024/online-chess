@@ -1,6 +1,6 @@
 package io.github.hulang1024.chinesechess.scene.chessplay;
 
-import io.github.hulang1024.chinesechess.client.message.server.lobby.LobbyRoom.LobbyRoomPlayerInfo;
+import io.github.hulang1024.chinesechess.message.server.lobby.LobbyRoom.LobbyRoomPlayerInfo;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.HostEnum;
 import javafx.geometry.Insets;
 import javafx.scene.layout.VBox;

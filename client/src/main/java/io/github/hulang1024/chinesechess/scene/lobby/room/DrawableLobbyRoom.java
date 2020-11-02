@@ -1,6 +1,6 @@
 package io.github.hulang1024.chinesechess.scene.lobby.room;
 
-import io.github.hulang1024.chinesechess.client.message.server.lobby.LobbyRoom;
+import io.github.hulang1024.chinesechess.message.server.lobby.LobbyRoom;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.input.MouseEvent;

@@ -16,17 +16,17 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import io.github.hulang1024.chinesechess.client.ChineseChessClient;
-import io.github.hulang1024.chinesechess.client.message.server.room.RoomCreateResult;
-import io.github.hulang1024.chinesechess.client.message.server.lobby.LobbyRoom;
-import io.github.hulang1024.chinesechess.client.message.server.lobby.QuickMatchResult;
-import io.github.hulang1024.chinesechess.client.message.server.lobby.SearchRoomsResult;
-import io.github.hulang1024.chinesechess.client.message.server.room.RoomJoinResult;
-import io.github.hulang1024.chinesechess.client.message.MessageHandler;
-import io.github.hulang1024.chinesechess.client.message.client.lobby.QuickMatch;
-import io.github.hulang1024.chinesechess.client.message.client.lobby.SearchRooms;
-import io.github.hulang1024.chinesechess.client.message.client.room.RoomCreate;
-import io.github.hulang1024.chinesechess.client.message.client.room.RoomJoin;
+import io.github.hulang1024.chinesechess.ChineseChessClient;
+import io.github.hulang1024.chinesechess.message.server.room.RoomCreateResult;
+import io.github.hulang1024.chinesechess.message.server.lobby.LobbyRoom;
+import io.github.hulang1024.chinesechess.message.server.lobby.QuickMatchResult;
+import io.github.hulang1024.chinesechess.message.server.lobby.SearchRoomsResult;
+import io.github.hulang1024.chinesechess.message.server.room.RoomJoinResult;
+import io.github.hulang1024.chinesechess.message.MessageHandler;
+import io.github.hulang1024.chinesechess.message.client.lobby.QuickMatch;
+import io.github.hulang1024.chinesechess.message.client.lobby.SearchRooms;
+import io.github.hulang1024.chinesechess.message.client.room.RoomCreate;
+import io.github.hulang1024.chinesechess.message.client.room.RoomJoin;
 
 /**
  * @author Hu Lang

@@ -1,6 +1,6 @@
 package io.github.hulang1024.chinesechess.scene.home;
 
-import io.github.hulang1024.chinesechess.client.ChineseChessClient;
+import io.github.hulang1024.chinesechess.ChineseChessClient;
 import io.github.hulang1024.chinesechess.scene.AbstractScene;
 import io.github.hulang1024.chinesechess.scene.SceneContext;
 import io.github.hulang1024.chinesechess.scene.chessplay.OfflineChessPlayScene;
