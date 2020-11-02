@@ -27,6 +27,8 @@ public class LobbyRoom {
      */
     private List<LobbyRoomPlayerInfo> players;
 
+    private int status;
+
     /**
      * 房间玩家信息
      */

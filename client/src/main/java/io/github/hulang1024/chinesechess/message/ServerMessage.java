@@ -1,13 +1,15 @@
 package io.github.hulang1024.chinesechess.message;
 
-import lombok.Data;
+import lombok.Getter;
 
 /**
  * 服务端消息
  */
-@Data
 public class ServerMessage {
+    @Getter
     private int code;
+    @Getter
     private String msg;
+    @Getter
     private String type;
 }

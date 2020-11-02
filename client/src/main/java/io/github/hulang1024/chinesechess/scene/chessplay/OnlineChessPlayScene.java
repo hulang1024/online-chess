@@ -21,11 +21,15 @@ import io.github.hulang1024.chinesechess.scene.chessplay.rule.*;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 /**
@@ -84,7 +88,15 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
         backButton.setMinWidth(80);
         backButton.setMinHeight(30);
         backButton.setOnMouseClicked((event) -> {
-            client.send(new RoomLeave());
+            Alert alert = new Alert(AlertType.CONFIRMATION);
+            alert.initOwner(this.context.getPrimaryStage());
+            alert.setTitle("确认离开");
+            alert.setHeaderText("");
+            alert.setContentText("真的要离开吗？");
+            ButtonType result = alert.showAndWait().get();
+            if (result == ButtonType.OK) {
+                client.send(new RoomLeave());
+            }
         });
         roomOpContainer.getChildren().add(backButton);
 
@@ -106,6 +118,13 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
                 if (message.getPlayer().getId() == thisPlayer.getId()) {
                     popScene();
                 } else {
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.initOwner(this.context.getPrimaryStage());
+                    alert.setTitle("提示");
+                    alert.setHeaderText("");
+                    alert.setContentText("对方已离开房间");
+                    alert.show();
+
                     otherPlayerInfoContainer.clear();
                     chessboard.getChessList().forEach(chess -> {
                         if (((DrawableChess)chess).getChess() instanceof ChessGhost) {
@@ -154,13 +173,25 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
 
         client.addMessageHandler(ChessMoveResult.class, chessMoveMessageHandler = (message) -> {
             boolean isOtherHost = HostEnum.fromCode(message.getHost()) != host;
-            Chess source = chessboard.chessAt(
+            DrawableChess source = (DrawableChess)chessboard.chessAt(
                 PositionUtils.remoteRowToLocalRow(isOtherHost, message.getSourceChessRow()),
                 PositionUtils.remoteColToLocalCol(isOtherHost, message.getSourceChessCol()));
-            Chess target = chessboard.chessAt(
+            DrawableChess target = (DrawableChess)chessboard.chessAt(
                 PositionUtils.remoteRowToLocalRow(isOtherHost, message.getTargetChessRow()),
                 PositionUtils.remoteColToLocalCol(isOtherHost, message.getTargetChessCol()));
             Platform.runLater(() -> {
+                // 清除高亮对方移动了哪个棋子
+                chessboard.getChessList().forEach(chess -> {
+                    if (((DrawableChess)chess).isSelected()) {
+                        ((DrawableChess)chess).setSelected(false);
+                    }
+                });
+                // 高亮对方移动了哪个棋子
+                if (isOtherHost) {
+                    source.setSelected(true);
+                    target.setSelected(true);
+                }
+
                 this.context.getPrimaryStage().requestFocus();
                 ChessPosition sourcePos = source.pos().copy();
                 chessboard.removeChess(target);
@@ -173,13 +204,25 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
 
         client.addMessageHandler(ChessEatResult.class, chessEatMessageHandler = (message) -> {
             boolean isOtherHost = HostEnum.fromCode(message.getHost()) != host;
-            Chess source = chessboard.chessAt(
+            DrawableChess source = (DrawableChess)chessboard.chessAt(
                 PositionUtils.remoteRowToLocalRow(isOtherHost, message.getSourceChessRow()),
                 PositionUtils.remoteColToLocalCol(isOtherHost, message.getSourceChessCol()));
-            Chess target = chessboard.chessAt(
+            DrawableChess target = (DrawableChess)chessboard.chessAt(
                 PositionUtils.remoteRowToLocalRow(isOtherHost, message.getTargetChessRow()),
                 PositionUtils.remoteColToLocalCol(isOtherHost, message.getTargetChessCol()));
             Platform.runLater(() -> {
+                // 清除高亮对方移动了哪个棋子
+                chessboard.getChessList().forEach(chess -> {
+                    if (((DrawableChess)chess).isSelected()) {
+                        ((DrawableChess)chess).setSelected(false);
+                    }
+                });
+                // 高亮对方移动了哪个棋子
+                if (isOtherHost) {
+                    source.setSelected(true);
+                    target.setSelected(true);
+                }
+
                 this.context.getPrimaryStage().requestFocus();
                 ChessPosition sourcePos = source.pos().copy();
                 chessboard.removeChess(target);
@@ -245,7 +288,7 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
         }
 
         System.out.println("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
-
+        
         chessboard.getChessList().forEach(chess -> {
             if (((DrawableChess)chess).getChess() instanceof ChessGhost) {
                 return;
@@ -311,6 +354,7 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
                 if (eventDrawableChess.host() != host) {
                     return;
                 }
+
                 eventDrawableChess.setSelected(true);
                 lastSelected = eventDrawableChess;
 
@@ -333,7 +377,9 @@ public class OnlineChessPlayScene extends AbstractScene implements RoundGame {
                     onGoTo(lastSelected, eventDrawableChess);
                 } else {
                     chessboard.getChessList().forEach(chess -> {
-                        ((DrawableChess)chess).setSelected(false);
+                        if (((DrawableChess)chess).isSelected()) {
+                            ((DrawableChess)chess).setSelected(false);
+                        }
                     });
                     eventDrawableChess.setSelected(true);
                     lastSelected = eventDrawableChess;

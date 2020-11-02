@@ -1,13 +1,13 @@
 package io.github.hulang1024.chinesechess.message;
 
-import lombok.Data;
+import lombok.Getter;
 
 /**
  * 客户端消息
  */
-@Data
 public class ClientMessage {
-    protected String type;
+    @Getter
+    private String type;
 
     public ClientMessage(String type) {
         this.type = type;

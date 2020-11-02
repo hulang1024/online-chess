@@ -30,6 +30,7 @@ public class DrawableChess extends Pane implements Chess {
         this.chess = chess;
 
         setMaxSize(SIZE, SIZE);
+        setMinSize(SIZE, SIZE);
 
         circle = new Circle(SIZE / 2f, chess instanceof ChessGhost ? null : CIRCLE_FILL_COLOR);
 
@@ -48,16 +49,22 @@ public class DrawableChess extends Pane implements Chess {
         getChildren().add(text);
 
         setOnMouseEntered(event -> {
-            if (selected || chess instanceof ChessGhost) {
-                return;
+            if (selected) return;
+            if (chess instanceof ChessGhost) {
+                circle.setFill(CIRCLE_FILL_COLOR);
+                setOpacity(0.2);
+            } else {
+                setOpacity(0.6);
             }
-            setOpacity(0.6);
         });
         setOnMouseExited(event -> {
-            if (selected || chess instanceof ChessGhost) {
-                return;
+            if (selected) return;
+            if (chess instanceof ChessGhost) {
+                circle.setFill(null);
+                setOpacity(1.0);
+            } else {
+                setOpacity(1.0);
             }
-            setOpacity(1.0);
         });
     }
 
@@ -66,14 +73,22 @@ public class DrawableChess extends Pane implements Chess {
     }
 
     public void setSelected(boolean selected) {
-        if (chess instanceof ChessGhost) {
-            return;
-        }
         this.selected = selected;
-        if (selected) {
-            setOpacity(0.6);
+
+        if (chess instanceof ChessGhost) {
+            if (selected) {
+                circle.setFill(CIRCLE_FILL_COLOR);
+                setOpacity(0.2);
+            } else {
+                circle.setFill(null);
+                setOpacity(1.0);
+            }
         } else {
-            setOpacity(1.0);
+            if (selected) {
+                setOpacity(0.6);
+            } else {
+                setOpacity(1.0);
+            }
         }
     }
 
