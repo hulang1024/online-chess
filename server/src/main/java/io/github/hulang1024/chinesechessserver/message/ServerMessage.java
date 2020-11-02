@@ -1,16 +1,23 @@
 package io.github.hulang1024.chinesechessserver.message;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 服务端消息结构
  * @author Hu Lang
  */
-@Data
 public class ServerMessage {
+    @Setter
+    @Getter
     protected int code;
+
+    @Setter
+    @Getter
     protected String msg;
-    protected String type;
+
+    @Getter
+    private String type;
 
     public ServerMessage(String type) {
         this.type = type;

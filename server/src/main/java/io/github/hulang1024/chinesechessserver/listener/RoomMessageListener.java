@@ -59,6 +59,7 @@ public class RoomMessageListener extends MessageListener {
                         return new PlayerConvert().toRoomPlayerInfo(player);
                     })
                     .collect(Collectors.toList()));
+                lobbyRoom.setStatus(room.calcStatus());
                 return lobbyRoom;
             })
             .collect(Collectors.toList()));
@@ -70,6 +71,16 @@ public class RoomMessageListener extends MessageListener {
     }
 
     private void quickMatch(QuickMatch quickMatch) {
+        QuickMatchResult result = new QuickMatchResult();
+
+        Player player = playerSessionService.getPlayer(quickMatch.getSession());
+
+        if (player.isJoinedAnyRoom()) {
+            result.setCode(2);
+            send(result, quickMatch.getSession());
+            return;
+        }
+
         Optional<Room> roomOpt = roomService.getAllRooms().stream()
             .filter(room -> room.getPlayerCount() < 2).findAny();
         if (roomOpt.isPresent()) {
@@ -80,8 +91,7 @@ public class RoomMessageListener extends MessageListener {
             joinRoom(roomJoin);
         } else {
             // 匹配失败
-            QuickMatchResult result = new QuickMatchResult();
-            result.setCode(1);
+            result.setCode(3);
             send(result, quickMatch.getSession());
         }
     }
@@ -107,6 +117,7 @@ public class RoomMessageListener extends MessageListener {
         lobbyRoom.setId(room.getId());
         lobbyRoom.setName(room.getName());
         lobbyRoom.setPlayerCount(0);
+        lobbyRoom.setStatus(room.calcStatus());
         result.setRoom(lobbyRoom);
 
         send(result, create.getSession());
@@ -129,6 +140,27 @@ public class RoomMessageListener extends MessageListener {
             send(result, session);
             return;
         }
+        
+        Player playerToJoin = playerSessionService.getPlayer(session);
+
+        result.setPlayer(new PlayerConvert().toRoomPlayerInfo(playerToJoin));
+        
+        LobbyRoom roomResult = new LobbyRoom();
+        roomResult.setId(room.getId());
+        roomResult.setName(room.getName());
+        roomResult.setPlayerCount(room.getPlayerCount());
+        roomResult.setPlayers(room.getPlayers().stream()
+            .map(p -> { return new PlayerConvert().toRoomPlayerInfo(p); })
+            .collect(Collectors.toList()));
+        roomResult.setStatus(room.calcStatus());
+        result.setRoom(roomResult);
+
+        // 判断该玩家是否已经加入了任何房间
+        if (playerToJoin.isJoinedAnyRoom()) {
+            result.setCode(playerToJoin.getJoinedRoom().getId() == room.getId() ? 4 : 5);
+            send(result, session);
+            return;
+        }
 
         // 限定2个人
         if (room.getPlayerCount() == 2) {
@@ -137,26 +169,14 @@ public class RoomMessageListener extends MessageListener {
             return;
         }
 
-        Player playerToJoin = playerSessionService.getPlayer(session);
-        // 判断该玩家是否已经加入了任何房间
-        if (playerToJoin.isJoinedAnyRoom()) {
-            result.setCode(2);
-            send(result, session);
-            return;
-        }
-
         playerToJoin.joinRoom(room);
-
-        LobbyRoom roomResult = new LobbyRoom();
-        roomResult.setId(room.getId());
-        roomResult.setName(room.getName());
+        // 加入之后设置
         roomResult.setPlayerCount(room.getPlayerCount());
         roomResult.setPlayers(room.getPlayers().stream()
             .map(p -> { return new PlayerConvert().toRoomPlayerInfo(p); })
             .collect(Collectors.toList()));
-        result.setRoom(roomResult);
-        result.setPlayer(new PlayerConvert().toRoomPlayerInfo(playerToJoin));
-
+        roomResult.setStatus(room.calcStatus());
+        
         // 广播给已在此房间的玩家
         room.getPlayers().forEach(player -> {
             send(result, player.getSession());
@@ -181,6 +201,8 @@ public class RoomMessageListener extends MessageListener {
             .collect(Collectors.toList());
 
         playerToLeave.leaveRoom();
+        // 对局状态置为空
+        room.setRound(null);
 
         // 如果全部离开了，删除房间
         if (room.getPlayerCount() == 0) {

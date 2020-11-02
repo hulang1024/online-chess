@@ -44,4 +44,22 @@ public class Room {
     public List<Player> getPlayers() {
         return players;
     }
+
+    public int calcStatus() {
+        int status;
+
+        int playerCount = players.size();
+        if (playerCount < 2) {
+            // 未满员
+            status = 1;
+        } else if (playerCount == 2 && players.stream().anyMatch(player -> !player.isReadyed())) {
+            // 未开始（即将开始）
+            status = 2;
+        } else {
+            // 进行中
+            status = 3;
+        }
+
+        return status;
+    }
 }

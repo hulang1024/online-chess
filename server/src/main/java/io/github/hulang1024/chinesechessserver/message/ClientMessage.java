@@ -2,15 +2,16 @@ package io.github.hulang1024.chinesechessserver.message;
 
 import org.yeauty.pojo.Session;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 客户端消息
  * @author Hu Lang
  */
-@Data
 public class ClientMessage {
+    @Setter
+    @Getter
     private Session session;
-    private String type;
 }
 

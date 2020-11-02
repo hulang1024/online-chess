@@ -1,4 +1,4 @@
-package io.github.hulang1024.chinesechessserver.message.server;
+package io.github.hulang1024.chinesechessserver.message.server.player;
 
 import lombok.Data;
 

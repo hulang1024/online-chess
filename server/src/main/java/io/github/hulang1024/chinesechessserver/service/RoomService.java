@@ -26,7 +26,6 @@ public class RoomService {
         room.setName(create.getRoomName() == null
             ? String.valueOf("#" + room.getId())
             : create.getRoomName());
-
         roomMap.put(room.getId(), room);
 
         return room;

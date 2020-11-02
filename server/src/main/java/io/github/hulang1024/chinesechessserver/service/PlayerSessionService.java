@@ -18,6 +18,7 @@ public class PlayerSessionService {
         Player player = new Player();
         sessionPlayerMap.put(session.id(), player);
         player.setSession(session);
+        player.setNickname(player.getId() + "");
     }
 
     public Player getPlayer(Session session) {
