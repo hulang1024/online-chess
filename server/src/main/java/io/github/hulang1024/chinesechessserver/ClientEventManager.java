@@ -12,7 +12,7 @@ public class ClientEventManager {
 
     public static void emitSessionCloseEvent(Session session) {
         sessionCloseEventHandlers.forEach(handler -> {
-          handler.accept(session);
+            handler.accept(session);
         });
     }
 

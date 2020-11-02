@@ -17,6 +17,9 @@ public class ChessPlayRound {
         this.blackPlayer = blackPlayer;
     }
 
+    /**
+     * 交换棋方
+     */
     public void swapRedAndBlack() {
         Player player = redPlayer;
         redPlayer = blackPlayer;

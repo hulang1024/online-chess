@@ -11,6 +11,7 @@ import io.github.hulang1024.chinesechessserver.message.client.MessageType;
 public class ClientMessageFactory {
     private static Map<String, Class<?>> messageTypeClassMap = new HashMap<String, Class<?>>();
     static {
+        // 扫描所有客户端消息类并加入Map
         Reflections reflections = new Reflections("io.github.hulang1024.chinesechessserver.message.client");
         Set<Class<?>> messageClasses = reflections.getTypesAnnotatedWith(MessageType.class);
         messageClasses.forEach(clazz -> {

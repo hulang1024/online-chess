@@ -6,12 +6,10 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.util.MultiValueMap;
 import org.yeauty.annotation.*;
 import org.yeauty.pojo.Session;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * @author Hu Lang
@@ -20,12 +18,12 @@ import java.util.Map;
 @Slf4j
 public class ChineseChessServerEndpoint {
     @BeforeHandshake
-    public void handshake(Session session, HttpHeaders headers, @RequestParam String req, @RequestParam MultiValueMap reqMap, @PathVariable String arg, @PathVariable Map pathMap){
+    public void handshake(Session session, HttpHeaders headers){
         session.setSubprotocols("stomp");
     }
 
     @OnOpen
-    public void onOpen(Session session, HttpHeaders headers, @RequestParam String req, @RequestParam MultiValueMap reqMap, @PathVariable String arg, @PathVariable Map pathMap){
+    public void onOpen(Session session, HttpHeaders headers){
         log.info("一个连接打开");
 
     }

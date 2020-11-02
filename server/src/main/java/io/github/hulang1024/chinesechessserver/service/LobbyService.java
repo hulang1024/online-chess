@@ -6,6 +6,9 @@ import java.util.List;
 import org.yeauty.pojo.Session;
 
 public class LobbyService {
+    /**
+     * 停留在大厅界面的客户端session
+     */
     private static List<Session> stayLobbySessions = new ArrayList<>();
 
     public List<Session> getAllStayLobbySessions() {

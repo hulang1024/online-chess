@@ -25,7 +25,6 @@ public class ChessPlayMessageListener extends MessageListener {
         addMessageHandler(ChessPlayReady.class, this::ready);
         addMessageHandler(ChessMove.class, this::moveChess);
         addMessageHandler(ChessEat.class, this::eatChess);
-
     }
 
     public void ready(ChessPlayReady ready) {

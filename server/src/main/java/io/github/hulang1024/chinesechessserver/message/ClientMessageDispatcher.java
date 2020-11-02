@@ -22,10 +22,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class ClientMessageDispatcher {
-    private static Map<Class<?>, List<MessageHandler<?>>> messageHandlerMap = new HashMap<>();
+    private static Map<Class<?/* extends ClientMessage*/>, List<MessageHandler<?>>> messageHandlerMap = new HashMap<>();
     private static Gson gson = new Gson();
     
-    @SuppressWarnings("all")
     public static void dispatch(String messageJson, Session session) {
         JsonObject jsonObject = (JsonObject)JsonParser.parseString(messageJson);
         String type = ((JsonPrimitive)jsonObject.get("type")).getAsString();
@@ -34,11 +33,22 @@ public class ClientMessageDispatcher {
             log.info("未找到消息类 type={}", type);
             return;
         }
+        ClientMessage message = (ClientMessage)gson.fromJson(jsonObject, typeClass);
+        message.setSession(session);
+        
+        emit(typeClass, message);
+    }
+
+    /**
+     * 触发一个消息，
+     * 支持服务器内调用以转发消息到其它模块
+     * @param typeClass 消息类型
+     * @param message 消息
+     */
+    @SuppressWarnings("all")
+    public static void emit(Class<?> typeClass, ClientMessage message) {
         List<MessageHandler<?>> handlers = messageHandlerMap.get(typeClass);
         if (handlers != null) {
-            ClientMessage message = (ClientMessage)gson.fromJson(jsonObject, typeClass);
-            message.setSession(session);
-            
             handlers.forEach((MessageHandler handler) -> {
                 handler.handle(message);
             });
