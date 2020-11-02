@@ -8,6 +8,7 @@ import org.yeauty.pojo.Session;
 
 import io.github.hulang1024.chinesechessserver.ClientEventManager;
 import io.github.hulang1024.chinesechessserver.convert.PlayerConvert;
+import io.github.hulang1024.chinesechessserver.convert.RoomConvert;
 import io.github.hulang1024.chinesechessserver.domain.Player;
 import io.github.hulang1024.chinesechessserver.domain.Room;
 import io.github.hulang1024.chinesechessserver.message.client.lobby.QuickMatch;
@@ -15,18 +16,21 @@ import io.github.hulang1024.chinesechessserver.message.client.lobby.SearchRooms;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomCreate;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomLeave;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomJoin;
-import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoom;
+import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomRemove;
+import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomUpdate;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.QuickMatchResult;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.RoomCreateResult;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.SearchRoomsResult;
 import io.github.hulang1024.chinesechessserver.message.server.room.RoomJoinResult;
 import io.github.hulang1024.chinesechessserver.message.server.room.RoomLeaveResult;
+import io.github.hulang1024.chinesechessserver.service.LobbyService;
 import io.github.hulang1024.chinesechessserver.service.PlayerSessionService;
 import io.github.hulang1024.chinesechessserver.service.RoomService;
 
 public class RoomMessageListener extends MessageListener {
     private RoomService roomService = new RoomService();
     private PlayerSessionService playerSessionService = new PlayerSessionService();
+    private LobbyService lobbyService = new LobbyService();
 
     @Override
     public void init() {
@@ -43,6 +47,7 @@ public class RoomMessageListener extends MessageListener {
                 leave.setSession(session);
                 leaveRoom(leave);
             }
+            lobbyService.removeStayLobbySession(session);
         });
     }
 
@@ -50,17 +55,7 @@ public class RoomMessageListener extends MessageListener {
         SearchRoomsResult result = new SearchRoomsResult();
         result.setRooms(roomService.search(searchParams).stream()
             .map(room -> {
-                LobbyRoom lobbyRoom = new LobbyRoom();
-                lobbyRoom.setId(room.getId());
-                lobbyRoom.setName(room.getName());
-                lobbyRoom.setPlayerCount(room.getPlayerCount());
-                lobbyRoom.setPlayers(room.getPlayers().stream()
-                    .map(player -> {
-                        return new PlayerConvert().toRoomPlayerInfo(player);
-                    })
-                    .collect(Collectors.toList()));
-                lobbyRoom.setStatus(room.calcStatus());
-                return lobbyRoom;
+                return new RoomConvert().toLobbyRoom(room);
             })
             .collect(Collectors.toList()));
 
@@ -113,15 +108,17 @@ public class RoomMessageListener extends MessageListener {
         room.setCreator(player);
 
         // 创建成功结果
-        LobbyRoom lobbyRoom = new LobbyRoom();
-        lobbyRoom.setId(room.getId());
-        lobbyRoom.setName(room.getName());
-        lobbyRoom.setPlayerCount(0);
-        lobbyRoom.setStatus(room.calcStatus());
-        result.setRoom(lobbyRoom);
+        result.setRoom(new RoomConvert().toLobbyRoom(room));
 
         send(result, create.getSession());
-        
+
+        // 大厅广播房间增加
+        lobbyService.getAllStayLobbySessions().forEach(session -> {
+            if (session != create.getSession()) {
+                send(result, session);
+            }
+        });
+
         // 加入房间
         RoomJoin roomJoin = new RoomJoin();
         roomJoin.setSession(create.getSession());
@@ -145,15 +142,7 @@ public class RoomMessageListener extends MessageListener {
 
         result.setPlayer(new PlayerConvert().toRoomPlayerInfo(playerToJoin));
         
-        LobbyRoom roomResult = new LobbyRoom();
-        roomResult.setId(room.getId());
-        roomResult.setName(room.getName());
-        roomResult.setPlayerCount(room.getPlayerCount());
-        roomResult.setPlayers(room.getPlayers().stream()
-            .map(p -> { return new PlayerConvert().toRoomPlayerInfo(p); })
-            .collect(Collectors.toList()));
-        roomResult.setStatus(room.calcStatus());
-        result.setRoom(roomResult);
+        result.setRoom(new RoomConvert().toLobbyRoom(room));
 
         // 判断该玩家是否已经加入了任何房间
         if (playerToJoin.isJoinedAnyRoom()) {
@@ -170,16 +159,22 @@ public class RoomMessageListener extends MessageListener {
         }
 
         playerToJoin.joinRoom(room);
-        // 加入之后设置
-        roomResult.setPlayerCount(room.getPlayerCount());
-        roomResult.setPlayers(room.getPlayers().stream()
-            .map(p -> { return new PlayerConvert().toRoomPlayerInfo(p); })
-            .collect(Collectors.toList()));
-        roomResult.setStatus(room.calcStatus());
+        
+        // 加入之后要重新设置
+        result.setRoom(new RoomConvert().toLobbyRoom(room));
         
         // 广播给已在此房间的玩家
         room.getPlayers().forEach(player -> {
             send(result, player.getSession());
+        });
+
+        // 大厅广播房间更新（玩家多一个）
+        LobbyRoomUpdate roomUpdate = new LobbyRoomUpdate();
+        roomUpdate.setRoom(result.getRoom());
+        lobbyService.getAllStayLobbySessions().forEach(lsession -> {
+            if (playerToJoin.getSession() != lsession) {
+                send(roomUpdate, lsession);
+            }
         });
     }
 
@@ -204,9 +199,24 @@ public class RoomMessageListener extends MessageListener {
         // 对局状态置为空
         room.setRound(null);
 
-        // 如果全部离开了，删除房间
+        // 如果全部离开了
         if (room.getPlayerCount() == 0) {
+            // 删除房间
             roomService.remove(room);
+
+            // 大厅广播房间移除
+            LobbyRoomRemove roomRemove = new LobbyRoomRemove();
+            roomRemove.setRoomId(room.getId());
+            lobbyService.getAllStayLobbySessions().forEach(lsession -> {
+                send(roomRemove, lsession);
+            });
+        } else {
+            // 大厅广播房间更新（玩家少一个）
+            LobbyRoomUpdate roomUpdate = new LobbyRoomUpdate();
+            roomUpdate.setRoom(new RoomConvert().toLobbyRoom(room));
+            lobbyService.getAllStayLobbySessions().forEach(lsession -> {
+                send(roomUpdate, lsession);
+            });
         }
 
         result.setPlayer(new PlayerConvert().toRoomPlayerInfo(playerToLeave));

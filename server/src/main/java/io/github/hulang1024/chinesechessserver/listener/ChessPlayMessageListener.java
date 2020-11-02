@@ -1,6 +1,7 @@
 package io.github.hulang1024.chinesechessserver.listener;
 
 import io.github.hulang1024.chinesechessserver.convert.PlayerConvert;
+import io.github.hulang1024.chinesechessserver.convert.RoomConvert;
 import io.github.hulang1024.chinesechessserver.domain.ChessPlayRound;
 import io.github.hulang1024.chinesechessserver.domain.Player;
 import io.github.hulang1024.chinesechessserver.domain.Room;
@@ -11,10 +12,13 @@ import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessEat
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessMoveResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPlayReadyResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPlayRoundStart;
+import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomUpdate;
+import io.github.hulang1024.chinesechessserver.service.LobbyService;
 import io.github.hulang1024.chinesechessserver.service.PlayerSessionService;
 
 public class ChessPlayMessageListener extends MessageListener {
     private PlayerSessionService playerSessionService = new PlayerSessionService();
+    private LobbyService lobbyService = new LobbyService();
 
     @Override
     public void init() {
@@ -37,6 +41,13 @@ public class ChessPlayMessageListener extends MessageListener {
         // 广播给已在此房间的玩家
         room.getPlayers().forEach((player) -> {
             send(result, player.getSession());
+        });
+
+        // 大厅广播房间更新
+        LobbyRoomUpdate roomUpdate = new LobbyRoomUpdate();
+        roomUpdate.setRoom(new RoomConvert().toLobbyRoom(room));
+        lobbyService.getAllStayLobbySessions().forEach(lsession -> {
+            send(roomUpdate, lsession);
         });
 
         // 如果全部准备好，开始游戏
