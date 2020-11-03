@@ -15,13 +15,14 @@ public class ChessS extends AbstractChess {
 
     @Override
     public boolean canGoTo(ChessPosition destPos, RoundGame game) {
+        int rowOffset = destPos.row - pos.row;
         int colOffset = Math.abs(destPos.col - pos.col);
 
         // 是否向前单步
         boolean isForward = colOffset == 0
             && (game.isHostAtChessboardTop(host)
-                ? pos.row + 1 == destPos.row
-                : pos.row - 1 == destPos.row);
+                ? rowOffset == +1
+                : rowOffset == -1);
 
         // 判断是否过了河
         if (MoveRules.isInBoundary(game, host, destPos)) {
@@ -29,7 +30,7 @@ public class ChessS extends AbstractChess {
             return isForward;
         } else {
             // 过河之后既可以向前单步，也可以左或右移单步
-            return isForward || colOffset == 1;
+            return isForward || (Math.abs(rowOffset) == 0 && colOffset == 1);
         }
     }
 }
