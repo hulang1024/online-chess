@@ -1,0 +1,219 @@
+{
+	"groups":[
+	{
+		"keys":"checkbox_select_disabled_png,checkbox_select_down_png,checkbox_select_up_png,checkbox_unselect_png,selected_png,border_png,header_png,radiobutton_select_disabled_png,radiobutton_select_down_png,radiobutton_select_up_png,radiobutton_unselect_png,roundthumb_png,thumb_png,track_png,tracklight_png,handle_png,off_png,on_png,button_down_png,button_up_png,thumb_pb_png,track_pb_png,track_sb_png,bg,chessboard,chess_target,red_chess_c,red_chess_g,red_chess_k,red_chess_m,red_chess_n,red_chess_r,red_chess_s,black_chess_c,black_chess_g,black_chess_k,black_chess_m,black_chess_n,black_chess_r,black_chess_s,description_json",
+		"name":"preload"
+	}],
+	"resources":[
+		{
+			"url": "assets/CheckBox/checkbox_select_disabled.png",
+			"type": "image",
+			"name": "checkbox_select_disabled_png"
+		},
+		{
+			"url": "assets/CheckBox/checkbox_select_down.png",
+			"type": "image",
+			"name": "checkbox_select_down_png"
+		},
+		{
+			"url": "assets/CheckBox/checkbox_select_up.png",
+			"type": "image",
+			"name": "checkbox_select_up_png"
+		},
+		{
+			"url": "assets/CheckBox/checkbox_unselect.png",
+			"type": "image",
+			"name": "checkbox_unselect_png"
+		},
+		{
+			"url": "assets/ItemRenderer/selected.png",
+			"type": "image",
+			"name": "selected_png"
+		},
+		{
+			"url": "assets/Panel/border.png",
+			"type": "image",
+			"name": "border_png"
+		},
+		{
+			"url": "assets/Panel/header.png",
+			"type": "image",
+			"name": "header_png"
+		},
+		{
+			"url": "assets/RadioButton/radiobutton_select_disabled.png",
+			"type": "image",
+			"name": "radiobutton_select_disabled_png"
+		},
+		{
+			"url": "assets/RadioButton/radiobutton_select_down.png",
+			"type": "image",
+			"name": "radiobutton_select_down_png"
+		},
+		{
+			"url": "assets/RadioButton/radiobutton_select_up.png",
+			"type": "image",
+			"name": "radiobutton_select_up_png"
+		},
+		{
+			"url": "assets/RadioButton/radiobutton_unselect.png",
+			"type": "image",
+			"name": "radiobutton_unselect_png"
+		},
+		{
+			"url": "assets/ScrollBar/roundthumb.png",
+			"type": "image",
+			"name": "roundthumb_png"
+		},
+		{
+			"url": "assets/Slider/thumb.png",
+			"type": "image",
+			"name": "thumb_png"
+		},
+		{
+			"url": "assets/Slider/track.png",
+			"type": "image",
+			"name": "track_png"
+		},
+		{
+			"url": "assets/Slider/tracklight.png",
+			"type": "image",
+			"name": "tracklight_png"
+		},
+		{
+			"url": "assets/ToggleSwitch/handle.png",
+			"type": "image",
+			"name": "handle_png"
+		},
+		{
+			"url": "assets/ToggleSwitch/off.png",
+			"type": "image",
+			"name": "off_png"
+		},
+		{
+			"url": "assets/ToggleSwitch/on.png",
+			"type": "image",
+			"name": "on_png"
+		},
+		{
+			"url": "assets/Button/button_down.png",
+			"type": "image",
+			"name": "button_down_png"
+		},
+		{
+			"url": "assets/Button/button_up.png",
+			"type": "image",
+			"name": "button_up_png"
+		},
+		{
+			"url": "assets/ProgressBar/thumb_pb.png",
+			"type": "image",
+			"name": "thumb_pb_png"
+		},
+		{
+			"url": "assets/ProgressBar/track_pb.png",
+			"type": "image",
+			"name": "track_pb_png"
+		},
+		{
+			"url": "assets/ScrollBar/track_sb.png",
+			"type": "image",
+			"name": "track_sb_png"
+		},
+
+
+		
+		{
+			"name": "chessboard",
+			"type": "image",
+			"url": "assets/themes/default/chessboard.png"
+		},
+		{
+			"name": "chess_target",
+			"type": "image",
+			"url": "assets/themes/default/chess_target.png"
+		},
+		{
+			"name": "red_chess_c",
+			"type": "image",
+			"url": "assets/themes/default/chess/red/chess_c.png"
+		},
+		{
+			"name": "red_chess_g",
+			"type": "image",
+			"url": "assets/themes/default/chess/red/chess_g.png"
+		},
+		{
+			"name": "red_chess_k",
+			"type": "image",
+			"url": "assets/themes/default/chess/red/chess_k.png"
+		},
+		{
+			"name": "red_chess_m",
+			"type": "image",
+			"url": "assets/themes/default/chess/red/chess_m.png"
+		},
+		{
+			"name": "red_chess_n",
+			"type": "image",
+			"url": "assets/themes/default/chess/red/chess_n.png"
+		},
+		{
+			"name": "red_chess_r",
+			"type": "image",
+			"url": "assets/themes/default/chess/red/chess_r.png"
+		},
+		{
+			"name": "red_chess_s",
+			"type": "image",
+			"url": "assets/themes/default/chess/red/chess_s.png"
+		},
+
+		{
+			"name": "black_chess_c",
+			"type": "image",
+			"url": "assets/themes/default/chess/black/chess_c.png"
+		},
+		{
+			"name": "black_chess_g",
+			"type": "image",
+			"url": "assets/themes/default/chess/black/chess_g.png"
+		},
+		{
+			"name": "black_chess_k",
+			"type": "image",
+			"url": "assets/themes/default/chess/black/chess_k.png"
+		},
+		{
+			"name": "black_chess_m",
+			"type": "image",
+			"url": "assets/themes/default/chess/black/chess_m.png"
+		},
+		{
+			"name": "black_chess_n",
+			"type": "image",
+			"url": "assets/themes/default/chess/black/chess_n.png"
+		},
+		{
+			"name": "black_chess_r",
+			"type": "image",
+			"url": "assets/themes/default/chess/black/chess_r.png"
+		},
+		{
+			"name": "black_chess_s",
+			"type": "image",
+			"url": "assets/themes/default/chess/black/chess_s.png"
+		},
+
+		{
+			"name":"bg",
+			"type":"image",
+			"url":"assets/themes/default/bg.jpg"
+		},
+		{
+			"name":"description_json",
+			"type":"json",
+			"url":"config/description.json"
+		}
+	]
+}
