@@ -9,11 +9,10 @@ export default class PlayerInfo extends eui.Group {
         super();
         this.isOther = isOther;
         
-        this.height = 30;
+        this.height = 20;
 
         this.addChild(this.rect);
 
-        this.txtNickname.y = 8;
         this.txtNickname.size = 20;
         this.addChild(this.txtNickname);
         this.load(null);
@@ -29,6 +28,6 @@ export default class PlayerInfo extends eui.Group {
     setActive(active: boolean) {
         this.rect.graphics.clear();
         this.rect.graphics.beginFill(active ? 0x00ff00 : 0xffffff, active ? 0.5 : 0);
-        this.rect.graphics.drawRoundRect(0, 0, 50, 32, 8, 8);
+        this.rect.graphics.drawRoundRect(0, 0, 50, 20, 8, 8);
     }
 }

@@ -32,18 +32,16 @@ export default class LobbyScene extends AbstractScene {
         this.addChild(btnQuickMatch);
 
         let roomLayout = new eui.TileLayout();
-        roomLayout.horizontalGap = 10;
-        roomLayout.verticalGap = 10;
+        roomLayout.horizontalGap = 8;
+        roomLayout.verticalGap = 8;
         roomLayout.columnAlign = eui.ColumnAlign.JUSTIFY_USING_WIDTH;
         roomLayout.rowAlign = eui.RowAlign.JUSTIFY_USING_HEIGHT;
-        roomLayout.paddingTop = 0;
-        roomLayout.paddingRight = 30;
+        roomLayout.paddingTop = 8;
+        roomLayout.paddingRight = 8;
         roomLayout.paddingLeft = 0;
-        roomLayout.paddingBottom = 10;
+        roomLayout.paddingBottom = 8;
         roomLayout.requestedColumnCount = 2;
-        this.roomContainer.y = 100;
-        this.roomContainer.width = 500;
-        this.roomContainer.height = 400;
+        this.roomContainer.y = 60;
         this.roomContainer.layout = roomLayout;
         this.addChild(this.roomContainer);
 

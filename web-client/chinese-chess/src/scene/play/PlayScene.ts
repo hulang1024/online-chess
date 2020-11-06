@@ -54,8 +54,8 @@ export default class PlayScene extends AbstractScene implements RoundGame {
         this.selectSound.load("resource/assets/themes/default/audio/select.wav");
 
         let group = new eui.Group();
-        group.x = 20;
-        group.y = 20;
+        group.x = 8;
+        group.y = 8;
         group.layout = new eui.HorizontalLayout();
         this.addChild(group);
 
@@ -66,8 +66,18 @@ export default class PlayScene extends AbstractScene implements RoundGame {
 
         // 头部
         let head = new eui.Group();
-        head.height = 60;
+        head.height = 80;
         head.layout = new eui.VerticalLayout();
+        mainGroup.addChild(head);
+
+        let roomInfo = new eui.Group();
+        roomInfo.height = 20;
+        let txtRoomNo = new egret.TextField();
+        txtRoomNo.size = 20;
+        txtRoomNo.width = 200;
+        txtRoomNo.text = '房间号:' + room.id;
+        roomInfo.addChild(txtRoomNo);
+        head.addChild(roomInfo);
 
         // 对方玩家信息
         if (otherPlayer != null) {
@@ -86,8 +96,6 @@ export default class PlayScene extends AbstractScene implements RoundGame {
         waitInfo.addChild(txtWaitTip);
         head.addChild(waitInfo);
 
-        mainGroup.addChild(head);
-
         // 棋盘
         this.chessboard.addEventListener(ChessboardClickEvent.TYPE, this.onChessboardClick, this);
         this.chessboard.touchEnabled = false;
@@ -98,12 +106,18 @@ export default class PlayScene extends AbstractScene implements RoundGame {
             chess.touchEnabled = false;
         });
 
+        let buttonGroup = new eui.Group();
+        let buttonGroupLayout = new eui.HorizontalLayout();
+        buttonGroupLayout.paddingTop = 8;
+        buttonGroup.layout = buttonGroupLayout;
+        mainGroup.addChild(buttonGroup);
+
         // 准备按钮
         let btnReady = new ReadyButton(false);
         btnReady.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             socketClient.send('chessplay.ready');
         }, this);
-        group.addChild(btnReady);
+        buttonGroup.addChild(btnReady);
 
         // 离开按钮
         let btnLeave = new eui.Button();
@@ -114,7 +128,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
             socketClient.send('room.leave');
             this.popScene();
         }, this);
-        group.addChild(btnLeave);
+        buttonGroup.addChild(btnLeave);
 
         (async () => {
             await socketClient.connect();
