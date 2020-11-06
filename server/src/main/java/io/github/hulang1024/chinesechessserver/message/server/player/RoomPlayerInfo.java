@@ -14,6 +14,8 @@ public class RoomPlayerInfo {
      */
     private String nickname;
 
+    private int chessHost;
+
     /**
      * 准备状态
      */

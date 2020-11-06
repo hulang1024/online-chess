@@ -17,6 +17,11 @@ public class Player {
     @Setter
     @Getter
     private String nickname;
+
+    @Setter
+    @Getter
+    private int chessHost;
+
     /**
      * 已加入的房间
      */

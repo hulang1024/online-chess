@@ -8,6 +8,7 @@ public class PlayerConvert {
         RoomPlayerInfo result = new RoomPlayerInfo();
         result.setId(player.getId());
         result.setNickname(player.getNickname());
+        result.setChessHost(player.getChessHost());
         result.setReadyed(player.isReadyed());
 
         return result;

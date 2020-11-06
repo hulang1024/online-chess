@@ -7,9 +7,11 @@ import io.github.hulang1024.chinesechessserver.domain.Player;
 import io.github.hulang1024.chinesechessserver.domain.Room;
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessEat;
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessMove;
+import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessPick;
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessPlayReady;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessEatResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessMoveResult;
+import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPickResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPlayReadyResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPlayRoundStart;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomUpdate;
@@ -23,6 +25,7 @@ public class ChessPlayMessageListener extends MessageListener {
     @Override
     public void init() {
         addMessageHandler(ChessPlayReady.class, this::ready);
+        addMessageHandler(ChessPick.class, this::pickChess);
         addMessageHandler(ChessMove.class, this::moveChess);
         addMessageHandler(ChessEat.class, this::eatChess);
     }
@@ -57,12 +60,27 @@ public class ChessPlayMessageListener extends MessageListener {
         }
     }
 
+    private void pickChess(ChessPick chessPick) {
+        Player actionPlayer = playerSessionService.getPlayer(chessPick.getSession());
+
+        ChessPickResult result = new ChessPickResult();
+        result.setHost(actionPlayer.getChessHost());
+        result.setChessRow(chessPick.getChessRow());
+        result.setChessCol(chessPick.getChessCol());
+        // 广播给已在此房间的其它玩家
+        actionPlayer.getJoinedRoom().getPlayers().forEach((player) -> {
+            if (player.getSession() != actionPlayer.getSession()) {
+                send(result, player.getSession());
+            }
+        });
+    }
+
     private void moveChess(ChessMove chessMove) {
-        Player playerToReady = playerSessionService.getPlayer(chessMove.getSession());
-        Room room = playerToReady.getJoinedRoom();
+        Player actionPlayer = playerSessionService.getPlayer(chessMove.getSession());
+        Room room = actionPlayer.getJoinedRoom();
 
         ChessMoveResult result = new ChessMoveResult();
-        result.setHost(chessMove.getHost());
+        result.setHost(actionPlayer.getChessHost());
         result.setSourceChessRow(chessMove.getSourceChessRow());
         result.setSourceChessCol(chessMove.getSourceChessCol());
         result.setTargetChessRow(chessMove.getTargetChessRow());
@@ -75,11 +93,11 @@ public class ChessPlayMessageListener extends MessageListener {
     }
 
     private void eatChess(ChessEat chessEat) {
-        Player playerToReady = playerSessionService.getPlayer(chessEat.getSession());
-        Room room = playerToReady.getJoinedRoom();
+        Player actionPlayer = playerSessionService.getPlayer(chessEat.getSession());
+        Room room = actionPlayer.getJoinedRoom();
 
         ChessEatResult result = new ChessEatResult();
-        result.setHost(chessEat.getHost());
+        result.setHost(actionPlayer.getChessHost());
         result.setSourceChessRow(chessEat.getSourceChessRow());
         result.setSourceChessCol(chessEat.getSourceChessCol());
         result.setTargetChessRow(chessEat.getTargetChessRow());
@@ -95,10 +113,16 @@ public class ChessPlayMessageListener extends MessageListener {
         // 创建棋局
         ChessPlayRound round;
         if (room.getRound() == null) {
-            // 第一局红方默认是房主
-            Player other = room.getPlayers().stream()
-                .filter(player -> player != room.getOwner()).findFirst().get();
-            round = new ChessPlayRound(room.getOwner(), other);
+            Player redPlayer = null;
+            Player blackPlayer = null;
+            for (Player player : room.getPlayers()) {
+                if (player.getChessHost() == 1) {
+                    redPlayer = player;
+                } else {
+                    blackPlayer = player;
+                }
+            }
+            round = new ChessPlayRound(redPlayer, blackPlayer);
             room.setRound(round);
         } else {
             // 后面局交换先手

@@ -110,8 +110,16 @@ public class RoomMessageListener extends MessageListener {
             return;
         }
 
+        // 设置棋方
+        if (room.getPlayerCount() == 0) {
+            playerToJoin.setChessHost(1);
+        } else {
+            Player otherPlayer = room.getPlayers().get(0);
+            playerToJoin.setChessHost(otherPlayer.getChessHost() == 1 ? 2 : 1);
+        }
+
         playerToJoin.joinRoom(room);
-        
+
         // 加入之后要重新设置房间状态
         result.setRoom(new RoomConvert().toLobbyRoom(room));
         
@@ -165,7 +173,10 @@ public class RoomMessageListener extends MessageListener {
             });
         } else {
             // 房主变成留下的人
-            room.setOwner(room.getPlayers().get(0));
+            Player player = room.getPlayers().get(0);
+            room.setOwner(player);
+            // 反转棋方
+            player.setChessHost(player.getChessHost() == 1 ? 2 : 1);
 
             // 大厅广播房间更新（玩家少一个）
             LobbyRoomUpdate roomUpdate = new LobbyRoomUpdate();

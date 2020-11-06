@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 @MessageType("chessplay.chess_eat")
 public class ChessEat extends ClientMessage {
-    private int host;
     private int sourceChessRow;
     private int sourceChessCol;
     private int targetChessRow;
