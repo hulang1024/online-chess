@@ -9,6 +9,7 @@ import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessEat
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessMove;
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessPick;
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessPlayReady;
+import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessPlayRoundNew;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessEatResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessMoveResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPickResult;

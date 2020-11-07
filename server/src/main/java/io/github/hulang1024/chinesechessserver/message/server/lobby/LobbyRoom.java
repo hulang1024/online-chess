@@ -24,6 +24,11 @@ public class LobbyRoom {
     private int playerCount;
 
     /**
+     * 有密码
+     */
+    private boolean locked;
+
+    /**
      * 房间玩家信息
      */
     private List<RoomPlayerInfo> players;

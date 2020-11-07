@@ -24,5 +24,7 @@ public class ChessPlayRound {
         Player player = redPlayer;
         redPlayer = blackPlayer;
         blackPlayer = player;
+        redPlayer.setChessHost(1);
+        blackPlayer.setChessHost(2);
     }
 }

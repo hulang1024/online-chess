@@ -3,6 +3,7 @@ package io.github.hulang1024.chinesechessserver.listener;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import io.github.hulang1024.chinesechessserver.ChineseChessServerEndpoint;
 import io.github.hulang1024.chinesechessserver.convert.RoomConvert;
 import io.github.hulang1024.chinesechessserver.domain.Player;
 import io.github.hulang1024.chinesechessserver.domain.Room;
@@ -13,6 +14,7 @@ import io.github.hulang1024.chinesechessserver.message.client.lobby.SearchRooms;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomJoin;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.QuickMatchResult;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.SearchRoomsResult;
+import io.github.hulang1024.chinesechessserver.message.server.stat.OnlineStatMessage;
 import io.github.hulang1024.chinesechessserver.service.LobbyService;
 import io.github.hulang1024.chinesechessserver.service.PlayerSessionService;
 import io.github.hulang1024.chinesechessserver.service.RoomService;
@@ -26,6 +28,12 @@ public class LobbyMessageListener extends MessageListener {
     public void init() {
         addMessageHandler(LobbyEnter.class, (lobbyEnter) -> {
             lobbyService.addStayLobbySession(lobbyEnter.getSession());
+
+            OnlineStatMessage statMsg = new OnlineStatMessage();
+            statMsg.setOnline(ChineseChessServerEndpoint.connectedSessionCount);
+            lobbyService.getAllStayLobbySessions().forEach(session -> {
+                send(statMsg, session);
+            });
         });
         
         addMessageHandler(LobbyExit.class, (lobbyExit) -> {
@@ -39,6 +47,13 @@ public class LobbyMessageListener extends MessageListener {
     private void searchRooms(SearchRooms searchParams) {
         SearchRoomsResult result = new SearchRoomsResult();
         result.setRooms(roomService.search(searchParams).stream()
+            .sorted((a, b) -> {
+                int ret = a.getPlayerCount() - b.getPlayerCount();
+                if (ret == 0) {
+                    return b.getCreateAt().compareTo(a.getCreateAt());
+                }
+                return ret;
+            })
             .map(room -> new RoomConvert().toLobbyRoom(room))
             .collect(Collectors.toList()));
 

@@ -8,4 +8,5 @@ import lombok.Data;
 @MessageType("room.create")
 public class RoomCreate extends ClientMessage {
     private String roomName;
+    private String password;
 }

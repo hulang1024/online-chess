@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.yeauty.pojo.Session;
 
+import io.github.hulang1024.chinesechessserver.ChineseChessServerEndpoint;
 import io.github.hulang1024.chinesechessserver.ClientEventManager;
 import io.github.hulang1024.chinesechessserver.convert.PlayerConvert;
 import io.github.hulang1024.chinesechessserver.convert.RoomConvert;
@@ -18,6 +19,7 @@ import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomUpd
 import io.github.hulang1024.chinesechessserver.message.server.lobby.RoomCreateResult;
 import io.github.hulang1024.chinesechessserver.message.server.room.RoomJoinResult;
 import io.github.hulang1024.chinesechessserver.message.server.room.RoomLeaveResult;
+import io.github.hulang1024.chinesechessserver.message.server.stat.OnlineStatMessage;
 import io.github.hulang1024.chinesechessserver.service.LobbyService;
 import io.github.hulang1024.chinesechessserver.service.PlayerSessionService;
 import io.github.hulang1024.chinesechessserver.service.RoomService;
@@ -40,7 +42,23 @@ public class RoomMessageListener extends MessageListener {
                 leave.setSession(session);
                 leaveRoom(leave);
             }
+
             lobbyService.removeStayLobbySession(session);
+
+            sendUpdateStat();
+        });
+
+        ClientEventManager.addSessionOpenEventHandler(session -> {
+            sendUpdateStat();
+        });
+    }
+
+    private void sendUpdateStat() {
+        OnlineStatMessage statMsg = new OnlineStatMessage();
+        statMsg.setOnline(ChineseChessServerEndpoint.connectedSessionCount);
+        
+        lobbyService.getAllStayLobbySessions().forEach(session -> {
+            send(statMsg, session);
         });
     }
 
@@ -54,6 +72,9 @@ public class RoomMessageListener extends MessageListener {
             send(result, create.getSession());
             return;
         }
+        
+        // 初始就准备状态
+        player.setReadyed(true);
 
         // 创建房间
         Room room = roomService.create(create);
@@ -75,6 +96,7 @@ public class RoomMessageListener extends MessageListener {
         RoomJoin roomJoin = new RoomJoin();
         roomJoin.setSession(create.getSession());
         roomJoin.setRoomId(room.getId());
+        roomJoin.setPassword(room.getPassword());
         joinRoom(roomJoin);
     }
 
@@ -91,7 +113,7 @@ public class RoomMessageListener extends MessageListener {
         }
         
         Player playerToJoin = playerSessionService.getPlayer(session);
-
+        
         result.setPlayer(new PlayerConvert().toRoomPlayerInfo(playerToJoin));
         
         result.setRoom(new RoomConvert().toLobbyRoom(room));
@@ -108,6 +130,15 @@ public class RoomMessageListener extends MessageListener {
             result.setCode(3);
             send(result, session);
             return;
+        }
+
+        // 验证密码，如果有密码
+        if (room.isLocked()) {
+            if (!room.getPassword().equals(roomJoin.getPassword())) {
+                result.setCode(6);
+                send(result, session);
+                return;
+            }
         }
 
         // 设置棋方

@@ -1,8 +1,10 @@
 package io.github.hulang1024.chinesechessserver.domain;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,22 +12,19 @@ import lombok.Setter;
  * 房间
  * @author HuLang
  */
+@Data
 public class Room {
-    @Setter
-    @Getter
     private long id;
 
-    @Setter
-    @Getter
     private String name;
 
-    @Setter
-    @Getter
     private ChessPlayRound round;
 
-    @Setter
-    @Getter
     private Player owner;
+
+    private String password;
+    
+    private Date createAt;
 
     private List<Player> players = new ArrayList<>();
 
@@ -43,6 +42,10 @@ public class Room {
 
     public List<Player> getPlayers() {
         return players;
+    }
+
+    public boolean isLocked() {
+        return password != null;
     }
 
     public int calcStatus() {

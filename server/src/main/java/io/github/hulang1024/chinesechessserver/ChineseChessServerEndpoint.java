@@ -17,6 +17,8 @@ import java.io.IOException;
 @ServerEndpoint(port = "${websocket.port}")
 @Slf4j
 public class ChineseChessServerEndpoint {
+    public static int connectedSessionCount = 0;
+    
     @BeforeHandshake
     public void handshake(Session session, HttpHeaders headers){
         session.setSubprotocols("stomp");
@@ -25,13 +27,14 @@ public class ChineseChessServerEndpoint {
     @OnOpen
     public void onOpen(Session session, HttpHeaders headers){
         log.info("一个连接打开");
-
+        connectedSessionCount++;
+        ClientEventManager.emitSessionOpenEvent(session);
     }
 
     @OnClose
     public void onClose(Session session) throws IOException {
         log.info("一个连接关闭");
-
+        connectedSessionCount--;
         ClientEventManager.emitSessionCloseEvent(session);
     }
 
@@ -42,6 +45,11 @@ public class ChineseChessServerEndpoint {
 
     @OnMessage
     public void onMessage(Session session, String message) {
+        if (message.equals("ping")) {
+            session.sendText("pong");
+            return;
+        }
+        
         log.info("收到消息: {}", message);
         ClientMessageDispatcher.dispatch(message, session);
     }

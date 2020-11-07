@@ -9,11 +9,22 @@ import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Cons
 
 public class ClientEventManager {
     private static List<Consumer<Session>> sessionCloseEventHandlers = new ArrayList<>();
+    private static List<Consumer<Session>> sessionOpenEventHandlers = new ArrayList<>();
 
     public static void emitSessionCloseEvent(Session session) {
         sessionCloseEventHandlers.forEach(handler -> {
             handler.accept(session);
         });
+    }
+
+    public static void emitSessionOpenEvent(Session session) {
+        sessionOpenEventHandlers.forEach(handler -> {
+            handler.accept(session);
+        });
+    }
+
+    public static void addSessionOpenEventHandler(Consumer<Session> handler) {
+        sessionOpenEventHandlers.add(handler);
     }
 
     public static void addSessionCloseEventHandler(Consumer<Session> handler) {

@@ -1,8 +1,11 @@
 package io.github.hulang1024.chinesechessserver.service;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.util.StringUtils;
 
 import io.github.hulang1024.chinesechessserver.domain.Room;
 import io.github.hulang1024.chinesechessserver.message.client.lobby.SearchRooms;
@@ -23,9 +26,11 @@ public class RoomService {
     public Room create(RoomCreate create) {
         Room room = new Room();
         room.setId(roomId++);
-        room.setName(create.getRoomName() == null
+        room.setName(StringUtils.isEmpty(create.getRoomName())
             ? String.valueOf("#" + room.getId())
             : create.getRoomName());
+        room.setCreateAt(new Date());
+        room.setPassword(StringUtils.isEmpty(create.getPassword()) ? null : create.getPassword());
         roomMap.put(room.getId(), room);
 
         return room;

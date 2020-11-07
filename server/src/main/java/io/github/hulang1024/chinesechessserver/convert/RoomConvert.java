@@ -14,6 +14,7 @@ public class RoomConvert {
         result.setPlayers(room.getPlayers().stream()
             .map(p -> { return new PlayerConvert().toRoomPlayerInfo(p); })
             .collect(Collectors.toList()));
+        result.setLocked(room.isLocked());
         result.setStatus(room.calcStatus());
         return result;
     }

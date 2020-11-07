@@ -8,4 +8,5 @@ import lombok.Data;
 @MessageType("room.join")
 public class RoomJoin extends ClientMessage {
     private long roomId;
+    private String password;
 }
