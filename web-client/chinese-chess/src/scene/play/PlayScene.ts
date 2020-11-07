@@ -26,6 +26,7 @@ import ChatOverlay from "./ChatOverlay";
 
 export default class PlayScene extends AbstractScene implements RoundGame {
     private listeners = {};
+    private connectionCloseHandler: Function;
     private chessboard: DisplayChessboard = new DisplayChessboard(this);
     // 我方是红还是黑
     private chessHost: ChessHost;
@@ -41,7 +42,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
     private btnReady: ReadyButton;
     private resultDialog = new ResultDialog();
     private chatOverlay = new ChatOverlay();
-
+    
     constructor(context: SceneContext, room: Room) {
         super(context);
 
@@ -160,7 +161,9 @@ export default class PlayScene extends AbstractScene implements RoundGame {
 
         (async () => {
             await socketClient.connect();
-
+            socketClient.addEventListener(egret.Event.CLOSE, this.connectionCloseHandler = (event: egret.Event) => {
+                this.popScene();
+            }, this);
             socketClient.add('room.leave', this.listeners['room.leave'] = (msg) => {
                 if (msg.code != 0) {
                     return;
@@ -218,6 +221,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
         for (let key in this.listeners) {
             socketClient.signals[key].remove(this.listeners[key]);
         }
+        socketClient.removeEventListener(egret.Event.CLOSE, this.connectionCloseHandler, this);
     }
 
     startRound() {
@@ -228,7 +232,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
         this.turn();
 
         // 将远程对方坐标转换到本地坐标
-        const remoteToLocalPos = (host: number, row: numniber, col: number) => {
+        const remoteToLocalPos = (host: number, row: number, col: number) => {
             let isOtherHost = host != this.chessHost;
             return new ChessPos(
                 isOtherHost ? 9 - row : row, // 对方总是在顶部

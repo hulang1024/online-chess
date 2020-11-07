@@ -26,6 +26,7 @@ export default class ChatOverlay extends Dialog {
     }
 
     show() {
+        this.textEditMsg.text = '';
         this.visible = true;
     }
 }

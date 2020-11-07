@@ -27,7 +27,7 @@ class SocketClient extends egret.WebSocket {
                 }, this);
                 this.addEventListener(egret.Event.CLOSE, (event: egret.Event) => {
                     const tryTimeout = 5000;
-                    messager.error(`未连接到服务器，${tryTimeout / 1000}后重试。`, this.stage);
+                    messager.error(`未连接到服务器，${tryTimeout / 1000}秒钟后重试。`, this.stage);
 
                     setTimeout(() => {
                         this.connect();
