@@ -1,5 +1,5 @@
+import RoomPlayer from "../RoomPlayer";
 import Room from "./Room";
-import RoomPlayer from "./RoomPlayer";
 
 export default class DisplayRoom extends eui.Component {
     room: Room;
@@ -12,7 +12,7 @@ export default class DisplayRoom extends eui.Component {
         super();
         this.room = room;
 
-        this.width = 200;
+        this.width = 400;
         this.height = 120;
 
         this.addChild(this.rect);
@@ -72,19 +72,19 @@ export default class DisplayRoom extends eui.Component {
         txtName.x = 8;
         txtName.y = 8;
         txtName.size = 16;
-        txtName.text = '房间' + name;
+        txtName.text = name;
     }
 
     private drawStatus(status: number) {
         this.rect.graphics.clear();
-        this.rect.graphics.beginFill({1: 0x00ff00, 2: 0xff8800, 3: 0x555555}[status], 0.9);
-        this.rect.graphics.drawRoundRect(0, 0, 200, 120, 8, 8);
+        this.rect.graphics.beginFill({1: 0x00bb00, 2: 0xff8800, 3: 0x555555}[status]);
+        this.rect.graphics.drawRoundRect(0, 0, this.width, 120, 8, 8);
 
         let { txtStatus } = this;
         txtStatus.x = 8;
         txtStatus.y = 28;
         txtStatus.size = 16;
-        txtStatus.text = {1: '可加入', 2: '即将开始', 3: '进行中'}[status];
+        txtStatus.text = {1: '可加入' + (this.room.locked ? "(有密码)" : ""), 2: '即将开始', 3: '进行中'}[status];
     }
 
     private addPlayerList(room: Room, players: Array<RoomPlayer>) {

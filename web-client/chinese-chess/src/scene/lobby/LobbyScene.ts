@@ -1,49 +1,73 @@
+import messager from "../../component/messager";
 import socketClient from "../../online/socket";
 import platform from "../../Platform";
 import AbstractScene from "../AbstractScene";
 import PlayScene from "../play/PlayScene";
 import SceneContext from "../SceneContext";
-import DisplayRoom from "./DisplayRoom";
-import Room from "./Room";
+import DisplayRoom from "./room/DisplayRoom";
+import PasswordForJoinRoomDialog from "./room/PasswordForJoinRoomDialog";
+import Room from "./room/Room";
+import RoomCreateDialog from "./room/RoomCreateDialog";
 
 export default class LobbyScene extends AbstractScene {
     private listeners = {};
     private roomContainer = new eui.Group();
+    private roomCreateDialog = new RoomCreateDialog();
+    private passwordForJoinRoomDialog = new PasswordForJoinRoomDialog();
 
     constructor(context: SceneContext) {
         super(context);
-
-        this.x = 20;
-        this.y = 20;
-
+        
+        let buttonGroupLayout = new eui.HorizontalLayout();
+        buttonGroupLayout.paddingLeft = 8;
+        buttonGroupLayout.gap = 32;
+        let buttonGroup = new eui.Group();
+        buttonGroup.layout = buttonGroupLayout;
         let btnCreateRoom = new eui.Button();
-        btnCreateRoom.width = 100;
-        btnCreateRoom.height = 50;
         btnCreateRoom.label = "创建房间";
         btnCreateRoom.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onCreateRoomClick, this);
-        this.addChild(btnCreateRoom);
+        buttonGroup.addChild(btnCreateRoom);
 
         let btnQuickMatch = new eui.Button();
         btnQuickMatch.x = 120;
-        btnQuickMatch.width = 100;
-        btnQuickMatch.height = 50;
         btnQuickMatch.label = "快速加入";
         btnQuickMatch.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onQuickMatchClick, this);
-        this.addChild(btnQuickMatch);
+        buttonGroup.addChild(btnQuickMatch);
+
+        this.addChild(buttonGroup);
+
+        let statGroup = new eui.Group();
+        statGroup.x = 300;
+        statGroup.y = 20;
+        let lblOnline = new eui.Label();
+        lblOnline.size = 18;
+        lblOnline.text = "在线人数:";
+        statGroup.addChild(lblOnline);
+        let txtOnline = new egret.TextField();
+        txtOnline.size = 20;
+        txtOnline.x = 80;
+        statGroup.addChild(txtOnline);
+        this.addChild(statGroup);
 
         let roomLayout = new eui.TileLayout();
         roomLayout.horizontalGap = 8;
         roomLayout.verticalGap = 8;
         roomLayout.columnAlign = eui.ColumnAlign.JUSTIFY_USING_WIDTH;
         roomLayout.rowAlign = eui.RowAlign.JUSTIFY_USING_HEIGHT;
-        roomLayout.paddingTop = 8;
+        roomLayout.paddingTop = 16;
         roomLayout.paddingRight = 8;
-        roomLayout.paddingLeft = 0;
+        roomLayout.paddingLeft = 8 ;
         roomLayout.paddingBottom = 8;
-        roomLayout.requestedColumnCount = 2;
         this.roomContainer.y = 60;
         this.roomContainer.layout = roomLayout;
         this.addChild(this.roomContainer);
+
+
+        this.roomCreateDialog.y = 100;
+        this.addChild(this.roomCreateDialog);
+
+        this.passwordForJoinRoomDialog.y = 100;
+        this.addChild(this.passwordForJoinRoomDialog);
 
         (async () => {
             await socketClient.connect();
@@ -56,9 +80,12 @@ export default class LobbyScene extends AbstractScene {
                     this.addRoom(room);
                 });
             });
+            socketClient.add('stat.online', this.listeners['stat.online'] = (msg) => {
+                txtOnline.text = msg.online;
+            });
             socketClient.add('room.create', this.listeners['room.create'] = (msg) => {
                 if (msg.code != 0) {
-                    alert('创建房间失败');
+                    messager.fail({msg: '创建房间失败'}, this);
                     return;
                 }
                 this.addRoom(msg.room);
@@ -80,17 +107,24 @@ export default class LobbyScene extends AbstractScene {
                 this.roomContainer.removeChild(room);
             });
             socketClient.add('room.join', this.listeners['room.join'] = (msg) => {
-                if (msg.code == 2) {
-                    alert('该房间已不存在');
-                    return;
+                switch (msg.code) {
+                    case 2:
+                        messager.fail('该房间已不存在', this);
+                        return;
+                    case 3:
+                        messager.fail('房间已满', this);
+                        return;
+                    case 4:
+                        messager.fail('你已加入本房间', this);
+                        return;
+                    case 5:
+                        messager.fail('你已加入其它房间', this);
+                        return;
+                    case 6:
+                        messager.fail('密码错误', this);
+                        return;
                 }
-                if (msg.code == 3) {
-                    alert('加入失败');
-                    return;
-                }
-                if (msg.code != 0 && msg.code != 4) {
-                    return;
-                }
+
                 platform.login(msg.player);
                 this.pushScene((context) => new PlayScene(context, msg.room));
             });
@@ -105,14 +139,21 @@ export default class LobbyScene extends AbstractScene {
     }
 
     onCreateRoomClick() {
-        socketClient.send('room.create');
+        this.roomCreateDialog.visible = true;
+        this.roomCreateDialog.onOkClick = (room) => {
+            this.roomCreateDialog.visible = false;
+            socketClient.send('room.create', {
+                roomName: room.name,
+                password: room.password
+            });
+        }
     }
 
     onQuickMatchClick() {
         socketClient.send('lobby.quick_match');
         socketClient.addOnce('lobby.quick_match', (msg) => {
             if (msg.code != 0) {
-                alert('快速加入失败，原因：' + {2: '你已加入其它房间', 3: '没有可进入的房间'}[msg.code] || '未知')
+                messager.fail('快速加入失败，因为' + {2: '你已加入其它房间', 3: '没有可进入的房间'}[msg.code] || '未知', this);
                 return;
             }
             // 成功会有加入房间事件消息，其它地方已处理
@@ -122,9 +163,21 @@ export default class LobbyScene extends AbstractScene {
     private addRoom(room: Room) {
         let displayRoom = new DisplayRoom(room);
         displayRoom.addEventListener(egret.TouchEvent.TOUCH_TAP, (event: egret.TouchEvent) => {
-            socketClient.send('room.join', {roomId: room.id});
+            this.onJoinRoomClick(room);
         }, this);
         this.roomContainer.addChild(displayRoom);
+    }
+
+    private onJoinRoomClick(room) {
+        if (room.locked) {
+            this.passwordForJoinRoomDialog.showFor(room);
+            this.passwordForJoinRoomDialog.onOkClick = (password) => {
+                this.passwordForJoinRoomDialog.visible = false;
+                socketClient.send('room.join', {roomId: room.id, password});
+            }
+        } else {
+            socketClient.send('room.join', {roomId: room.id});
+        }
     }
 
 }

@@ -27,6 +27,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
+import socketClient from "./online/socket";
 import LobbyScene from "./scene/lobby/LobbyScene";
 import SceneContext from "./scene/SceneContext";
 import SceneManager from "./scene/scene_manger";
@@ -119,6 +120,7 @@ class Main extends eui.UILayer  {
 
     private createGameScene() {
         let context = new SceneContext(this.stage);
+        socketClient.stage = this.stage;
         SceneManager.of(context).pushScene(context => new LobbyScene(context));
     }
 }

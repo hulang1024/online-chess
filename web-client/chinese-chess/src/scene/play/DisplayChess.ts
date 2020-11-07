@@ -65,4 +65,8 @@ export default class DisplayChess extends egret.Sprite implements Chess {
     getHost() {
         return this.chessState.getHost();
     }
+
+    getChess() {
+        return this.chessState;
+    }
 }

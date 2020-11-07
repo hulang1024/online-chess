@@ -19,9 +19,13 @@ export default class PlayerInfo extends eui.Group {
     }
 
     load(player: RoomPlayer) {
-        this.txtNickname.text = player == null
-            ? '等待玩家加入'
-            : (this.isOther ? "对方: " : "") + player.nickname;
+        if (player == null) {
+            this.visible = false;
+            return;
+        } else {
+            this.visible = true;
+        }
+        this.txtNickname.text = (this.isOther ? "对方: " : "") + player.nickname;
         this.setActive(false);
     }
 

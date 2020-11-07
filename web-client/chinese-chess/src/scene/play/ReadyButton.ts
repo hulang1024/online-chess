@@ -1,20 +1,20 @@
 export default class ReadyButton extends eui.Button {
-    private readyed: boolean = false;
+    private state: number = 0;//0=未准备，1=已准备，3=开始
 
-    constructor(readyed: boolean) {
+    constructor(state: number) {
         super();
         this.width = 100;
         this.height = 50;
-        this.readyed = readyed;
+        this.state = state;
         this.update();
     }
 
-    public toggle() {
-        this.readyed = !this.readyed;
+    public setState(state: number) {
+        this.state = state;
         this.update();
     }
 
     private update() {
-        this.label = this.readyed ? '取消准备' : '准备';;
+        this.label = {0: '准备', 1: '取消准备', 3: '开始'}[this.state];
     }
 }
