@@ -3,8 +3,9 @@ export default class Dialog extends eui.Group {
     body = new eui.Group();
     onCancel: Function;
     onOk: Function;
-    private txtTitle: egret.TextField;
-    private background = new egret.Shape();
+    protected txtTitle: egret.TextField;
+    protected background = new egret.Shape();
+    protected btnCancel = new eui.Button();
 
     constructor() {
         super();
@@ -43,15 +44,14 @@ export default class Dialog extends eui.Group {
         footer.layout = footerLayout;
 
         // 取消按钮
-        let btnCancel = new eui.Button();
-        btnCancel.label = "取消";
-        btnCancel.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+        this.btnCancel.label = "取消";
+        this.btnCancel.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             if (this.onCancel) {
                 this.onCancel();
             }
             this.visible = false;
         }, this);
-        footer.addChild(btnCancel);
+        footer.addChild(this.btnCancel);
 
         // 确定按钮
         let btnOk = new eui.Button();

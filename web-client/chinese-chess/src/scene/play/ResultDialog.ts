@@ -7,11 +7,13 @@ export default class ResultDialog extends Dialog {
         super();
 
         this.visible = false;
-        this.setSize(424, 216);
+        this.setSize(300, 150);
 
         this.txtResult = new egret.TextField();
         this.txtResult.size = 24;
         this.body.addChild(this.txtResult);
+
+        this.btnCancel.visible = false;
     }
 
     show(isWin: boolean) {

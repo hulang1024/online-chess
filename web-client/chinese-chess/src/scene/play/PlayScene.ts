@@ -228,7 +228,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
         this.turn();
 
         // 将远程对方坐标转换到本地坐标
-        const remoteToLocalPos = (host: number, row: number, col: number) => {
+        const remoteToLocalPos = (host: number, row: numniber, col: number) => {
             let isOtherHost = host != this.chessHost;
             return new ChessPos(
                 isOtherHost ? 9 - row : row, // 对方总是在顶部
@@ -301,7 +301,9 @@ export default class PlayScene extends AbstractScene implements RoundGame {
 
         setTimeout(() => {
             this.resultDialog.show(isWin);
-            
+            this.resultDialog.onOk = () => {
+                this.resultDialog.visible = false;
+            }
             socketClient.send('chessplay.ready');
         }, 100);
     }
