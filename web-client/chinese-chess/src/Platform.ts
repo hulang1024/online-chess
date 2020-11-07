@@ -1,3 +1,4 @@
+import socketClient from "./online/socket";
 import RoomPlayer from "./scene/lobby/RoomPlayer";
 
 /** 
@@ -10,7 +11,7 @@ interface Platform {
 
     getUserInfo(): any;
 
-    login(any): Promise<void>
+    setUserInfo(any): Promise<void>
 
 }
 
@@ -19,7 +20,7 @@ class DebugPlatform implements Platform {
     getUserInfo() {
         return this.user;
     }
-    async login(user) {
+    async setUserInfo(user: any) {
         this.user = user;
     }
 }

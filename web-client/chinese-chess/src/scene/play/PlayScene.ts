@@ -160,10 +160,10 @@ export default class PlayScene extends AbstractScene implements RoundGame {
         this.addChild(this.chatOverlay);
 
         (async () => {
-            await socketClient.connect();
             socketClient.addEventListener(egret.Event.CLOSE, this.connectionCloseHandler = (event: egret.Event) => {
                 this.popScene();
             }, this);
+
             socketClient.add('room.leave', this.listeners['room.leave'] = (msg) => {
                 if (msg.code != 0) {
                     return;
@@ -183,6 +183,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
                     messager.info(`玩家[${msg.player.nickname}]已离开房间`, this)
                 }
             });
+            
             socketClient.add('room.join', this.listeners['room.join'] = (msg) => {
                 window.focus();
                 otherPlayer = msg.player;
@@ -203,6 +204,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
                 this.updateWaitState(otherPlayer);
                 this.btnReady.setState(otherPlayer && otherPlayer.readyed ? 3 : +this.player.readyed);
             });
+
             socketClient.add('chessplay.round_start', this.listeners['chessplay.round_start'] = (msg) => {
                 this.btnReady.visible = false;
                 txtWaitTip.visible = false;
@@ -211,6 +213,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
                 this.clickSound.play(0, 1);
                 messager.info('棋局开始', this);
             });
+
             socketClient.add('chat.message', this.listeners['chat.message'] = (msg) => {
                 messager.info({msg: '对方消息: ' + msg.content, duration: 6000}, this);
             });

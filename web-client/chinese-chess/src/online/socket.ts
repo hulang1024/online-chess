@@ -1,4 +1,5 @@
 import messager from "../component/messager";
+import platform from "../Platform";
 
 interface MessageSignal {
     [index: string]: Signal;
@@ -6,10 +7,39 @@ interface MessageSignal {
 
 class SocketClient extends egret.WebSocket {
     signals: MessageSignal = {};
+    onConnected: Function;
     stage: egret.Stage;
 
     constructor() {
         super();
+
+        this.addEventListener(egret.ProgressEvent.SOCKET_DATA, this.onSocketMessage, this);
+        
+        this.addEventListener(egret.IOErrorEvent.IO_ERROR, (event: egret.IOErrorEvent) => {
+            if (!this.connected) {
+                return;
+            }
+            messager.error('消息错误', this.stage);
+            console.log(event);
+        }, this);
+
+        this.addEventListener(egret.Event.CLOSE, (event: egret.Event) => {
+            const tryTimeout = 3000;
+            messager.error({
+                msg: `未连接到服务器，${tryTimeout / 1000}秒钟后自动重试。`,
+                duration: 3000
+            }, this.stage);
+
+            setTimeout(() => {
+                this.connect();
+            }, tryTimeout);
+        }, this);
+
+        // 重新登录监听暂时写在这里
+        this.add('login.result', (msg) => {
+            messager.info(`游客登录成功，你好 ${msg.user.nickname}`, this.stage);
+            platform.setUserInfo(msg.user);
+        });
     }
 
     connect() {
@@ -17,30 +47,18 @@ class SocketClient extends egret.WebSocket {
             if (this.connected) {
                 resolve();
             } else {
-                this.addEventListener(egret.ProgressEvent.SOCKET_DATA, this.onSocketMessage, this);
-                this.addEventListener(egret.IOErrorEvent.IO_ERROR, (event: egret.IOErrorEvent) => {
-                    if (!this.connected) {
-                        return;
-                    }
-                    messager.error('消息错误', this.stage);
-                    console.log(event);
-                }, this);
-                this.addEventListener(egret.Event.CLOSE, (event: egret.Event) => {
-                    const tryTimeout = 5000;
-                    messager.error(`未连接到服务器，${tryTimeout / 1000}秒钟后重试。`, this.stage);
-
-                    setTimeout(() => {
-                        this.connect();
-                    }, 5000);
-                }, this);
-
-                this.addEventListener(egret.Event.CONNECT, (event: any) => {
+                if (this.onConnected) {
+                    this.removeEventListener(egret.Event.CONNECT, this.onConnected, this);
+                }
+                this.addEventListener(egret.Event.CONNECT, this.onConnected = (event: any) => {
                     messager.info('连接服务器成功', this.stage);
                     
                     this.runPingTimer();
-
+        
                     resolve();
                 }, this);
+
+                messager.info('正在连接到服务器', this.stage);
 
                 super.connect("180.76.185.34", 9097);
                 //super.connect("192.168.1.101", 9097);

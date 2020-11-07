@@ -10,6 +10,8 @@ interface MessageOptions {
 };
 
 
+let msgCount = 0;
+
 function info(options: MessageOptions | string, context: egret.DisplayObject) {
     message(MessageType.INFO, options, context);
 }
@@ -45,18 +47,21 @@ function message(type: MessageType, options: MessageOptions | string, context: e
         content = options.msg;
     }
 
-    let msgContainer = messageContainer(content, context);
+    let msgContainer = messageContainer(content, context, msgCount);
     context.stage.addChild(msgContainer);
+
+    msgCount++;
 
     // 定时关闭
     setTimeout(() => {
         if (msgContainer.parent) {
             msgContainer.parent.removeChild(msgContainer);
         }
+        msgCount--;
     }, options.duration || 5000);
 }
 
-function messageContainer(child: egret.DisplayObject, context: egret.DisplayObject) {
+function messageContainer(child: egret.DisplayObject, context: egret.DisplayObject, offset: number) {
     let layout = new eui.VerticalLayout();
     layout.paddingTop = 8;
     layout.paddingRight = 8;
@@ -67,7 +72,7 @@ function messageContainer(child: egret.DisplayObject, context: egret.DisplayObje
     const height = (child.height || 100) + 16;
     let container = new eui.Group();
     container.x = (context.stage.stageWidth - width - 8);
-    container.y = (context.stage.stageHeight - height - 8);
+    container.y = (context.stage.stageHeight - height - 8 - (height + 8) * offset);
     container.layout = layout;
 
     let shape = new egret.Shape();

@@ -1,6 +1,5 @@
 import messager from "../../component/messager";
 import socketClient from "../../online/socket";
-import platform from "../../Platform";
 import AbstractScene from "../AbstractScene";
 import PlayScene from "../play/PlayScene";
 import SceneContext from "../SceneContext";
@@ -70,10 +69,6 @@ export default class LobbyScene extends AbstractScene {
         this.addChild(this.passwordForJoinRoomDialog);
 
         (async () => {
-            await socketClient.connect();
-            
-            socketClient.send('lobby.enter');
-            socketClient.send('lobby.search_rooms');
             socketClient.add('lobby.search_rooms', this.listeners['lobby.search_rooms'] = (msg) => {
                 this.roomContainer.removeChildren();
                 msg.rooms.forEach(room => {
@@ -121,13 +116,17 @@ export default class LobbyScene extends AbstractScene {
                         messager.fail('你已加入其它房间', this);
                         return;
                     case 6:
-                        messager.fail('密码错误', this);
+                        messager.fail('加入房间失败：密码错误', this);
                         return;
                 }
 
-                platform.login(msg.player);
                 this.pushScene((context) => new PlayScene(context, msg.room));
             });
+
+            await socketClient.connect();
+            
+            socketClient.send('lobby.enter');
+            socketClient.send('lobby.search_rooms');
         })();
     }
 
