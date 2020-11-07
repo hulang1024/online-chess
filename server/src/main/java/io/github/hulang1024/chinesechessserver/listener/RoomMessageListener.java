@@ -14,6 +14,7 @@ import io.github.hulang1024.chinesechessserver.domain.Room;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomCreate;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomLeave;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomJoin;
+import io.github.hulang1024.chinesechessserver.message.server.LoginResult;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomRemove;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomUpdate;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.RoomCreateResult;
@@ -49,6 +50,13 @@ public class RoomMessageListener extends MessageListener {
         });
 
         ClientEventManager.addSessionOpenEventHandler(session -> {
+            // 这里做个"登录"的逻辑，暂时支持游客登录
+            playerSessionService.login(session);
+            LoginResult loginResult = new LoginResult();
+            loginResult.setCode(0);
+            loginResult.setUser(new PlayerConvert().toRoomPlayerInfo(
+                playerSessionService.getPlayer(session)));
+            send(loginResult, session);
             sendUpdateStat();
         });
     }

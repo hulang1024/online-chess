@@ -58,9 +58,6 @@ public class LobbyMessageListener extends MessageListener {
             .collect(Collectors.toList()));
 
         send(result, searchParams.getSession());
-
-        // 这里做个"登录"的逻辑，暂时支持游客登录
-        playerSessionService.login(searchParams.getSession());
     }
 
 
