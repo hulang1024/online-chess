@@ -9,7 +9,7 @@ import RoomPlayer from "./scene/lobby/RoomPlayer";
  */
 interface Platform {
 
-    getUserInfo(): any;
+    getUserInfo(): RoomPlayer;
 
     setUserInfo(any): Promise<void>
 

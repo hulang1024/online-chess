@@ -9,7 +9,6 @@ export default abstract class AbstractScene extends egret.DisplayObjectContainer
         super();
         this.context = context;
         this.sceneManager = SceneManager.of(context);
-        
     }
 
     onSceneExit() {}

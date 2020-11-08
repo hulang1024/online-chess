@@ -27,7 +27,7 @@ class SocketClient extends egret.WebSocket {
             const tryTimeout = 3000;
             messager.error({
                 msg: `未连接到服务器，${tryTimeout / 1000}秒钟后自动重试。`,
-                duration: 3000
+                duration: 1000
             }, this.stage);
 
             setTimeout(() => {
@@ -36,7 +36,7 @@ class SocketClient extends egret.WebSocket {
         }, this);
 
         // 重新登录监听暂时写在这里
-        this.add('login.result', (msg) => {
+        this.add('user.login', (msg) => {
             messager.info(`游客登录成功，你好 ${msg.user.nickname}`, this.stage);
             platform.setUserInfo(msg.user);
         });
@@ -51,14 +51,14 @@ class SocketClient extends egret.WebSocket {
                     this.removeEventListener(egret.Event.CONNECT, this.onConnected, this);
                 }
                 this.addEventListener(egret.Event.CONNECT, this.onConnected = (event: any) => {
-                    messager.info('连接服务器成功', this.stage);
+                    messager.info('成功连接到服务器', this.stage);
                     
                     this.runPingTimer();
         
                     resolve();
                 }, this);
 
-                messager.info('正在连接到服务器', this.stage);
+                messager.info({msg: '正在连接到服务器', duration: 2000}, this.stage);
 
                 super.connect("180.76.185.34", 9097);
                 //super.connect("192.168.1.101", 9097);

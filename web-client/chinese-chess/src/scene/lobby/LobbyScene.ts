@@ -1,5 +1,6 @@
 import messager from "../../component/messager";
 import socketClient from "../../online/socket";
+import platform from "../../Platform";
 import AbstractScene from "../AbstractScene";
 import PlayScene from "../play/PlayScene";
 import SceneContext from "../SceneContext";
@@ -10,6 +11,7 @@ import RoomCreateDialog from "./room/RoomCreateDialog";
 
 export default class LobbyScene extends AbstractScene {
     private listeners = {};
+    private connectHandler: Function;
     private roomContainer = new eui.Group();
     private roomCreateDialog = new RoomCreateDialog();
     private passwordForJoinRoomDialog = new PasswordForJoinRoomDialog();
@@ -18,6 +20,7 @@ export default class LobbyScene extends AbstractScene {
         super(context);
         
         let buttonGroupLayout = new eui.HorizontalLayout();
+        buttonGroupLayout.paddingTop = 8;
         buttonGroupLayout.paddingLeft = 8;
         buttonGroupLayout.gap = 32;
         let buttonGroup = new eui.Group();
@@ -69,6 +72,10 @@ export default class LobbyScene extends AbstractScene {
         this.addChild(this.passwordForJoinRoomDialog);
 
         (async () => {
+            socketClient.addEventListener(egret.Event.CONNECT, this.connectHandler = () => {
+                socketClient.send('lobby.enter');
+                socketClient.send('lobby.search_rooms');
+            }, this);
             socketClient.add('lobby.search_rooms', this.listeners['lobby.search_rooms'] = (msg) => {
                 this.roomContainer.removeChildren();
                 msg.rooms.forEach(room => {
@@ -82,6 +89,9 @@ export default class LobbyScene extends AbstractScene {
                 if (msg.code != 0) {
                     messager.fail({msg: '创建房间失败'}, this);
                     return;
+                }
+                if (msg.room.ownerUserId == platform.getUserInfo().id) {
+                    messager.info('创建房间成功', this);
                 }
                 this.addRoom(msg.room);
             });
@@ -104,22 +114,21 @@ export default class LobbyScene extends AbstractScene {
             socketClient.add('room.join', this.listeners['room.join'] = (msg) => {
                 switch (msg.code) {
                     case 2:
-                        messager.fail('该房间已不存在', this);
+                        messager.fail('加入房间失败：该房间已不存在', this);
                         return;
                     case 3:
-                        messager.fail('房间已满', this);
+                        messager.fail('加入房间失败：房间已满', this);
                         return;
                     case 4:
-                        messager.fail('你已加入本房间', this);
+                        messager.fail('加入房间失败：你已加入本房间', this);
                         return;
                     case 5:
-                        messager.fail('你已加入其它房间', this);
+                        messager.fail('加入房间失败：你已加入其它房间', this);
                         return;
                     case 6:
                         messager.fail('加入房间失败：密码错误', this);
                         return;
                 }
-
                 this.pushScene((context) => new PlayScene(context, msg.room));
             });
 
@@ -134,6 +143,7 @@ export default class LobbyScene extends AbstractScene {
         for (let key in this.listeners) {
             socketClient.signals[key].remove(this.listeners[key]);
         }
+        socketClient.removeEventListener(egret.Event.CONNECT, this.connectHandler, this);
         socketClient.send('lobby.exit');
     }
 

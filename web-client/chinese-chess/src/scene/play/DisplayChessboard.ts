@@ -13,7 +13,7 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
         super();
         this.game = game;
 
-        this.width = 523;
+        this.width = 530;
         this.height = 580;
 
         for (let row = 0; row < CHESSBOARD_ROW_NUM; row++) {
@@ -24,7 +24,7 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
         }
 
         let bitmap = new egret.Bitmap();
-        bitmap.width = 523;
+        bitmap.width = 530;
         bitmap.height = 580;
         bitmap.texture = RES.getRes('chessboard');
         this.addChild(bitmap);

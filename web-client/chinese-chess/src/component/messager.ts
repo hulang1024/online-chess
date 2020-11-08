@@ -1,11 +1,12 @@
+import AbstractScene from "../scene/AbstractScene";
 import Dialog from "./Dialog"
 
 enum MessageType {
-    INFO, FAIL, ERROR
+    INFO, SUCCESS, FAIL, ERROR
 };
 
 interface MessageOptions {
-    msg: string | egret.DisplayObject;
+    msg: string | egret.DisplayObjectContainer;
     duration?: number;
 };
 
@@ -14,6 +15,10 @@ let msgCount = 0;
 
 function info(options: MessageOptions | string, context: egret.DisplayObject) {
     message(MessageType.INFO, options, context);
+}
+
+function success(options: MessageOptions | string, context: egret.DisplayObject) {
+    message(MessageType.SUCCESS, options, context);
 }
 
 function fail(options: MessageOptions | string, context: egret.DisplayObject) {
@@ -38,7 +43,8 @@ function message(type: MessageType, options: MessageOptions | string, context: e
         text.stroke = 2;
         text.textColor = {
             [MessageType.INFO]: 0xffffff,
-            [MessageType.FAIL]: 0xffaa00,
+            [MessageType.SUCCESS]: 0x00ff00,
+            [MessageType.FAIL]: 0xff0022,
             [MessageType.ERROR]: 0xff0000
         }[type];
         text.strokeColor = 0x444;
@@ -48,8 +54,8 @@ function message(type: MessageType, options: MessageOptions | string, context: e
     }
 
     let msgContainer = messageContainer(content, context, msgCount);
+    msgContainer.zIndex = 1000;
     context.stage.addChild(msgContainer);
-
     msgCount++;
 
     // 定时关闭
@@ -71,8 +77,8 @@ function messageContainer(child: egret.DisplayObject, context: egret.DisplayObje
     const width = (child.width || 200) + 16;
     const height = (child.height || 100) + 16;
     let container = new eui.Group();
-    container.x = (context.stage.stageWidth - width - 8);
-    container.y = (context.stage.stageHeight - height - 8 - (height + 8) * offset);
+    container.x = context.stage.stageWidth - width - 8;
+    container.y = context.stage.stageHeight - height - 8 - (height + 8) * offset;
     container.layout = layout;
 
     let shape = new egret.Shape();
@@ -86,6 +92,7 @@ function messageContainer(child: egret.DisplayObject, context: egret.DisplayObje
 
 export default {
     info,
+    success,
     fail,
     error
 };

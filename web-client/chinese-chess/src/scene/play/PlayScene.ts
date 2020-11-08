@@ -23,6 +23,9 @@ import RoomPlayer from "../lobby/RoomPlayer";
 import messager from "../../component/messager";
 import ResultDialog from "./ResultDialog";
 import ChatOverlay from "./ChatOverlay";
+import Checkmate from "./rule/Checkmate";
+import CheckmateOverlay from "./CheckmateOverlay";
+import ChessEatOverlay from "./ChessEatOverlay";
 
 export default class PlayScene extends AbstractScene implements RoundGame {
     private listeners = {};
@@ -32,6 +35,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
     private chessHost: ChessHost;
     // 当前走棋方
     private activeHost: ChessHost;
+    private checkmate: Checkmate;
     private lastSelected: DisplayChess;
     private chessTrackDrawer: ChessTrackDrawer = new ChessTrackDrawer(this.chessboard);
     private clickSound = new egret.Sound();
@@ -40,6 +44,8 @@ export default class PlayScene extends AbstractScene implements RoundGame {
     private txtWaitTip = new egret.TextField();
     private player: RoomPlayer;
     private btnReady: ReadyButton;
+    private chessEatOverlay = new ChessEatOverlay();
+    private checkmateOverlay = new CheckmateOverlay();
     private resultDialog = new ResultDialog();
     private chatOverlay = new ChatOverlay();
     
@@ -126,7 +132,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
         let btnLeave = new eui.Button();
         btnLeave.width = 100;
         btnLeave.height = 50;
-        btnLeave.label = "离开";
+        btnLeave.label = "离开房间";
         btnLeave.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             socketClient.send('room.leave');
             this.popScene();
@@ -152,22 +158,26 @@ export default class PlayScene extends AbstractScene implements RoundGame {
                 }
                 this.chatOverlay.visible = false;
                 socketClient.send('chat.message', {content: msg});
+                messager.info('已发送', this);
             };
         }, this);
         buttonGroup.addChild(btnChat);
 
+        this.addChild(this.chessEatOverlay);
+        this.addChild(this.checkmateOverlay);
         this.addChild(this.resultDialog);
         this.addChild(this.chatOverlay);
 
+        this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
+            messager.info('你已进入房间', this);
+        }, this);
+        
         (async () => {
             socketClient.addEventListener(egret.Event.CLOSE, this.connectionCloseHandler = (event: egret.Event) => {
                 this.popScene();
             }, this);
 
             socketClient.add('room.leave', this.listeners['room.leave'] = (msg) => {
-                if (msg.code != 0) {
-                    return;
-                }
                 if (msg.player.id == this.player.id) {
                     return;
                 } else {
@@ -180,8 +190,15 @@ export default class PlayScene extends AbstractScene implements RoundGame {
                     this.chessboard.getChessList().forEach(chess => {
                         chess.touchEnabled = false;
                     });
-                    messager.info(`玩家[${msg.player.nickname}]已离开房间`, this)
+                    messager.info(`玩家[${msg.player.nickname}]已离开房间`, this);
                 }
+            });
+
+            socketClient.add('user.offline', this.listeners['user.offline'] = (msg: any) => {
+                messager.info(`玩家[${msg.nickname}]已下线或掉线，
+                    你可以等待对方一会儿，重新连接之后选择继续下棋（自动恢复棋局状态）。
+                    你也可以直接离开房间，但是房间和棋局状态会被清理。`, this);
+                return;
             });
             
             socketClient.add('room.join', this.listeners['room.join'] = (msg) => {
@@ -191,7 +208,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
                 this.updateWaitState(otherPlayer);
                 this.clickSound.play(0, 1);
                 setTimeout(() => {
-                    messager.info(`玩家[${msg.player.nickname}]加入房间`, this);
+                    messager.info(`玩家[${msg.player.nickname}]已加入房间`, this);
                 }, 100);
             });
 
@@ -211,7 +228,7 @@ export default class PlayScene extends AbstractScene implements RoundGame {
                 this.chessHost = msg.host;
                 this.startRound();
                 this.clickSound.play(0, 1);
-                messager.info('棋局开始', this);
+                messager.info(`棋局开始，${this.chessHost == ChessHost.RED ? '你' : '对方'}先走棋`, this);
             });
 
             socketClient.add('chat.message', this.listeners['chat.message'] = (msg) => {
@@ -230,8 +247,10 @@ export default class PlayScene extends AbstractScene implements RoundGame {
     startRound() {
         this.lastSelected = null;
         this.resetChessLayout();
+
+        this.checkmate = new Checkmate(this, this.chessHost);
+
         this.chessTrackDrawer.clear();
-        this.activeHost = ChessHost.BLACK;
         this.turn();
 
         // 将远程对方坐标转换到本地坐标
@@ -276,6 +295,9 @@ export default class PlayScene extends AbstractScene implements RoundGame {
             sourceChess.setSelected(false);
             this.chessboard.moveChess(sourceChess, targetPos);
             this.clickSound.play(0, 1);
+
+            this.checkCheckmate();
+
             this.turn();
         });
 
@@ -290,6 +312,9 @@ export default class PlayScene extends AbstractScene implements RoundGame {
             this.chessboard.removeChess(targetChess);
             this.chessboard.moveChess(sourceChess, targetPos);
             this.clickSound.play(0, 1);
+            this.chessEatOverlay.show();
+
+            this.checkCheckmate();
 
             if (targetChess.getChess() instanceof ChessK) {
                 this.onRoundEnd(targetChess.getHost() != this.chessHost);
@@ -402,7 +427,11 @@ export default class PlayScene extends AbstractScene implements RoundGame {
     }
 
     private turn() {
-        this.activeHost = reverseChessHost(this.activeHost);
+        if (this.activeHost == null) {
+            this.activeHost = ChessHost.RED;
+        } else {
+            this.activeHost = reverseChessHost(this.activeHost);
+        }
         this.otherPlayerInfo.setActive(this.chessHost != this.activeHost);
         console.log("现在 " + (this.activeHost == ChessHost.BLACK ? "黑方" : "红方") + " 持棋");
         this.chessboard.touchEnabled = this.activeHost == this.chessHost;
@@ -444,6 +473,13 @@ export default class PlayScene extends AbstractScene implements RoundGame {
         addChessGroup(reverseChessHost(this.chessHost), [0, 2, 3]);
         // 底部方
         addChessGroup(this.chessHost, [9, 7, 6]);
+    }
+
+    private checkCheckmate() {
+        // 判断将军
+        if (this.checkmate.check(reverseChessHost(this.activeHost))) {
+            this.checkmateOverlay.show(this.activeHost);
+        }
     }
 
     private updateWaitState(otherPlayer: RoomPlayer) {
