@@ -27,7 +27,9 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
+import SOUND from "./audio/SOUND";
 import socketClient from "./online/socket";
+import chatOverlay from "./overlay/chat/chat";
 import LobbyScene from "./scene/lobby/LobbyScene";
 import SceneContext from "./scene/SceneContext";
 import SceneManager from "./scene/scene_manger";
@@ -36,7 +38,6 @@ import SceneManager from "./scene/scene_manger";
 class Main extends eui.UILayer  {
     public constructor() {
         super();
-        //this.addEventListener(egret.Event.ADDED_TO_STAGE, this.onAddToStage, this);
     }
 
     protected createChildren() {
@@ -64,32 +65,10 @@ class Main extends eui.UILayer  {
         egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter());
     }
 
-    private onAddToStage1(event: egret.Event) {
-        egret.lifecycle.addLifecycleListener((context) => {
-            // custom lifecycle plugin
-            context.onUpdate = () => {
-
-            }
-        })
-
-        egret.lifecycle.onPause = () => {
-            egret.ticker.pause();
-        }
-
-        egret.lifecycle.onResume = () => {
-            egret.ticker.resume();
-        }
-
-        this.runGame().catch(e => {
-            console.log(e);
-        })
-    }
-
     private async runGame() {
         await this.loadResource()
         this.createGameScene();
-        const result = await RES.getResAsync("description_json")
-
+        await RES.getResAsync("description_json")
     }
 
     private async loadResource() {
@@ -99,6 +78,7 @@ class Main extends eui.UILayer  {
             await RES.loadConfig("resource/default.res.json", "resource/");
             await RES.loadGroup("preload", 0, loadingView);
             await this.loadTheme();
+            await SOUND.loadAll();
             this.stage.removeChild(loadingView);
         }
         catch (e) {
@@ -121,6 +101,8 @@ class Main extends eui.UILayer  {
     private createGameScene() {
         let context = new SceneContext(this.stage);
         socketClient.stage = this.stage;
+        this.stage.addChildAt(chatOverlay, 1000000);
+        
         SceneManager.of(context).pushScene(context => new LobbyScene(context));
     }
 }

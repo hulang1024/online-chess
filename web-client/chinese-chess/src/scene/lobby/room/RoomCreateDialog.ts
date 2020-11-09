@@ -1,5 +1,5 @@
 import Dialog from "../../../component/Dialog";
-import Room from "./Room";
+import Room from "../../../online/socket-message/response/Room";
 
 export default class RoomCreateDialog extends Dialog {
     private textEditRoomName: eui.EditableText;

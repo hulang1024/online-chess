@@ -1,12 +1,12 @@
-import RoomPlayer from "../RoomPlayer";
-import Room from "./Room";
+import RoomUser from "../../../online/socket-message/response/RoomUser";
+import Room from "../../../online/socket-message/response/Room";
 
 export default class DisplayRoom extends eui.Component {
     room: Room;
     private rect = new egret.Shape();
     private txtName = new egret.TextField();
     private txtStatus = new egret.TextField();
-    private players: Array<egret.TextField> = [];
+    private userNameTexts: Array<egret.TextField> = [];
 
     constructor(room: Room) {
         super();
@@ -23,14 +23,14 @@ export default class DisplayRoom extends eui.Component {
         this.drawStatus(room.status);
         this.addChild(this.txtStatus);
 
-        let txtPlayerTitle = new egret.TextField();
-        txtPlayerTitle.x = 8;
-        txtPlayerTitle.y = 56;
-        txtPlayerTitle.size = 16;
-        txtPlayerTitle.text = '玩家：';
-        this.addChild(txtPlayerTitle);
+        let txtUserTitle = new egret.TextField();
+        txtUserTitle.x = 8;
+        txtUserTitle.y = 56;
+        txtUserTitle.size = 16;
+        txtUserTitle.text = '玩家：';
+        this.addChild(txtUserTitle);
 
-        this.addPlayerList(room, room.players);
+        this.addUserList(room, room.users);
 
     }
 
@@ -44,13 +44,13 @@ export default class DisplayRoom extends eui.Component {
 
         let same = true;
         
-        if (newRoom.playerCount != this.room.playerCount) {
+        if (newRoom.userCount != this.room.userCount) {
             same = false;
         } else {
             let i = 0;
-            while (i < this.room.players.length) {
-                if ((newRoom.players[i].id != this.room.players[i].id) ||
-                    (newRoom.players[i].readyed != this.room.players[i].readyed)) {
+            while (i < this.room.users.length) {
+                if ((newRoom.users[i].id != this.room.users[i].id) ||
+                    (newRoom.users[i].readyed != this.room.users[i].readyed)) {
                     same = false;
                     break;
                 }
@@ -59,9 +59,9 @@ export default class DisplayRoom extends eui.Component {
         }
 
         if (!same) {
-            this.players.forEach(this.removeChild.bind(this));
-            this.players.length = 0;
-            this.addPlayerList(newRoom, newRoom.players);
+            this.userNameTexts.forEach(this.removeChild.bind(this));
+            this.userNameTexts.length = 0;
+            this.addUserList(newRoom, newRoom.users);
         }
 
         this.room = newRoom;
@@ -84,24 +84,31 @@ export default class DisplayRoom extends eui.Component {
         txtStatus.x = 8;
         txtStatus.y = 28;
         txtStatus.size = 16;
-        txtStatus.text = {1: '可加入' + (this.room.locked ? "(有密码)" : ""), 2: '即将开始', 3: '进行中'}[status];
+        let text = {
+            1: '可加入，点击进入' + (this.room.locked ? "(有密码)" : ""),
+            2: '即将开始，点击围观',
+            3: '进行中，点击围观'}[status];
+        if (this.room.spectatorCount > 0) {
+            text += `(当前观众${this.room.spectatorCount}个)`;
+        }
+        txtStatus.text = text;
     }
 
-    private addPlayerList(room: Room, players: Array<RoomPlayer>) {
-        if (players == null) {
+    private addUserList(room: Room, users: Array<RoomUser>) {
+        if (users == null) {
             return;
         }
 
         let yFactor = 1;
-        for (let player of players) {
-            let txtPlayer = new egret.TextField();
-            txtPlayer.x = 8;
-            txtPlayer.y = 56 + yFactor++ * 20;
-            txtPlayer.size = 16;
-            txtPlayer.text =  (player.nickname || player.id.toString())
-                + (room.status == 3 ? "" : " " + (player.readyed ? "已准备" : "未准备"));
-            this.addChild(txtPlayer);
-            this.players.push(txtPlayer);
+        for (let user of users) {
+            let txtUserName = new egret.TextField();
+            txtUserName.x = 8;
+            txtUserName.y = 56 + yFactor++ * 20;
+            txtUserName.size = 16;
+            txtUserName.text =  (user.nickname || user.id.toString())
+                + (room.status == 3 ? "" : " " + (user.readyed ? "已准备" : "未准备"));
+            this.addChild(txtUserName);
+            this.userNameTexts.push(txtUserName);
         }
     }
 }

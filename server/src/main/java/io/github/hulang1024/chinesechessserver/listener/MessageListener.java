@@ -28,7 +28,7 @@ public abstract class MessageListener {
 
     public void send(ServerMessage message, Session session) {
         String messageJson = gson.toJson(message);
-        log.info("发送消息: {}", messageJson);
+        //log.info("发送消息: {}", messageJson);
         session.sendText(messageJson);
     }
 

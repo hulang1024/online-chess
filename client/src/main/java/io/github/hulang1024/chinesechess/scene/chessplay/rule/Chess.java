@@ -14,13 +14,6 @@ public interface Chess {
     void setPos(ChessPosition pos);
 
     /**
-     * 设置棋方
-     * @param host
-     * @return
-     */
-    void setHost(HostEnum host);
-
-    /**
      * 位置
      * @return
      */

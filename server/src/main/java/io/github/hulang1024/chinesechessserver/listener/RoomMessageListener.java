@@ -5,29 +5,26 @@ import java.util.stream.Collectors;
 
 import org.yeauty.pojo.Session;
 
-import io.github.hulang1024.chinesechessserver.ChineseChessServerEndpoint;
-import io.github.hulang1024.chinesechessserver.ClientEventManager;
-import io.github.hulang1024.chinesechessserver.convert.PlayerConvert;
+import io.github.hulang1024.chinesechessserver.convert.UserConvert;
 import io.github.hulang1024.chinesechessserver.convert.RoomConvert;
-import io.github.hulang1024.chinesechessserver.domain.Player;
+import io.github.hulang1024.chinesechessserver.domain.SessionUser;
+import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessHost;
 import io.github.hulang1024.chinesechessserver.domain.Room;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomCreate;
-import io.github.hulang1024.chinesechessserver.message.client.room.RoomLeave;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomJoin;
-import io.github.hulang1024.chinesechessserver.message.server.LoginResult;
+import io.github.hulang1024.chinesechessserver.message.client.room.RoomLeave;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomRemove;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomUpdate;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.RoomCreateResult;
 import io.github.hulang1024.chinesechessserver.message.server.room.RoomJoinResult;
 import io.github.hulang1024.chinesechessserver.message.server.room.RoomLeaveResult;
-import io.github.hulang1024.chinesechessserver.message.server.stat.OnlineStatMessage;
 import io.github.hulang1024.chinesechessserver.service.LobbyService;
-import io.github.hulang1024.chinesechessserver.service.PlayerSessionService;
+import io.github.hulang1024.chinesechessserver.service.UserSessionService;
 import io.github.hulang1024.chinesechessserver.service.RoomService;
 
 public class RoomMessageListener extends MessageListener {
     private RoomService roomService = new RoomService();
-    private PlayerSessionService playerSessionService = new PlayerSessionService();
+    private UserSessionService userSessionService = new UserSessionService();
     private LobbyService lobbyService = new LobbyService();
 
     @Override
@@ -35,61 +32,28 @@ public class RoomMessageListener extends MessageListener {
         addMessageHandler(RoomCreate.class, this::createRoom);
         addMessageHandler(RoomJoin.class, this::joinRoom);
         addMessageHandler(RoomLeave.class, this::leaveRoom);
-
-        ClientEventManager.addSessionCloseEventHandler(session -> {
-            Player player = playerSessionService.getPlayer(session);
-            if (player != null && player.isJoinedAnyRoom()) {
-                RoomLeave leave = new RoomLeave();
-                leave.setSession(session);
-                leaveRoom(leave);
-            }
-
-            lobbyService.removeStayLobbySession(session);
-
-            sendUpdateStat();
-        });
-
-        ClientEventManager.addSessionOpenEventHandler(session -> {
-            // 这里做个"登录"的逻辑，暂时支持游客登录
-            playerSessionService.login(session);
-            LoginResult loginResult = new LoginResult();
-            loginResult.setCode(0);
-            loginResult.setUser(new PlayerConvert().toRoomPlayerInfo(
-                playerSessionService.getPlayer(session)));
-            send(loginResult, session);
-            sendUpdateStat();
-        });
-    }
-
-    private void sendUpdateStat() {
-        OnlineStatMessage statMsg = new OnlineStatMessage();
-        statMsg.setOnline(ChineseChessServerEndpoint.connectedSessionCount);
-        
-        lobbyService.getAllStayLobbySessions().forEach(session -> {
-            send(statMsg, session);
-        });
     }
 
     private void createRoom(RoomCreate create) {
         RoomCreateResult result = new RoomCreateResult();
 
-        Player player = playerSessionService.getPlayer(create.getSession());
-        // 判断该玩家是否已经加入了任何房间
-        if (player.isJoinedAnyRoom()) {
+        SessionUser user = userSessionService.getUserBySession(create.getSession());
+        // 判断该用户是否已经加入了任何房间
+        if (user.isJoinedAnyRoom()) {
             result.setCode(2);
             send(result, create.getSession());
             return;
         }
         
         // 初始就准备状态
-        player.setReadyed(true);
+        user.setReadyed(true);
 
         // 创建房间
         Room room = roomService.create(create);
         // 设置房主
-        room.setOwner(player);
+        room.setOwner(user);
         // 创建成功结果
-        result.setRoom(new RoomConvert().toLobbyRoom(room));
+        result.setRoom(new RoomConvert().toRoomInfo(room));
         // 给创建者发送结果
         send(result, create.getSession());
         // 大厅广播房间增加
@@ -120,21 +84,19 @@ public class RoomMessageListener extends MessageListener {
             return;
         }
         
-        Player playerToJoin = playerSessionService.getPlayer(session);
-        
-        result.setPlayer(new PlayerConvert().toRoomPlayerInfo(playerToJoin));
-        
-        result.setRoom(new RoomConvert().toLobbyRoom(room));
+        SessionUser userToJoin = userSessionService.getUserBySession(session);
+                
+        result.setRoom(new RoomConvert().toRoomInfo(room));
 
-        // 判断该玩家是否已经加入了任何房间
-        if (playerToJoin.isJoinedAnyRoom()) {
-            result.setCode(playerToJoin.getJoinedRoom().getId() == room.getId() ? 4 : 5);
+        // 判断该用户是否已经加入了任何房间
+        if (userToJoin.isJoinedAnyRoom()) {
+            result.setCode(userToJoin.getJoinedRoom().getId() == room.getId() ? 4 : 5);
             send(result, session);
             return;
         }
 
         // 限定2个人
-        if (room.getPlayerCount() == 2) {
+        if (room.getUserCount() == 2) {
             result.setCode(3);
             send(result, session);
             return;
@@ -150,28 +112,34 @@ public class RoomMessageListener extends MessageListener {
         }
 
         // 设置棋方
-        if (room.getPlayerCount() == 0) {
-            playerToJoin.setChessHost(1);
+        if (room.getUserCount() == 0) {
+            userToJoin.setChessHost(ChessHost.RED);
         } else {
-            Player otherPlayer = room.getPlayers().get(0);
-            playerToJoin.setChessHost(otherPlayer.getChessHost() == 1 ? 2 : 1);
+            SessionUser otherUser = room.getUsers().get(0);
+            userToJoin.setChessHost(otherUser.getChessHost().reverse()); 
         }
 
-        playerToJoin.joinRoom(room);
+        userToJoin.joinRoom(room);
 
         // 加入之后要重新设置房间状态
-        result.setRoom(new RoomConvert().toLobbyRoom(room));
+        result.setRoom(new RoomConvert().toRoomInfo(room));
+        result.setUser(new UserConvert().toRoomUserInfo(userToJoin));
         
-        // 广播给已在此房间的玩家
-        room.getPlayers().forEach(player -> {
-            send(result, player.getSession());
+        // 广播给已在此房间的参与者
+        room.getUsers().forEach(user -> {
+            send(result, user.getSession());
+        });
+
+        // 观众
+        room.getSpectators().forEach(user -> {
+            send(result, user.getSession());
         });
 
         // 大厅广播房间更新
         LobbyRoomUpdate roomUpdate = new LobbyRoomUpdate();
         roomUpdate.setRoom(result.getRoom());
         lobbyService.getAllStayLobbySessions().forEach(lsession -> {
-            if (playerToJoin.getSession() != lsession) {
+            if (userToJoin.getSession() != lsession) {
                 send(roomUpdate, lsession);
             }
         });
@@ -179,28 +147,28 @@ public class RoomMessageListener extends MessageListener {
 
     public void leaveRoom(RoomLeave leave) {
         Session session = leave.getSession();
-        Player playerToLeave = playerSessionService.getPlayer(session);
+        SessionUser userToLeave = userSessionService.getUserBySession(session);
         RoomLeaveResult result = new RoomLeaveResult();
         // 未加入该房间
-        if (!playerToLeave.isJoinedAnyRoom()) {
+        if (!userToLeave.isJoinedAnyRoom()) {
             result.setCode(2);
             send(result, session);
             return;
         }
 
-        Room room = playerToLeave.getJoinedRoom();
+        Room room = userToLeave.getJoinedRoom();
 
-        List<Session> playerSessions = room.getPlayers().stream()
-            .map(Player::getSession)
+        List<Session> userSessions = room.getUsers().stream()
+            .map(SessionUser::getSession)
             .collect(Collectors.toList());
 
-        playerToLeave.leaveRoom();
+        userToLeave.leaveRoom();
         
         // 对局状态置为空
         room.setRound(null);
 
         // 如果全部离开了
-        if (room.getPlayerCount() == 0) {
+        if (room.getUserCount() == 0) {
             // 删除房间
             roomService.remove(room);
 
@@ -212,24 +180,28 @@ public class RoomMessageListener extends MessageListener {
             });
         } else {
             // 房主变成留下的人
-            Player player = room.getPlayers().get(0);
-            room.setOwner(player);
-            // 反转棋方
-            player.setChessHost(player.getChessHost() == 1 ? 2 : 1);
+            SessionUser user = room.getUsers().get(0);
+            room.setOwner(user);
+            user.setChessHost(user.getChessHost().reverse());
 
-            // 大厅广播房间更新（玩家少一个）
+            // 大厅广播房间更新（用户少一个）
             LobbyRoomUpdate roomUpdate = new LobbyRoomUpdate();
-            roomUpdate.setRoom(new RoomConvert().toLobbyRoom(room));
+            roomUpdate.setRoom(new RoomConvert().toRoomInfo(room));
             lobbyService.getAllStayLobbySessions().forEach(lsession -> {
                 send(roomUpdate, lsession);
             });
         }
 
-        result.setPlayer(new PlayerConvert().toRoomPlayerInfo(playerToLeave));
+        result.setUser(new UserConvert().toRoomUserInfo(userToLeave));
 
-        // 广播给已在此房间的玩家
-        playerSessions.forEach(playerSession -> {
-            send(result, playerSession);
+        // 广播给已在此房间的参与者
+        userSessions.forEach(s -> {
+            send(result, s);
+        });
+
+        // 观众
+        room.getSpectators().forEach(user -> {
+            send(result, user.getSession());
         });
     }
 

@@ -1,17 +1,13 @@
 import ChessboardClickEvent from "./ChessboardClickEvent";
 import DisplayChess from "./DisplayChess";
-import Chess from "./rule/Chess";
 import Chessboard, { CHESSBOARD_COL_NUM, CHESSBOARD_ROW_NUM } from "./rule/chessboard";
 import ChessPos from "./rule/ChessPos";
-import RoundGame from "./rule/RoundGame";
 
 export default class DisplayChessboard extends eui.Group implements Chessboard {
     private chessArray: Array<Array<DisplayChess>> = new Array(CHESSBOARD_ROW_NUM);
-    private game: RoundGame;
 
-    constructor(game: RoundGame) {
+    constructor() {
         super();
-        this.game = game;
 
         this.width = 530;
         this.height = 580;
@@ -88,7 +84,7 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
         this.removeChild(chess);
     }
 
-    getChessList() {
+    getChessList(): Array<DisplayChess> {
         let ret = [];
         for (let row = 0; row < CHESSBOARD_ROW_NUM; row++) {
             for (let col = 0; col < CHESSBOARD_COL_NUM; col++) {

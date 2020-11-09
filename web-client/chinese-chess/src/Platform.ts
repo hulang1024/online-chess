@@ -1,5 +1,4 @@
-import socketClient from "./online/socket";
-import RoomPlayer from "./scene/lobby/RoomPlayer";
+import User from "./user/User";
 
 /** 
  * 平台数据接口。
@@ -9,14 +8,14 @@ import RoomPlayer from "./scene/lobby/RoomPlayer";
  */
 interface Platform {
 
-    getUserInfo(): RoomPlayer;
+    getUserInfo(): User;
 
     setUserInfo(any): Promise<void>
 
 }
 
 class DebugPlatform implements Platform {
-    user: RoomPlayer;
+    user: User;
     getUserInfo() {
         return this.user;
     }

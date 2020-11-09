@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import io.github.hulang1024.chinesechessserver.ChineseChessServerEndpoint;
 import io.github.hulang1024.chinesechessserver.convert.RoomConvert;
-import io.github.hulang1024.chinesechessserver.domain.Player;
+import io.github.hulang1024.chinesechessserver.domain.SessionUser;
 import io.github.hulang1024.chinesechessserver.domain.Room;
 import io.github.hulang1024.chinesechessserver.message.client.lobby.LobbyEnter;
 import io.github.hulang1024.chinesechessserver.message.client.lobby.LobbyExit;
@@ -16,13 +16,13 @@ import io.github.hulang1024.chinesechessserver.message.server.lobby.QuickMatchRe
 import io.github.hulang1024.chinesechessserver.message.server.lobby.SearchRoomsResult;
 import io.github.hulang1024.chinesechessserver.message.server.stat.OnlineStatMessage;
 import io.github.hulang1024.chinesechessserver.service.LobbyService;
-import io.github.hulang1024.chinesechessserver.service.PlayerSessionService;
+import io.github.hulang1024.chinesechessserver.service.UserSessionService;
 import io.github.hulang1024.chinesechessserver.service.RoomService;
 
 public class LobbyMessageListener extends MessageListener {
     private LobbyService lobbyService = new LobbyService();
     private RoomService roomService = new RoomService();
-    private PlayerSessionService playerSessionService = new PlayerSessionService();
+    private UserSessionService userSessionService = new UserSessionService();
 
     @Override
     public void init() {
@@ -48,13 +48,13 @@ public class LobbyMessageListener extends MessageListener {
         SearchRoomsResult result = new SearchRoomsResult();
         result.setRooms(roomService.search(searchParams).stream()
             .sorted((a, b) -> {
-                int ret = a.getPlayerCount() - b.getPlayerCount();
+                int ret = a.getUserCount() - b.getUserCount();
                 if (ret == 0) {
                     return b.getCreateAt().compareTo(a.getCreateAt());
                 }
                 return ret;
             })
-            .map(room -> new RoomConvert().toLobbyRoom(room))
+            .map(room -> new RoomConvert().toRoomInfo(room))
             .collect(Collectors.toList()));
 
         send(result, searchParams.getSession());
@@ -64,16 +64,16 @@ public class LobbyMessageListener extends MessageListener {
     private void quickMatch(QuickMatch quickMatch) {
         QuickMatchResult result = new QuickMatchResult();
 
-        Player player = playerSessionService.getPlayer(quickMatch.getSession());
+        SessionUser user = userSessionService.getUserBySession(quickMatch.getSession());
 
-        if (player.isJoinedAnyRoom()) {
+        if (user.isJoinedAnyRoom()) {
             result.setCode(2);
             send(result, quickMatch.getSession());
             return;
         }
 
         Optional<Room> roomOpt = roomService.getAllRooms().stream()
-            .filter(room -> room.getPlayerCount() < 2).findAny();
+            .filter(room -> room.getUserCount() < 2).findAny();
         if (roomOpt.isPresent()) {
             // 加入房间
             RoomJoin roomJoin = new RoomJoin();

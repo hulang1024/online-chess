@@ -3,26 +3,23 @@ export default class Overlay extends eui.Group {
     protected txtTitle: egret.TextField;
     protected background = new egret.Shape();
 
-    constructor() {
+    constructor(center: boolean) {
         super();
-
-        let layout = new eui.VerticalLayout();
-        this.layout = layout;
 
         // 背景
         this.addChild(this.background);
 
         // 内容
         let bodyLayout = new eui.VerticalLayout();
-        bodyLayout.paddingTop = 16;
-        bodyLayout.gap = 16;
         this.body.layout = bodyLayout;
         this.addChild(this.body);
-        
-        this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
-            this.x = (this.stage.stageWidth - this.width) / 2;
-            this.y = (this.stage.stageHeight - this.height) / 2;
-        }, this);
+
+        if (center) {
+            this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
+                this.x = (this.parent.width - this.width) / 2;
+                this.y = (this.parent.height - this.height) / 2;
+            }, this);
+        }
     }
 
     setSize(width: number, height: number) {

@@ -5,8 +5,6 @@ import io.github.hulang1024.chinesechess.scene.SceneContext;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.*;
 import io.github.hulang1024.chinesechess.scene.chessplay.rule.chess.*;
 import javafx.scene.control.Button;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 
 import java.util.Arrays;
 import java.util.function.BiConsumer;
@@ -19,16 +17,11 @@ public class OfflineChessPlayScene extends AbstractScene implements RoundGame {
     private DrawableChessboard chessboard = new DrawableChessboard(this);
     private HostEnum activeHost;
     private DrawableChess lastSelected;
-    private Text ruleMessageText;
 
     public OfflineChessPlayScene(SceneContext context) {
         super(context);
 
         getChildren().add(chessboard);
-
-        ruleMessageText = new Text("无提示");
-        ruleMessageText.setFill(Color.BLACK);
-        getChildren().add(ruleMessageText);
 
         Button backButton = new Button("离开");
         backButton.setOnMouseClicked((event) -> {
@@ -91,8 +84,8 @@ public class OfflineChessPlayScene extends AbstractScene implements RoundGame {
 
     private void turnHost() {
         activeHost = activeHost.reverse();
-        ruleMessageText.setFill(Color.BLACK);
-        ruleMessageText.setText("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
+
+        System.out.println("现在 " + (activeHost == HostEnum.BLACK ? "黑方" : "红方") + " 持棋");
 
         // 将当前持棋方棋子启用，非持棋方的棋子全部禁用
         chessboard.getChessList().forEach(chess -> {
@@ -117,8 +110,7 @@ public class OfflineChessPlayScene extends AbstractScene implements RoundGame {
                 chessboard.addChess(target);
                 turnHost();
             } else {
-                ruleMessageText.setFill(Color.RED);
-                ruleMessageText.setText("走法不符规则");
+                System.out.println("走法不符规则");
             }
         } else {
             if (target.host() != selected.host()) {
@@ -133,13 +125,11 @@ public class OfflineChessPlayScene extends AbstractScene implements RoundGame {
                     chessboard.addChess(ghostChess);
                     turnHost();
                 } else {
-                    ruleMessageText.setFill(Color.RED);
-                    ruleMessageText.setText("走法不符规则");
+                    System.out.println("走法不符规则");
                 }
             } else {
                 // 目标位置上有本方棋子
-                ruleMessageText.setFill(Color.RED);
-                ruleMessageText.setText("走法不符规则");
+                System.out.println("走法不符规则");
             }
         }
         selected.setSelected(false);
@@ -173,7 +163,7 @@ public class OfflineChessPlayScene extends AbstractScene implements RoundGame {
                         ((DrawableChess)chess).setDisable(false);
                     }
                 });
-            } else if (eventDrawableChess.isSelected()) {
+            } else if (eventDrawableChess.isSelected() && eventDrawableChess.host() == activeHost) {
                 // 重复点击，取消选中
                 eventDrawableChess.setSelected(false);
                 lastSelected = null;
@@ -183,7 +173,9 @@ public class OfflineChessPlayScene extends AbstractScene implements RoundGame {
                     onGoTo(lastSelected, eventDrawableChess);
                 } else {
                     chessboard.getChessList().forEach(chess -> {
-                        ((DrawableChess)chess).setSelected(false);
+                        if (((DrawableChess)chess).isSelected()) {
+                            ((DrawableChess)chess).setSelected(false);
+                        }
                     });
                     eventDrawableChess.setSelected(true);
                     lastSelected = eventDrawableChess;

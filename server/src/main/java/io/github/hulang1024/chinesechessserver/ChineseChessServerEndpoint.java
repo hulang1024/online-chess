@@ -26,14 +26,14 @@ public class ChineseChessServerEndpoint {
 
     @OnOpen
     public void onOpen(Session session, HttpHeaders headers){
-        log.info("一个连接打开");
+        //log.info("一个连接打开");
         connectedSessionCount++;
         ClientEventManager.emitSessionOpenEvent(session);
     }
 
     @OnClose
     public void onClose(Session session) throws IOException {
-        log.info("一个连接关闭");
+        //log.info("一个连接关闭");
         connectedSessionCount--;
         ClientEventManager.emitSessionCloseEvent(session);
     }
@@ -50,7 +50,7 @@ public class ChineseChessServerEndpoint {
             return;
         }
         
-        log.info("收到消息: {}", message);
+        //log.info("收到消息: {}", message);
         ClientMessageDispatcher.dispatch(message, session);
     }
 

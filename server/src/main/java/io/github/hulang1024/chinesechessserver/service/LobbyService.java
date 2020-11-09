@@ -16,7 +16,9 @@ public class LobbyService {
     }
     
     public void addStayLobbySession(Session session) {
-        stayLobbySessions.add(session);
+        if (!stayLobbySessions.contains(session)) {
+            stayLobbySessions.add(session);
+        }
     }
 
     public void removeStayLobbySession(Session session) {

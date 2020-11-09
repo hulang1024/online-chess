@@ -7,5 +7,4 @@ import lombok.Data;
 @Data
 @MessageType("room.leave")
 public class RoomLeave extends ClientMessage {
-
 }

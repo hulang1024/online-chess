@@ -7,5 +7,6 @@ import lombok.Data;
 @Data
 @MessageType("chat.message")
 public class ChatClientMessage extends ClientMessage {
+    private long channelId;
     private String content;
 }

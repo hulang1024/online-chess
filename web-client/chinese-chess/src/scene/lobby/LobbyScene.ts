@@ -6,8 +6,10 @@ import PlayScene from "../play/PlayScene";
 import SceneContext from "../SceneContext";
 import DisplayRoom from "./room/DisplayRoom";
 import PasswordForJoinRoomDialog from "./room/PasswordForJoinRoomDialog";
-import Room from "./room/Room";
+import Room from "../../online/socket-message/response/Room";
 import RoomCreateDialog from "./room/RoomCreateDialog";
+import SpectatorPlayScene from "../play/SpectatorPlayScene";
+import chatOverlay from "../../overlay/chat/chat";
 
 export default class LobbyScene extends AbstractScene {
     private listeners = {};
@@ -42,7 +44,7 @@ export default class LobbyScene extends AbstractScene {
         statGroup.x = 300;
         statGroup.y = 20;
         let lblOnline = new eui.Label();
-        lblOnline.size = 18;
+        lblOnline.size = 20;
         lblOnline.text = "在线人数:";
         statGroup.addChild(lblOnline);
         let txtOnline = new egret.TextField();
@@ -129,7 +131,7 @@ export default class LobbyScene extends AbstractScene {
                         messager.fail('加入房间失败：密码错误', this);
                         return;
                 }
-                this.pushScene((context) => new PlayScene(context, msg.room));
+                this.pushScene((context) => new PlayScene(context, msg));
             });
 
             await socketClient.connect();
@@ -137,6 +139,8 @@ export default class LobbyScene extends AbstractScene {
             socketClient.send('lobby.enter');
             socketClient.send('lobby.search_rooms');
         })();
+
+        chatOverlay.show();
     }
 
     onSceneExit() {
@@ -172,20 +176,32 @@ export default class LobbyScene extends AbstractScene {
     private addRoom(room: Room) {
         let displayRoom = new DisplayRoom(room);
         displayRoom.addEventListener(egret.TouchEvent.TOUCH_TAP, (event: egret.TouchEvent) => {
-            this.onJoinRoomClick(room);
+            this.onJoinRoomClick(displayRoom);
         }, this);
         this.roomContainer.addChild(displayRoom);
     }
 
-    private onJoinRoomClick(room) {
-        if (room.locked) {
-            this.passwordForJoinRoomDialog.showFor(room);
-            this.passwordForJoinRoomDialog.onOkClick = (password) => {
-                this.passwordForJoinRoomDialog.visible = false;
-                socketClient.send('room.join', {roomId: room.id, password});
+    private onJoinRoomClick(displayRoom: DisplayRoom) {
+        let room = displayRoom.room;
+        if (room.userCount == 1) {
+            if (room.locked) {
+                this.passwordForJoinRoomDialog.showFor(room);
+                this.passwordForJoinRoomDialog.onOkClick = (password) => {
+                    this.passwordForJoinRoomDialog.visible = false;
+                    socketClient.send('room.join', {roomId: room.id, password});
+                }
+            } else {
+                socketClient.send('room.join', {roomId: room.id});
             }
         } else {
-            socketClient.send('room.join', {roomId: room.id});
+            socketClient.send('spectator.join_watch', {roomId: room.id});
+            socketClient.addOnce('spectator.room_round_state', (msg: any) => {
+                if (msg.code != 0) {
+                    messager.info('失败', this);
+                    return;
+                }
+                this.pushScene((context) => new SpectatorPlayScene(context, msg));
+            });
         }
     }
 

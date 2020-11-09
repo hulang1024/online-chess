@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import io.github.hulang1024.chinesechessserver.domain.chat.ChatChannel;
+import io.github.hulang1024.chinesechessserver.service.ChatChannelManager;
 import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * 房间
@@ -18,30 +19,43 @@ public class Room {
 
     private String name;
 
-    private ChessPlayRound round;
+    private RoundGame round;
 
-    private Player owner;
+    private SessionUser owner;
 
     private String password;
     
     private Date createAt;
 
-    private List<Player> players = new ArrayList<>();
+    private ChatChannel chatChannel = ChatChannelManager.create();
 
-    public void onJoin(Player player) {
-        players.add(player);
+    /**
+     * 参与者
+     */ 
+    private List<SessionUser> users = new ArrayList<>();
+
+    /**
+     * 观众
+     */
+    @Getter
+    private List<SessionUser> spectators = new ArrayList<>();
+
+    public void onJoin(SessionUser user) {
+        chatChannel.joinUser(user);
+        users.add(user);
     }
 
-    public void onLeave(Player player) {
-        players.remove(player);
+    public void onLeave(SessionUser user) {
+        chatChannel.removeUser(user);
+        users.remove(user);
     }
 
-    public int getPlayerCount() {
-        return players.size();
+    public int getUserCount() {
+        return users.size();
     }
 
-    public List<Player> getPlayers() {
-        return players;
+    public List<SessionUser> getUsers() {
+        return users;
     }
 
     public boolean isLocked() {
@@ -51,11 +65,11 @@ public class Room {
     public int calcStatus() {
         int status;
 
-        int playerCount = players.size();
-        if (playerCount < 2) {
+        int userNum = users.size();
+        if (userNum < 2) {
             // 未满员
             status = 1;
-        } else if (playerCount == 2 && players.stream().anyMatch(player -> !player.isReadyed())) {
+        } else if (userNum == 2 && users.stream().anyMatch(user -> !user.isReadyed())) {
             // 未开始（即将开始）
             status = 2;
         } else {

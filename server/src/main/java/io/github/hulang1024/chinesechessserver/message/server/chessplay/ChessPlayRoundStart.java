@@ -12,7 +12,7 @@ public class ChessPlayRoundStart extends ServerMessage {
     /**
      * 棋方：0=黑方，1=红方
      */
-    private int host;
+    private int chessHost;
 
     public ChessPlayRoundStart() {
       super("chessplay.round_start");

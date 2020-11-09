@@ -18,7 +18,3 @@ export default ChessHost;
 export function reverseChessHost(host: ChessHost) {
     return host == ChessHost.BLACK ? ChessHost.RED : ChessHost.BLACK;
 }
-
-export function chessHostfromCode(code: number) {
-    return code == 1 ? ChessHost.RED : code == 2 ? ChessHost.BLACK : null;
-}

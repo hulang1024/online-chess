@@ -5,7 +5,7 @@ export default class CheckmateOverlay extends Overlay {
     private text: egret.TextField;
 
     constructor() {
-        super();
+        super(true);
 
         this.visible = false;
         this.setSize(200, 70);

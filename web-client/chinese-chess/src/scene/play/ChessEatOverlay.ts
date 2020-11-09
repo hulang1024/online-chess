@@ -2,7 +2,7 @@ import Overlay from "../../component/Overlay";
 
 export default class ChessEatOverlay extends Overlay {
     constructor() {
-        super();
+        super(true);
 
         this.visible = false;
         this.setSize(200, 50);
@@ -17,7 +17,6 @@ export default class ChessEatOverlay extends Overlay {
         text.verticalAlign = egret.VerticalAlign.MIDDLE;
         text.textAlign = egret.HorizontalAlign.CENTER;
         this.body.addChild(text);
-
     }
 
     show() {

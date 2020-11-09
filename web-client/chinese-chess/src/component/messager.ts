@@ -78,7 +78,7 @@ function messageContainer(child: egret.DisplayObject, context: egret.DisplayObje
     const height = (child.height || 100) + 16;
     let container = new eui.Group();
     container.x = context.stage.stageWidth - width - 8;
-    container.y = context.stage.stageHeight - height - 8 - (height + 8) * offset;
+    container.y = 8 + (height + 8) * offset;
     container.layout = layout;
 
     let shape = new egret.Shape();
