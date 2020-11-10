@@ -1,16 +1,14 @@
 package io.github.hulang1024.chinesechessserver.listener;
 
-import java.nio.channels.Channel;
-
 import org.springframework.util.StringUtils;
 import org.yeauty.pojo.Session;
 
 import io.github.hulang1024.chinesechessserver.ChineseChessServerEndpoint;
 import io.github.hulang1024.chinesechessserver.ClientEventManager;
 import io.github.hulang1024.chinesechessserver.domain.SessionUser;
-import io.github.hulang1024.chinesechessserver.domain.chat.ChatChannel;
 import io.github.hulang1024.chinesechessserver.message.client.user.UserNicknameSet;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomLeave;
+import io.github.hulang1024.chinesechessserver.message.client.spectator.SpectatorLeaveReqMsg;
 import io.github.hulang1024.chinesechessserver.message.server.stat.OnlineStatMessage;
 import io.github.hulang1024.chinesechessserver.message.server.user.UserLoginResult;
 import io.github.hulang1024.chinesechessserver.message.server.user.UserNicknameSetResult;
@@ -55,10 +53,16 @@ public class UserMessageListener extends MessageListener {
         send(userOfflineMsg, session);
 
         // 发送离开房间消息
-        if (user != null && user.isJoinedAnyRoom()) {
-            RoomLeave leave = new RoomLeave();
-            leave.setSession(session);
-            emit(RoomLeave.class, leave);
+        if (user.isJoinedAnyRoom()) {
+            RoomLeave leaveRoomMsg = new RoomLeave();
+            leaveRoomMsg.setSession(session);
+            emit(RoomLeave.class, leaveRoomMsg);
+        }
+        // 离开观看
+        if (user.getSpectatingRoom() != null) {
+            SpectatorLeaveReqMsg leaveWatchMsg = new SpectatorLeaveReqMsg();
+            leaveWatchMsg.setSession(session);
+            emit(SpectatorLeaveReqMsg.class, leaveWatchMsg);
         }
 
         lobbyService.removeStayLobbySession(session);

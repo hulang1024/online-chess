@@ -1,7 +1,6 @@
 package io.github.hulang1024.chinesechessserver.message.server.room;
 
 import io.github.hulang1024.chinesechessserver.message.ServerMessage;
-import io.github.hulang1024.chinesechessserver.message.server.room.RoomInfo;
 import lombok.Data;
 
 @Data

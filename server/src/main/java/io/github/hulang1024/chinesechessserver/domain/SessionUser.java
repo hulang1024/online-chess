@@ -28,6 +28,9 @@ public class SessionUser {
      * 已加入的房间
      */
     private Room joinedRoom;
+
+    private Room spectatingRoom;
+    
     /**
      * 准备状态
      */
@@ -46,6 +49,14 @@ public class SessionUser {
         joinedRoom.onLeave(this);
         joinedRoom = null;
         readyed = false;
+    }
+
+    public void setSpectatingRoom(Room room) {
+        this.spectatingRoom = room;
+    }
+
+    public Room getSpectatingRoom() {
+        return this.spectatingRoom;
     }
 
     public boolean isJoinedAnyRoom() {

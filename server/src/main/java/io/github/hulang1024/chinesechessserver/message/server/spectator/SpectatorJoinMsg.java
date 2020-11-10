@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 public class SpectatorJoinMsg extends ServerMessage {
     private RoomUserInfo user;
+    private int spectatorCount;
 
     public SpectatorJoinMsg() {
         super("spectator.join");

@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 public class SpectatorLeaveMsg extends ServerMessage {
     private RoomUserInfo user;
+    private int spectatorCount;
 
     public SpectatorLeaveMsg() {
         super("spectator.leave");

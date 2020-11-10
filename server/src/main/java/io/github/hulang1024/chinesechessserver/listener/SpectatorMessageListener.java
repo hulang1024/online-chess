@@ -7,14 +7,16 @@ import io.github.hulang1024.chinesechessserver.convert.RoomConvert;
 import io.github.hulang1024.chinesechessserver.convert.UserConvert;
 import io.github.hulang1024.chinesechessserver.domain.Room;
 import io.github.hulang1024.chinesechessserver.domain.SessionUser;
+import io.github.hulang1024.chinesechessserver.domain.chat.ChatMessage;
 import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.Chess;
 import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessHost;
 import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessboardState;
+import io.github.hulang1024.chinesechessserver.entity.User;
 import io.github.hulang1024.chinesechessserver.message.client.spectator.JoinWatchMsg;
-import io.github.hulang1024.chinesechessserver.message.client.spectator.LeaveMsg;
+import io.github.hulang1024.chinesechessserver.message.client.spectator.SpectatorLeaveReqMsg;
+import io.github.hulang1024.chinesechessserver.message.server.spectator.SpectatorLeaveMsg;
 import io.github.hulang1024.chinesechessserver.message.server.spectator.RoomRoundStateMsg;
 import io.github.hulang1024.chinesechessserver.message.server.spectator.SpectatorJoinMsg;
-import io.github.hulang1024.chinesechessserver.message.server.spectator.SpectatorLeaveMsg;
 import io.github.hulang1024.chinesechessserver.service.RoomService;
 import io.github.hulang1024.chinesechessserver.service.UserSessionService;
 
@@ -25,11 +27,12 @@ public class SpectatorMessageListener extends MessageListener {
     @Override
     public void init() {
         addMessageHandler(JoinWatchMsg.class, this::onJoinWatch);
-        addMessageHandler(LeaveMsg.class, this::onLeave);
+        addMessageHandler(SpectatorLeaveReqMsg.class, this::onLeave);
 
     }
 
     private void onJoinWatch(JoinWatchMsg msg) {
+        SessionUser spectator = userSessionService.getUserBySession(msg.getSession());
         Room room = roomService.getById(msg.getRoomId());
         RoomRoundStateMsg stateMsg = new RoomRoundStateMsg();
 
@@ -44,10 +47,10 @@ public class SpectatorMessageListener extends MessageListener {
             send(stateMsg, msg.getSession());
             return;
         }
-
-        SessionUser spectator = userSessionService.getUserBySession(msg.getSession());
-
+        
         room.getSpectators().add(spectator);
+        room.getChatChannel().joinUser(spectator);
+        spectator.setSpectatingRoom(room);
 
         // 发送观众当前房间信息和棋局状态
         stateMsg.setRoom(new RoomConvert().toRoomInfo(room));
@@ -59,27 +62,45 @@ public class SpectatorMessageListener extends MessageListener {
         }
         send(stateMsg, msg.getSession());
 
-        room.getChatChannel().joinUser(spectator);
-
         // 发送给房间玩家用户观众信息
         SpectatorJoinMsg joinMsg = new SpectatorJoinMsg();
         joinMsg.setUser(new UserConvert().toRoomUserInfo(spectator));
+        joinMsg.setSpectatorCount(room.getSpectators().size());
         room.getUsers().forEach(user -> {
             send(joinMsg, user.getSession());
         });
+        room.getSpectators().forEach(user -> {
+            send(joinMsg, user.getSession());
+        });
+
+        // 发送消息
+        ChatMessage chatMessage = new ChatMessage();
+        User user = new User();
+        user.setId(1L);
+        user.setNickname("Bot");
+        chatMessage.setFromUser(user);
+        chatMessage.setContent(spectator.getUser().getNickname() + " 加入观看");
+        room.getChatChannel().sendMessage(chatMessage);
     }
 
-    private void onLeave(LeaveMsg msg) {
-        Room room = roomService.getById(msg.getRoomId());
+    private void onLeave(SpectatorLeaveReqMsg msg) {
         SessionUser spectator = userSessionService.getUserBySession(msg.getSession());
+        Room room = spectator.getSpectatingRoom();
         
+        room.getSpectators().remove(spectator);
         room.getChatChannel().removeUser(spectator);
+        spectator.setSpectatingRoom(null);
 
         SpectatorLeaveMsg leaveMsg = new SpectatorLeaveMsg();
         leaveMsg.setUser(new UserConvert().toRoomUserInfo(spectator));
+        leaveMsg.setSpectatorCount(room.getSpectators().size());
         room.getUsers().forEach(user -> {
             send(leaveMsg, user.getSession());
         });
+        room.getSpectators().forEach(user -> {
+            send(leaveMsg, user.getSession());
+        });
+        
     }
 
     private List<RoomRoundStateMsg.Chess> toStateChesses(ChessboardState chessboardState) {

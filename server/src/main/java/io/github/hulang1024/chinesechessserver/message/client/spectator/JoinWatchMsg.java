@@ -5,7 +5,7 @@ import io.github.hulang1024.chinesechessserver.message.client.MessageType;
 import lombok.Data;
 
 @Data
-@MessageType("spectator.join_watch")
+@MessageType("spectator.spectate")
 public class JoinWatchMsg extends ClientMessage {
     private long roomId;
 }

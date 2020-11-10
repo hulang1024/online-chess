@@ -6,6 +6,5 @@ import lombok.Data;
 
 @Data
 @MessageType("spectator.leave")
-public class LeaveMsg extends ClientMessage {
-    private long roomId;
+public class SpectatorLeaveReqMsg extends ClientMessage {
 }
