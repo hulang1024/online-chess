@@ -73,6 +73,8 @@ class Main extends eui.UILayer  {
 
     private async loadResource() {
         try {
+            let loadingDiv = document.getElementById('loading');
+            loadingDiv.parentElement.removeChild(loadingDiv);
             const loadingView = new LoadingUI();
             this.stage.addChild(loadingView);
             await RES.loadConfig("resource/default.res.json", "resource/");

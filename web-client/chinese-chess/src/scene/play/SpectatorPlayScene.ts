@@ -3,12 +3,11 @@ import socketClient from "../../online/socket";
 import Room from "../../online/socket-message/response/Room";
 import AbstractScene from "../AbstractScene";
 import chatOverlay from "../../overlay/chat/chat";
-import ChatChannel from "../../overlay/chat/ChatChannel";
+import ChatChannel from "../../overlay/chat/Channel";
 import SceneContext from "../SceneContext";
 import DisplayChessboard from "./DisplayChessboard";
 import Player from "./Player";
 import ChessK from "./rule/chess/ChessK";
-import ChessPos from "./rule/ChessPos";
 import ChessHost, { reverseChessHost } from "./rule/chess_host";
 import SpectatorTextOverlay from "./TextOverlay";
 import UserInfoPane from "./UserInfoPane";
@@ -25,6 +24,7 @@ export default class SpectatorPlayScene extends AbstractScene {
     private userInfoPaneGroup = new eui.Group();
     private redChessUserInfoPane = new UserInfoPane();
     private blackChessUserInfoPane = new UserInfoPane();
+    private lblSpectatorNum = new eui.Label();
 
     constructor(context: SceneContext, roomRoundState: any) {
         super(context);
@@ -51,13 +51,26 @@ export default class SpectatorPlayScene extends AbstractScene {
         head.layout = new eui.VerticalLayout();
         group.addChild(head);
 
-        let roomInfo = new eui.Group();
-        roomInfo.height = 20;
-        let txtRoomNo = new egret.TextField();
-        txtRoomNo.size = 20;
-        txtRoomNo.text = '房间: ' + this.room.name;
-        roomInfo.addChild(txtRoomNo);
-        head.addChild(roomInfo);
+        let headInfoLayout = new eui.HorizontalLayout();
+        headInfoLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
+        let headInfo = new eui.Group();
+        headInfo.width = 530;
+        headInfo.layout = headInfoLayout;
+        headInfo.height = 20;
+
+        let lblRoomName = new eui.Label();
+        lblRoomName.width = 300;
+        lblRoomName.size = 20;
+        lblRoomName.text = '房间: ' + this.room.name;
+        headInfo.addChild(lblRoomName);
+
+        let { lblSpectatorNum } = this;
+        lblSpectatorNum.size = 20;
+        headInfo.addChild(lblSpectatorNum);
+
+        head.addChild(headInfo);
+
+        this.updateSpectatorCount(this.room.spectatorCount);
 
         let userPaneLayout = new eui.HorizontalLayout();
         userPaneLayout.gap = 200;
@@ -90,7 +103,7 @@ export default class SpectatorPlayScene extends AbstractScene {
 
         // 离开按钮
         let btnLeave = new eui.Button();
-        btnLeave.width = 100;
+        btnLeave.width = 120;
         btnLeave.height = 50;
         btnLeave.label = "离开房间";
         btnLeave.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
@@ -101,7 +114,7 @@ export default class SpectatorPlayScene extends AbstractScene {
 
         // 切换视角按钮
         let btnChangeChessHost = new eui.Button();
-        btnChangeChessHost.width = 100;
+        btnChangeChessHost.width = 120;
         btnChangeChessHost.height = 50;
         btnChangeChessHost.label = "切换视角";
         btnChangeChessHost.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
@@ -115,6 +128,7 @@ export default class SpectatorPlayScene extends AbstractScene {
 
         // 聊天切换按钮
         let btnChat = new eui.Button();
+        btnChat.width = 120;
         btnChat.label = "聊天";
         btnChat.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             chatOverlay.toggleVisible();
@@ -136,7 +150,7 @@ export default class SpectatorPlayScene extends AbstractScene {
 
         let channel = new ChatChannel();
         channel.id = this.room.chatChannelId;
-        channel.name = `房间[${this.room.name}]`;
+        channel.name = `当前房间`;
         chatOverlay.addChannel(channel);
         chatOverlay.toggleVisible();
     }
@@ -154,6 +168,14 @@ export default class SpectatorPlayScene extends AbstractScene {
             chatOverlay.visible = false;
         }, this);
         
+        socketClient.add('spectator.join', this.listeners['spectator.join'] = (msg: any) => {
+            this.updateSpectatorCount(msg.spectatorCount);
+        });
+
+        socketClient.add('spectator.leave', this.listeners['spectator.leave'] = (msg: any) => {
+            this.updateSpectatorCount(msg.spectatorCount);
+        });
+
         socketClient.add('room.join', this.listeners['room.join'] = (msg: any) => {
             this.textOverlay.show('玩家加入', 3000);
             
@@ -247,6 +269,10 @@ export default class SpectatorPlayScene extends AbstractScene {
     
     private onRoundEnd(isWin: boolean) {
 
+    }
+
+    private updateSpectatorCount = (count: number) => {
+        this.lblSpectatorNum.text = `观众数: ${count}`;
     }
 
     private addUserInfoPaneByView() {

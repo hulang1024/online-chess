@@ -9,7 +9,6 @@ export default class PasswordForJoinRoomDialog extends Dialog {
         super();
 
         this.visible = false;
-        this.setSize(424, 216);
 
         this.body.addChild(this.createPasswordGroup());
 

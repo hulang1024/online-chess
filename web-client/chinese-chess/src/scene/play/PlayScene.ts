@@ -17,7 +17,7 @@ import DisplayChessboard from "./DisplayChessboard";
 import ChessPos from "./rule/ChessPos";
 import Room from "../../online/socket-message/response/Room";
 import chatOverlay from "../../overlay/chat/chat";
-import ChatChannel from "../../overlay/chat/ChatChannel";
+import ChatChannel from "../../overlay/chat/Channel";
 
 export default class PlayScene extends AbstractScene {
     // socket消息监听器
@@ -39,6 +39,7 @@ export default class PlayScene extends AbstractScene {
     private room: Room;
     private user: User;
     private otherUserInfoPane =  new UserInfoPane(true);
+    private lblSpectatorNum = new eui.Label();
     private txtWaitTip = new egret.TextField();
     private btnReady: ReadyButton;
     private resultDialog = new ResultDialog();
@@ -75,13 +76,26 @@ export default class PlayScene extends AbstractScene {
         head.layout = new eui.VerticalLayout();
         group.addChild(head);
 
-        let roomInfo = new eui.Group();
-        roomInfo.height = 20;
-        let txtRoomNo = new egret.TextField();
-        txtRoomNo.size = 20;
-        txtRoomNo.text = '房间: ' + this.room.name;
-        roomInfo.addChild(txtRoomNo);
-        head.addChild(roomInfo);
+        let headInfoLayout = new eui.HorizontalLayout();
+        headInfoLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
+        let headInfo = new eui.Group();
+        headInfo.width = 530;
+        headInfo.layout = headInfoLayout;
+        headInfo.height = 20;
+
+        let lblRoomName = new eui.Label();
+        lblRoomName.width = 300;
+        lblRoomName.size = 20;
+        lblRoomName.text = '房间: ' + this.room.name;
+        headInfo.addChild(lblRoomName);
+
+        let { lblSpectatorNum } = this;
+        lblSpectatorNum.size = 20;
+        headInfo.addChild(lblSpectatorNum);
+
+        head.addChild(headInfo);
+
+        this.updateSpectatorCount(this.room.spectatorCount);
 
         // 对方玩家信息
         let otherUser = null;
@@ -118,7 +132,7 @@ export default class PlayScene extends AbstractScene {
 
         // 离开按钮
         let btnLeave = new eui.Button();
-        btnLeave.width = 100;
+        btnLeave.width = 120;
         btnLeave.height = 50;
         btnLeave.label = "离开房间";
         btnLeave.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
@@ -137,6 +151,7 @@ export default class PlayScene extends AbstractScene {
 
         // 聊天切换按钮
         let btnChat = new eui.Button();
+        btnChat.width = 120;
         btnChat.label = "聊天";
         btnChat.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             chatOverlay.toggleVisible();
@@ -147,7 +162,7 @@ export default class PlayScene extends AbstractScene {
 
         let channel = new ChatChannel();
         channel.id = this.room.chatChannelId;
-        channel.name = `房间[${this.room.name}]`;
+        channel.name = `当前房间`;
         chatOverlay.addChannel(channel);
         chatOverlay.toggleVisible();
 
@@ -167,6 +182,15 @@ export default class PlayScene extends AbstractScene {
             this.popScene();
         }, this);
 
+        socketClient.add('spectator.join', this.listeners['spectator.join'] = (msg: any) => {
+            messager.info(`${msg.user.nickname} 加入观看`, this);
+            this.updateSpectatorCount(msg.spectatorCount);
+        });
+
+        socketClient.add('spectator.leave', this.listeners['spectator.leave'] = (msg: any) => {
+            this.updateSpectatorCount(msg.spectatorCount);
+        });
+
         socketClient.add('room.leave', this.listeners['room.leave'] = (msg: any) => {
             if (msg.user.id == this.user.id) {
                 return;
@@ -180,12 +204,12 @@ export default class PlayScene extends AbstractScene {
                 this.chessboard.getChessList().forEach(chess => {
                     chess.touchEnabled = false;
                 });
-                messager.info(`玩家[${msg.user.nickname}]已离开房间`, this);
+                messager.info(`${msg.user.nickname} 已离开房间`, this);
             }
         });
 
         socketClient.add('user.offline', this.listeners['user.offline'] = (msg: any) => {
-            messager.info(`玩家[${msg.nickname}]已下线或掉线，
+            messager.info(`${msg.nickname} 已下线或掉线，
                 你可以等待对方一会儿，重新连接之后选择继续下棋（自动恢复棋局状态）。
                 你也可以直接离开房间，但是房间和棋局状态会被清理。`, this);
             return;
@@ -290,6 +314,11 @@ export default class PlayScene extends AbstractScene {
             }
             socketClient.send('chessplay.ready');
         }, 100);
+    }
+
+    private updateSpectatorCount = (count: number) => {
+        this.lblSpectatorNum.text = `观众数: ${count}`;
+        this.lblSpectatorNum.visible = count > 0;
     }
 
     onChessboardClick(event: ChessboardClickEvent) {

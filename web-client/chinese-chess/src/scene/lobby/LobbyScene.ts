@@ -20,7 +20,32 @@ export default class LobbyScene extends AbstractScene {
 
     constructor(context: SceneContext) {
         super(context);
-        
+
+        let layout = new eui.VerticalLayout();
+        layout.paddingTop = 8;
+        let group = new eui.Group();
+        group.layout = layout;
+        this.addChild(group);
+
+        let headGroup = new eui.Group();
+        headGroup.layout = new eui.HorizontalLayout();
+        (<eui.HorizontalLayout>headGroup.layout).gap = 4;
+  
+        let lblTitle = new eui.Label();
+        lblTitle.size = 24;
+        lblTitle.text = "多人游戏大厅";
+        headGroup.addChild(lblTitle);
+
+        let lblOnline = new eui.Label();
+        lblOnline.size = 20;
+        lblOnline.text = "在线人数:";
+        headGroup.addChild(lblOnline);
+        let lblOnlineNum = new eui.Label();
+        lblOnlineNum.size = 20;
+        headGroup.addChild(lblOnlineNum);
+
+        group.addChild(headGroup);
+
         let buttonGroupLayout = new eui.HorizontalLayout();
         buttonGroupLayout.paddingTop = 8;
         buttonGroupLayout.paddingLeft = 8;
@@ -28,50 +53,41 @@ export default class LobbyScene extends AbstractScene {
         let buttonGroup = new eui.Group();
         buttonGroup.layout = buttonGroupLayout;
         let btnCreateRoom = new eui.Button();
+        btnCreateRoom.width = 130;
         btnCreateRoom.label = "创建房间";
         btnCreateRoom.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onCreateRoomClick, this);
         buttonGroup.addChild(btnCreateRoom);
 
         let btnQuickMatch = new eui.Button();
-        btnQuickMatch.x = 120;
+        btnQuickMatch.width = 130;
         btnQuickMatch.label = "快速加入";
         btnQuickMatch.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onQuickMatchClick, this);
         buttonGroup.addChild(btnQuickMatch);
 
-        this.addChild(buttonGroup);
+        group.addChild(buttonGroup);
 
-        let statGroup = new eui.Group();
-        statGroup.x = 300;
-        statGroup.y = 20;
-        let lblOnline = new eui.Label();
-        lblOnline.size = 20;
-        lblOnline.text = "在线人数:";
-        statGroup.addChild(lblOnline);
-        let txtOnline = new egret.TextField();
-        txtOnline.size = 20;
-        txtOnline.x = 80;
-        statGroup.addChild(txtOnline);
-        this.addChild(statGroup);
-
-        let roomLayout = new eui.TileLayout();
-        roomLayout.horizontalGap = 8;
-        roomLayout.verticalGap = 8;
-        roomLayout.columnAlign = eui.ColumnAlign.JUSTIFY_USING_WIDTH;
-        roomLayout.rowAlign = eui.RowAlign.JUSTIFY_USING_HEIGHT;
+        let roomLayout = new eui.VerticalLayout();
+        roomLayout.horizontalAlign = egret.HorizontalAlign.CONTENT_JUSTIFY;
+        roomLayout.gap = 8;
         roomLayout.paddingTop = 16;
         roomLayout.paddingRight = 8;
         roomLayout.paddingLeft = 8 ;
         roomLayout.paddingBottom = 8;
-        this.roomContainer.y = 60;
         this.roomContainer.layout = roomLayout;
-        this.addChild(this.roomContainer);
-
-
-        this.roomCreateDialog.y = 100;
+        
         this.addChild(this.roomCreateDialog);
-
-        this.passwordForJoinRoomDialog.y = 100;
         this.addChild(this.passwordForJoinRoomDialog);
+
+        let scroller = new eui.Scroller();
+        scroller.viewport = this.roomContainer;
+
+        this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
+            this.roomContainer.width = this.stage.stageWidth;
+            scroller.height = this.stage.stageHeight / 2 - 30;
+            group.addChild(scroller);
+            scroller.verticalScrollBar.autoVisibility = false;
+            scroller.verticalScrollBar.visible = true;
+        }, this);
 
         (async () => {
             socketClient.addEventListener(egret.Event.CONNECT, this.connectHandler = () => {
@@ -85,7 +101,7 @@ export default class LobbyScene extends AbstractScene {
                 });
             });
             socketClient.add('stat.online', this.listeners['stat.online'] = (msg) => {
-                txtOnline.text = msg.online;
+                lblOnlineNum.text = msg.online;
             });
             socketClient.add('room.create', this.listeners['room.create'] = (msg) => {
                 if (msg.code != 0) {
@@ -152,6 +168,7 @@ export default class LobbyScene extends AbstractScene {
     }
 
     onCreateRoomClick() {
+        this.setChildIndex(this.roomCreateDialog, 1000);
         this.roomCreateDialog.visible = true;
         this.roomCreateDialog.onOkClick = (room) => {
             this.roomCreateDialog.visible = false;
@@ -185,6 +202,7 @@ export default class LobbyScene extends AbstractScene {
         let room = displayRoom.room;
         if (room.userCount == 1) {
             if (room.locked) {
+                this.setChildIndex(this.passwordForJoinRoomDialog, 1000);
                 this.passwordForJoinRoomDialog.showFor(room);
                 this.passwordForJoinRoomDialog.onOkClick = (password) => {
                     this.passwordForJoinRoomDialog.visible = false;
@@ -194,7 +212,7 @@ export default class LobbyScene extends AbstractScene {
                 socketClient.send('room.join', {roomId: room.id});
             }
         } else {
-            socketClient.send('spectator.join_watch', {roomId: room.id});
+            socketClient.send('spectator.spectate', {roomId: room.id});
             socketClient.addOnce('spectator.room_round_state', (msg: any) => {
                 if (msg.code != 0) {
                     messager.info('失败', this);

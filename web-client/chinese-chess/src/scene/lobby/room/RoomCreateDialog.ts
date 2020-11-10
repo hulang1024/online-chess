@@ -13,7 +13,6 @@ export default class RoomCreateDialog extends Dialog {
 
         this.visible = false;
         this.title = "创建房间";
-        this.setSize(424, 292);
 
         this.body.addChild(this.createRoomNameGroup());
         this.body.addChild(this.createLockOptionGroup());
@@ -57,7 +56,7 @@ export default class RoomCreateDialog extends Dialog {
         group.layout = new eui.HorizontalLayout();
 
         let label = new eui.Label();
-        label.text = "设置密码";
+        label.text = "需要密码";
         label.size = 20;
         group.addChild(label);
 

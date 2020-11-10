@@ -13,7 +13,7 @@ export default abstract class AbstractScene extends egret.DisplayObjectContainer
 
     onSceneExit() {}
 
-    protected pushScene(sceneBuilder: SceneBuilder) {
+    protected pushScene(sceneBuilder: SceneBuilder) {        
         this.onSceneExit();
         this.sceneManager.pushScene(sceneBuilder);
     }

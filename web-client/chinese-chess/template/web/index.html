@@ -14,11 +14,16 @@
     <style>
         html, body {
             -ms-touch-action: none;
-            background: #bbb;
+            background: #aaa;
             padding: 0;
             border: 0;
             margin: 0;
             height: 100%;
+        }
+
+        #loading {
+            color: white;
+            text-align: center;
         }
     </style>
 </head>
@@ -35,6 +40,7 @@
          data-multi-fingered="2"
          data-show-fps="false" data-show-log="false"
          data-show-fps-style="x:0,y:0,size:12,textColor:0xffffff,bgAlpha:0.9">
+         <div id="loading">加载中，请稍等</div>
     </div>
 <script>
     var loadScript = function (list, callback) {

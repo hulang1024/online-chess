@@ -37,7 +37,7 @@ class SocketClient extends egret.WebSocket {
 
         // 重新登录监听暂时写在这里
         this.add('user.login', (msg: any) => {
-            messager.info(`游客登录成功，你好 ${msg.user.nickname}`, this.stage);
+            messager.info(`游客登录成功`, this.stage);
             platform.setUserInfo(msg.user);
         });
     }
@@ -60,8 +60,8 @@ class SocketClient extends egret.WebSocket {
 
                 messager.info({msg: '正在连接到服务器', duration: 2000}, this.stage);
 
-                //super.connect("180.76.185.34", 9097);
-                super.connect("192.168.1.101", 9097);
+                super.connect("180.76.185.34", 9097);
+                //super.connect("192.168.1.101", 9097);
             }
         });
     }

@@ -38,11 +38,21 @@ export default class Dialog extends eui.Group {
         this.addChild(this.body);
 
         // 底部
-        let footerLayout = new eui.HorizontalLayout();
+        let footerLayout = new eui.VerticalLayout();
+        footerLayout.horizontalAlign = egret.HorizontalAlign.CONTENT_JUSTIFY;
         footerLayout.paddingTop = 24;
         footerLayout.gap = 32;
         let footer = new eui.Group();
         footer.layout = footerLayout;
+
+        // 确定按钮
+        this.btnOk.label = "确定";
+        this.btnOk.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+            if (this.onOk) {
+                this.onOk();
+            }
+        }, this);
+        footer.addChild(this.btnOk);
 
         // 取消按钮
         this.btnCancel.label = "取消";
@@ -54,30 +64,17 @@ export default class Dialog extends eui.Group {
         }, this);
         footer.addChild(this.btnCancel);
 
-        // 确定按钮
-        this.btnOk.label = "确定";
-        this.btnOk.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            if (this.onOk) {
-                this.onOk();
-            }
-        }, this);
-        footer.addChild(this.btnOk);
         this.addChild(footer);
         
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
-            this.x = (this.stage.stageWidth - this.width) / 2;
-            this.y = (this.stage.stageHeight - this.height) / 2;
+            this.width = this.stage.stageWidth;
+            this.height = this.stage.stageHeight;
+            footer.width = this.width - 32;
+
+            this.background.graphics.clear();
+            this.background.graphics.beginFill(0x555555, 0.7);
+            this.background.graphics.drawRect(0, 0, this.width, this.height);
         }, this);
-    }
-
-    setSize(width: number, height: number) {
-        this.width = width;
-        this.height = height;
-
-        // 背景
-        this.background.graphics.clear();
-        this.background.graphics.beginFill(0x555555);
-        this.background.graphics.drawRoundRect(0, 0, this.width, this.height, 8, 8);
     }
 
     get title() {

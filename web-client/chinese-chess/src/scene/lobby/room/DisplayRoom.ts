@@ -1,37 +1,42 @@
 import RoomUser from "../../../online/socket-message/response/RoomUser";
 import Room from "../../../online/socket-message/response/Room";
 
-export default class DisplayRoom extends eui.Component {
+export default class DisplayRoom extends eui.Group {
     room: Room;
     private rect = new egret.Shape();
-    private txtName = new egret.TextField();
-    private txtStatus = new egret.TextField();
-    private userNameTexts: Array<egret.TextField> = [];
+    private lblName = new eui.Label();
+    private lblStatus = new eui.Label();
+    private userGroup = new eui.Group();
 
     constructor(room: Room) {
         super();
         this.room = room;
 
+        let layout = new eui.VerticalLayout();
+        layout.paddingTop = 16;
+        layout.paddingLeft = 16;
+        this.layout = layout;
         this.width = 400;
-        this.height = 120;
+        this.height = 112;
 
         this.addChild(this.rect);
 
         this.drawName(room.name);
-        this.addChild(this.txtName);
+        this.addChild(this.lblName);
 
-        this.drawStatus(room.status);
-        this.addChild(this.txtStatus);
+        this.addChild(this.lblStatus);
 
-        let txtUserTitle = new egret.TextField();
-        txtUserTitle.x = 8;
-        txtUserTitle.y = 56;
-        txtUserTitle.size = 16;
-        txtUserTitle.text = '玩家：';
-        this.addChild(txtUserTitle);
+        let lblUsersTitle = new eui.Label();
+        lblUsersTitle.size = 16;
+        lblUsersTitle.text = '玩家：';
+        this.addChild(lblUsersTitle);
 
+        this.addChild(this.userGroup);
         this.addUserList(room, room.users);
 
+        this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
+            this.drawStatus(room.status);
+        }, this);
     }
 
     update(newRoom: Room) {
@@ -59,8 +64,7 @@ export default class DisplayRoom extends eui.Component {
         }
 
         if (!same) {
-            this.userNameTexts.forEach(this.removeChild.bind(this));
-            this.userNameTexts.length = 0;
+            this.userGroup.removeChildren();
             this.addUserList(newRoom, newRoom.users);
         }
 
@@ -68,30 +72,27 @@ export default class DisplayRoom extends eui.Component {
     }
 
     private drawName(name: string) {
-        let { txtName } = this;
-        txtName.x = 8;
-        txtName.y = 8;
-        txtName.size = 16;
-        txtName.text = name;
+        let { lblName } = this;
+        lblName.size = 18;
+        lblName.text = name;
     }
 
     private drawStatus(status: number) {
         this.rect.graphics.clear();
-        this.rect.graphics.beginFill({1: 0x00bb00, 2: 0xff8800, 3: 0x555555}[status]);
-        this.rect.graphics.drawRoundRect(0, 0, this.width, 120, 8, 8);
+        this.rect.graphics.beginFill(0x333333, 0.6);
+        this.rect.graphics.drawRoundRect(0, 0, 530, this.height, 8, 8);
 
-        let { txtStatus } = this;
-        txtStatus.x = 8;
-        txtStatus.y = 28;
-        txtStatus.size = 16;
+        let { lblStatus } = this;
+        lblStatus.size = 16;
         let text = {
-            1: '可加入，点击进入' + (this.room.locked ? "(有密码)" : ""),
-            2: '即将开始，点击围观',
-            3: '进行中，点击围观'}[status];
+            1: '可加入，点击加入' + (this.room.locked ? "(有密码)" : ""),
+            2: '即将开始，点击观看',
+            3: '进行中，点击观看'}[status];
         if (this.room.spectatorCount > 0) {
             text += `(当前观众${this.room.spectatorCount}个)`;
         }
-        txtStatus.text = text;
+        this.lblName.textColor = {1: 0x00bb00, 2: 0xff8800, 3: 0x555555}[status];
+        lblStatus.text = text;
     }
 
     private addUserList(room: Room, users: Array<RoomUser>) {
@@ -99,16 +100,17 @@ export default class DisplayRoom extends eui.Component {
             return;
         }
 
-        let yFactor = 1;
+        let userGroupLayout = new eui.HorizontalLayout();
+        userGroupLayout.gap = 20;
+        let { userGroup } = this;
+        userGroup.layout = userGroupLayout;
+
         for (let user of users) {
-            let txtUserName = new egret.TextField();
-            txtUserName.x = 8;
-            txtUserName.y = 56 + yFactor++ * 20;
-            txtUserName.size = 16;
-            txtUserName.text =  (user.nickname || user.id.toString())
+            let lblUserName = new eui.Label();
+            lblUserName.size = 16;
+            lblUserName.text =  (user.nickname || user.id.toString())
                 + (room.status == 3 ? "" : " " + (user.readyed ? "已准备" : "未准备"));
-            this.addChild(txtUserName);
-            this.userNameTexts.push(txtUserName);
+            userGroup.addChild(lblUserName);
         }
     }
 }

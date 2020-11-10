@@ -40,14 +40,12 @@ function message(type: MessageType, options: MessageOptions | string, context: e
         text.x = 8;
         text.y = 8;
         text.text = <string>options.msg;
-        text.stroke = 2;
         text.textColor = {
             [MessageType.INFO]: 0xffffff,
             [MessageType.SUCCESS]: 0x00ff00,
             [MessageType.FAIL]: 0xff0022,
             [MessageType.ERROR]: 0xff0000
         }[type];
-        text.strokeColor = 0x444;
         content = text;
     } else {
         content = options.msg;
@@ -83,7 +81,7 @@ function messageContainer(child: egret.DisplayObject, context: egret.DisplayObje
 
     let shape = new egret.Shape();
     shape.graphics.clear();
-    shape.graphics.beginFill(0x000000);
+    shape.graphics.beginFill(0x000000, 0.5);
     shape.graphics.drawRoundRect(0, 0, width, height, 8, 8);
     container.addChild(shape);
     container.addChild(child);

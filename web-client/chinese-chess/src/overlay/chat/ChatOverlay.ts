@@ -1,15 +1,15 @@
 import Overlay from "../../component/Overlay";
 import socketClient from "../../online/socket";
-import ChannelMessagePane from "./ChannelMessagePane";
-import ChatChannel from "./ChatChannel";
-import messager from "../../component/messager";
+import DrawableChannel from "./DrawableChannel";
+import ChatChannel from "./Channel";
 import MessageInput from "./MessageInput";
 import platform from "../../Platform";
+import User from "../../user/User";
 
 export default class ChatOverlay extends Overlay {
     private tabBar = new eui.TabBar();
     private viewStack = new eui.ViewStack();
-    private channelMessagePanes: Array<ChannelMessagePane> = [];
+    private channels: Array<DrawableChannel> = [];
     private messageInput = new MessageInput();
 
     constructor() {
@@ -26,7 +26,7 @@ export default class ChatOverlay extends Overlay {
 
     onAddToStage() {
         this.width = this.stage.stageWidth;
-        this.height = this.stage.stageHeight / 3;
+        this.height = this.stage.stageHeight / 2.8;
         this.setSize(this.stage.stageWidth, this.height);
         this.y = this.stage.stageHeight - this.height;
         this.visible = true;
@@ -36,25 +36,24 @@ export default class ChatOverlay extends Overlay {
         messageInput.y = this.height - messageInput.height - 8;
         messageInput.onSend = (msg: string) => {
             socketClient.send('chat.message', {
-                channelId: this.channelMessagePanes[this.tabBar.selectedIndex].channel.id,
+                channelId: this.channels[this.tabBar.selectedIndex].channel.id,
                 content: msg
             });
         }
         this.addChild(messageInput);
 
         this.loadChannels();
-        this.channelMessagePanes[0].addMessage({
-            fromUid: 1,
-            fromUserNickname: 'problue',
-            content: '欢迎来到在线中国象棋',
-            isFromMe: false
+        this.channels[0].addNewMessage({
+            fromUid: User.SYSTEM.id,
+            fromUserNickname: User.SYSTEM.nickname,
+            content: '欢迎来到中国象棋在线',
         });
         this.viewStack.selectedIndex = 0;
 
         socketClient.add('chat.message', (msg: any) => {
-            let channelMessagePane = this.channelMessagePanes.filter(pane => pane.channel.id == msg.channelId)[0];
+            let channelMessagePane = this.channels.filter(pane => pane.channel.id == msg.channelId)[0];
             msg.isFromMe = platform.getUserInfo().id == msg.fromUid;
-            channelMessagePane.addMessage(msg);
+            channelMessagePane.addNewMessage(msg);
         });
     }
 
@@ -72,16 +71,18 @@ export default class ChatOverlay extends Overlay {
     }
 
     addChannel(channel: ChatChannel) {
-        let pane = new ChannelMessagePane(channel,
+        let drawableChannel = new DrawableChannel(channel,
             this.height - this.messageInput.height - 80);
-        this.channelMessagePanes.push(pane);
-        this.viewStack.addChild(pane);
+        this.channels.push(drawableChannel);
+        this.viewStack.addChild(drawableChannel);
+        
+        this.viewStack.selectedIndex++;
     }
 
     removeChannel(channelId: number) {
-        let pane = this.channelMessagePanes.filter(pane => pane.channel.id == channelId)[0];
+        let pane = this.channels.filter(pane => pane.channel.id == channelId)[0];
         this.viewStack.removeChild(pane);
-        this.channelMessagePanes = this.channelMessagePanes.filter(pane => pane.channel.id != channelId);
+        this.channels = this.channels.filter(pane => pane.channel.id != channelId);
     }
 
     private loadChannels() {

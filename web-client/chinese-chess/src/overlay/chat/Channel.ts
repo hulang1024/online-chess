@@ -1,4 +1,4 @@
-export default class ChatChannel {
+export default class Channel {
     id: number;
     name: string;
 }

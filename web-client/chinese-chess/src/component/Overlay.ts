@@ -28,7 +28,7 @@ export default class Overlay extends eui.Group {
 
         // 背景
         this.background.graphics.clear();
-        this.background.graphics.beginFill(0x555555, 0.5);
+        this.background.graphics.beginFill(0x333333, 0.6);
         this.background.graphics.drawRoundRect(0, 0, this.width, this.height, 8, 8);
     }
 }

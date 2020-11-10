@@ -7,7 +7,6 @@ export default class ResultDialog extends Dialog {
         super();
 
         this.visible = false;
-        this.setSize(300, 150);
 
         this.txtResult = new egret.TextField();
         this.txtResult.size = 24;
