@@ -75,10 +75,7 @@ public class SpectatorMessageListener extends MessageListener {
 
         // 发送消息
         ChatMessage chatMessage = new ChatMessage();
-        User user = new User();
-        user.setId(1L);
-        user.setNickname("Bot");
-        chatMessage.setFromUser(user);
+        chatMessage.setFromUser(User.SYSTEM_USER);
         chatMessage.setContent(spectator.getUser().getNickname() + " 加入观看");
         room.getChatChannel().sendMessage(chatMessage);
     }
@@ -100,7 +97,12 @@ public class SpectatorMessageListener extends MessageListener {
         room.getSpectators().forEach(user -> {
             send(leaveMsg, user.getSession());
         });
-        
+
+        // 发送消息
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setFromUser(User.SYSTEM_USER);
+        chatMessage.setContent(spectator.getUser().getNickname() + " 离开观看");
+        room.getChatChannel().sendMessage(chatMessage);
     }
 
     private List<RoomRoundStateMsg.Chess> toStateChesses(ChessboardState chessboardState) {

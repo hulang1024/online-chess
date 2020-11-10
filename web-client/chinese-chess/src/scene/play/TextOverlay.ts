@@ -21,6 +21,7 @@ export default class SpectatorTextOverlay extends Overlay {
 
     show(text: string, duration: number = 0) {
         this.visible = false;
+        this.parent.setChildIndex(this, 10000);
         this.text.text = text;
         this.visible = true;
 

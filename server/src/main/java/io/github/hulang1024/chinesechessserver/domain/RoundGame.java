@@ -28,22 +28,13 @@ public class RoundGame {
 
     public RoundGame(SessionUser redChessUser, SessionUser blackChessUser) {
         this.redChessUser = redChessUser;
+        this.redChessUser.setChessHost(ChessHost.RED);
         this.blackChessUser = blackChessUser;
+        this.blackChessUser.setChessHost(ChessHost.BLACK);
         this.activeChessHost = ChessHost.RED;
     }
 
     public void turnActiveChessHost() {
         this.activeChessHost = this.activeChessHost.reverse();
-    }
-
-    /**
-     * 交换棋方
-     */
-    public void swapRedAndBlack() {
-        SessionUser user = redChessUser;
-        redChessUser = blackChessUser;
-        blackChessUser = user;
-        redChessUser.setChessHost(ChessHost.RED);
-        blackChessUser.setChessHost(ChessHost.BLACK);
     }
 }

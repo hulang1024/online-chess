@@ -88,21 +88,17 @@ public class ChessPlayMessageListener extends MessageListener {
         SessionUser actionUser = userSessionService.getUserBySession(chessMove.getSession());
         Room room = actionUser.getJoinedRoom();
 
+        room.getRound().getChessboardState().moveChess(
+            chessMove.getFromPos(), chessMove.getToPos(), actionUser.getChessHost());
+
+        room.getRound().turnActiveChessHost();
+
         ChessMoveResult result = new ChessMoveResult();
         result.setChessHost(actionUser.getChessHost().code());
         result.setMoveType(chessMove.getMoveType());
         result.setFromPos(chessMove.getFromPos());
         result.setToPos(chessMove.getToPos());
         
-        if (chessMove.getMoveType() == 2) {
-            room.getRound().getChessboardState().setChess(
-                chessMove.getFromPos(), null, actionUser.getChessHost());
-        }
-        room.getRound().getChessboardState().moveChess(
-            chessMove.getFromPos(), chessMove.getToPos(), actionUser.getChessHost());
-        
-        room.getRound().turnActiveChessHost();
-
         // 广播给已在此房间的参与者
         room.getUsers().forEach((user) -> {
             send(result, user.getSession());
@@ -116,23 +112,22 @@ public class ChessPlayMessageListener extends MessageListener {
     private void startRound(Room room) {
         // 创建棋局
         RoundGame round;
-        if (room.getRound() == null) {
-            SessionUser redChessUser = null;
-            SessionUser blackChessUser = null;
-            for (SessionUser user : room.getUsers()) {
-                if (user.getChessHost() == ChessHost.RED) {
-                    redChessUser = user;
-                } else {
-                    blackChessUser = user;
-                }
+        SessionUser redChessUser = null;
+        SessionUser blackChessUser = null;
+        for (SessionUser user : room.getUsers()) {
+            if (user.getChessHost() == ChessHost.RED) {
+                redChessUser = user;
+            } else {
+                blackChessUser = user;
             }
+        }
+        if (room.getRound() == null) {
             round = new RoundGame(redChessUser, blackChessUser);
             room.setRound(round);
-            
         } else {
-            // 后面局交换先手
             round = room.getRound();
-            round.swapRedAndBlack();
+            round = new RoundGame(blackChessUser, redChessUser);
+            room.setRound(round);
         }
 
         ChessPlayRoundStart redStart = new ChessPlayRoundStart();

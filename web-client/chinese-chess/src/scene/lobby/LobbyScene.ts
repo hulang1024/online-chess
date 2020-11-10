@@ -85,8 +85,6 @@ export default class LobbyScene extends AbstractScene {
             this.roomContainer.width = this.stage.stageWidth;
             scroller.height = this.stage.stageHeight / 2 - 30;
             group.addChild(scroller);
-            scroller.verticalScrollBar.autoVisibility = false;
-            scroller.verticalScrollBar.visible = true;
         }, this);
 
         (async () => {

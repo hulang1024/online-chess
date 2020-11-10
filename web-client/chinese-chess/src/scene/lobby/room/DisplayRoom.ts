@@ -91,7 +91,7 @@ export default class DisplayRoom extends eui.Group {
         if (this.room.spectatorCount > 0) {
             text += `(当前观众${this.room.spectatorCount}个)`;
         }
-        this.lblName.textColor = {1: 0x00bb00, 2: 0xff8800, 3: 0x555555}[status];
+        this.lblName.textColor = {1: 0x00bb00, 2: 0xff8800, 3: 0xffffff}[status];
         lblStatus.text = text;
     }
 

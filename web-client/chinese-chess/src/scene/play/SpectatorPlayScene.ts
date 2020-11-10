@@ -11,6 +11,7 @@ import ChessK from "./rule/chess/ChessK";
 import ChessHost, { reverseChessHost } from "./rule/chess_host";
 import SpectatorTextOverlay from "./TextOverlay";
 import UserInfoPane from "./UserInfoPane";
+import RoomUser from "../../online/socket-message/response/RoomUser";
 
 export default class SpectatorPlayScene extends AbstractScene {
     // socket消息监听器
@@ -22,6 +23,8 @@ export default class SpectatorPlayScene extends AbstractScene {
     private chessboard: DisplayChessboard;
     private textOverlay = new SpectatorTextOverlay();
     private userInfoPaneGroup = new eui.Group();
+    private redChessUser: RoomUser;
+    private blackChessUser: RoomUser;
     private redChessUserInfoPane = new UserInfoPane();
     private blackChessUserInfoPane = new UserInfoPane();
     private lblSpectatorNum = new eui.Label();
@@ -80,17 +83,16 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.addUserInfoPaneByView();
         head.addChild(this.userInfoPaneGroup);
 
-        let redChessUser: any;
-        let blackChessUser: any;
+
         roomRoundState.room.users.forEach(user => {
             if (user.chessHost == ChessHost.BLACK) {
-                blackChessUser = user;
+                this.blackChessUser = user;
             } else {
-                redChessUser = user;
+                this.redChessUser = user;
             }
         });
-        this.redChessUserInfoPane.load(redChessUser);
-        this.blackChessUserInfoPane.load(blackChessUser);
+        this.redChessUserInfoPane.load(this.redChessUser);
+        this.blackChessUserInfoPane.load(this.blackChessUser);
 
         group.addChild(this.player);
 
@@ -179,25 +181,28 @@ export default class SpectatorPlayScene extends AbstractScene {
         socketClient.add('room.join', this.listeners['room.join'] = (msg: any) => {
             this.textOverlay.show('玩家加入', 3000);
             
+            // 新加进来的用户如果是持红棋，则原来红棋的用户现在持黑棋
             if (msg.user.chessHost == ChessHost.RED) {
-                let user = this.redChessUserInfoPane.getUser();
-                user.chessHost = ChessHost.BLACK;
-                this.redChessUserInfoPane.load(msg.user);
-                this.blackChessUserInfoPane.load(user);
+                this.blackChessUser = this.redChessUser;
+                this.blackChessUser.chessHost = ChessHost.BLACK;
+                this.redChessUser = msg.user;
             } else {
-                let user = this.blackChessUserInfoPane.getUser();
-                user.chessHost = ChessHost.RED;
-                this.blackChessUserInfoPane.load(msg.user);
-                this.redChessUserInfoPane.load(user);
+                this.redChessUser = this.blackChessUser;
+                this.redChessUser.chessHost = ChessHost.RED;
+                this.blackChessUser = msg.user;
             }
+
+            this.redChessUserInfoPane.load(this.redChessUser);
+            this.blackChessUserInfoPane.load(this.blackChessUser);
         });
         
         socketClient.add('room.leave', this.listeners['room.leave'] = (msg: any) => {
             let leaveChessHost: ChessHost;
-            if (this.redChessUserInfoPane.getUser()
-                && msg.user.id == this.redChessUserInfoPane.getUser().id) {
+            if (this.redChessUser && msg.user.id == this.redChessUser.id) {
+                this.redChessUser = null;
                 leaveChessHost = ChessHost.RED;
             } else {
+                this.blackChessUser = null;
                 leaveChessHost = ChessHost.BLACK;
             }
 
@@ -206,9 +211,8 @@ export default class SpectatorPlayScene extends AbstractScene {
             (leaveChessHost == ChessHost.RED
                 ? this.redChessUserInfoPane
                 : this.blackChessUserInfoPane).load(null);
-
             
-            if (this.redChessUserInfoPane.getUser() == null && this.blackChessUserInfoPane.getUser() == null) {
+            if (this.redChessUser == null && this.blackChessUser == null) {
                 messager.info('观看房间玩家已全部离开', this.stage);
                 this.popScene();
                 return;
@@ -219,14 +223,54 @@ export default class SpectatorPlayScene extends AbstractScene {
             this.activeChessHost = null;
         });
 
-        socketClient.add('chessplay.ready', this.listeners['chessplay.ready'] = (msg: any) => {
+        this.listeners['chessplay.ready'] = (msg: any) => {
             if (!msg.readyed) {
                 this.textOverlay.show('有人还未准备开始，请等待');
             }
-        });
+            if (this.redChessUser && msg.uid == this.redChessUser.id) {
+                this.redChessUser.readyed = msg.readyed;
+            }
+            if (this.blackChessUser && msg.uid == this.blackChessUser.id) {
+                this.blackChessUser.readyed = msg.readyed;
+            }
+            if (this.redChessUser && this.blackChessUser
+                && this.redChessUser.readyed && this.blackChessUser.readyed) {
+                socketClient.signals['chessplay.ready'].remove(this.listeners['chessplay.ready']);
+            }
+        };
+        if (this.room.status == 2) {
+            socketClient.add('chessplay.ready', this.listeners['chessplay.ready']);
+        }
 
         socketClient.add('spectator.chessplay.round_start', this.listeners['spectator.chessplay.round_start'] = (msg: any) => {
             this.textOverlay.show('对局开始', 3000);
+            this.activeChessHost = null;
+            this.player.startRound(this.viewChessHost);
+
+            // 这里先删除，因为在结束棋局时玩家状态会为切换到不准备状态而触发ready，
+            // 它不能先保证先给观众弹出 结束信息，然后才是 提示等待准备信息
+            socketClient.signals['chessplay.ready'].remove(this.listeners['chessplay.ready']);
+
+            let redChessUser: RoomUser;
+            let blackChessUser: RoomUser;
+            [this.redChessUser, this.blackChessUser].forEach(user => {
+                if (user.id == msg.redChessUid) {
+                    redChessUser = user;
+                }
+                if (user.id == msg.blackChessUid) {
+                    blackChessUser = user;
+                }
+            });
+            if (this.redChessUser != redChessUser || this.blackChessUser != blackChessUser) {
+                this.redChessUser = redChessUser;
+                this.redChessUser.chessHost = ChessHost.RED;
+                this.blackChessUser = blackChessUser;
+                this.blackChessUser.chessHost = ChessHost.BLACK;
+                this.redChessUserInfoPane.load(this.redChessUser);
+                this.blackChessUserInfoPane.load(this.blackChessUser);
+            }
+            this.redChessUserInfoPane.setActive(false);
+            this.blackChessUserInfoPane.setActive(false);
             this.turnActiveChessHost();
         });
 
@@ -247,7 +291,7 @@ export default class SpectatorPlayScene extends AbstractScene {
                 this.player.eatChess(msg.fromPos, msg.toPos, msg.chessHost);
     
                 if (targetChess.getChess() instanceof ChessK) {
-                    this.onRoundEnd(targetChess.getHost() != this.viewChessHost);
+                    this.onRoundEnd(reverseChessHost(targetChess.getHost()));
                 } else {
                     this.turnActiveChessHost();
                 }
@@ -267,8 +311,13 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.blackChessUserInfoPane.setActive(this.activeChessHost == ChessHost.BLACK);
     }
     
-    private onRoundEnd(isWin: boolean) {
-
+    private onRoundEnd(winChessHost: ChessHost) {
+        this.textOverlay.show(`${winChessHost == ChessHost.RED ? '红方' : '黑方'}赢！`);
+        this.redChessUser.readyed = false;
+        this.blackChessUser.readyed = false;
+        setTimeout(() => {
+            socketClient.add('chessplay.ready', this.listeners['chessplay.ready']);
+        }, 3000);
     }
 
     private updateSpectatorCount = (count: number) => {
