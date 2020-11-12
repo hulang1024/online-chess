@@ -1,3 +1,5 @@
+import User from "../../user/User";
+
 export default interface Message {
     sender: Sender | User;
     content: string;
