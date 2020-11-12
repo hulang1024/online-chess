@@ -85,4 +85,8 @@ export default class Dialog extends eui.Group {
         this._title = value;
         this.txtTitle.text = this._title;
     }
+
+    show() {
+        this.visible = true;
+    }
 }

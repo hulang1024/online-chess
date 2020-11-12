@@ -16,13 +16,13 @@ export default class ChessEatOverlay extends Overlay {
         text.strokeColor = 0x000000;
         text.verticalAlign = egret.VerticalAlign.MIDDLE;
         text.textAlign = egret.HorizontalAlign.CENTER;
-        this.body.addChild(text);
+        this.addChild(text);
     }
 
     show() {
         this.visible = true;
         setTimeout(() => {
             this.visible = false;
-        }, 2000);
+        }, 1500);
     }
 }

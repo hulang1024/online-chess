@@ -20,4 +20,8 @@ export default class ChessPos {
     copy() {
         return new ChessPos(this.row, this.col);
     }
+
+    equals(that: ChessPos): boolean {
+        return this.row == that.row && this.col == that.col;
+    }
 }

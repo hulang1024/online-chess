@@ -44,6 +44,8 @@ export default class RoomCreateDialog extends Dialog {
         textEdit.width = 300;
         textEdit.border = true;
         textEdit.borderColor = 0xffffff;
+        textEdit.prompt = '可不填';
+        textEdit.promptColor = 0xcccccc;
         textEdit.verticalAlign = egret.VerticalAlign.MIDDLE;
         group.addChild(textEdit);
         this.textEditRoomName = textEdit;

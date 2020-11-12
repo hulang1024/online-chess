@@ -1,12 +1,12 @@
 package io.github.hulang1024.chinesechessserver.service;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.github.hulang1024.chinesechessserver.domain.chat.ChatChannel;
 
 public class ChatChannelManager {
-    private static Map<Long, ChatChannel> chatChannelMap = new HashMap<>();
+    private static Map<Long, ChatChannel> chatChannelMap = new ConcurrentHashMap<>();
     private static long currentId = 20;
 
     private static ChatChannel global = create(1);

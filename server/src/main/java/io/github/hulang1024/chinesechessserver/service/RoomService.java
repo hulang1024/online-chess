@@ -2,8 +2,8 @@ package io.github.hulang1024.chinesechessserver.service;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.util.StringUtils;
 
@@ -13,7 +13,7 @@ import io.github.hulang1024.chinesechessserver.message.client.room.RoomCreate;
 
 public class RoomService {
     private static long roomId = 10000;
-    private static Map<Long, Room> roomMap = new HashMap<>();
+    private static Map<Long, Room> roomMap = new ConcurrentHashMap<>();
 
     public Collection<Room> search(SearchRooms searchParams) {
         return roomMap.values();

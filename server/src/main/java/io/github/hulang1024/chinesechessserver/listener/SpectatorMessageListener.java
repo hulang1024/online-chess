@@ -59,6 +59,7 @@ public class SpectatorMessageListener extends MessageListener {
                 stateMsg.setActiveChessHost(room.getRound().getActiveChessHost().code());
             }
             stateMsg.setChesses(toStateChesses(room.getRound().getChessboardState()));
+            stateMsg.setActionStack(room.getRound().getActionStack());
         }
         send(stateMsg, msg.getSession());
 

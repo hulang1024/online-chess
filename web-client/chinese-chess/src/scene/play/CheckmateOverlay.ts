@@ -20,7 +20,7 @@ export default class CheckmateOverlay extends Overlay {
         text.strokeColor = 0xffffff;
         text.verticalAlign = egret.VerticalAlign.MIDDLE;
         text.textAlign = egret.HorizontalAlign.CENTER;
-        this.body.addChild(text);
+        this.addChild(text);
         this.text = text;
     }
 

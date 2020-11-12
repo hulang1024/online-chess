@@ -5,7 +5,7 @@ import io.github.hulang1024.chinesechessserver.message.client.MessageType;
 import lombok.Data;
 
 @Data
-@MessageType("chessplay.ready")
-public class PlayReady extends ClientMessage {
-    private Boolean readyed;
+@MessageType("chessplay.confirm_request")
+public class ChessPlayConfirmRequest extends ClientMessage {
+    private int reqType;
 }

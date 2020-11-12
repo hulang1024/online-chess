@@ -3,14 +3,21 @@ package io.github.hulang1024.chinesechessserver.listener;
 import io.github.hulang1024.chinesechessserver.convert.RoomConvert;
 import io.github.hulang1024.chinesechessserver.domain.RoundGame;
 import io.github.hulang1024.chinesechessserver.domain.SessionUser;
+import io.github.hulang1024.chinesechessserver.domain.chinesechess.ChessAction;
 import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessHost;
+import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessboardState;
 import io.github.hulang1024.chinesechessserver.domain.Room;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessMoveResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPickResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPlayReadyResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPlayRoundStart;
+import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPlayConfirmRequestResult;
+import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPlayConfirmResponseResult;
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessMove;
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessPick;
+import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessPlayConfirmRequest;
+import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessPlayConfirmResponse;
+import io.github.hulang1024.chinesechessserver.message.client.chessplay.ConfirmRequestType;
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.PlayReady;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomUpdate;
 import io.github.hulang1024.chinesechessserver.message.server.spectator.SpectatorChessPlayRoundStart;
@@ -26,13 +33,17 @@ public class ChessPlayMessageListener extends MessageListener {
         addMessageHandler(PlayReady.class, this::ready);
         addMessageHandler(ChessPick.class, this::pickChess);
         addMessageHandler(ChessMove.class, this::moveChess);
+        addMessageHandler(ChessPlayConfirmRequest.class, this::onConfirmRequest);
+        addMessageHandler(ChessPlayConfirmResponse.class, this::onConfirmResponse);
     }
 
     public void ready(PlayReady ready) {
         SessionUser userToReady = userSessionService.getUserBySession(ready.getSession());
         Room room = userToReady.getJoinedRoom();
 
-        userToReady.setReadyed(!userToReady.isReadyed());
+        userToReady.setReadyed(ready.getReadyed() != null
+            ? ready.getReadyed()
+            : !userToReady.isReadyed());
 
         ChessPlayReadyResult result = new ChessPlayReadyResult();
         result.setCode(0);
@@ -88,9 +99,22 @@ public class ChessPlayMessageListener extends MessageListener {
         SessionUser actionUser = userSessionService.getUserBySession(chessMove.getSession());
         Room room = actionUser.getJoinedRoom();
 
-        room.getRound().getChessboardState().moveChess(
-            chessMove.getFromPos(), chessMove.getToPos(), actionUser.getChessHost());
+        ChessboardState chessboardState = room.getRound().getChessboardState();
 
+        // 记录动作
+        ChessAction action = new ChessAction();
+        action.setChessHost(actionUser.getChessHost());
+        action.setChessType(chessboardState.chessAt(chessMove.getFromPos(), action.getChessHost()).type);
+        action.setFromPos(chessMove.getFromPos());
+        action.setToPos(chessMove.getToPos());
+        if (chessMove.getMoveType() == 2) {
+            action.setEatenChess(chessboardState.chessAt(chessMove.getToPos(), action.getChessHost()));
+        }
+        room.getRound().getActionStack().push(action);
+
+        chessboardState.moveChess(
+            chessMove.getFromPos(), chessMove.getToPos(), actionUser.getChessHost());
+        
         room.getRound().turnActiveChessHost();
 
         ChessMoveResult result = new ChessMoveResult();
@@ -109,6 +133,59 @@ public class ChessPlayMessageListener extends MessageListener {
         });
     }
 
+
+    private void onConfirmRequest(ChessPlayConfirmRequest msg) {
+        SessionUser requester = userSessionService.getUserBySession(msg.getSession());
+        Room room = requester.getJoinedRoom();
+
+        ChessPlayConfirmRequestResult result = new ChessPlayConfirmRequestResult();
+        result.setReqType(msg.getReqType());
+        result.setChessHost(requester.getChessHost().code());
+        room.getUsers().forEach(user -> {
+            send(result, user.getSession());
+        });
+        room.getSpectators().forEach(user -> {
+            send(result, user.getSession());
+        });
+    }
+
+    private void onConfirmResponse(ChessPlayConfirmResponse msg) {
+        SessionUser responser = userSessionService.getUserBySession(msg.getSession());
+        Room room = responser.getJoinedRoom();
+
+        ChessPlayConfirmResponseResult result = new ChessPlayConfirmResponseResult();
+        result.setReqType(msg.getReqType());
+        result.setChessHost(responser.getChessHost().code());
+        result.setOk(msg.isOk());
+
+        if (msg.isOk()) {
+            if (msg.getReqType() == ConfirmRequestType.WHITE_FLAG.code()) {
+                //todo something
+            } else if (msg.getReqType() == ConfirmRequestType.DRAW.code()) {
+                //todo something
+            } else if (msg.getReqType() == ConfirmRequestType.WITHDRAW.code()) {
+                withdraw(responser.getChessHost().reverse(), room);
+                room.getRound().turnActiveChessHost();
+            }
+        }
+
+        room.getUsers().forEach(user -> {
+            send(result, user.getSession());
+        });
+        room.getSpectators().forEach(user -> {
+            send(result, user.getSession());
+        });
+    }
+
+    private void withdraw(ChessHost chessHost, Room room) {
+        ChessboardState chessboardState = room.getRound().getChessboardState();
+        ChessAction lastAction = room.getRound().getActionStack().pop();
+        chessboardState.moveChess(lastAction.getToPos(), lastAction.getFromPos(), chessHost);
+        if (lastAction.getEatenChess() != null) {
+            chessboardState.setChess(lastAction.getToPos(), lastAction.getEatenChess(), chessHost);
+        }
+    }
+
     private void startRound(Room room) {
         // 创建棋局
         RoundGame round;
@@ -125,7 +202,6 @@ public class ChessPlayMessageListener extends MessageListener {
             round = new RoundGame(redChessUser, blackChessUser);
             room.setRound(round);
         } else {
-            round = room.getRound();
             round = new RoundGame(blackChessUser, redChessUser);
             room.setRound(round);
         }

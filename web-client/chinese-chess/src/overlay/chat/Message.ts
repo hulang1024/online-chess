@@ -1,6 +1,10 @@
 export default interface Message {
-    fromUid;
-    fromUserNickname: string;
+    sender: Sender | User;
     content: string;
     isFromMe?: boolean;
+}
+
+interface Sender {
+    uid: number;
+    nickname: string;
 }

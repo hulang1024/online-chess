@@ -6,11 +6,16 @@ import lombok.Data;
 @Data
 public class ChatMessageMsg extends ServerMessage {
     private long channelId;
-    private long fromUid;
-    private String fromUserNickname;
+    private Sender sender;
     private String content;
 
     public ChatMessageMsg() {
         super("chat.message");
+    }
+
+    @Data
+    public static class Sender {
+        private long id;
+        private String nickname;
     }
 }

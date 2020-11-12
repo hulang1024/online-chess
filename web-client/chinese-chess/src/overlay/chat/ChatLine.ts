@@ -25,7 +25,7 @@ export default class ChatLine extends eui.Group {
         let txtNickname = new eui.Label();
         txtNickname.width = 130;
         txtNickname.textColor = msg.isFromMe ? 0xcc2200 : 0xffffff;
-        txtNickname.text = msg.fromUserNickname + ':';
+        txtNickname.text = msg.sender.nickname + ':';
         txtNickname.size = 18;
         txtNickname.textAlign = egret.HorizontalAlign.RIGHT;
         group.addChild(txtNickname);

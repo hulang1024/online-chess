@@ -181,7 +181,7 @@ export default class LobbyScene extends AbstractScene {
         socketClient.send('lobby.quick_match');
         socketClient.addOnce('lobby.quick_match', (msg) => {
             if (msg.code != 0) {
-                messager.fail('快速加入失败，因为' + {2: '你已加入其它房间', 3: '没有可进入的房间'}[msg.code] || '未知', this);
+                messager.fail('快速加入失败，因为' + {2: '你已加入其它房间', 3: '没有可进入的房间，创建一个吧'}[msg.code] || '未知', this);
                 return;
             }
             // 成功会有加入房间事件消息，其它地方已处理

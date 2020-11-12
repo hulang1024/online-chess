@@ -1,16 +1,18 @@
-import Dialog from "../../component/Dialog";
 import Overlay from "../../component/Overlay";
 
-export default class ResultDialog extends Overlay {
-    private lblResult = new eui.Label();
-    onOk: Function;
+export default class ConfirmDialog extends Overlay {
+    private lblTitle = new eui.Label();
+    onOkClick: Function;
+    onNoClick: Function;
 
     constructor() {
         super(true);
 
         this.visible = false;
-        this.width = 200;
-        this.height = 200;
+        
+        this.visible = false;
+        this.width = 250;
+        this.height = 260;
 
         let layout = new eui.VerticalLayout();
         layout.paddingTop = 32;
@@ -18,12 +20,10 @@ export default class ResultDialog extends Overlay {
         layout.paddingBottom = 32;
         layout.paddingLeft = 32;
         this.layout = layout;
+        let { lblTitle } = this;
+        this.addChild(lblTitle);
 
-        this.lblResult.size = 24;
-        this.lblResult.width = this.width - 64;
-        this.lblResult.textAlign = egret.HorizontalAlign.CENTER;
-        this.addChild(this.lblResult);
-
+        // 按钮组
         let group = new eui.Group();
         {
             group.width = this.width - 64;
@@ -37,17 +37,26 @@ export default class ResultDialog extends Overlay {
 
         let btnOk = new eui.Button();
         btnOk.width = 130;
-        btnOk.label = "确定";
+        btnOk.label = "同意";
         btnOk.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            this.onOk();
+            this.onOkClick(); 
             this.visible = false;
         }, this);
         group.addChild(btnOk);
+
+        let btnNo = new eui.Button();
+        btnNo.width = 130;
+        btnNo.label = "不同意";
+        btnNo.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+            this.onNoClick();
+            this.visible = false;
+        }, this);
+        group.addChild(btnNo);
     }
 
-    show(isWin: boolean) {
-        this.parent.setChildIndex(this, 10000);
+    show(subject: string) {
+        this.parent.setChildIndex(this, 1000);
+        this.lblTitle.text = `对方想要${subject}`;
         this.visible = true;
-        this.lblResult.text = isWin ? '你赢了!' : '你输了';
     }
 }

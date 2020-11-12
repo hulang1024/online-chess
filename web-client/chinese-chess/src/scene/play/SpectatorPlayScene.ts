@@ -9,9 +9,18 @@ import DisplayChessboard from "./DisplayChessboard";
 import Player from "./Player";
 import ChessK from "./rule/chess/ChessK";
 import ChessHost, { reverseChessHost } from "./rule/chess_host";
-import SpectatorTextOverlay from "./TextOverlay";
+import TextOverlay from "./TextOverlay";
+import confirmRequest from './confirm_request';
 import UserInfoPane from "./UserInfoPane";
 import RoomUser from "../../online/socket-message/response/RoomUser";
+import ChessAction from "./ChessAction";
+import ChessR from "./rule/chess/ChessR";
+import ChessN from "./rule/chess/ChessN";
+import ChessM from "./rule/chess/ChessM";
+import ChessG from "./rule/chess/ChessG";
+import ChessC from "./rule/chess/ChessC";
+import ChessS from "./rule/chess/ChessS";
+import ChessPos from "./rule/ChessPos";
 
 export default class SpectatorPlayScene extends AbstractScene {
     // socket消息监听器
@@ -21,7 +30,7 @@ export default class SpectatorPlayScene extends AbstractScene {
     private player: Player;
     private room: Room;
     private chessboard: DisplayChessboard;
-    private textOverlay = new SpectatorTextOverlay();
+    private textOverlay = new TextOverlay();
     private userInfoPaneGroup = new eui.Group();
     private redChessUser: RoomUser;
     private blackChessUser: RoomUser;
@@ -46,7 +55,8 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.viewChessHost = ChessHost.BLACK;
         this.activeChessHost = roomRoundState.activeChessHost;
         this.room = roomRoundState.room;
-        this.player.startRound(this.viewChessHost, this.activeChessHost, roomRoundState.chesses);
+
+        this.loadRoundState(roomRoundState);
 
         // 头部
         let head = new eui.Group();
@@ -57,7 +67,7 @@ export default class SpectatorPlayScene extends AbstractScene {
         let headInfoLayout = new eui.HorizontalLayout();
         headInfoLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
         let headInfo = new eui.Group();
-        headInfo.width = 530;
+        headInfo.width = 510;
         headInfo.layout = headInfoLayout;
         headInfo.height = 20;
 
@@ -78,7 +88,7 @@ export default class SpectatorPlayScene extends AbstractScene {
         let userPaneLayout = new eui.HorizontalLayout();
         userPaneLayout.gap = 200;
         userPaneLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
-        this.userInfoPaneGroup.width = 530;
+        this.userInfoPaneGroup.width = 510;
         this.userInfoPaneGroup.layout = userPaneLayout;
         this.addUserInfoPaneByView();
         head.addChild(this.userInfoPaneGroup);
@@ -159,7 +169,9 @@ export default class SpectatorPlayScene extends AbstractScene {
 
     onSceneExit() {
         for (let key in this.listeners) {
-            socketClient.signals[key].remove(this.listeners[key]);
+            if (socketClient.signals[key]) {
+                socketClient.signals[key].remove(this.listeners[key]);
+            }
         }
 
         chatOverlay.removeChannel(this.room.chatChannelId);
@@ -249,8 +261,9 @@ export default class SpectatorPlayScene extends AbstractScene {
 
             // 这里先删除，因为在结束棋局时玩家状态会为切换到不准备状态而触发ready，
             // 它不能先保证先给观众弹出 结束信息，然后才是 提示等待准备信息
-            socketClient.signals['chessplay.ready'].remove(this.listeners['chessplay.ready']);
-
+            if (socketClient.signals['chessplay.ready']) {
+                socketClient.signals['chessplay.ready'].remove(this.listeners['chessplay.ready']);
+            }
             let redChessUser: RoomUser;
             let blackChessUser: RoomUser;
             [this.redChessUser, this.blackChessUser].forEach(user => {
@@ -286,18 +299,90 @@ export default class SpectatorPlayScene extends AbstractScene {
                 break;
             case 2:
                 let targetPos = this.player.convertViewPos(msg.toPos, msg.chessHost);
-                let targetChess = this.chessboard.chessAt(targetPos.row, targetPos.col);
+                let targetChess = this.chessboard.chessAt(targetPos);
     
                 this.player.eatChess(msg.fromPos, msg.toPos, msg.chessHost);
     
                 if (targetChess.getChess() instanceof ChessK) {
-                    this.onRoundEnd(reverseChessHost(targetChess.getHost()));
+                    this.onWin(reverseChessHost(targetChess.getHost()));
                 } else {
                     this.turnActiveChessHost();
                 }
                 break;
             }
         });
+    
+        socketClient.add('chessplay.confirm_request', this.listeners['chessplay.confirm_request'] = (msg: any) => {
+            this.textOverlay.show(`${msg.chessHost == ChessHost.BLACK ? '黑方' : '红方'}请求${confirmRequest.toReadableText(msg.reqType)}`);
+
+        });
+        socketClient.add('chessplay.confirm_response', this.listeners['chessplay.confirm_response'] = (msg: any) => {
+            let text = '';
+            text += msg.chessHost == ChessHost.BLACK ? '黑方' : '红方';
+            text += msg.ok ? '同意' : '不同意';
+            text += confirmRequest.toReadableText(msg.reqType);
+            this.textOverlay.show(text, 4000);
+
+            switch (msg.reqType) {
+                case confirmRequest.Type.WHITE_FLAG:
+                    this.onWin(msg.chessHost);
+                    break;
+                case confirmRequest.Type.DRAW:
+                    this.onRoundOver();
+                    break;
+                case confirmRequest.Type.WITHDRAW:
+                    this.player.withdraw();
+                    this.turnActiveChessHost();
+                    break;
+            }
+        });
+
+        socketClient.add('chat.message', (msg: any) => {
+            if (msg.channelId == this.room.chatChannelId && msg.sender.id != 0) {
+                chatOverlay.show();
+            }
+        });
+    }
+
+    private loadRoundState(roomRoundState: any) {
+        this.player.startRound(this.viewChessHost, this.activeChessHost, roomRoundState.chesses);
+        if (roomRoundState.actionStack && roomRoundState.actionStack.length) {
+            const chessClassMap = {
+                R: ChessR,
+                N: ChessN,
+                M: ChessM,
+                G: ChessG,
+                K: ChessK,
+                C: ChessC,
+                S: ChessS
+            };
+            let actionStack: Array<ChessAction> = roomRoundState.actionStack.map(act => {
+                let action = new ChessAction();
+                action.chessHost = act.chessHost == 'RED' ? ChessHost.RED : ChessHost.BLACK;
+                action.chessType = chessClassMap[act.chessType];
+                action.fromPos = act.fromPos;
+                action.toPos = act.toPos;
+                if (act.eatenChess) {
+                    let pos = act.toPos;
+                    // 服务器保存数据默认视角是红方，如果是黑方就翻转下
+                    if (this.viewChessHost == ChessHost.BLACK) {
+                        pos = this.player.reverseViewPos(pos);
+                    }
+                    action.eatenChess = this.chessboard.chessAt(pos);
+                }
+                return action;
+            });
+            this.player.loadActionStack(actionStack);
+
+            let lastAction = actionStack[actionStack.length - 1];
+            let { fromPos, toPos } = lastAction;
+            if (this.viewChessHost == ChessHost.BLACK) {
+                fromPos = this.player.reverseViewPos(fromPos);
+                toPos = this.player.reverseViewPos(toPos);
+                this.player.fromPosTargetDrawer.draw(fromPos);
+                this.chessboard.chessAt(toPos).setLit(true);
+            }
+        }
     }
 
     private turnActiveChessHost() {
@@ -311,8 +396,12 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.blackChessUserInfoPane.setActive(this.activeChessHost == ChessHost.BLACK);
     }
     
-    private onRoundEnd(winChessHost: ChessHost) {
+    private onWin(winChessHost: ChessHost) {
         this.textOverlay.show(`${winChessHost == ChessHost.RED ? '红方' : '黑方'}赢！`);
+        this.onRoundOver();
+    }
+
+    private onRoundOver() {
         this.redChessUser.readyed = false;
         this.blackChessUser.readyed = false;
         setTimeout(() => {

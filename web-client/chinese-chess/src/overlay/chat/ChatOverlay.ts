@@ -44,8 +44,7 @@ export default class ChatOverlay extends Overlay {
 
         this.loadChannels();
         this.channels[0].addNewMessage({
-            fromUid: User.SYSTEM.id,
-            fromUserNickname: User.SYSTEM.nickname,
+            sender: User.SYSTEM,
             content: '欢迎来到中国象棋在线',
         });
         this.viewStack.selectedIndex = 0;

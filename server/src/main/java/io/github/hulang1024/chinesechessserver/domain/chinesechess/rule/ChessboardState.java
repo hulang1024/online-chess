@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechessserver.domain.chinesechess.rule;
 
 public class ChessboardState {
-    public Chess[][] array = new Chess[10][9];
+    private Chess[][] array = new Chess[10][9];
 
     public ChessboardState() {        
         array[0][0] = new Chess(ChessHost.BLACK, ChessEnum.R);
@@ -39,6 +39,11 @@ public class ChessboardState {
         return array[row][col];
     }
 
+    public Chess chessAt(ChessPos pos, ChessHost host) {
+        pos = convertViewPos(pos, host);
+        return chessAt(pos.row, pos.col);
+    }
+
     public void setChess(ChessPos pos, Chess chess, ChessHost host) {
         pos = convertViewPos(pos, host);
         array[pos.row][pos.col] = chess;
@@ -57,7 +62,7 @@ public class ChessboardState {
      * @param pos 源视角棋方的棋子位置
      * @param chessHost 源视角棋方
      */
-    private ChessPos convertViewPos(ChessPos pos, ChessHost host) {
+    public static ChessPos convertViewPos(ChessPos pos, ChessHost host) {
         return ChessHost.RED == host
             ? pos
             : new ChessPos(9 - pos.row, 8 - pos.col);

@@ -80,7 +80,7 @@ export default class DisplayRoom extends eui.Group {
     private drawStatus(status: number) {
         this.rect.graphics.clear();
         this.rect.graphics.beginFill(0x333333, 0.6);
-        this.rect.graphics.drawRoundRect(0, 0, 530, this.height, 8, 8);
+        this.rect.graphics.drawRoundRect(0, 0, 510, this.height, 8, 8);
 
         let { lblStatus } = this;
         lblStatus.size = 16;

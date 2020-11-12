@@ -3,7 +3,7 @@ export default class ReadyButton extends eui.Button {
 
     constructor(state: number) {
         super();
-        this.width = 120;
+        this.width = 110;
         this.height = 50;
         this.state = state;
         this.update();
@@ -15,6 +15,6 @@ export default class ReadyButton extends eui.Button {
     }
 
     private update() {
-        this.label = {0: '准备!', 1: '取消准备', 3: '开始'}[this.state];
+        this.label = {0: '准备!', 1: '取消准备', 3: '开始!'}[this.state];
     }
 }

@@ -41,6 +41,6 @@ export default class UserInfoPane extends eui.Group {
     setActive(active: boolean) {
         this.rect.graphics.clear();
         this.rect.graphics.beginFill(active ? 0x00ff00 : 0xffffff, active ? 0.5 : 0);
-        this.rect.graphics.drawRoundRect(0, 0, 50, 20, 8, 8);
+        this.rect.graphics.drawRoundRect(0, 0, 54, 20, 8, 8);
     }
 }

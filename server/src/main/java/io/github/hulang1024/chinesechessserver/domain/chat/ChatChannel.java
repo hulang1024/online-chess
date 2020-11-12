@@ -33,8 +33,10 @@ public class ChatChannel {
     public void sendMessage(ChatMessage msg) {
         ChatMessageMsg msgMsg = new ChatMessageMsg();
         msgMsg.setChannelId(id);
-        msgMsg.setFromUid(msg.getFromUser().getId());
-        msgMsg.setFromUserNickname(msg.getFromUser().getNickname());
+        ChatMessageMsg.Sender sender = new ChatMessageMsg.Sender();
+        sender.setId(msg.getFromUser().getId());
+        sender.setNickname(msg.getFromUser().getNickname());
+        msgMsg.setSender(sender);
         msgMsg.setContent(msg.getContent());
         String msgJson = gson.toJson(msgMsg);
         users.forEach(user -> {

@@ -20,9 +20,18 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
         }
 
         let bitmap = new egret.Bitmap();
-        bitmap.width = 530;
-        bitmap.height = 580;
+        bitmap.width = this.width;
+        bitmap.height = this.height;
         bitmap.texture = RES.getRes('chessboard');
+        
+
+        let mask = new egret.Shape();
+        mask.graphics.beginFill(0xffffff, 1);
+        mask.graphics.drawRoundRect(0, 0, this.width, this.height, 8, 8);
+        mask.graphics.endFill();
+        this.addChild(mask);
+        bitmap.mask = mask;
+
         this.addChild(bitmap);
         bitmap.touchEnabled = true;
         bitmap.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onClick, this);
@@ -38,7 +47,7 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
 
         let event = new ChessboardClickEvent();
         event.pos = pos;
-        event.chess = this.chessAt(row, col);
+        event.chess = this.chessAt(pos);
 
         if (event.chess != null) {
             if (!event.chess.touchEnabled) {
@@ -49,39 +58,24 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
         this.dispatchEvent(event);
     }
 
-    onChessClick(touchEvent: egret.TouchEvent) {
-        let event = new ChessboardClickEvent();
-        event.chess = (<DisplayChess>touchEvent.target);
-        event.pos = event.chess.getPos();
-        this.dispatchEvent(event);
-    }
-
     isEmpty(row: number, col: number) {
         return this.chessArray[row][col] == null;
     }
 
-    chessAt(row: number, col: number) {
-        return this.chessArray[row][col];
-    }
-    
-    addChess(chess: DisplayChess) {
-        this.chessArray[chess.getPos().row][chess.getPos().col] = chess;
-        this.setChessDisplayPos(chess);
-        chess.touchEnabled = true;
-        chess.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onChessClick, this);
-        this.addChild(chess);
+    chessAt(pos: ChessPos) {
+        return this.chessArray[pos.row][pos.col];
     }
 
-    moveChess(chess: DisplayChess, destPos: ChessPos) {
-        this.chessArray[chess.getPos().row][chess.getPos().col] = null;
-        this.chessArray[destPos.row][destPos.col] = chess;
-        chess.setPos(destPos);
-        this.setChessDisplayPos(chess);
+    removeChild(child: egret.DisplayObject): egret.DisplayObject {
+        if (child instanceof DisplayChess) {
+            let chess = <DisplayChess>child;
+            this.chessArray[chess.getPos().row][chess.getPos().col] = null;
+        }
+        return super.removeChild(child);
     }
 
-    removeChess(chess: DisplayChess) {
-        this.chessArray[chess.getPos().row][chess.getPos().col] = null;
-        this.removeChild(chess);
+    getChessArray() {
+        return this.chessArray;
     }
 
     getChessList(): Array<DisplayChess> {
@@ -96,25 +90,9 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
         return ret;
     }
 
-    clear() {
-        for (let row = 0; row < CHESSBOARD_ROW_NUM; row++) {
-            for (let col = 0; col < CHESSBOARD_COL_NUM; col++) {
-                if (!this.isEmpty(row, col)) {
-                    this.removeChess(this.chessArray[row][col]);
-                }
-            }
-        }
-    }
-
-    calcDisplayPos(pos: ChessPos) {
+    calcChessDisplayPos(pos: ChessPos) {
         const x = 2 + pos.col * 57;
         const y = 5 + pos.row * 57;
         return {x, y};
-    }
-
-    private setChessDisplayPos(chess: DisplayChess) {
-        const {x, y} = this.calcDisplayPos(chess.getPos());
-        chess.x = x;
-        chess.y = y;
     }
 }
