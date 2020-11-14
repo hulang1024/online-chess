@@ -1,3 +1,4 @@
+import ChatOverlay from "../overlay/chat/ChatOverlay";
 import SceneContext from "./SceneContext";
 import SceneManager, { SceneBuilder } from "./scene_manger";
 
@@ -9,6 +10,10 @@ export default abstract class AbstractScene extends egret.DisplayObjectContainer
         super();
         this.context = context;
         this.sceneManager = SceneManager.of(context);
+
+        this.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+            this.context.chatOverlay.popOut();
+        }, this);
     }
 
     onSceneExit() {}

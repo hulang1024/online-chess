@@ -9,17 +9,20 @@ import PasswordForJoinRoomDialog from "./room/PasswordForJoinRoomDialog";
 import Room from "../../online/socket-message/response/Room";
 import RoomCreateDialog from "./room/RoomCreateDialog";
 import SpectatorPlayScene from "../play/SpectatorPlayScene";
-import chatOverlay from "../../overlay/chat/chat";
+import ChannelManager from "../../online/chat/ChannelManager";
 
 export default class LobbyScene extends AbstractScene {
     private listeners = {};
-    private connectHandler: Function;
+    private channelManager: ChannelManager;
+    private reconnectHandler: Function;
     private roomContainer = new eui.Group();
     private roomCreateDialog = new RoomCreateDialog();
     private passwordForJoinRoomDialog = new PasswordForJoinRoomDialog();
 
-    constructor(context: SceneContext) {
+    constructor(context: SceneContext, channelManager: ChannelManager) {
         super(context);
+
+        this.channelManager = channelManager;
 
         let layout = new eui.VerticalLayout();
         layout.paddingTop = 8;
@@ -47,25 +50,27 @@ export default class LobbyScene extends AbstractScene {
         group.addChild(headGroup);
 
         let buttonGroupLayout = new eui.HorizontalLayout();
+        buttonGroupLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
         buttonGroupLayout.paddingTop = 8;
+        buttonGroupLayout.paddingRight = 8;
+        buttonGroupLayout.paddingBottom = 8;
         buttonGroupLayout.paddingLeft = 8;
-        buttonGroupLayout.gap = 32;
         let buttonGroup = new eui.Group();
         buttonGroup.layout = buttonGroupLayout;
+
         let btnCreateRoom = new eui.Button();
-        btnCreateRoom.width = 130;
+        btnCreateRoom.width = 120;
         btnCreateRoom.label = "创建房间";
         btnCreateRoom.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onCreateRoomClick, this);
         buttonGroup.addChild(btnCreateRoom);
+        group.addChild(buttonGroup);
 
         let btnQuickMatch = new eui.Button();
-        btnQuickMatch.width = 130;
+        btnQuickMatch.width = 120;
         btnQuickMatch.label = "快速加入";
         btnQuickMatch.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onQuickMatchClick, this);
         buttonGroup.addChild(btnQuickMatch);
-
-        group.addChild(buttonGroup);
-
+        
         let roomLayout = new eui.VerticalLayout();
         roomLayout.horizontalAlign = egret.HorizontalAlign.CONTENT_JUSTIFY;
         roomLayout.gap = 8;
@@ -82,16 +87,17 @@ export default class LobbyScene extends AbstractScene {
         scroller.viewport = this.roomContainer;
 
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
+            buttonGroup.width = this.stage.stageWidth;
             this.roomContainer.width = this.stage.stageWidth;
-            scroller.height = this.stage.stageHeight / 2 - 30;
+            scroller.height = this.stage.stageHeight;
             group.addChild(scroller);
         }, this);
 
         (async () => {
-            socketClient.addEventListener(egret.Event.CONNECT, this.connectHandler = () => {
+            socketClient.reconnectedSignal.add(this.reconnectHandler = () => {
                 socketClient.send('lobby.enter');
                 socketClient.send('lobby.search_rooms');
-            }, this);
+            });
             socketClient.add('lobby.search_rooms', this.listeners['lobby.search_rooms'] = (msg) => {
                 this.roomContainer.removeChildren();
                 msg.rooms.forEach(room => {
@@ -145,7 +151,7 @@ export default class LobbyScene extends AbstractScene {
                         messager.fail('加入房间失败：密码错误', this);
                         return;
                 }
-                this.pushScene((context) => new PlayScene(context, msg));
+                this.pushScene((context) => new PlayScene(context, msg, this.channelManager));
             });
 
             await socketClient.connect();
@@ -153,15 +159,13 @@ export default class LobbyScene extends AbstractScene {
             socketClient.send('lobby.enter');
             socketClient.send('lobby.search_rooms');
         })();
-
-        chatOverlay.show();
     }
 
     onSceneExit() {
         for (let key in this.listeners) {
             socketClient.signals[key].remove(this.listeners[key]);
         }
-        socketClient.removeEventListener(egret.Event.CONNECT, this.connectHandler, this);
+        socketClient.reconnectedSignal.remove(this.reconnectHandler);
         socketClient.send('lobby.exit');
     }
 
@@ -216,7 +220,7 @@ export default class LobbyScene extends AbstractScene {
                     messager.info('失败', this);
                     return;
                 }
-                this.pushScene((context) => new SpectatorPlayScene(context, msg));
+                this.pushScene((context) => new SpectatorPlayScene(context, msg, this.channelManager));
             });
         }
     }

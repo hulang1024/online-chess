@@ -5,7 +5,9 @@ import lombok.Data;
 
 @Data
 public class ChatMessageMsg extends ServerMessage {
+    private long id;
     private long channelId;
+    private long timestamp;
     private Sender sender;
     private String content;
 

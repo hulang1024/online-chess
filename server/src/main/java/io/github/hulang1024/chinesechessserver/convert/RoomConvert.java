@@ -19,7 +19,7 @@ public class RoomConvert {
             .map(p -> { return new UserConvert().toRoomUserInfo(p); })
             .collect(Collectors.toList()));
         result.setOwnerUserId(room.getOwner().getId());
-        result.setChatChannelId(room.getChatChannel().getId());
+        result.setChannelId(room.getChatChannel().getId());
         result.setLocked(room.isLocked());
         result.setStatus(room.calcStatus());
         return result;

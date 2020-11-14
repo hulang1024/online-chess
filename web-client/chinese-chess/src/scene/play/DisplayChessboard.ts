@@ -91,8 +91,8 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
     }
 
     calcChessDisplayPos(pos: ChessPos) {
-        const x = 2 + pos.col * 57;
-        const y = 5 + pos.row * 57;
+        const x = 2 + pos.col * 57.5;
+        const y = 5 + pos.row * 57.5;
         return {x, y};
     }
 }

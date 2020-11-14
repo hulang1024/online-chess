@@ -16,8 +16,8 @@ import CheckmateOverlay from "./CheckmateOverlay";
 import ChessEatOverlay from "./ChessEatOverlay";
 import SOUND from "../../audio/SOUND";
 import ChessboardClickEvent from "./ChessboardClickEvent";
-import Chess from "./rule/Chess";
 import ChessAction from "./ChessAction";
+import CHESS_CLASS_KEY_MAP from "./rule/chess_map";
 
 export default class Player extends eui.Group implements RoundGame {
     public chessboard = new DisplayChessboard();
@@ -72,15 +72,6 @@ export default class Player extends eui.Group implements RoundGame {
 
         if (chesses) {
             // 把棋子放到棋盘上
-            const chessClassMap = {
-                R: ChessR,
-                N: ChessN,
-                M: ChessM,
-                G: ChessG,
-                K: ChessK,
-                C: ChessC,
-                S: ChessS
-            };
             this.clearChessboard();
             chesses.forEach(chess => {
                 let pos = new ChessPos(chess.row, chess.col);
@@ -88,7 +79,7 @@ export default class Player extends eui.Group implements RoundGame {
                 if (this.viewChessHost == ChessHost.BLACK) {
                     pos = this.reverseViewPos(pos);
                 }
-                chess = new chessClassMap[chess.type](pos, chess.host);
+                chess = new CHESS_CLASS_KEY_MAP[chess.type](pos, chess.host);
                 this.addChess(new DisplayChess(chess));
             });
         } else {
@@ -126,8 +117,6 @@ export default class Player extends eui.Group implements RoundGame {
         chess.setSelected(false);
         chess.setLit(true);
         this.fromPosTargetDrawer.draw(this.convertViewPos(fromPos, chessHost));
-        let soundChannel = SOUND.get('click').play(0, 1);
-        soundChannel.volume = 0.7;
 
         // 记录动作
         let action = new ChessAction();
@@ -154,8 +143,6 @@ export default class Player extends eui.Group implements RoundGame {
         sourceChess.setSelected(false);
         sourceChess.setLit(true);
         this.fromPosTargetDrawer.draw(this.convertViewPos(fromPos, chessHost));
-        let soundChannel = SOUND.get('click').play(0, 1);
-        soundChannel.volume = 0.7;
         this.chessEatOverlay.show();
 
         let targetChess = this.chessboard.chessAt(this.convertViewPos(toPos, chessHost));
@@ -187,7 +174,7 @@ export default class Player extends eui.Group implements RoundGame {
         // 动画移到之前的开始位置
         const {x, y} = this.chessboard.calcChessDisplayPos(fromPos);
         this.fromPosTargetDrawer.clear(true);
-        egret.Tween.get(chess).to({x, y}, 300, egret.Ease.circOut).call(() => {
+        egret.Tween.get(chess).to({x, y}, 200, egret.Ease.circOut).call(() => {
             chess.setLit(false);
         });
 
@@ -335,7 +322,9 @@ export default class Player extends eui.Group implements RoundGame {
      */
     private moveOneChess(chess: DisplayChess, destPos: ChessPos) {
         const {x, y} = this.chessboard.calcChessDisplayPos(destPos);
-        egret.Tween.get(chess).to({x, y}, 300, egret.Ease.circOut);
+        egret.Tween.get(chess).to({x, y}, 200, egret.Ease.circOut);
+        let soundChannel = SOUND.get('click').play(0, 1);
+        soundChannel.volume = 0.7;
         this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = null;
         this.chessboard.getChessArray()[destPos.row][destPos.col] = chess;
         chess.setPos(destPos);

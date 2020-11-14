@@ -13,4 +13,7 @@ export default interface Chess {
     setPos: (pos: ChessPos) => void;
     
     getHost: () => ChessHost;
+
+    // instanceof有问题，代替
+    is: (chessClass: Function) => boolean;
 }

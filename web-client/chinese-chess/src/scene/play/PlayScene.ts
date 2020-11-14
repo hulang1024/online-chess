@@ -1,5 +1,4 @@
 import DisplayChess from "./DisplayChess";
-import ChessK from "./rule/chess/ChessK";
 import ChessHost, { reverseChessHost } from "./rule/chess_host";
 import confirmRequest from './confirm_request';
 import ChessboardClickEvent from "./ChessboardClickEvent";
@@ -16,15 +15,18 @@ import Player from "./Player";
 import DisplayChessboard from "./DisplayChessboard";
 import ChessPos from "./rule/ChessPos";
 import Room from "../../online/socket-message/response/Room";
-import chatOverlay from "../../overlay/chat/chat";
-import ChatChannel from "../../overlay/chat/Channel";
+import Channel from "../../online/chat/Channel";
 import ConfirmDialog from "./ConfirmDialog";
 import PlayingRoundButtonsOverlay from "./PlayingRoundButtonsOverlay";
 import TextOverlay from "./TextOverlay";
+import { judgeVictory } from "./rule/judge";
+import ChannelManager from "../../online/chat/ChannelManager";
+import ChannelType from "../../online/chat/ChannelType";
 
 export default class PlayScene extends AbstractScene {
     // socket消息监听器
     private listeners = {};
+    private channelManager: ChannelManager;
     // 连接关闭处理器
     private connectionCloseHandler: Function;
     private player: Player;
@@ -38,7 +40,6 @@ export default class PlayScene extends AbstractScene {
     // 准备状态
     private readyed: boolean;
     private otherReadyed: boolean = null;
-
     private isPlaying = false;
     private room: Room;
     private user: User;
@@ -51,8 +52,10 @@ export default class PlayScene extends AbstractScene {
     private textOverlay = new TextOverlay();
     private resultDialog = new ResultDialog();
     
-    constructor(context: SceneContext, roomJoin: any) {
+    constructor(context: SceneContext, roomJoin: any, channelManager: ChannelManager) {
         super(context);
+
+        this.channelManager = channelManager;
 
         this.user = platform.getUserInfo();
         this.room = roomJoin.room;
@@ -139,15 +142,6 @@ export default class PlayScene extends AbstractScene {
         }, this);
         buttonGroup.addChild(btnLeave);
 
-        // 聊天切换按钮
-        let btnChat = new eui.Button();
-        btnChat.width = 110;
-        btnChat.label = "聊天";
-        btnChat.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            chatOverlay.toggleVisible();
-        }, this);
-        buttonGroup.addChild(btnChat);
-
         // 准备按钮
         this.btnReady = new ReadyButton(this.otherReadyed != null && this.otherReadyed ? 3 : +this.readyed);
         this.btnReady.visible = !(this.readyed && this.otherReadyed != null && this.otherReadyed);
@@ -173,11 +167,11 @@ export default class PlayScene extends AbstractScene {
 
         this.updateWaitInfo();
 
-        let channel = new ChatChannel();
-        channel.id = this.room.chatChannelId;
+        let channel = new Channel();
+        channel.id = this.room.channelId;
         channel.name = `当前房间`;
-        chatOverlay.addChannel(channel);
-        chatOverlay.toggleVisible();
+        channel.type = ChannelType.ROOM;
+        this.channelManager.joinChannel(channel);
 
         this.initListeners();
     }
@@ -193,10 +187,9 @@ export default class PlayScene extends AbstractScene {
         }, this);
 
         this.chessboard.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            chatOverlay.visible = false;
             this.playingRoundButtonsOverlay.visible = false;
         }, this);
-        
+
         socketClient.addEventListener(egret.Event.CLOSE, this.connectionCloseHandler = (event: egret.Event) => {
             this.popScene();
         }, this);
@@ -347,7 +340,7 @@ export default class PlayScene extends AbstractScene {
                     this.onWin(false);
                     break;
                 case confirmRequest.Type.DRAW:
-                    this.onRoundOver();
+                    this.onRoundOver(true);
                     break;
                 case confirmRequest.Type.WITHDRAW:
                     this.player.withdraw();
@@ -356,9 +349,9 @@ export default class PlayScene extends AbstractScene {
             }
         });
 
-        socketClient.add('chat.message', (msg: any) => {
-            if (msg.channelId == this.room.chatChannelId && msg.sender.id != 0) {
-                chatOverlay.show();
+        socketClient.add('chat.message', this.listeners['chat.message'] = (msg: any) => {
+            if (msg.channelId == this.room.channelId && msg.sender.id != 0) {
+                this.channelManager.openChannel(msg.channelId);
             }
         });
     }
@@ -368,7 +361,7 @@ export default class PlayScene extends AbstractScene {
             socketClient.signals[key].remove(this.listeners[key]);
         }
         socketClient.removeEventListener(egret.Event.CLOSE, this.connectionCloseHandler, this);
-        chatOverlay.removeChannel(this.room.chatChannelId);
+        this.channelManager.leaveChannel(this.room.channelId);
     }
 
     private onMoveChess(fromPos: ChessPos, toPos: ChessPos, chessHost: ChessHost) {
@@ -382,7 +375,7 @@ export default class PlayScene extends AbstractScene {
 
         this.player.eatChess(fromPos, toPos, chessHost);
 
-        if (targetChess.getChess() instanceof ChessK) {
+        if (judgeVictory(fromPos, targetChess, this.player)) {
             this.onWin(targetChess.getHost() != this.chessHost);
         } else {
             this.turnActiveChessHost();
@@ -390,29 +383,31 @@ export default class PlayScene extends AbstractScene {
     }
 
     private onWin(isWin: boolean) {
-        this.onRoundOver(false);
-        setTimeout(() => {
-            this.resultDialog.show(isWin);
-            this.resultDialog.onOk = () => {
-                socketClient.send('chessplay.ready', {readyed: false});
-            };
-        }, 100);
+        this.onRoundOver();
+        this.resultDialog.show(isWin);
+        this.resultDialog.onOk = () => {
+            this.updateWaitInfo();
+        }
     }
 
-    private onRoundOver(doNotReadyed = true) {
+    private onRoundOver(isDraw: boolean = false) {
+        this.otherReadyed = false;
+        this.readyed = false;
         this.btnReady.visible = true;
-        this.btnRoundOps.visible = false;
+        this.btnReady.setState(0);
         this.isPlaying = false;
+        this.btnRoundOps.visible = false;
+        if (isDraw) {
+            this.updateWaitInfo();
+        }
         this.playingRoundButtonsOverlay.onPlaying(false);
+
+        socketClient.send('chessplay.round_over');
+
         this.chessboard.touchEnabled = false;
         this.chessboard.getChessList().forEach(chess => {
             chess.touchEnabled = false;
         });
-        if (doNotReadyed) {
-            setTimeout(() => {
-                socketClient.send('chessplay.ready', {readyed: false});
-            }, 100);
-        }
     }
 
     private updateSpectatorCount = (count: number) => {

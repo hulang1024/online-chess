@@ -32,4 +32,8 @@ export default abstract class AbstractChess implements Chess {
     getHost() {
         return this.host;
     }
+
+    is(chessClass: Function) {
+        return this instanceof chessClass;
+    }
 }

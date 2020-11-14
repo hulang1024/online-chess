@@ -29,7 +29,7 @@ public class RoomInfo {
 
     private long ownerUserId;
 
-    private long chatChannelId;
+    private long channelId;
 
     /**
      * 房间用户信息

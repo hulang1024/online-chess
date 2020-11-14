@@ -19,6 +19,7 @@ import io.github.hulang1024.chinesechessserver.message.server.spectator.RoomRoun
 import io.github.hulang1024.chinesechessserver.message.server.spectator.SpectatorJoinMsg;
 import io.github.hulang1024.chinesechessserver.service.RoomService;
 import io.github.hulang1024.chinesechessserver.service.UserSessionService;
+import io.github.hulang1024.chinesechessserver.utils.TimeUtils;
 
 public class SpectatorMessageListener extends MessageListener {
     private RoomService roomService = new RoomService();
@@ -76,9 +77,11 @@ public class SpectatorMessageListener extends MessageListener {
 
         // 发送消息
         ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setFromUser(User.SYSTEM_USER);
+        chatMessage.setChannelId(room.getChatChannel().getId());
+        chatMessage.setTimestamp(TimeUtils.nowTimestamp());
+        chatMessage.setSender(User.SYSTEM_USER);
         chatMessage.setContent(spectator.getUser().getNickname() + " 加入观看");
-        room.getChatChannel().sendMessage(chatMessage);
+        room.getChatChannel().addNewMessage(chatMessage);
     }
 
     private void onLeave(SpectatorLeaveReqMsg msg) {
@@ -101,9 +104,11 @@ public class SpectatorMessageListener extends MessageListener {
 
         // 发送消息
         ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setFromUser(User.SYSTEM_USER);
+        chatMessage.setChannelId(room.getChatChannel().getId());
+        chatMessage.setTimestamp(TimeUtils.nowTimestamp());
+        chatMessage.setSender(User.SYSTEM_USER);
         chatMessage.setContent(spectator.getUser().getNickname() + " 离开观看");
-        room.getChatChannel().sendMessage(chatMessage);
+        room.getChatChannel().addNewMessage(chatMessage);
     }
 
     private List<RoomRoundStateMsg.Chess> toStateChesses(ChessboardState chessboardState) {

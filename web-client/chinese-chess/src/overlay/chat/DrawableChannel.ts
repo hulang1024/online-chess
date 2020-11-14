@@ -1,20 +1,22 @@
-import Channel from "./Channel";
+import Channel from "../../online/chat/Channel";
 import ChatLine from "./ChatLine";
-import Message from "./Message";
+import Message from "../../online/chat/Message";
 
 export default class DrawableChannel extends eui.Group {
-    private _channel: Channel;
+    channel: Channel;
     private container: eui.Group;
     private scroller = new eui.Scroller();
 
     constructor(channel: Channel, scrollerHeight: number) {
         super();
-        this._channel = channel;
+        this.channel = channel;
 
         this.name = channel.name;
 
         this.container = new eui.Group();
         let layout = new eui.VerticalLayout();
+        layout.gap = 8;
+        layout.paddingTop = 8;
         layout.paddingLeft = 8;
         this.container.layout = layout;
 
@@ -29,16 +31,19 @@ export default class DrawableChannel extends eui.Group {
             scroller.verticalScrollBar.autoVisibility = false;
             scroller.verticalScrollBar.visible = true;     
         }, this);
+
+        channel.onNewMessages = this.onNewMessages.bind(this);
     }
 
-    get channel() {
-        return this._channel;
-    }
-
-    addNewMessage(msg: Message) {
-        this.container.addChild(new ChatLine(msg));
-        if (this.scroller.viewport.contentHeight >= this.scroller.height) {
-            this.scroller.viewport.scrollV += 20;
-        }
+    onNewMessages(msgs: Message[]) {
+        msgs.forEach(msg => {
+            this.container.addChild(new ChatLine(msg));
+        });
+        setTimeout(() => {
+            let contentHeight = this.scroller.viewport.contentHeight;
+            if (contentHeight >= this.scroller.height) {
+                this.scroller.viewport.scrollV = contentHeight - this.scroller.height;
+            }
+        }, 200); // 不设置延时就不能正确显示
     }
 }

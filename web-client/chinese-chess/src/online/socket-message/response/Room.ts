@@ -6,7 +6,7 @@ export default class Room {
     locked?: boolean;
     password?: string;
     status: number;
-    chatChannelId: number;
+    channelId: number;
     userCount: number;
     users: Array<RoomUser>;
     spectatorCount: number;

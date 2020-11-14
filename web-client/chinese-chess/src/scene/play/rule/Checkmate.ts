@@ -1,4 +1,5 @@
 import Chess from "./Chess";
+import ChessK from "./chess/ChessK";
 import Chessboard from "./chessboard";
 import ChessPos from "./ChessPos";
 import ChessHost from "./chess_host";
@@ -42,6 +43,11 @@ export default class Checkmate {
 
         for (let chess of this.game.getChessboard().getChessList()
             .filter(chess => chess.getHost() != checkHost)) {
+            // 排除将碰面
+            if (chess.is(ChessK)) {
+                continue;
+            }
+            // 是否可吃对方将军
             if (chess.canGoTo(checkKPos, this.game)) {
                 return true;
             }

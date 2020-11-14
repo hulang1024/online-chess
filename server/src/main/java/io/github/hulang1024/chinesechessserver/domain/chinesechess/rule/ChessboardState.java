@@ -46,17 +46,24 @@ public class ChessboardState {
 
     public void setChess(ChessPos pos, Chess chess, ChessHost host) {
         pos = convertViewPos(pos, host);
+        setChess(pos, chess);
+    }
+
+    public void setChess(ChessPos pos, Chess chess) {
         array[pos.row][pos.col] = chess;
     }
 
     public void moveChess(ChessPos fromPos, ChessPos toPos, ChessHost host) {
         fromPos = convertViewPos(fromPos, host);
         toPos = convertViewPos(toPos, host);
+        moveChess(fromPos, toPos);
+    }
+
+    public void moveChess(ChessPos fromPos, ChessPos toPos) {
         Chess chess = array[fromPos.row][fromPos.col];
         array[toPos.row][toPos.col] = chess;
         array[fromPos.row][fromPos.col] = null;
     }
-
     /**
      * 将源视角棋方的棋子位置转换为当前设置的视角棋方((this.viewChessHost)的棋子位置
      * @param pos 源视角棋方的棋子位置

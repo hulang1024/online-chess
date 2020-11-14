@@ -19,6 +19,7 @@ import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessPla
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessPlayConfirmResponse;
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.ConfirmRequestType;
 import io.github.hulang1024.chinesechessserver.message.client.chessplay.PlayReady;
+import io.github.hulang1024.chinesechessserver.message.client.chessplay.ChessPlayRoundOver;
 import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomUpdate;
 import io.github.hulang1024.chinesechessserver.message.server.spectator.SpectatorChessPlayRoundStart;
 import io.github.hulang1024.chinesechessserver.service.LobbyService;
@@ -33,6 +34,7 @@ public class ChessPlayMessageListener extends MessageListener {
         addMessageHandler(PlayReady.class, this::ready);
         addMessageHandler(ChessPick.class, this::pickChess);
         addMessageHandler(ChessMove.class, this::moveChess);
+        addMessageHandler(ChessPlayRoundOver.class, this::onRoundOver);
         addMessageHandler(ChessPlayConfirmRequest.class, this::onConfirmRequest);
         addMessageHandler(ChessPlayConfirmResponse.class, this::onConfirmResponse);
     }
@@ -105,8 +107,8 @@ public class ChessPlayMessageListener extends MessageListener {
         ChessAction action = new ChessAction();
         action.setChessHost(actionUser.getChessHost());
         action.setChessType(chessboardState.chessAt(chessMove.getFromPos(), action.getChessHost()).type);
-        action.setFromPos(chessMove.getFromPos());
-        action.setToPos(chessMove.getToPos());
+        action.setFromPos(ChessboardState.convertViewPos(chessMove.getFromPos(), action.getChessHost()));
+        action.setToPos(ChessboardState.convertViewPos(chessMove.getToPos(), action.getChessHost()));
         if (chessMove.getMoveType() == 2) {
             action.setEatenChess(chessboardState.chessAt(chessMove.getToPos(), action.getChessHost()));
         }
@@ -132,7 +134,6 @@ public class ChessPlayMessageListener extends MessageListener {
             send(result, user.getSession());
         });
     }
-
 
     private void onConfirmRequest(ChessPlayConfirmRequest msg) {
         SessionUser requester = userSessionService.getUserBySession(msg.getSession());
@@ -164,7 +165,7 @@ public class ChessPlayMessageListener extends MessageListener {
             } else if (msg.getReqType() == ConfirmRequestType.DRAW.code()) {
                 //todo something
             } else if (msg.getReqType() == ConfirmRequestType.WITHDRAW.code()) {
-                withdraw(responser.getChessHost().reverse(), room);
+                withdraw(room);
                 room.getRound().turnActiveChessHost();
             }
         }
@@ -177,12 +178,12 @@ public class ChessPlayMessageListener extends MessageListener {
         });
     }
 
-    private void withdraw(ChessHost chessHost, Room room) {
+    private void withdraw(Room room) {
         ChessboardState chessboardState = room.getRound().getChessboardState();
         ChessAction lastAction = room.getRound().getActionStack().pop();
-        chessboardState.moveChess(lastAction.getToPos(), lastAction.getFromPos(), chessHost);
+        chessboardState.moveChess(lastAction.getToPos(), lastAction.getFromPos());
         if (lastAction.getEatenChess() != null) {
-            chessboardState.setChess(lastAction.getToPos(), lastAction.getEatenChess(), chessHost);
+            chessboardState.setChess(lastAction.getToPos(), lastAction.getEatenChess());
         }
     }
 
@@ -220,6 +221,20 @@ public class ChessPlayMessageListener extends MessageListener {
         roundStart.setBlackChessUid(round.getBlackChessUser().getId());
         room.getSpectators().forEach(user -> {
             send(roundStart, user.getSession());
+        });
+    }
+
+    private void onRoundOver(ChessPlayRoundOver msg) {
+        SessionUser user = userSessionService.getUserBySession(msg.getSession());
+        user.setReadyed(false);
+
+        // 大厅广播房间更新
+        LobbyRoomUpdate roomUpdate = new LobbyRoomUpdate();
+        roomUpdate.setRoom(new RoomConvert().toRoomInfo(user.getJoinedRoom()));
+        lobbyService.getAllStayLobbySessions().forEach(session -> {
+            if (user.getSession() != session) {
+                send(roomUpdate, session);
+            }
         });
     }
 }

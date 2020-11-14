@@ -28,8 +28,11 @@
 //////////////////////////////////////////////////////////////////////////////////////
 
 import SOUND from "./audio/SOUND";
+import ChannelManager from "./online/chat/ChannelManager";
 import socketClient from "./online/socket";
-import chatOverlay from "./overlay/chat/chat";
+import ChatOverlay from "./overlay/chat/ChatOverlay";
+import Toolbar from "./overlay/toolbar/Toolbar";
+import UserLoginOverlay from "./overlay/user/UserLoginOverlay";
 import LobbyScene from "./scene/lobby/LobbyScene";
 import SceneContext from "./scene/SceneContext";
 import SceneManager from "./scene/scene_manger";
@@ -101,10 +104,32 @@ class Main extends eui.UILayer  {
     }
 
     private createGameScene() {
-        let context = new SceneContext(this.stage);
+        // socket要访问到stage
         socketClient.stage = this.stage;
-        this.stage.addChildAt(chatOverlay, 1000000);
         
-        SceneManager.of(context).pushScene(context => new LobbyScene(context));
+        let layout = new eui.VerticalLayout();
+        let group = new eui.Group();
+        group.layout = layout;
+        this.stage.addChild(group);
+
+        let channelManager = new ChannelManager();
+
+        let chatOverlay = new ChatOverlay(channelManager);
+        this.stage.addChild(chatOverlay);
+        
+        // 工具栏
+        let toolbar = new Toolbar();
+        toolbar.chatOverlay = chatOverlay;
+        group.addChild(toolbar);
+
+        // 场景容器
+        let sceneContainer = new egret.DisplayObjectContainer();
+        sceneContainer.y = toolbar.height;
+        group.addChild(sceneContainer);
+
+        let context = new SceneContext(this.stage, sceneContainer, chatOverlay);
+        SceneManager.of(context).pushScene(context => new LobbyScene(context, channelManager));
+
+        chatOverlay.popIn();
     }
 }

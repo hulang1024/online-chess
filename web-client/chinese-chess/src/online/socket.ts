@@ -8,7 +8,11 @@ interface MessageSignal {
 
 class SocketClient extends egret.WebSocket {
     signals: MessageSignal = {};
-    onConnected: Function;
+    reconnectedSignal = new Signal();
+    private connectedSignal = new Signal();
+    private connectStarted: boolean = false;
+    private onConnected: Function;
+    private connectedTimes: number = 0;
     stage: egret.Stage;
 
     constructor() {
@@ -32,6 +36,7 @@ class SocketClient extends egret.WebSocket {
             }, this.stage);
 
             setTimeout(() => {
+                this.connectStarted = false;
                 this.connect();
             }, tryTimeout);
         }, this);
@@ -43,26 +48,37 @@ class SocketClient extends egret.WebSocket {
         });
     }
 
-    connect() {
+    connect(): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.connected) {
                 resolve();
             } else {
-                if (this.onConnected) {
-                    this.removeEventListener(egret.Event.CONNECT, this.onConnected, this);
+                this.connectedSignal.addOnce(resolve);
+
+                if (!this.onConnected) {
+                    this.addEventListener(egret.Event.CONNECT, this.onConnected = (event: any) => {
+                        messager.info('成功连接到服务器', this.stage);
+                        this.connectStarted = false;
+
+                        this.runPingTimer();
+
+                        this.connectedSignal.dispatch();
+
+                        this.connectedTimes++;
+                        
+                        if (this.connectedTimes > 1) {
+                            this.reconnectedSignal.dispatch();
+                        }
+                    }, this);
                 }
-                this.addEventListener(egret.Event.CONNECT, this.onConnected = (event: any) => {
-                    messager.info('成功连接到服务器', this.stage);
-                    
-                    this.runPingTimer();
-        
-                    resolve();
-                }, this);
 
-                messager.info({msg: '正在连接到服务器', duration: 2000}, this.stage);
+                if (!this.connectStarted) {
+                    messager.info({msg: '正在连接到服务器', duration: 2000}, this.stage);
 
-                //super.connect("180.76.185.34", 9097);
-                super.connect("192.168.1.101", 9097);
+                    super.connect("180.76.185.34", 9097);
+                    //super.connect("192.168.1.101", 9097);
+                    this.connectStarted = true;
+                }
             }
         });
     }

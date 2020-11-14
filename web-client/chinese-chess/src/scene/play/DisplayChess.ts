@@ -2,13 +2,7 @@ import Chess from "./rule/Chess";
 import ChessHost from "./rule/chess_host";
 import ChessPos from "./rule/ChessPos";
 import RoundGame from "./rule/RoundGame";
-import ChessC from "./rule/chess/ChessC";
-import ChessG from "./rule/chess/ChessG";
-import ChessK from "./rule/chess/ChessK";
-import ChessM from "./rule/chess/ChessM";
-import ChessN from "./rule/chess/ChessN";
-import ChessR from "./rule/chess/ChessR";
-import ChessS from "./rule/chess/ChessS";
+import { classClassToKey } from "./rule/chess_map";
 
 export default class DisplayChess extends egret.Sprite implements Chess {
     private chessState: Chess;
@@ -25,18 +19,12 @@ export default class DisplayChess extends egret.Sprite implements Chess {
         this.originPos = chessState.getPos();
 
         let bitmap = new egret.Bitmap();
-        bitmap.width = 69;
-        bitmap.height = 69;
+        bitmap.width = 67;
+        bitmap.height = 67;
 
-        let chessKey = null;
-        if (chessState instanceof ChessC) chessKey = 'c';
-        if (chessState instanceof ChessG) chessKey = 'g';
-        if (chessState instanceof ChessK) chessKey = 'k';
-        if (chessState instanceof ChessM) chessKey = 'm';
-        if (chessState instanceof ChessN) chessKey = 'n';
-        if (chessState instanceof ChessR) chessKey = 'r';
-        if (chessState instanceof ChessS) chessKey = 's';
-        const chessResKey = `${ChessHost[chessState.getHost()].toLowerCase()}_chess_${chessKey}`;
+        const chessResKey = ''
+            + ChessHost[chessState.getHost()].toLowerCase()
+            + '_chess_' + classClassToKey(this.chessState).toLowerCase();
         bitmap.texture = RES.getRes(chessResKey);
         this.addChild(bitmap);
     }
@@ -87,7 +75,7 @@ export default class DisplayChess extends egret.Sprite implements Chess {
         return this.chessState.getHost();
     }
 
-    getChess() {
-        return this.chessState;
+    is(chessClass: Function) {
+        return this.chessState.is(chessClass);
     }
 }

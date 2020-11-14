@@ -24,12 +24,12 @@ export default class SceneManager {
     }
 
     private setCurrentScene(sceneBuilder: SceneBuilder) {
-        const { stage } = this.context;
+        const { sceneContainer } = this.context;
         if (SceneManager.currentScene) {
-            stage.removeChild(SceneManager.currentScene);
+            sceneContainer.removeChild(SceneManager.currentScene);
         }
         SceneManager.currentScene = sceneBuilder(this.context);
-        stage.addChild(SceneManager.currentScene);
+        sceneContainer.addChild(SceneManager.currentScene);
     }
 }
 

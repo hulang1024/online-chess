@@ -1,5 +1,4 @@
-import formatTime from "../../utils/time";
-import Message from "./Message";
+import Message from "../../online/chat/Message";
 
 export default class ChatLine extends eui.Group {
     constructor(msg: Message) {
@@ -17,7 +16,7 @@ export default class ChatLine extends eui.Group {
 
         // 时间
         let txtTime = new eui.Label();
-        txtTime.text = formatTime(new Date());
+        txtTime.text = this.formatTime(msg.timestamp);
         txtTime.size = 16;
         group.addChild(txtTime);
 
@@ -38,6 +37,12 @@ export default class ChatLine extends eui.Group {
         txtContent.size = 18;
         container.addChild(txtContent);
 
-        return container;
+        this.addChild(container);
+    }
+
+    private formatTime(timestamp: number) {
+        let time = new Date(timestamp);
+        const pad = (n: number) => n > 9 ? n : '0' + n;
+        return `${pad(time.getHours())}:${pad(time.getMinutes())}:${pad(time.getSeconds())}`;
     }
 }
