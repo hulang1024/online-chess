@@ -23,6 +23,6 @@ export default class ChessEatOverlay extends Overlay {
         this.visible = true;
         setTimeout(() => {
             this.visible = false;
-        }, 1500);
+        }, 1000);
     }
 }

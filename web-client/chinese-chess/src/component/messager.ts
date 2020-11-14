@@ -62,7 +62,7 @@ function message(type: MessageType, options: MessageOptions | string, context: e
             msgContainer.parent.removeChild(msgContainer);
         }
         msgCount--;
-    }, options.duration || 5000);
+    }, options.duration || 3000);
 }
 
 function messageContainer(child: egret.DisplayObject, context: egret.DisplayObject, offset: number) {

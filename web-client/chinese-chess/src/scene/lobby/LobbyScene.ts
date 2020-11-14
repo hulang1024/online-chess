@@ -58,6 +58,12 @@ export default class LobbyScene extends AbstractScene {
         let buttonGroup = new eui.Group();
         buttonGroup.layout = buttonGroupLayout;
 
+        let btnQuickMatch = new eui.Button();
+        btnQuickMatch.width = 120;
+        btnQuickMatch.label = "快速加入";
+        btnQuickMatch.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onQuickMatchClick, this);
+        buttonGroup.addChild(btnQuickMatch);
+        
         let btnCreateRoom = new eui.Button();
         btnCreateRoom.width = 120;
         btnCreateRoom.label = "创建房间";
@@ -65,12 +71,6 @@ export default class LobbyScene extends AbstractScene {
         buttonGroup.addChild(btnCreateRoom);
         group.addChild(buttonGroup);
 
-        let btnQuickMatch = new eui.Button();
-        btnQuickMatch.width = 120;
-        btnQuickMatch.label = "快速加入";
-        btnQuickMatch.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onQuickMatchClick, this);
-        buttonGroup.addChild(btnQuickMatch);
-        
         let roomLayout = new eui.VerticalLayout();
         roomLayout.horizontalAlign = egret.HorizontalAlign.CONTENT_JUSTIFY;
         roomLayout.gap = 8;
@@ -91,6 +91,8 @@ export default class LobbyScene extends AbstractScene {
             this.roomContainer.width = this.stage.stageWidth;
             scroller.height = this.stage.stageHeight;
             group.addChild(scroller);
+            
+            this.context.chatOverlay.popIn();
         }, this);
 
         (async () => {
@@ -111,9 +113,6 @@ export default class LobbyScene extends AbstractScene {
                 if (msg.code != 0) {
                     messager.fail({msg: '创建房间失败'}, this);
                     return;
-                }
-                if (msg.room.ownerUserId == platform.getUserInfo().id) {
-                    messager.info('创建房间成功', this);
                 }
                 this.addRoom(msg.room);
             });
@@ -167,6 +166,7 @@ export default class LobbyScene extends AbstractScene {
         }
         socketClient.reconnectedSignal.remove(this.reconnectHandler);
         socketClient.send('lobby.exit');
+        this.context.chatOverlay.popOut();
     }
 
     onCreateRoomClick() {

@@ -99,7 +99,7 @@ export default class ChannelManager {
         
         let welcome = new InfoMessage();
         welcome.channelId = 1;
-        welcome.content = '欢迎来到中国象棋在线';
+        welcome.content = '欢迎来到在线中国象棋';
         channel.addNewMessages([welcome]);
     }
 

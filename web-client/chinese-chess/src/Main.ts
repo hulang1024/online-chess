@@ -129,7 +129,5 @@ class Main extends eui.UILayer  {
 
         let context = new SceneContext(this.stage, sceneContainer, chatOverlay);
         SceneManager.of(context).pushScene(context => new LobbyScene(context, channelManager));
-
-        chatOverlay.popIn();
     }
 }

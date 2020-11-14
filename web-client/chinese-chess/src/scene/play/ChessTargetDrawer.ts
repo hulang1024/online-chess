@@ -36,16 +36,17 @@ export default class ChessTargetDrawer {
     }
 
     private makeTarget(pos: ChessPos) {
-        const radius = 10;
+        const radius = 12;
         const x = 32 + pos.col * 57;
         const y = 32 + pos.row * 57;
         let shape = new egret.Shape();
         shape.graphics.beginFill(0xff0000, 1);
         shape.graphics.drawCircle(x , y, radius);
         shape.graphics.endFill();
+
         shape.filters = [
             new egret.GlowFilter(
-                0xffffff, 0.7, 24, 24, 2,
+                0xffffff, 0.9, 24, 24, 2,
                 egret.BitmapFilterQuality.LOW, true, true),
         ];
         return shape;

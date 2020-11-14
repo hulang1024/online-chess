@@ -62,7 +62,7 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
         return this.chessArray[row][col] == null;
     }
 
-    chessAt(pos: ChessPos) {
+    chessAt(pos: ChessPos): DisplayChess {
         return this.chessArray[pos.row][pos.col];
     }
 

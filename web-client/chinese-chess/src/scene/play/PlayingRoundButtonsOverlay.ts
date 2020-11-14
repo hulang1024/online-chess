@@ -32,7 +32,6 @@ export default class PlayingRoundButtonsOverlay extends Overlay {
         btnWithdraw.label = "悔棋";
         btnWithdraw.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             this.visible = false;
-            this.btnWithdraw.enabled = false;
         }, this);
         group.addChild(btnWithdraw);
         
@@ -65,10 +64,5 @@ export default class PlayingRoundButtonsOverlay extends Overlay {
     onPlaying(playing: boolean) {
         this.btnWhiteFlag.enabled = playing;
         this.btnChessDraw.enabled = playing;
-        this.btnWithdraw.enabled = false;
-    }
-
-    setCanWithdraw(enabled: boolean) {
-        this.btnWithdraw.enabled = enabled;
     }
 }

@@ -8,5 +8,5 @@ export default class ChessAction {
     chessType: Function;
     fromPos: ChessPos;
     toPos: ChessPos;
-    eatenChess: DisplayChess;
+    eatenChess: DisplayChess | Chess;
 }

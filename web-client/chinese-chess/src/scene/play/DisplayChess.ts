@@ -6,8 +6,6 @@ import { classClassToKey } from "./rule/chess_map";
 
 export default class DisplayChess extends egret.Sprite implements Chess {
     private chessState: Chess;
-    // 起点位置
-    public originPos: ChessPos;
     // 是否选中状态
     private selected: boolean = false;
     private lit: boolean = false;
@@ -16,7 +14,6 @@ export default class DisplayChess extends egret.Sprite implements Chess {
         super();
 
         this.chessState = chessState;
-        this.originPos = chessState.getPos();
 
         let bitmap = new egret.Bitmap();
         bitmap.width = 67;
@@ -54,8 +51,8 @@ export default class DisplayChess extends egret.Sprite implements Chess {
             this.parent.setChildIndex(this, 100);
             this.filters = [
                 new egret.GlowFilter(
-                    0xffffff, 0.7, 24, 24, 2,
-                    egret.BitmapFilterQuality.LOW, false, false),
+                    0xffffff, 0.7, 16, 16, 3,
+                    egret.BitmapFilterQuality.MEDIUM, false, false),
             ];
         } else {
             this.parent.setChildIndex(this, 10);

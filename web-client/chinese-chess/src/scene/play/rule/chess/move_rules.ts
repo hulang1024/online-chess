@@ -43,4 +43,4 @@ export function isInKingHome(chess: Chess, destPos: ChessPos, game: RoundGame) {
         : (7 <= destPos.row && destPos.row <= 9));
 }
 
-export function sign(n: number) { return n > 0 ? +1 : -1; }
+export function sign(n: number) { return n == 0 ? 0 : (n > 0 ? +1 : -1); }

@@ -19,7 +19,6 @@ import Channel from "../../online/chat/Channel";
 import ConfirmDialog from "./ConfirmDialog";
 import PlayingRoundButtonsOverlay from "./PlayingRoundButtonsOverlay";
 import TextOverlay from "./TextOverlay";
-import { judgeVictory } from "./rule/judge";
 import ChannelManager from "../../online/chat/ChannelManager";
 import ChannelType from "../../online/chat/ChannelType";
 
@@ -63,6 +62,8 @@ export default class PlayScene extends AbstractScene {
         this.chessHost = roomJoin.user.chessHost;
 
         this.player = new Player();
+        this.player.onWin = this.onWin.bind(this);
+        this.player.onTurnActiveChessHost = this.onTurnActiveChessHost.bind(this);
         this.chessboard = this.player.chessboard;
 
         this.player.startRound(this.chessHost);
@@ -125,7 +126,9 @@ export default class PlayScene extends AbstractScene {
 
         let buttonGroup = new eui.Group();
         let buttonGroupLayout = new eui.HorizontalLayout();
+        buttonGroupLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
         buttonGroupLayout.paddingTop = 32;
+        buttonGroupLayout.paddingRight = 16;
         buttonGroupLayout.gap = 30;
         buttonGroup.layout = buttonGroupLayout;
         group.addChild(buttonGroup);
@@ -161,9 +164,23 @@ export default class PlayScene extends AbstractScene {
         buttonGroup.addChild(btnRoundOps);
 
         this.chessboard.addChild(this.confirmDialog);
+        let {btnWhiteFlag, btnChessDraw, btnWithdraw} = this.playingRoundButtonsOverlay;
+        btnWhiteFlag.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onWhiteFlagClick, this);
+        btnChessDraw.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onChessDrawClick, this);
+        btnWithdraw.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onWithdrawClick, this);
         this.chessboard.addChild(this.playingRoundButtonsOverlay);
         this.chessboard.addChild(this.textOverlay);
         this.chessboard.addChild(this.resultDialog);
+
+        this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
+            buttonGroup.width = this.stage.stageWidth;
+        }, this);
+        this.addEventListener(egret.TouchEvent.TOUCH_TAP, (event: egret.TextEvent) => {
+            this.context.chatOverlay.popOut();
+        }, this);
+        this.chessboard.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+            this.playingRoundButtonsOverlay.visible = false;
+        }, this);
 
         this.updateWaitInfo();
 
@@ -177,33 +194,20 @@ export default class PlayScene extends AbstractScene {
     }
 
     private initListeners() {
-        let {btnWhiteFlag, btnChessDraw, btnWithdraw} = this.playingRoundButtonsOverlay;
-        btnWhiteFlag.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onWhiteFlagClick, this);
-        btnChessDraw.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onChessDrawClick, this);
-        btnWithdraw.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onWithdrawClick, this);
-
-        this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
-            messager.info('你已进入房间', this);
-        }, this);
-
-        this.chessboard.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            this.playingRoundButtonsOverlay.visible = false;
-        }, this);
-
         socketClient.addEventListener(egret.Event.CLOSE, this.connectionCloseHandler = (event: egret.Event) => {
             this.popScene();
         }, this);
 
-        socketClient.add('spectator.join', this.listeners['spectator.join'] = (msg: any) => {
+        this.listeners['spectator.join'] = (msg: any) => {
             messager.info(`${msg.user.nickname} 加入观看`, this);
             this.updateSpectatorCount(msg.spectatorCount);
-        });
+        };
 
-        socketClient.add('spectator.leave', this.listeners['spectator.leave'] = (msg: any) => {
+        this.listeners['spectator.leave'] = (msg: any) => {
             this.updateSpectatorCount(msg.spectatorCount);
-        });
+        };
 
-        socketClient.add('room.leave', this.listeners['room.leave'] = (msg: any) => {
+        this.listeners['room.leave'] = (msg: any) => {
             if (msg.user.id == this.user.id) {
                 return;
             } else {
@@ -219,16 +223,16 @@ export default class PlayScene extends AbstractScene {
                 });
                 messager.info(`${msg.user.nickname} 已离开房间`, this);
             }
-        });
+        };
 
-        socketClient.add('user.offline', this.listeners['user.offline'] = (msg: any) => {
+        this.listeners['user.offline'] = (msg: any) => {
             messager.info(`${msg.nickname} 已下线或掉线，
                 你可以等待对方一会儿，重新连接之后选择继续下棋（自动恢复棋局状态）。
                 你也可以直接离开房间，但是房间和棋局状态会被清理。`, this);
             return;
-        });
+        };
         
-        socketClient.add('room.join', this.listeners['room.join'] = (msg: any) => {
+        this.listeners['room.join'] = (msg: any) => {
             window.focus();
             this.otherReadyed = msg.user.readyed;
             this.otherUserInfoPane.load(msg.user);
@@ -236,33 +240,33 @@ export default class PlayScene extends AbstractScene {
             setTimeout(() => {
                 messager.info(`玩家[${msg.user.nickname}]已加入房间`, this);
             }, 100);
-        });
+        };
 
-        socketClient.add('chessplay.ready', this.listeners['chessplay.ready'] = (msg: any) => {
+        this.listeners['chessplay.ready'] = (msg: any) => {
             if (msg.uid == this.user.id) {
                 this.readyed = msg.readyed;
             } else {
                 this.otherReadyed = msg.readyed;
             }
-            this.updateWaitInfo();
+            if (!this.isPlaying) {
+                this.updateWaitInfo();
+            }
             this.btnReady.setState(this.otherReadyed != null && this.otherReadyed ? 3 : +this.readyed);
-        });
+        };
 
-        socketClient.add('chessplay.round_start', this.listeners['chessplay.round_start'] = (msg: any) => {
+        this.listeners['chessplay.round_start'] = (msg: any) => {
             this.btnReady.visible = false;
             this.btnRoundOps.visible = true;
             this.textOverlay.visible = false;
             this.chessHost = msg.chessHost;
-            this.activeChessHost = null;
             this.lastSelected = null;
             this.isPlaying = true;
             this.player.startRound(this.chessHost);
             this.playingRoundButtonsOverlay.onPlaying(true);
-            this.turnActiveChessHost();
             this.textOverlay.show(`棋局开始，${this.chessHost == ChessHost.RED ? '你' : '对方'}先走棋`, 2000);
-        });
+        };
 
-        socketClient.add('chessplay.chess_pick', this.listeners['chessplay.chess_pick'] = (msg) => {
+        this.listeners['chessplay.chess_pick'] = (msg) => {
             if (msg.chessHost == this.chessHost) {
                 return;
             }
@@ -270,25 +274,21 @@ export default class PlayScene extends AbstractScene {
             window.focus();
             
             this.player.pickChess(msg.pickup, msg.pos, msg.chessHost);
-        });
+        };
 
-        socketClient.add('chessplay.chess_move', this.listeners['chessplay.chess_move'] = (msg: any) => {
+        this.listeners['chessplay.chess_move'] = (msg: any) => {
             if (msg.chessHost != this.chessHost) {
                 window.focus();
             }
-            this.playingRoundButtonsOverlay.setCanWithdraw(msg.chessHost == this.chessHost);
-
-            switch (msg.moveType) {
-            case 1:
-                this.onMoveChess(msg.fromPos, msg.toPos, msg.chessHost);
-                break;
-            case 2:
-                this.onEatChess(msg.fromPos, msg.toPos, msg.chessHost);
-                break;
+            // 走了一步，可以悔棋
+            if (!this.playingRoundButtonsOverlay.btnWithdraw.enabled) {
+                this.playingRoundButtonsOverlay.btnWithdraw.enabled = true;
             }
-        });
 
-        socketClient.add('chessplay.confirm_request', this.listeners['chessplay.confirm_request'] = (msg: any) => {
+            this.player.moveChess(msg.fromPos, msg.toPos, msg.chessHost, msg.moveType == 2);
+        };
+
+        this.listeners['chessplay.confirm_request'] = (msg: any) => {
             // 如果是自己发送的请求
             if (msg.chessHost == this.chessHost) {
                 return;
@@ -301,15 +301,16 @@ export default class PlayScene extends AbstractScene {
                 // 确认执行
                 switch (msg.reqType) {
                     case confirmRequest.Type.WHITE_FLAG:
-                        this.onWin(true);
+                        this.onWin(msg.chessHost);
                         break;
                     case confirmRequest.Type.DRAW:
                         this.onRoundOver();
                         break;
                     case confirmRequest.Type.WITHDRAW:
-                        this.player.withdraw();
-                        // 把持棋控制权再转回去
-                        this.turnActiveChessHost();
+                        let more = this.player.withdraw();
+                        if (!more) {
+                            this.playingRoundButtonsOverlay.btnWithdraw.enabled = false;
+                        }
                         break;
                 }
 
@@ -319,9 +320,9 @@ export default class PlayScene extends AbstractScene {
             this.confirmDialog.onNoClick = () => {
                 socketClient.send('chessplay.confirm_response', {reqType: msg.reqType, ok: false});
             };
-        });
+        };
 
-        socketClient.add('chessplay.confirm_response', this.listeners['chessplay.confirm_response'] = (msg: any) => {
+        this.listeners['chessplay.confirm_response'] = (msg: any) => {
             // 如果是自己发送的回应
             if (msg.chessHost == this.chessHost) {
                 return;
@@ -337,23 +338,30 @@ export default class PlayScene extends AbstractScene {
             this.textOverlay.show(`对方同意${confirmRequest.toReadableText(msg.reqType)}`, 3000);
             switch (msg.reqType) {
                 case confirmRequest.Type.WHITE_FLAG:
-                    this.onWin(false);
+                    this.onWin(msg.chessHost);
                     break;
                 case confirmRequest.Type.DRAW:
                     this.onRoundOver(true);
                     break;
                 case confirmRequest.Type.WITHDRAW:
-                    this.player.withdraw();
-                    this.turnActiveChessHost();
+                    let more = this.player.withdraw();
+                    if (!more) {
+                        this.playingRoundButtonsOverlay.btnWithdraw.enabled = false;
+                    }
                     break;
             }
-        });
+        };
 
-        socketClient.add('chat.message', this.listeners['chat.message'] = (msg: any) => {
+        this.listeners['chat.message'] = (msg: any) => {
             if (msg.channelId == this.room.channelId && msg.sender.id != 0) {
                 this.channelManager.openChannel(msg.channelId);
+                this.context.chatOverlay.popIn();
             }
-        });
+        };
+        
+        for (let key in this.listeners) {
+            socketClient.add(key, this.listeners[key]);
+        }
     }
 
     onSceneExit() {
@@ -364,50 +372,43 @@ export default class PlayScene extends AbstractScene {
         this.channelManager.leaveChannel(this.room.channelId);
     }
 
-    private onMoveChess(fromPos: ChessPos, toPos: ChessPos, chessHost: ChessHost) {
-        this.player.moveChess(fromPos, toPos, chessHost);
-        this.turnActiveChessHost();
-    }
-
-    private onEatChess(fromPos: ChessPos, toPos: ChessPos, chessHost: ChessHost) {
-        let targetPos = this.player.convertViewPos(toPos, chessHost);
-        let targetChess = this.chessboard.chessAt(targetPos);
-
-        this.player.eatChess(fromPos, toPos, chessHost);
-
-        if (judgeVictory(fromPos, targetChess, this.player)) {
-            this.onWin(targetChess.getHost() != this.chessHost);
-        } else {
-            this.turnActiveChessHost();
-        }
-    }
-
-    private onWin(isWin: boolean) {
+    private onWin(winChessHost: ChessHost) {
         this.onRoundOver();
-        this.resultDialog.show(isWin);
+        this.resultDialog.show(winChessHost == this.chessHost);
         this.resultDialog.onOk = () => {
+            this.isPlaying = false;
+            // 显示准备按钮
+            this.btnReady.visible = true;
+            // 更新等待信息
             this.updateWaitInfo();
         }
     }
 
     private onRoundOver(isDraw: boolean = false) {
-        this.otherReadyed = false;
-        this.readyed = false;
-        this.btnReady.visible = true;
-        this.btnReady.setState(0);
-        this.isPlaying = false;
-        this.btnRoundOps.visible = false;
-        if (isDraw) {
-            this.updateWaitInfo();
-        }
-        this.playingRoundButtonsOverlay.onPlaying(false);
-
-        socketClient.send('chessplay.round_over');
-
+        // 禁用棋盘
         this.chessboard.touchEnabled = false;
         this.chessboard.getChessList().forEach(chess => {
             chess.touchEnabled = false;
         });
+        // 设置未准备状态
+        this.otherReadyed = false;
+        this.readyed = false;
+        // 隐藏对局操作按钮
+        this.btnRoundOps.visible = false;
+        this.playingRoundButtonsOverlay.onPlaying(false);
+        // 准备按钮状态恢复初始
+        this.btnReady.setState(0);
+
+        // 如果是和棋
+        if (isDraw) {
+            this.isPlaying = false;
+            // 显示准备按钮
+            this.btnReady.visible = true;
+            // 更新等待信息
+            this.updateWaitInfo();
+        }
+        // 请求对局结束
+        socketClient.send('chessplay.round_over');
     }
 
     private updateSpectatorCount = (count: number) => {
@@ -502,12 +503,12 @@ export default class PlayScene extends AbstractScene {
         this.textOverlay.show('已发送悔棋请求，等待对方回应', 3000);
     }
 
-    private turnActiveChessHost() {
-        if (this.activeChessHost == null) {
-            this.activeChessHost = ChessHost.RED;
-        } else {
-            this.activeChessHost = reverseChessHost(this.activeChessHost);
+    private onTurnActiveChessHost(activeChessHost: ChessHost) {
+        if (!this.isPlaying) {
+            return;
         }
+
+        this.activeChessHost = activeChessHost;
 
         this.otherUserInfoPane.setActive(this.chessHost != this.activeChessHost);
         console.log("现在 " + (this.activeChessHost == ChessHost.BLACK ? "黑方" : "红方") + " 持棋");

@@ -51,11 +51,12 @@ export default class ChatOverlay extends Overlay {
         messageInput.x = this.width - messageInput.width - 8;
         messageInput.y = this.height - messageInput.height - 8;
         messageInput.onSend = (text: string) => {
-            if (text.length > 20) {
+            if (text.length > 100) {
                 messager.fail('消息过长',this);
-                return;
+                return false;
             }
             this.manager.postMessage(text);
+            return true;
         }
         this.addChild(messageInput);
 
@@ -79,7 +80,6 @@ export default class ChatOverlay extends Overlay {
         this.manager.onOpenChannel = (channel: Channel) => {
             let drawableChannel = this.viewStack.getChildByName(channel.name);
             this.viewStack.selectedChild = drawableChannel;
-            this.popIn();
         };
 
         this.manager.loadDefaultChannels();

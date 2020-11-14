@@ -21,12 +21,13 @@ export default class MessageInput extends eui.Group {
         textEditContainer.height = height;
         let { textEdit } = this;
         textEdit.left = 10;
+        textEdit.right = 10;
+        textEdit.width = width;
+        textEdit.height = height;
         textEdit.size = 18;
         textEdit.multiline = false;
         textEdit.prompt = '键入你的消息';
         textEdit.promptColor = 0xcccccc;
-        textEdit.width = width;
-        textEdit.height = height;
         textEdit.verticalAlign = egret.VerticalAlign.MIDDLE;
         document.addEventListener('keydown', (event) => {
             if (event.key != 'Enter') {
@@ -36,8 +37,11 @@ export default class MessageInput extends eui.Group {
             if (!text) {
                 return;
             }
-            this.onSend(text);
-            textEdit.text = '';
+            
+            let ok = this.onSend(text);
+            if (ok) {
+                textEdit.text = '';
+            }
         });
         textEditContainer.addChild(textEdit);
         this.addChild(textEditContainer);

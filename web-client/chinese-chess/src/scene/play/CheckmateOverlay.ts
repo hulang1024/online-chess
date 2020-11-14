@@ -29,6 +29,6 @@ export default class CheckmateOverlay extends Overlay {
         this.visible = true;
         setTimeout(() => {
             this.visible = false;
-        }, 3000);
+        }, 1000);
     }
 }

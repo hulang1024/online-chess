@@ -31,6 +31,8 @@ export default class Player extends eui.Group implements RoundGame {
     private chessEatOverlay = new ChessEatOverlay();
     private checkmateOverlay = new CheckmateOverlay();
     private chessActionStack: Array<ChessAction>;
+    onWin: Function;
+    onTurnActiveChessHost: Function;
 
     constructor() {
         super();
@@ -75,7 +77,7 @@ export default class Player extends eui.Group implements RoundGame {
             this.clearChessboard();
             chesses.forEach(chess => {
                 let pos = new ChessPos(chess.row, chess.col);
-                // 服务器保存数据默认视角是红方，如果是黑方就翻转下
+                // 服务器保存数据默认视角是红方，如果当前视图是黑方就要翻转下
                 if (this.viewChessHost == ChessHost.BLACK) {
                     pos = this.reverseViewPos(pos);
                 }
@@ -92,6 +94,8 @@ export default class Player extends eui.Group implements RoundGame {
         this.chessboard.getChessList().forEach(chess => {
             chess.touchEnabled = false;
         });
+
+        this.onTurnActiveChessHost(this.activeChessHost);
     }
 
     pickChess(picked: boolean, pos: ChessPos, chessHost: ChessHost) {
@@ -105,18 +109,16 @@ export default class Player extends eui.Group implements RoundGame {
         this.chessboard.chessAt(pos).setSelected(picked);
     }
 
-    moveChess(fromPos: ChessPos, toPos: ChessPos, chessHost: ChessHost) {
-        let chess = this.chessboard.chessAt(this.convertViewPos(fromPos, chessHost));
-
+    moveChess(fromPos: ChessPos, toPos: ChessPos, chessHost: ChessHost, isEat: boolean) {
         this.chessboard.getChessList().forEach((chess: DisplayChess) => {
             if (chess.isLit()) {
                 chess.setLit(false);
             }
         });
 
-        chess.setSelected(false);
-        chess.setLit(true);
-        this.fromPosTargetDrawer.draw(this.convertViewPos(fromPos, chessHost));
+        // 被移动棋子
+        let chess = this.chessboard.chessAt(this.convertViewPos(fromPos, chessHost));
+        let targetChess: DisplayChess;
 
         // 记录动作
         let action = new ChessAction();
@@ -124,46 +126,58 @@ export default class Player extends eui.Group implements RoundGame {
         action.chessType = chess.constructor;
         action.fromPos = fromPos;
         action.toPos = toPos;
+        if (isEat) {
+            // 吃目标棋子
+            targetChess = this.chessboard.chessAt(this.convertViewPos(toPos, chessHost))
+            action.eatenChess = targetChess;
+            this.chessboard.removeChild(targetChess);
+        }
         this.chessActionStack.push(action);
 
-        this.moveOneChess(chess, this.convertViewPos(toPos, chessHost));
+        // 被移动棋子选择状态置不选中
+        chess.setSelected(false);
+        toPos = this.convertViewPos(toPos, chessHost);
+        // 移动棋子动画
+        const {x, y} = this.chessboard.calcChessDisplayPos(toPos);
+        egret.Tween.get(chess).to({x, y}, 200, egret.Ease.circOut).call(() => {
+            // 画移动源位置标记
+            this.fromPosTargetDrawer.draw(this.convertViewPos(fromPos, chessHost));
+            // 高亮被移动棋子
+            chess.setLit(true);
+            // 音效
+            let soundChannel = SOUND.get('click').play(0, 1);
+            soundChannel.volume = 0.7;
 
-        this.checkCheckmate();
-        this.turnActiveChessHost();
-    }
-
-    eatChess(fromPos: ChessPos, toPos: ChessPos, chessHost: ChessHost) {
-        this.chessboard.getChessList().forEach((chess: DisplayChess) => {
-            if (chess.isLit()) {
-                chess.setLit(false);
+            // 设置棋盘状态
+            this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = null;
+            this.chessboard.getChessArray()[toPos.row][toPos.col] = chess;
+            chess.setPos(toPos);
+    
+            if (isEat) {
+                // 判断胜负
+                if (targetChess != null && targetChess.is(ChessK)) {
+                    this.onWin(chess.getHost());
+                } else {
+                    this.chessEatOverlay.show();
+                    this.checkCheckmate();
+                    this.turnActiveChessHost();
+                }
+            } else {
+                this.checkCheckmate();
+                this.turnActiveChessHost();
             }
         });
-
-        let sourceChess = this.chessboard.chessAt(this.convertViewPos(fromPos, chessHost));
-        sourceChess.setSelected(false);
-        sourceChess.setLit(true);
-        this.fromPosTargetDrawer.draw(this.convertViewPos(fromPos, chessHost));
-        this.chessEatOverlay.show();
-
-        let targetChess = this.chessboard.chessAt(this.convertViewPos(toPos, chessHost));
-
-        // 记录动作
-        let action = new ChessAction();
-        action.chessHost = chessHost;
-        action.chessType = sourceChess.constructor;
-        action.fromPos = fromPos;
-        action.toPos = toPos;
-        action.eatenChess = targetChess;
-        this.chessActionStack.push(action);
-        
-        this.chessboard.removeChild(targetChess);
-        this.moveOneChess(sourceChess, this.convertViewPos(toPos, chessHost));
-        this.checkCheckmate();
-        this.turnActiveChessHost();
     }
 
     /** 悔棋 */
-    withdraw() {        
+    withdraw(): boolean {        
+        this.chessboard.getChessList().forEach((chess: DisplayChess) => {
+            if (chess.isSelected()) {
+                chess.setSelected(false);
+            }
+        });
+        this.fromPosTargetDrawer.clear(true);
+
         let lastAction = this.chessActionStack.pop();
 
         // 视角可能变化了，需要转换下
@@ -173,23 +187,37 @@ export default class Player extends eui.Group implements RoundGame {
 
         // 动画移到之前的开始位置
         const {x, y} = this.chessboard.calcChessDisplayPos(fromPos);
-        this.fromPosTargetDrawer.clear(true);
         egret.Tween.get(chess).to({x, y}, 200, egret.Ease.circOut).call(() => {
             chess.setLit(false);
+
+            // 画上手的棋子走位标记
+            if (this.chessActionStack.length > 0) {
+                let prevAction = this.chessActionStack[this.chessActionStack.length - 1];
+                let chess = this.chessboard.chessAt(
+                    this.convertViewPos(prevAction.toPos, prevAction.chessHost));
+                chess.setLit(true);
+                this.fromPosTargetDrawer.draw(
+                    this.convertViewPos(prevAction.fromPos, prevAction.chessHost));
+            }
+
+            // 恢复之前的状态
+            chess.setPos(fromPos);
+            this.chessboard.getChessArray()[fromPos.row][fromPos.col] = chess;
+            this.chessboard.getChessArray()[toPos.row][toPos.col] = null;
+
+            // 如果吃了子，把被吃的子加回来
+            if (lastAction.eatenChess) {
+                if (lastAction.eatenChess instanceof DisplayChess) {
+                    this.addChess(lastAction.eatenChess);
+                } else {
+                    this.addChess(new DisplayChess(lastAction.eatenChess));
+                }
+            }
+
+            this.turnActiveChessHost();
         });
-
-        // 恢复之前的状态
-        this.chessboard.getChessArray()[fromPos.row][fromPos.col] = chess;
-        this.chessboard.getChessArray()[toPos.row][toPos.col] = null;
-        chess.setPos(fromPos);
-
-        // 如果吃了子，把被吃的子加回来
-        if (lastAction.eatenChess) {
-            this.addChess(lastAction.eatenChess);
-        }
-
-        // 当前持棋控制权再转回来
-        this.turnActiveChessHost();
+ 
+        return this.chessActionStack.length > 0;
     }
 
     loadActionStack(actionStack: Array<ChessAction>) {
@@ -209,6 +237,7 @@ export default class Player extends eui.Group implements RoundGame {
 
     turnActiveChessHost() {
         this.activeChessHost = reverseChessHost(this.activeChessHost);
+        this.onTurnActiveChessHost(this.activeChessHost);
     }
     
     reverseChessLayoutView() {
@@ -315,21 +344,6 @@ export default class Player extends eui.Group implements RoundGame {
         this.chessboard.addChildAt(chess, 10);
     }
 
-    /**
-     * 移动一个棋子，eatChess/moveChess 公用
-     * @param chess 
-     * @param destPos 
-     */
-    private moveOneChess(chess: DisplayChess, destPos: ChessPos) {
-        const {x, y} = this.chessboard.calcChessDisplayPos(destPos);
-        egret.Tween.get(chess).to({x, y}, 200, egret.Ease.circOut);
-        let soundChannel = SOUND.get('click').play(0, 1);
-        soundChannel.volume = 0.7;
-        this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = null;
-        this.chessboard.getChessArray()[destPos.row][destPos.col] = chess;
-        chess.setPos(destPos);
-    }
-    
     private onChessClick(touchEvent: egret.TouchEvent) {
         let event = new ChessboardClickEvent();
         event.chess = (<DisplayChess>touchEvent.target);

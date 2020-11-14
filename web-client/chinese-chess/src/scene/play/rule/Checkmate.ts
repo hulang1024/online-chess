@@ -37,7 +37,8 @@ export default class Checkmate {
         let checkKPos = (checkHost == ChessHost.RED ? this.redK : this.blackK).getPos();
         
         // 有可能上一步就被吃了，检查在不在
-        if (this.game.getChessboard().chessAt(checkKPos) == null) {
+        let chessK = this.game.getChessboard().chessAt(checkKPos);
+        if (chessK == null || !chessK.is(ChessK)) {
             return false;
         }
 
