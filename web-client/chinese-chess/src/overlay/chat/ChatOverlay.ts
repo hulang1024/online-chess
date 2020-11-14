@@ -72,6 +72,8 @@ export default class ChatOverlay extends Overlay {
         this.manager.onLeaveChannel = (channel: Channel) => {
             let drawableChannel = this.viewStack.getChildByName(channel.name);
             this.viewStack.removeChild(drawableChannel);
+            // 暂时默认1
+            this.manager.openChannel(1);
         };
 
         this.manager.onOpenChannel = (channel: Channel) => {

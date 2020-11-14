@@ -64,7 +64,6 @@ export default class ChannelManager {
             this.currentChannel = null;
         }
         
-
         if (channel.joined) {
             if (channel.type !== ChannelType.ROOM) { // 房间聊天频道离开已隐式（服务端）随着对局结束
                 socketClient.send('chat.channel.leave', {channelId: channel.id});
