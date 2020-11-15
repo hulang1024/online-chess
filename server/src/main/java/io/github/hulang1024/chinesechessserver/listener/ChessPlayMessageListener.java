@@ -42,6 +42,9 @@ public class ChessPlayMessageListener extends MessageListener {
     public void ready(PlayReady ready) {
         SessionUser userToReady = userSessionService.getUserBySession(ready.getSession());
         Room room = userToReady.getJoinedRoom();
+        if (room == null) {
+            return;
+        }
 
         userToReady.setReadyed(ready.getReadyed() != null
             ? ready.getReadyed()
@@ -107,8 +110,8 @@ public class ChessPlayMessageListener extends MessageListener {
         ChessAction action = new ChessAction();
         action.setChessHost(actionUser.getChessHost());
         action.setChessType(chessboardState.chessAt(chessMove.getFromPos(), action.getChessHost()).type);
-        action.setFromPos(ChessboardState.convertViewPos(chessMove.getFromPos(), action.getChessHost()));
-        action.setToPos(ChessboardState.convertViewPos(chessMove.getToPos(), action.getChessHost()));
+        action.setFromPos(chessMove.getFromPos());
+        action.setToPos(chessMove.getToPos());
         if (chessMove.getMoveType() == 2) {
             action.setEatenChess(chessboardState.chessAt(chessMove.getToPos(), action.getChessHost()));
         }
@@ -180,10 +183,13 @@ public class ChessPlayMessageListener extends MessageListener {
 
     private void withdraw(Room room) {
         ChessboardState chessboardState = room.getRound().getChessboardState();
+        if (room.getRound().getActionStack().isEmpty()) {
+            return;
+        }
         ChessAction lastAction = room.getRound().getActionStack().pop();
-        chessboardState.moveChess(lastAction.getToPos(), lastAction.getFromPos());
+        chessboardState.moveChess(lastAction.getToPos(), lastAction.getFromPos(), lastAction.getChessHost());
         if (lastAction.getEatenChess() != null) {
-            chessboardState.setChess(lastAction.getToPos(), lastAction.getEatenChess());
+            chessboardState.setChess(lastAction.getToPos(), lastAction.getEatenChess(), lastAction.getChessHost());
         }
     }
 
