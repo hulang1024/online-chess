@@ -1,5 +1,5 @@
 import DisplayChess from "./DisplayChess";
-import ChessHost, { reverseChessHost } from "../../rule/chess_host";
+import ChessHost from "../../rule/chess_host";
 import confirmRequest from '../../rule/confirm_request';
 import ChessboardClickEvent from "./ChessboardClickEvent";
 import AbstractScene from "../AbstractScene";
@@ -13,7 +13,6 @@ import ResultDialog from "./ResultDialog";
 import User from "../../user/User";
 import Player from "./Player";
 import DisplayChessboard from "./DisplayChessboard";
-import ChessPos from "../../rule/ChessPos";
 import Room from "../../online/socket-message/response/Room";
 import Channel from "../../online/chat/Channel";
 import ConfirmDialog from "./ConfirmDialog";

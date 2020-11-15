@@ -1,6 +1,3 @@
-
-
-
 enum Type {
     /** 认输 */
     WHITE_FLAG = 1,
@@ -11,7 +8,11 @@ enum Type {
 }
 
 function toReadableText(type: Type) {
-    return {1: '认输', 2: '和棋', 3: '悔棋'}[type];
+    return {
+        [Type.WHITE_FLAG]: '认输',
+        [Type.DRAW]: '和棋',
+        [Type.WITHDRAW]: '悔棋'
+    }[type];
 }
 
 export default {

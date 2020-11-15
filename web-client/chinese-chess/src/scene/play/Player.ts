@@ -1,13 +1,7 @@
 import DisplayChess from "./DisplayChess";
 import DisplayChessboard from "./DisplayChessboard";
-import ChessC from "../../rule/chess/ChessC";
-import ChessG from "../../rule/chess/ChessG";
 import ChessK from "../../rule/chess/ChessK";
-import ChessM from "../../rule/chess/ChessM";
-import ChessN from "../../rule/chess/ChessN";
-import ChessR from "../../rule/chess/ChessR";
-import ChessS from "../../rule/chess/ChessS";
-import ChessHost, { reverseChessHost } from "../../rule/chess_host";
+import ChessHost from "../../rule/chess_host";
 import ChessPos from "../../rule/ChessPos";
 import RoundGame from "../../rule/RoundGame";
 import ChessTargetDrawer from "./ChessTargetDrawer";
@@ -17,7 +11,7 @@ import ChessEatOverlay from "./ChessEatOverlay";
 import SOUND from "../../audio/SOUND";
 import ChessboardClickEvent from "./ChessboardClickEvent";
 import ChessAction from "../../rule/ChessAction";
-import CHESS_CLASS_KEY_MAP from "../../rule/chess_map";
+import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList } from "../../rule/chess_map";
 
 export default class Player extends eui.Group implements RoundGame {
     public chessboard = new DisplayChessboard();
@@ -27,10 +21,10 @@ export default class Player extends eui.Group implements RoundGame {
     // 当前走棋方
     private activeChessHost: ChessHost;
     private checkmate: Checkmate;
-    fromPosTargetDrawer = new ChessTargetDrawer(this.chessboard);
     private chessEatOverlay = new ChessEatOverlay();
     private checkmateOverlay = new CheckmateOverlay();
     private chessActionStack: Array<ChessAction>;
+    fromPosTargetDrawer = new ChessTargetDrawer(this.chessboard);
     onWin: Function;
     onTurnActiveChessHost: Function;
 
@@ -79,7 +73,7 @@ export default class Player extends eui.Group implements RoundGame {
                 let pos = new ChessPos(chess.row, chess.col);
                 // 服务器保存数据默认视角是红方，如果当前视图是黑方就要翻转下
                 if (this.viewChessHost == ChessHost.BLACK) {
-                    pos = this.reverseViewPos(pos);
+                    pos = pos.reverseView();
                 }
                 chess = new CHESS_CLASS_KEY_MAP[chess.type](pos, chess.host);
                 this.addChess(new DisplayChess(chess));
@@ -236,7 +230,7 @@ export default class Player extends eui.Group implements RoundGame {
     }
 
     turnActiveChessHost() {
-        this.activeChessHost = reverseChessHost(this.activeChessHost);
+        this.activeChessHost = ChessHost.reverse(this.activeChessHost);
         this.onTurnActiveChessHost(this.activeChessHost);
     }
     
@@ -250,61 +244,28 @@ export default class Player extends eui.Group implements RoundGame {
         this.clearChessboard();
         // 改变位置重新加上去
         chesses.forEach(chess => {
-            chess.setPos(this.reverseViewPos(chess.getPos()));
+            chess.setPos(chess.getPos().reverseView());
             this.addChess(chess);
         });
 
         // 改变位置重新画标记
         let fromPos = this.fromPosTargetDrawer.getSavePos();
         if (fromPos) {
-            this.fromPosTargetDrawer.draw(this.reverseViewPos(fromPos));
+            this.fromPosTargetDrawer.draw(fromPos.reverseView());
         }
 
         this.lastViewChessHost = this.viewChessHost;
-        this.viewChessHost = reverseChessHost(this.viewChessHost);
+        this.viewChessHost = ChessHost.reverse(this.viewChessHost);
     }
 
     private initChessLayout() {
         this.clearChessboard();
-        const chessHost1 = reverseChessHost(this.viewChessHost);
+        // 对面棋方棋子在上部
+        const chessHost1 = ChessHost.reverse(this.viewChessHost);
+        // 视角棋方棋子在下部
         const chessHost2 = this.viewChessHost;
 
-        [
-            // 对面棋方棋子在上部
-            new ChessR(new ChessPos(0, 0), chessHost1),
-            new ChessN(new ChessPos(0, 1), chessHost1),
-            new ChessM(new ChessPos(0, 2), chessHost1),
-            new ChessG(new ChessPos(0, 3), chessHost1),
-            new ChessK(new ChessPos(0, 4), chessHost1),
-            new ChessG(new ChessPos(0, 5), chessHost1),
-            new ChessM(new ChessPos(0, 6), chessHost1),
-            new ChessN(new ChessPos(0, 7), chessHost1),
-            new ChessR(new ChessPos(0, 8), chessHost1),
-            new ChessC(new ChessPos(2, 1), chessHost1),
-            new ChessC(new ChessPos(2, 7), chessHost1),
-            new ChessS(new ChessPos(3, 0), chessHost1),
-            new ChessS(new ChessPos(3, 2), chessHost1),
-            new ChessS(new ChessPos(3, 4), chessHost1),
-            new ChessS(new ChessPos(3, 6), chessHost1),
-            new ChessS(new ChessPos(3, 8), chessHost1),
-            // 视角棋方棋子在下部
-            new ChessR(new ChessPos(9, 0), chessHost2),
-            new ChessN(new ChessPos(9, 1), chessHost2),
-            new ChessM(new ChessPos(9, 2), chessHost2),
-            new ChessG(new ChessPos(9, 3), chessHost2),
-            new ChessK(new ChessPos(9, 4), chessHost2),
-            new ChessG(new ChessPos(9, 5), chessHost2),
-            new ChessM(new ChessPos(9, 6), chessHost2),
-            new ChessN(new ChessPos(9, 7), chessHost2),
-            new ChessR(new ChessPos(9, 8), chessHost2),
-            new ChessC(new ChessPos(7, 1), chessHost2),
-            new ChessC(new ChessPos(7, 7), chessHost2),
-            new ChessS(new ChessPos(6, 0), chessHost2),
-            new ChessS(new ChessPos(6, 2), chessHost2),
-            new ChessS(new ChessPos(6, 4), chessHost2),
-            new ChessS(new ChessPos(6, 6), chessHost2),
-            new ChessS(new ChessPos(6, 8), chessHost2),
-        ].forEach(chess => {
+        createIntialLayoutChessList(chessHost1, chessHost2).forEach(chess => {
             this.addChess(new DisplayChess(chess));
         });
     }
@@ -315,20 +276,12 @@ export default class Player extends eui.Group implements RoundGame {
      * @param chessHost 源视角棋方
      */
     convertViewPos(pos: ChessPos, chessHost: ChessHost) {
-        return this.viewChessHost == chessHost ? pos : this.reverseViewPos(pos);
-    }
-    
-    /**
-     * 翻转视角坐标
-     * @param pos
-     */
-    reverseViewPos(pos: ChessPos) {
-        return new ChessPos(9 - pos.row, 8 - pos.col);
+        return this.viewChessHost == chessHost ? pos : pos.reverseView();
     }
 
     private checkCheckmate() {
         // 判断将军
-        if (this.checkmate.check(reverseChessHost(this.activeChessHost))) {
+        if (this.checkmate.check(ChessHost.reverse(this.activeChessHost))) {
             this.checkmateOverlay.show(this.activeChessHost);
         }
     }

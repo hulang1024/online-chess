@@ -1,14 +1,19 @@
 /**
  * 棋子位置
  */
+interface IChessPos {
+    row: number;
+    col: number;
+}
+
 export default class ChessPos {
     /**
-     * 棋盘纵坐标，从0开始数
+     * 棋盘纵坐标，从0开始数，最大是9
      */
     readonly row: number;
 
     /**
-     * 棋盘横坐标，从0开始数
+     * 棋盘横坐标，从0开始数，最大是8
      */
     readonly col: number;
 
@@ -17,8 +22,19 @@ export default class ChessPos {
         this.col = col;
     }
 
+    static make({row, col}: IChessPos) {
+        return new ChessPos(row, col);
+    }
+
     copy() {
         return new ChessPos(this.row, this.col);
+    }
+
+    /**
+     * 翻转视角
+     */
+    reverseView() {
+        return new ChessPos(9 - this.row, 8 - this.col);
     }
 
     equals(that: ChessPos): boolean {

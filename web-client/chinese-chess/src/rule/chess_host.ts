@@ -15,6 +15,8 @@ enum ChessHost {
 
 export default ChessHost;
 
-export function reverseChessHost(host: ChessHost) {
-    return host == ChessHost.BLACK ? ChessHost.RED : ChessHost.BLACK;
+namespace ChessHost {
+    export function reverse(host: ChessHost) {
+        return host == ChessHost.BLACK ? ChessHost.RED : ChessHost.BLACK;
+    }
 }
