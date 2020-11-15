@@ -244,14 +244,14 @@ export default class Player extends eui.Group implements RoundGame {
         this.clearChessboard();
         // 改变位置重新加上去
         chesses.forEach(chess => {
-            chess.setPos(chess.getPos().reverseView());
+            chess.setPos(ChessPos.reverseView(chess.getPos()));
             this.addChess(chess);
         });
 
         // 改变位置重新画标记
         let fromPos = this.fromPosTargetDrawer.getSavePos();
         if (fromPos) {
-            this.fromPosTargetDrawer.draw(fromPos.reverseView());
+            this.fromPosTargetDrawer.draw(ChessPos.reverseView(fromPos));
         }
 
         this.lastViewChessHost = this.viewChessHost;
@@ -276,7 +276,7 @@ export default class Player extends eui.Group implements RoundGame {
      * @param chessHost 源视角棋方
      */
     convertViewPos(pos: ChessPos, chessHost: ChessHost) {
-        return this.viewChessHost == chessHost ? pos : pos.reverseView();
+        return this.viewChessHost == chessHost ? pos : ChessPos.reverseView(pos);
     }
 
     private checkCheckmate() {

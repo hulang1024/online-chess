@@ -278,10 +278,10 @@ export default class SpectatorPlayScene extends AbstractScene {
 
             switch (msg.reqType) {
                 case confirmRequest.Type.WHITE_FLAG:
-                    this.onWin(msg.chessHost);
+                    this.onWin(msg.chessHost, true);
                     break;
                 case confirmRequest.Type.DRAW:
-                    this.onRoundOver();
+                    this.onWin(null, true);
                     break;
                 case confirmRequest.Type.WITHDRAW:
                     this.player.withdraw();
@@ -345,18 +345,18 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.blackChessUserInfoPane.setActive(activeChessHost == ChessHost.BLACK);
     }
     
-    private onWin(winChessHost: ChessHost) {
-        this.onRoundOver();
-
-        this.textOverlay.show(`${winChessHost == ChessHost.RED ? '红方' : '黑方'}赢！`);
-        setTimeout(() => {
-            this.textOverlay.show('等待下一个对局开始');
-        }, 5000);
-    }
-
-    private onRoundOver() {
+    private onWin(winChessHost: ChessHost, delay: boolean = false) {
         this.redChessUser.readyed = false;
         this.blackChessUser.readyed = false;
+        setTimeout(() => {
+            this.textOverlay.show(winChessHost == null
+                ? '平局'
+                : `${winChessHost == ChessHost.RED ? '红方' : '黑方'}赢！`);
+        }, delay ? 2000 : 0);
+
+        setTimeout(() => {
+            this.textOverlay.show('等待新对局开始');
+        }, 5000);
     }
 
     private updateSpectatorCount = (count: number) => {

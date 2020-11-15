@@ -1,3 +1,5 @@
+import Chess from "./Chess";
+
 /**
  * 棋子位置
  */
@@ -26,6 +28,10 @@ export default class ChessPos {
         return new ChessPos(row, col);
     }
 
+    static reverseView(pos: IChessPos) {
+        return this.make(pos).reverseView();
+    }
+
     copy() {
         return new ChessPos(this.row, this.col);
     }
@@ -36,6 +42,7 @@ export default class ChessPos {
     reverseView() {
         return new ChessPos(9 - this.row, 8 - this.col);
     }
+    
 
     equals(that: ChessPos): boolean {
         return this.row == that.row && this.col == that.col;

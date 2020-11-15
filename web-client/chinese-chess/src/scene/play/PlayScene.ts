@@ -297,22 +297,6 @@ export default class PlayScene extends AbstractScene {
             // 显示确认对话框
             this.confirmDialog.show(confirmRequest.toReadableText(msg.reqType));
             this.confirmDialog.onOkClick = () => {
-                // 确认执行
-                switch (msg.reqType) {
-                    case confirmRequest.Type.WHITE_FLAG:
-                        this.onWin(msg.chessHost);
-                        break;
-                    case confirmRequest.Type.DRAW:
-                        this.onRoundOver();
-                        break;
-                    case confirmRequest.Type.WITHDRAW:
-                        let more = this.player.withdraw();
-                        if (!more) {
-                            this.playingRoundButtonsOverlay.btnWithdraw.enabled = false;
-                        }
-                        break;
-                }
-
                 // 发送回应到服务器
                 socketClient.send('chessplay.confirm_response', {reqType: msg.reqType, ok: true});
             };
@@ -322,25 +306,26 @@ export default class PlayScene extends AbstractScene {
         };
 
         this.listeners['chessplay.confirm_response'] = (msg: any) => {
-            // 如果是自己发送的回应
-            if (msg.chessHost == this.chessHost) {
-                return;
-            }
-
-            // 对方发送的回应
-
+            // 如果同意
             if (!msg.ok) {
-                this.textOverlay.show(`对方不同意${confirmRequest.toReadableText(msg.reqType)}`, 3000);
+                // 对方发送的回应
+                if (msg.chessHost != this.chessHost) {
+                    this.textOverlay.show(`对方不同意${confirmRequest.toReadableText(msg.reqType)}`, 3000);
+                }
                 return;
             }
 
-            this.textOverlay.show(`对方同意${confirmRequest.toReadableText(msg.reqType)}`, 3000);
+            // 如果不同意
+            if (msg.chessHost != this.chessHost) {
+                this.textOverlay.show(`对方同意${confirmRequest.toReadableText(msg.reqType)}`, 3000);
+            }
+
             switch (msg.reqType) {
                 case confirmRequest.Type.WHITE_FLAG:
-                    this.onWin(msg.chessHost);
+                    this.onWin(ChessHost.reverse(msg.chessHost));
                     break;
                 case confirmRequest.Type.DRAW:
-                    this.onRoundOver(true);
+                    this.onWin(null);
                     break;
                 case confirmRequest.Type.WITHDRAW:
                     let more = this.player.withdraw();
@@ -372,18 +357,6 @@ export default class PlayScene extends AbstractScene {
     }
 
     private onWin(winChessHost: ChessHost) {
-        this.onRoundOver();
-        this.resultDialog.show(winChessHost == this.chessHost);
-        this.resultDialog.onOk = () => {
-            this.isPlaying = false;
-            // 显示准备按钮
-            this.btnReady.visible = true;
-            // 更新等待信息
-            this.updateWaitInfo();
-        }
-    }
-
-    private onRoundOver(isDraw: boolean = false) {
         // 禁用棋盘
         this.chessboard.touchEnabled = false;
         this.chessboard.getChessList().forEach(chess => {
@@ -398,16 +371,16 @@ export default class PlayScene extends AbstractScene {
         // 准备按钮状态恢复初始
         this.btnReady.setState(0);
 
-        // 如果是和棋
-        if (isDraw) {
+        // 请求对局结束
+        socketClient.send('chessplay.round_over');
+        this.resultDialog.show(winChessHost == null ? null : winChessHost != this.chessHost);
+        this.resultDialog.onOk = () => {
             this.isPlaying = false;
             // 显示准备按钮
             this.btnReady.visible = true;
             // 更新等待信息
             this.updateWaitInfo();
         }
-        // 请求对局结束
-        socketClient.send('chessplay.round_over');
     }
 
     private updateSpectatorCount = (count: number) => {
