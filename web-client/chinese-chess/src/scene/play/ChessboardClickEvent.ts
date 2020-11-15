@@ -1,5 +1,5 @@
 import DisplayChess from "./DisplayChess";
-import ChessPos from "./rule/ChessPos";
+import ChessPos from "../../rule/ChessPos";
 
 export default class ChessboardClickEvent extends egret.Event {
     static TYPE: string = "chessboard.click";

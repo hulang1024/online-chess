@@ -6,13 +6,13 @@ import Channel from "../../online/chat/Channel";
 import SceneContext from "../SceneContext";
 import DisplayChessboard from "./DisplayChessboard";
 import Player from "./Player";
-import ChessHost, { reverseChessHost } from "./rule/chess_host";
+import ChessHost, { reverseChessHost } from "../../rule/chess_host";
 import TextOverlay from "./TextOverlay";
-import confirmRequest from './confirm_request';
+import confirmRequest from '../../rule/confirm_request';
 import UserInfoPane from "./UserInfoPane";
 import RoomUser from "../../online/socket-message/response/RoomUser";
-import ChessAction from "./ChessAction";
-import CHESS_CLASS_KEY_MAP from "./rule/chess_map";
+import ChessAction from "../../rule/ChessAction";
+import CHESS_CLASS_KEY_MAP from "../../rule/chess_map";
 import ChannelManager from "../../online/chat/ChannelManager";
 import ChannelType from "../../online/chat/ChannelType";
 

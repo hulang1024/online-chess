@@ -1,5 +1,5 @@
 import Overlay from "../../component/Overlay";
-import ChessHost from "./rule/chess_host";
+import ChessHost from "../../rule/chess_host";
 
 export default class CheckmateOverlay extends Overlay {
     private text: egret.TextField;

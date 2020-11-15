@@ -1,6 +1,5 @@
 import messager from "../component/messager";
 import platform from "../Platform";
-import { sign } from "../scene/play/rule/chess/move_rules";
 
 interface MessageSignal {
     [index: string]: Signal;
@@ -75,8 +74,8 @@ class SocketClient extends egret.WebSocket {
                 if (!this.connectStarted) {
                     messager.info({msg: '正在连接到服务器', duration: 2000}, this.stage);
 
-                    //super.connect("180.76.185.34", 9097);
-                    super.connect("192.168.1.101", 9097);
+                    super.connect("180.76.185.34", 9097);
+                    //super.connect("192.168.1.101", 9097);
                     this.connectStarted = true;
                 }
             }

@@ -1,8 +1,8 @@
-import Chess from "./rule/Chess";
-import ChessHost from "./rule/chess_host";
-import ChessPos from "./rule/ChessPos";
-import RoundGame from "./rule/RoundGame";
-import { classClassToKey } from "./rule/chess_map";
+import Chess from "../../rule/Chess";
+import ChessHost from "../../rule/chess_host";
+import ChessPos from "../../rule/ChessPos";
+import RoundGame from "../../rule/RoundGame";
+import { classClassToKey } from "../../rule/chess_map";
 
 export default class DisplayChess extends egret.Sprite implements Chess {
     private chessState: Chess;

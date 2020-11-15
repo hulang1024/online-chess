@@ -1,23 +1,23 @@
 import DisplayChess from "./DisplayChess";
 import DisplayChessboard from "./DisplayChessboard";
-import ChessC from "./rule/chess/ChessC";
-import ChessG from "./rule/chess/ChessG";
-import ChessK from "./rule/chess/ChessK";
-import ChessM from "./rule/chess/ChessM";
-import ChessN from "./rule/chess/ChessN";
-import ChessR from "./rule/chess/ChessR";
-import ChessS from "./rule/chess/ChessS";
-import ChessHost, { reverseChessHost } from "./rule/chess_host";
-import ChessPos from "./rule/ChessPos";
-import RoundGame from "./rule/RoundGame";
+import ChessC from "../../rule/chess/ChessC";
+import ChessG from "../../rule/chess/ChessG";
+import ChessK from "../../rule/chess/ChessK";
+import ChessM from "../../rule/chess/ChessM";
+import ChessN from "../../rule/chess/ChessN";
+import ChessR from "../../rule/chess/ChessR";
+import ChessS from "../../rule/chess/ChessS";
+import ChessHost, { reverseChessHost } from "../../rule/chess_host";
+import ChessPos from "../../rule/ChessPos";
+import RoundGame from "../../rule/RoundGame";
 import ChessTargetDrawer from "./ChessTargetDrawer";
-import Checkmate from "./rule/Checkmate";
+import Checkmate from "../../rule/Checkmate";
 import CheckmateOverlay from "./CheckmateOverlay";
 import ChessEatOverlay from "./ChessEatOverlay";
 import SOUND from "../../audio/SOUND";
 import ChessboardClickEvent from "./ChessboardClickEvent";
-import ChessAction from "./ChessAction";
-import CHESS_CLASS_KEY_MAP from "./rule/chess_map";
+import ChessAction from "../../rule/ChessAction";
+import CHESS_CLASS_KEY_MAP from "../../rule/chess_map";
 
 export default class Player extends eui.Group implements RoundGame {
     public chessboard = new DisplayChessboard();
@@ -187,18 +187,8 @@ export default class Player extends eui.Group implements RoundGame {
 
         // 动画移到之前的开始位置
         const {x, y} = this.chessboard.calcChessDisplayPos(fromPos);
+        chess.setLit(false);
         egret.Tween.get(chess).to({x, y}, 200, egret.Ease.circOut).call(() => {
-            chess.setLit(false);
-
-            // 画上手的棋子走位标记
-            if (this.chessActionStack.length > 0) {
-                let prevAction = this.chessActionStack[this.chessActionStack.length - 1];
-                let chess = this.chessboard.chessAt(
-                    this.convertViewPos(prevAction.toPos, prevAction.chessHost));
-                chess.setLit(true);
-                this.fromPosTargetDrawer.draw(
-                    this.convertViewPos(prevAction.fromPos, prevAction.chessHost));
-            }
 
             // 恢复之前的状态
             chess.setPos(fromPos);
@@ -214,6 +204,16 @@ export default class Player extends eui.Group implements RoundGame {
                 }
             }
 
+            // 画上手的棋子走位标记
+            if (this.chessActionStack.length > 0) {
+                let prevAction = this.chessActionStack[this.chessActionStack.length - 1];
+                let chess = this.chessboard.chessAt(
+                    this.convertViewPos(prevAction.toPos, prevAction.chessHost));
+                chess.setLit(true);
+                this.fromPosTargetDrawer.draw(
+                    this.convertViewPos(prevAction.fromPos, prevAction.chessHost));
+            }
+            
             this.turnActiveChessHost();
         });
  

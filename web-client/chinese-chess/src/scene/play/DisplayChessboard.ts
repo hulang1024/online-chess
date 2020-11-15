@@ -1,7 +1,7 @@
 import ChessboardClickEvent from "./ChessboardClickEvent";
 import DisplayChess from "./DisplayChess";
-import Chessboard, { CHESSBOARD_COL_NUM, CHESSBOARD_ROW_NUM } from "./rule/chessboard";
-import ChessPos from "./rule/ChessPos";
+import Chessboard, { CHESSBOARD_COL_NUM, CHESSBOARD_ROW_NUM } from "../../rule/chessboard";
+import ChessPos from "../../rule/ChessPos";
 
 export default class DisplayChessboard extends eui.Group implements Chessboard {
     private chessArray: Array<Array<DisplayChess>> = new Array(CHESSBOARD_ROW_NUM);

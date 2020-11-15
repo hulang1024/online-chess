@@ -1,5 +1,5 @@
 import DisplayChessboard from "./DisplayChessboard";
-import ChessPos from "./rule/ChessPos";
+import ChessPos from "../../rule/ChessPos";
 
 export default class ChessTargetDrawer {
     private chessboard: DisplayChessboard;

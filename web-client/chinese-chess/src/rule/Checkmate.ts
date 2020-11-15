@@ -1,6 +1,5 @@
 import Chess from "./Chess";
 import ChessK from "./chess/ChessK";
-import Chessboard from "./chessboard";
 import ChessPos from "./ChessPos";
 import ChessHost from "./chess_host";
 import RoundGame from "./RoundGame";

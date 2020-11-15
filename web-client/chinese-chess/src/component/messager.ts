@@ -1,6 +1,3 @@
-import AbstractScene from "../scene/AbstractScene";
-import Dialog from "./Dialog"
-
 enum MessageType {
     INFO, SUCCESS, FAIL, ERROR
 };
