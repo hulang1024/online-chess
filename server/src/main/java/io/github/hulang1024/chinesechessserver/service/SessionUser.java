@@ -1,9 +1,10 @@
 package io.github.hulang1024.chinesechessserver.domain;
 
+import io.github.hulang1024.chinesechessserver.room.Room;
 import org.yeauty.pojo.Session;
 
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessHost;
-import io.github.hulang1024.chinesechessserver.entity.User;
+import io.github.hulang1024.chinesechessserver.play.rule.ChessHost;
+import io.github.hulang1024.chinesechessserver.database.entity.User;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import io.github.hulang1024.chinesechessserver.domain.chat.ChannelType;
-import io.github.hulang1024.chinesechessserver.domain.chat.ChatChannel;
-import io.github.hulang1024.chinesechessserver.service.ChatChannelManager;
+import io.github.hulang1024.chinesechessserver.chat.ChannelType;
+import io.github.hulang1024.chinesechessserver.chat.Channel;
+import io.github.hulang1024.chinesechessserver.chat.ChannelManager;
 import lombok.Data;
 import lombok.Getter;
 
@@ -28,7 +28,7 @@ public class Room {
     
     private Date createAt;
 
-    private ChatChannel chatChannel = ChatChannelManager.create(ChannelType.ROOM);
+    private Channel chatChannel = ChannelManager.create(ChannelType.ROOM);
 
     /**
      * 参与者

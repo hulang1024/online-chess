@@ -5,9 +5,11 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.github.hulang1024.chinesechessserver.chat.ChannelManager;
+import io.github.hulang1024.chinesechessserver.chat.ChannelType;
 import org.springframework.util.StringUtils;
 
-import io.github.hulang1024.chinesechessserver.domain.Room;
+import io.github.hulang1024.chinesechessserver.room.Room;
 import io.github.hulang1024.chinesechessserver.message.client.lobby.SearchRooms;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomCreate;
 
@@ -31,6 +33,7 @@ public class RoomService {
             : create.getRoomName());
         room.setCreateAt(new Date());
         room.setPassword(StringUtils.isEmpty(create.getPassword()) ? null : create.getPassword());
+        = ChannelManager.create(ChannelType.ROOM)
         roomMap.put(room.getId(), room);
 
         return room;

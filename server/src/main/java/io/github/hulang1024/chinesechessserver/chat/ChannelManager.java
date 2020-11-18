@@ -1,12 +1,16 @@
-package io.github.hulang1024.chinesechessserver.service;
+package io.github.hulang1024.chinesechessserver.chat;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.github.hulang1024.chinesechessserver.domain.chat.ChannelType;
-import io.github.hulang1024.chinesechessserver.domain.chat.ChatChannel;
+import io.github.hulang1024.chinesechessserver.dao.mapper.ChannelDao;
+import io.github.hulang1024.chinesechessserver.entity.Channel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ChatChannelManager {
+    @Autowired
+    private ChannelDao channelDao;
+
     private static Map<Long, ChatChannel> chatChannelMap = new ConcurrentHashMap<>();
     private static long currentId = 20;
 
@@ -40,4 +44,9 @@ public class ChatChannelManager {
         chatChannelMap.put(channel.getId(), channel);
         return channel;
     }
+
+    private void create(Channel channel) {
+        channelDao.insert(channel);
+    }
+
 }

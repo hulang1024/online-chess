@@ -1,4 +1,4 @@
-package io.github.hulang1024.chinesechessserver.domain.chat;
+package io.github.hulang1024.chinesechessserver.chat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ public class ChatChannel {
     private long id;
     private ChannelType type;
     private List<SessionUser> users = new ArrayList<>();
-    public final ArrayBlockingQueue<ChatMessage> messages = new ArrayBlockingQueue<>(MAX_HISTORY);
+    public final ArrayBlockingQueue<Message> messages = new ArrayBlockingQueue<>(MAX_HISTORY);
 
     private static Gson gson = new Gson();
 
@@ -40,7 +40,7 @@ public class ChatChannel {
         users.remove(user);
     }
 
-    public void addNewMessage(ChatMessage message) {
+    public void addNewMessage(Message message) {
         if (this.messages.remainingCapacity() == 0) {
             this.messages.poll();
         }
@@ -49,7 +49,7 @@ public class ChatChannel {
         this.sendMessage(message);
     }
 
-    private void sendMessage(ChatMessage msg) {
+    private void sendMessage(Message msg) {
         ChatMessageMsg msgMsg = new ChatMessageMsg();
         msgMsg.setId(msg.getId());
         msgMsg.setChannelId(id);

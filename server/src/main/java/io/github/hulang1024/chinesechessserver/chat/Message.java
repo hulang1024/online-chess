@@ -1,4 +1,4 @@
-package io.github.hulang1024.chinesechessserver.domain.chat;
+package io.github.hulang1024.chinesechessserver.chat;
 
 import io.github.hulang1024.chinesechessserver.entity.User;
 import io.github.hulang1024.chinesechessserver.utils.TimeUtils;

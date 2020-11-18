@@ -14,10 +14,10 @@ export default class ChessS extends AbstractChess {
 
     canGoTo(destPos: ChessPos, game: RoundGame) {
         const rowOffset = destPos.row - this.pos.row;
-        const colOffset = Math.abs(destPos.col - this.pos.col);
+        const colOffset = destPos.col - this.pos.col;
 
         // 是否向前单步
-        let isForward = colOffset == 0
+        let isForward = Math.abs(colOffset) == 0
             && (game.isHostAtChessboardTop(this.host)
             ? rowOffset == +1
             : rowOffset == -1);
@@ -28,7 +28,7 @@ export default class ChessS extends AbstractChess {
             return isForward;
         } else {
             // 过河之后既可以向前单步，也可以左或右移单步
-            return isForward || (Math.abs(rowOffset) == 0 && colOffset == 1);
+            return isForward || (Math.abs(rowOffset) == 0 && Math.abs(colOffset) == 1);
         }
     }
 }

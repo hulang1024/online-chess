@@ -11,7 +11,7 @@ import lombok.Getter;
  * 棋局
  * @author HuLang
  */
-public class RoundGame {
+public class GamePlay {
     @Getter
     private SessionUser redChessUser;
     @Getter
@@ -26,7 +26,7 @@ public class RoundGame {
     @Getter
     private ChessboardState chessboardState = new ChessboardState();
 
-    public RoundGame(SessionUser redChessUser, SessionUser blackChessUser) {
+    public GamePlay(SessionUser redChessUser, SessionUser blackChessUser) {
         this.redChessUser = redChessUser;
         this.redChessUser.setChessHost(ChessHost.RED);
         this.blackChessUser = blackChessUser;
