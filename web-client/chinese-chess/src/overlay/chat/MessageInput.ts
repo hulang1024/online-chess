@@ -5,13 +5,13 @@ export default class MessageInput extends eui.Group {
     constructor() {
         super();
 
-        const height = 44;
-        const width = 326;
+        const height = 56;
+        const width = 320;
 
         this.layout = new eui.HorizontalLayout();
 
         let background = new egret.Shape();
-        background.graphics.beginFill(0x222222);
+        background.graphics.beginFill(0x000000, 0.6);
         background.graphics.drawRoundRect(0, 0, width, height, 10, 10);
         background.graphics.endFill();
         this.addChild(background);
@@ -20,14 +20,14 @@ export default class MessageInput extends eui.Group {
         textEditContainer.width = width;
         textEditContainer.height = height;
         let { textEdit } = this;
-        textEdit.left = 10;
+        textEdit.left = 12;
         textEdit.right = 10;
         textEdit.width = width;
         textEdit.height = height;
-        textEdit.size = 18;
+        textEdit.size = 20;
         textEdit.multiline = false;
         textEdit.prompt = '键入你的消息';
-        textEdit.promptColor = 0xcccccc;
+        textEdit.promptColor = 0xeeeeee;
         textEdit.verticalAlign = egret.VerticalAlign.MIDDLE;
         document.addEventListener('keydown', (event) => {
             if (event.key != 'Enter') {

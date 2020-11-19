@@ -1,5 +1,7 @@
-package io.github.hulang1024.chinesechessserver.api.exception;
+package io.github.hulang1024.chinesechessserver.http.exception;
 
+import io.github.hulang1024.chinesechessserver.http.results.room.ErrorRet;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -15,20 +17,20 @@ import java.util.List;
 public class ControllerExceptionHandler {
 
     @ExceptionHandler(BindException.class)
-    public Ret<Void> handleBindException(BindException e) {
+    public ResponseEntity<ErrorRet> handleBindException(BindException e) {
         return bindingResultToRet(e.getBindingResult());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Ret<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ErrorRet> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         return bindingResultToRet(e.getBindingResult());
     }
     @ExceptionHandler(ConstraintViolationException.class)
-    public Ret<Void> handleConstraintViolationException(ConstraintViolationException e) {
-        return Ret.<Void>error().msg(e.getLocalizedMessage());
+    public ResponseEntity<ErrorRet> handleConstraintViolationException(ConstraintViolationException e) {
+        return ResponseEntity.badRequest().body(new ErrorRet(e.getLocalizedMessage()));
     }
 
-    private Ret<Void> bindingResultToRet(BindingResult bindingResult) {
+    private ResponseEntity<ErrorRet> bindingResultToRet(BindingResult bindingResult) {
         String message = "";
 
         if (bindingResult.hasErrors()) {
@@ -43,6 +45,6 @@ public class ControllerExceptionHandler {
             }
         }
 
-        return Ret.<Void>error().msg(message);
+        return ResponseEntity.badRequest().body(new ErrorRet(message));
     }
 }

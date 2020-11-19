@@ -39,25 +39,27 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.channelManager = channelManager;
 
         let layout = new eui.VerticalLayout();
-        layout.paddingLeft = 8;
+        layout.paddingLeft = 0;
         layout.paddingTop = 8;
-        layout.paddingRight = 8;
+        layout.paddingRight = 0;
         layout.paddingBottom = 8;
         let group = new eui.Group();
         group.layout = layout;
         this.addChild(group);
 
-        this.player = new Player();
-        this.player.onWin = this.onWin.bind(this);
-        this.player.onTurnActiveChessHost = this.onTurnActiveChessHost.bind(this);
-        this.chessboard = this.player.chessboard;
+
         this.viewChessHost = ChessHost.BLACK;
         this.room = roomRoundState.room;
 
         // 头部
         let head = new eui.Group();
         head.height = 60;
-        head.layout = new eui.VerticalLayout();
+        let headLayout = new eui.VerticalLayout();
+        head.layout = headLayout;
+        headLayout.paddingTop = 0;
+        headLayout.paddingRight = 8;
+        headLayout.paddingBottom = 0;
+        headLayout.paddingLeft = 8;
         group.addChild(head);
 
         let headInfoLayout = new eui.HorizontalLayout();
@@ -70,7 +72,7 @@ export default class SpectatorPlayScene extends AbstractScene {
         let lblRoomName = new eui.Label();
         lblRoomName.width = 300;
         lblRoomName.size = 20;
-        lblRoomName.text = '房间: ' + this.room.name;
+        lblRoomName.text = '棋桌: ' + this.room.name;
         headInfo.addChild(lblRoomName);
 
         let { lblSpectatorNum } = this;
@@ -99,13 +101,27 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.redChessUserInfoPane.load(this.redChessUser);
         this.blackChessUserInfoPane.load(this.blackChessUser);
 
+        this.player = new Player();
+        this.player.onWin = this.onWin.bind(this);
+        this.player.onTurnActiveChessHost = this.onTurnActiveChessHost.bind(this);
+        this.chessboard = this.player.chessboard;
+
+        this.chessboard.addChild(this.textOverlay);
+
+        if (roomRoundState.room.status == 2) {
+            this.textOverlay.show('等待对局开始');
+        }
+
+        this.loadRoundState(roomRoundState);
         group.addChild(this.player);
 
         let buttonGroup = new eui.Group();
         let buttonGroupLayout = new eui.HorizontalLayout();
         buttonGroupLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
         buttonGroupLayout.paddingTop = 32;
-        buttonGroupLayout.paddingRight = 16;
+        buttonGroupLayout.paddingRight = 8;
+        buttonGroupLayout.paddingBottom = 32;
+        buttonGroupLayout.paddingLeft = 8;
         buttonGroupLayout.gap = 24;
         buttonGroup.layout = buttonGroupLayout;
         group.addChild(buttonGroup);
@@ -114,7 +130,7 @@ export default class SpectatorPlayScene extends AbstractScene {
         let btnLeave = new eui.Button();
         btnLeave.width = 120;
         btnLeave.height = 50;
-        btnLeave.label = "离开房间";
+        btnLeave.label = "离开棋桌";
         btnLeave.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             socketClient.send('spectator.leave');
             this.popScene();
@@ -129,12 +145,14 @@ export default class SpectatorPlayScene extends AbstractScene {
         btnViewChange.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onViewChangeClick, this);
         buttonGroup.addChild(btnViewChange);
 
-        this.chessboard.addChild(this.textOverlay);
-        if (roomRoundState.room.status == 2) {
-            this.textOverlay.show('等待对局开始');
-        }
-
-        this.loadRoundState(roomRoundState);
+        // 聊天切换按钮
+        let btnChat = new eui.Button();
+        btnChat.width = 100;
+        btnChat.label = "聊天";
+        btnChat.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+            this.context.chatOverlay.toggle();
+        }, this);
+        buttonGroup.addChild(btnChat);
 
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
             buttonGroup.width = this.stage.stageWidth;
@@ -147,12 +165,14 @@ export default class SpectatorPlayScene extends AbstractScene {
 
         let channel = new Channel();
         channel.id = this.room.channelId;
-        channel.name = `当前房间`;
+        channel.name = `当前棋桌`;
         channel.type = ChannelType.ROOM;
         this.channelManager.joinChannel(channel);
     }
 
     onSceneExit() {
+        super.onSceneExit();
+
         for (let key in this.listeners) {
             socketClient.signals[key].remove(this.listeners[key]);
         }
@@ -204,7 +224,7 @@ export default class SpectatorPlayScene extends AbstractScene {
                 : this.blackChessUserInfoPane).load(null);
             
             if (this.redChessUser == null && this.blackChessUser == null) {
-                messager.info('观看房间玩家已全部离开', this.stage);
+                messager.info('棋桌已解散', this.stage);
                 this.popScene();
                 return;
             }
@@ -226,8 +246,7 @@ export default class SpectatorPlayScene extends AbstractScene {
         };
 
         this.listeners['spectator.chessplay.round_start'] = (msg: any) => {
-            this.textOverlay.show('对局开始', 3000);
-            this.player.startRound(this.viewChessHost);
+            this.textOverlay.show('开始对局', 3000);
 
             let redChessUser: RoomUser;
             let blackChessUser: RoomUser;
@@ -249,6 +268,8 @@ export default class SpectatorPlayScene extends AbstractScene {
             }
             this.redChessUserInfoPane.setActive(false);
             this.blackChessUserInfoPane.setActive(false);
+
+            this.player.startRound(this.viewChessHost);
         };
 
         this.listeners['chessplay.chess_pick'] = (msg) => {            

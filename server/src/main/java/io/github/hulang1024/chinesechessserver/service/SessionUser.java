@@ -1,10 +1,10 @@
-package io.github.hulang1024.chinesechessserver.domain;
+package io.github.hulang1024.chinesechessserver.service;
 
 import io.github.hulang1024.chinesechessserver.room.Room;
 import org.yeauty.pojo.Session;
 
 import io.github.hulang1024.chinesechessserver.play.rule.ChessHost;
-import io.github.hulang1024.chinesechessserver.database.entity.User;
+import io.github.hulang1024.chinesechessserver.database.entity.EntityUser;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +19,7 @@ public class SessionUser {
 
     @Setter
     @Getter
-    private User user;
+    private EntityUser user;
 
     @Setter
     @Getter

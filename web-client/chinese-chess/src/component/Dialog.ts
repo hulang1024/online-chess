@@ -12,10 +12,10 @@ export default class Dialog extends eui.Group {
         super();
 
         let layout = new eui.VerticalLayout();
-        layout.paddingTop = 16;
-        layout.paddingRight = 16;
-        layout.paddingBottom = 16;
-        layout.paddingLeft = 16;
+        layout.paddingTop = 32;
+        layout.paddingRight = 32;
+        layout.paddingBottom = 32;
+        layout.paddingLeft = 32;
         this.layout = layout;
 
         // 背景
@@ -25,7 +25,7 @@ export default class Dialog extends eui.Group {
         let titleContainer = new eui.Group();
         titleContainer.height = 30;
         this.txtTitle = new egret.TextField();
-        this.txtTitle.size = 20;
+        this.txtTitle.size = 24;
         this.txtTitle.bold = true;
         titleContainer.addChild(this.txtTitle);
         this.addChild(titleContainer);
@@ -69,10 +69,10 @@ export default class Dialog extends eui.Group {
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
             this.width = this.stage.stageWidth;
             this.height = this.stage.stageHeight;
-            footer.width = this.width - 32;
+            footer.width = this.width - 64;
 
             this.background.graphics.clear();
-            this.background.graphics.beginFill(0x555555, 0.7);
+            this.background.graphics.beginFill(0x333333, 0.6);
             this.background.graphics.drawRect(0, 0, this.width, this.height);
         }, this);
     }

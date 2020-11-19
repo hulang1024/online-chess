@@ -3,6 +3,7 @@ import Room from "../../../online/socket-message/response/Room";
 
 export default class DisplayRoom extends eui.Group {
     room: Room;
+    private rectStatus = new egret.Shape();
     private rect = new egret.Shape();
     private lblName = new eui.Label();
     private lblStatus = new eui.Label();
@@ -17,9 +18,10 @@ export default class DisplayRoom extends eui.Group {
         layout.paddingLeft = 16;
         this.layout = layout;
         this.width = 530;
-        this.height = 112;
+        this.height = 122;
 
         this.addChild(this.rect);
+        this.addChild(this.rectStatus);
 
         this.drawName(room.name);
         this.addChild(this.lblName);
@@ -27,7 +29,7 @@ export default class DisplayRoom extends eui.Group {
         this.addChild(this.lblStatus);
 
         let lblUsersTitle = new eui.Label();
-        lblUsersTitle.size = 16;
+        lblUsersTitle.size = 18;
         lblUsersTitle.text = '玩家：';
         this.addChild(lblUsersTitle);
 
@@ -73,17 +75,36 @@ export default class DisplayRoom extends eui.Group {
 
     private drawName(name: string) {
         let { lblName } = this;
-        lblName.size = 18;
+        lblName.size = 20;
         lblName.text = name;
     }
 
     private drawStatus(status: number) {
+        let statusColor = {1: 0x22dd00, 2: 0xff8800, 3: 0xffffff}[status];
+
         this.rect.graphics.clear();
-        this.rect.graphics.beginFill(0x333333, 0.6);
-        this.rect.graphics.drawRoundRect(0, 0, this.width, this.height, 8, 8);
+        this.rect.graphics.beginFill(0x000000, 0.3);
+        this.rect.graphics.drawRoundRect(0, 0, this.width, this.height, 10, 10);
+
+        this.rect.filters = [
+            new egret.DropShadowFilter(
+                2, 45, 0x000000, 0.5, 4, 4, 2,
+                egret.BitmapFilterQuality.MEDIUM, false, false)
+        ];
+
+        this.rectStatus.graphics.beginFill(statusColor, 0.8);
+        this.rectStatus.graphics.drawRoundRect(0, 0, 6, this.height, 0, 0);
+        let mask = new egret.Shape();
+        mask.graphics.beginFill(0xffffff, 1);
+        mask.graphics.drawRoundRect(0, 0, 12, this.height, 10, 10);
+        mask.graphics.endFill();
+        this.addChild(mask);
+        this.rectStatus.mask = mask;
+        this.rectStatus.graphics.endFill();
 
         let { lblStatus } = this;
-        lblStatus.size = 16;
+        lblStatus.size = 18;
+        lblStatus.textColor = statusColor;
         let text = {
             1: '可加入，点击加入' + (this.room.locked ? "(有密码)" : ""),
             2: '即将开始，点击观看',
@@ -91,7 +112,6 @@ export default class DisplayRoom extends eui.Group {
         if (this.room.spectatorCount > 0) {
             text += `(当前观众${this.room.spectatorCount}个)`;
         }
-        this.lblName.textColor = {1: 0x00bb00, 2: 0xff8800, 3: 0xffffff}[status];
         lblStatus.text = text;
     }
 
@@ -107,9 +127,11 @@ export default class DisplayRoom extends eui.Group {
 
         for (let user of users) {
             let lblUserName = new eui.Label();
-            lblUserName.size = 16;
+            lblUserName.size = 18;
             lblUserName.text =  (user.nickname || user.id.toString())
-                + (room.status == 3 ? "" : " " + (user.readyed ? "已准备" : "未准备"));
+                + (room.status == 3
+                    ? "" 
+                    : " " + (user.readyed ? "已准备" : users.length == 1 ? "" : "未准备"));
             userGroup.addChild(lblUserName);
         }
     }

@@ -1,4 +1,4 @@
-package io.github.hulang1024.chinesechessserver.api.results.room;
+package io.github.hulang1024.chinesechessserver.http.results.room;
 
 import lombok.Data;
 

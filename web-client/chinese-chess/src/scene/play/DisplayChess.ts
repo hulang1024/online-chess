@@ -6,6 +6,7 @@ import { classClassToKey } from "../../rule/chess_map";
 
 export default class DisplayChess extends egret.Sprite implements Chess {
     private chessState: Chess;
+    private bitmap = new egret.Bitmap();
     // 是否选中状态
     private selected: boolean = false;
     private lit: boolean = false;
@@ -15,15 +16,19 @@ export default class DisplayChess extends egret.Sprite implements Chess {
 
         this.chessState = chessState;
 
-        let bitmap = new egret.Bitmap();
-        bitmap.width = 67;
-        bitmap.height = 67;
+        let url = '/resource/assets/themes/default/chess/';
+        url += ChessHost[chessState.getHost()].toLowerCase();
+        url += `/${classClassToKey(this.chessState).toLowerCase()}.png`;
+        RES.getResByUrl(url, (texture: egret.Texture) => {
+            this.bitmap.texture = texture;
+        });
 
-        const chessResKey = ''
-            + ChessHost[chessState.getHost()].toLowerCase()
-            + '_chess_' + classClassToKey(this.chessState).toLowerCase();
-        bitmap.texture = RES.getRes(chessResKey);
-        this.addChild(bitmap);
+        this.addChild(this.bitmap);
+    }
+
+    setSize(width: number, height: number) {
+        this.width = width;
+        this.height = height;
     }
 
     canGoTo(destPos: ChessPos, game: RoundGame) {
@@ -51,7 +56,7 @@ export default class DisplayChess extends egret.Sprite implements Chess {
             this.parent.setChildIndex(this, 100);
             this.filters = [
                 new egret.GlowFilter(
-                    0xffffff, 0.7, 16, 16, 3,
+                    0xffffff, 0.9, 20, 20, 2,
                     egret.BitmapFilterQuality.MEDIUM, false, false),
             ];
         } else {

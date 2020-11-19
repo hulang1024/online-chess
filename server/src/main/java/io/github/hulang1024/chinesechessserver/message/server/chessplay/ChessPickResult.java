@@ -1,6 +1,6 @@
 package io.github.hulang1024.chinesechessserver.message.server.chessplay;
 
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessPos;
+import io.github.hulang1024.chinesechessserver.play.rule.ChessPos;
 import io.github.hulang1024.chinesechessserver.message.ServerMessage;
 import lombok.Data;
 

@@ -66,7 +66,7 @@ export default class LobbyScene extends AbstractScene {
         
         let btnCreateRoom = new eui.Button();
         btnCreateRoom.width = 120;
-        btnCreateRoom.label = "创建房间";
+        btnCreateRoom.label = "创建棋桌";
         btnCreateRoom.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onCreateRoomClick, this);
         buttonGroup.addChild(btnCreateRoom);
         group.addChild(buttonGroup);
@@ -111,7 +111,7 @@ export default class LobbyScene extends AbstractScene {
             });
             socketClient.add('room.create', this.listeners['room.create'] = (msg) => {
                 if (msg.code != 0) {
-                    messager.fail({msg: '创建房间失败'}, this);
+                    messager.fail({msg: '创建棋桌失败'}, this);
                     return;
                 }
                 this.addRoom(msg.room);
@@ -135,19 +135,19 @@ export default class LobbyScene extends AbstractScene {
             socketClient.add('room.join', this.listeners['room.join'] = (msg) => {
                 switch (msg.code) {
                     case 2:
-                        messager.fail('加入房间失败：该房间已不存在', this);
+                        messager.fail('加入棋桌失败：该棋桌已不存在', this);
                         return;
                     case 3:
-                        messager.fail('加入房间失败：房间已满', this);
+                        messager.fail('加入棋桌失败：棋桌已满', this);
                         return;
                     case 4:
-                        messager.fail('加入房间失败：你已加入本房间', this);
+                        messager.fail('加入棋桌失败：你已加入本棋桌', this);
                         return;
                     case 5:
-                        messager.fail('加入房间失败：你已加入其它房间', this);
+                        messager.fail('加入棋桌失败：你已加入其它棋桌', this);
                         return;
                     case 6:
-                        messager.fail('加入房间失败：密码错误', this);
+                        messager.fail('加入棋桌失败：密码错误', this);
                         return;
                 }
                 this.pushScene((context) => new PlayScene(context, msg, this.channelManager));
@@ -161,6 +161,8 @@ export default class LobbyScene extends AbstractScene {
     }
 
     onSceneExit() {
+        super.onSceneExit();
+        
         for (let key in this.listeners) {
             socketClient.signals[key].remove(this.listeners[key]);
         }
@@ -185,10 +187,10 @@ export default class LobbyScene extends AbstractScene {
         socketClient.send('lobby.quick_match');
         socketClient.addOnce('lobby.quick_match', (msg) => {
             if (msg.code != 0) {
-                messager.fail('快速加入失败，因为' + {2: '你已加入其它房间', 3: '没有可进入的房间，创建一个吧'}[msg.code] || '未知', this);
+                messager.fail('快速加入失败，因为' + {2: '你已加入其它棋桌', 3: '没有可进入的棋桌，创建一个吧'}[msg.code] || '未知', this);
                 return;
             }
-            // 成功会有加入房间事件消息，其它地方已处理
+            // 成功会有加入棋桌事件消息，其它地方已处理
         });
     }
 

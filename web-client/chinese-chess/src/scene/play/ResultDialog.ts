@@ -1,5 +1,5 @@
 import Dialog from "../../component/Dialog";
-import Overlay from "../../component/Overlay";
+import Overlay from "../../overlay/Overlay";
 
 export default class ResultDialog extends Overlay {
     private lblResult = new eui.Label();

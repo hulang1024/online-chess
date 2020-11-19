@@ -1,2 +1,13 @@
-server.port=9098
-websocket.port=9097 
+spring:
+  profiles:
+    active: @profiles.active@
+
+servlet:
+  context-path: /
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: io.github.hulang1024.chinesechessserver.database.entity
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+

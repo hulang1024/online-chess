@@ -14,7 +14,7 @@ import ChessAction from "../../rule/ChessAction";
 import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList } from "../../rule/chess_map";
 
 export default class Player extends eui.Group implements RoundGame {
-    public chessboard = new DisplayChessboard();
+    public chessboard: DisplayChessboard;
     // 视角棋方
     private viewChessHost: ChessHost;
     private lastViewChessHost: ChessHost;
@@ -24,24 +24,30 @@ export default class Player extends eui.Group implements RoundGame {
     private chessEatOverlay = new ChessEatOverlay();
     private checkmateOverlay = new CheckmateOverlay();
     private chessActionStack: Array<ChessAction>;
-    fromPosTargetDrawer = new ChessTargetDrawer(this.chessboard);
+    fromPosTargetDrawer: ChessTargetDrawer;
     onWin: Function;
     onTurnActiveChessHost: Function;
 
     constructor() {
         super();
 
-        this.width = this.chessboard.width;
-        this.height = this.chessboard.height;
+        let layout = new eui.HorizontalLayout();
+        layout.horizontalAlign = egret.HorizontalAlign.CENTER;
+        layout.paddingLeft = 1;
+        layout.paddingRight = 1;
+        this.layout = layout;
 
-        this.addChild(this.chessboard);
+        this.width = 548 - 2;
 
-        this.addChild(this.chessEatOverlay);
-        this.addChild(this.checkmateOverlay);
-
+        this.chessboard = new DisplayChessboard(this.width);
         this.chessboard.addEventListener(ChessboardClickEvent.TYPE, (event: ChessboardClickEvent) => {
             this.dispatchEvent(event);
         }, this);
+        this.addChild(this.chessboard);
+        this.chessboard.addChild(this.chessEatOverlay);
+        this.chessboard.addChild(this.checkmateOverlay);
+
+        this.fromPosTargetDrawer = new ChessTargetDrawer(this.chessboard);
     }
 
     //Override
@@ -134,10 +140,10 @@ export default class Player extends eui.Group implements RoundGame {
         // 移动棋子动画
         const {x, y} = this.chessboard.calcChessDisplayPos(toPos);
         egret.Tween.get(chess).to({x, y}, 200, egret.Ease.circOut).call(() => {
-            // 画移动源位置标记
-            this.fromPosTargetDrawer.draw(this.convertViewPos(fromPos, chessHost));
             // 高亮被移动棋子
             chess.setLit(true);
+            // 画移动源位置标记
+            this.fromPosTargetDrawer.draw(this.convertViewPos(fromPos, chessHost));
             // 音效
             let soundChannel = SOUND.get('click').play(0, 1);
             soundChannel.volume = 0.7;
@@ -259,6 +265,12 @@ export default class Player extends eui.Group implements RoundGame {
     }
 
     private initChessLayout() {
+        /*
+        for (let row = 0; row < 10; row++) {
+            for (let col = 0; col < 9; col++)
+                new ChessTargetDrawer(this.chessboard).draw(new ChessPos(row, col));
+        }
+        return;*/
         this.clearChessboard();
         // 对面棋方棋子在上部
         const chessHost1 = ChessHost.reverse(this.viewChessHost);
@@ -287,6 +299,8 @@ export default class Player extends eui.Group implements RoundGame {
     }
 
     private addChess(chess: DisplayChess) {
+        const size = this.chessboard.calcChessSize();
+        chess.setSize(size, size);
         this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = chess;
         this.setChessDisplayPos(chess);
         chess.touchEnabled = true;
@@ -306,6 +320,8 @@ export default class Player extends eui.Group implements RoundGame {
 
     private setChessDisplayPos(chess: DisplayChess) {
         const {x, y} = this.chessboard.calcChessDisplayPos(chess.getPos());
+        chess.anchorOffsetX = this.chessboard.calcChessSize() / 2;
+        chess.anchorOffsetY = this.chessboard.calcChessSize() / 2;
         chess.x = x;
         chess.y = y;
     }

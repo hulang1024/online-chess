@@ -20,6 +20,7 @@ import PlayingRoundButtonsOverlay from "./PlayingRoundButtonsOverlay";
 import TextOverlay from "./TextOverlay";
 import ChannelManager from "../../online/chat/ChannelManager";
 import ChannelType from "../../online/chat/ChannelType";
+import notify, { allowNotify } from "../../component/notify";
 
 export default class PlayScene extends AbstractScene {
     // socket消息监听器
@@ -60,21 +61,12 @@ export default class PlayScene extends AbstractScene {
         this.readyed = roomJoin.user.readyed;
         this.chessHost = roomJoin.user.chessHost;
 
-        this.player = new Player();
-        this.player.onWin = this.onWin.bind(this);
-        this.player.onTurnActiveChessHost = this.onTurnActiveChessHost.bind(this);
-        this.chessboard = this.player.chessboard;
-
-        this.player.startRound(this.chessHost);
-
-        // 监听棋盘事件
-        this.player.addEventListener(ChessboardClickEvent.TYPE, this.onChessboardClick, this);
-
         let layout = new eui.VerticalLayout();
-        layout.paddingLeft = 8;
+        layout.paddingLeft = 0;
         layout.paddingTop = 8;
-        layout.paddingRight = 8;
+        layout.paddingRight = 0;
         layout.paddingBottom = 8;
+        layout.horizontalAlign = egret.HorizontalAlign.CONTENT_JUSTIFY;
         let group = new eui.Group();
         group.layout = layout;
 
@@ -83,7 +75,12 @@ export default class PlayScene extends AbstractScene {
         // 头部
         let head = new eui.Group();
         head.height = 60;
-        head.layout = new eui.VerticalLayout();
+        let headLayout = new eui.VerticalLayout();
+        head.layout = headLayout;
+        headLayout.paddingTop = 0;
+        headLayout.paddingRight = 8;
+        headLayout.paddingBottom = 0;
+        headLayout.paddingLeft = 8;
         group.addChild(head);
 
         let headInfoLayout = new eui.HorizontalLayout();
@@ -96,7 +93,7 @@ export default class PlayScene extends AbstractScene {
         let lblRoomName = new eui.Label();
         lblRoomName.width = 300;
         lblRoomName.size = 20;
-        lblRoomName.text = '房间: ' + this.room.name;
+        lblRoomName.text = '棋桌: ' + this.room.name;
         headInfo.addChild(lblRoomName);
 
         let { lblSpectatorNum } = this;
@@ -121,13 +118,38 @@ export default class PlayScene extends AbstractScene {
         }
         head.addChild(this.otherUserInfoPane);
         
+
+        this.player = new Player();
+        this.player.onWin = this.onWin.bind(this);
+        this.player.onTurnActiveChessHost = this.onTurnActiveChessHost.bind(this);
+        this.player.addEventListener(ChessboardClickEvent.TYPE, this.onChessboardClick, this);
+        this.chessboard = this.player.chessboard;
+        this.chessboard.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+            this.playingRoundButtonsOverlay.visible = false;
+        }, this);
+
+        this.chessboard.addChild(this.confirmDialog);
+        let {btnWhiteFlag, btnChessDraw, btnWithdraw} = this.playingRoundButtonsOverlay;
+        btnWhiteFlag.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onWhiteFlagClick, this);
+        btnChessDraw.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onChessDrawClick, this);
+        btnWithdraw.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onWithdrawClick, this);
+        this.chessboard.addChild(this.playingRoundButtonsOverlay);
+        this.chessboard.addChild(this.textOverlay);
+        this.chessboard.addChild(this.resultDialog);
+
+        this.player.startRound(this.chessHost);
+
+        this.updateWaitInfo();
+
         group.addChild(this.player);
 
         let buttonGroup = new eui.Group();
         let buttonGroupLayout = new eui.HorizontalLayout();
         buttonGroupLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
         buttonGroupLayout.paddingTop = 32;
-        buttonGroupLayout.paddingRight = 16;
+        buttonGroupLayout.paddingRight = 8;
+        buttonGroupLayout.paddingBottom = 32;
+        buttonGroupLayout.paddingLeft = 8;
         buttonGroupLayout.gap = 30;
         buttonGroup.layout = buttonGroupLayout;
         group.addChild(buttonGroup);
@@ -136,7 +158,7 @@ export default class PlayScene extends AbstractScene {
         let btnLeave = new eui.Button();
         btnLeave.width = 110;
         btnLeave.height = 50;
-        btnLeave.label = "离开房间";
+        btnLeave.label = "离开棋桌";
         btnLeave.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             //if (this.isPlaying)
             this.popScene();
@@ -162,37 +184,37 @@ export default class PlayScene extends AbstractScene {
         }, this);
         buttonGroup.addChild(btnRoundOps);
 
-        this.chessboard.addChild(this.confirmDialog);
-        let {btnWhiteFlag, btnChessDraw, btnWithdraw} = this.playingRoundButtonsOverlay;
-        btnWhiteFlag.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onWhiteFlagClick, this);
-        btnChessDraw.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onChessDrawClick, this);
-        btnWithdraw.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onWithdrawClick, this);
-        this.chessboard.addChild(this.playingRoundButtonsOverlay);
-        this.chessboard.addChild(this.textOverlay);
-        this.chessboard.addChild(this.resultDialog);
-
-        this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
-            buttonGroup.width = this.stage.stageWidth;
+        // 聊天切换按钮
+        let btnChat = new eui.Button();
+        btnChat.width = 100;
+        btnChat.label = "聊天";
+        btnChat.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+            this.context.chatOverlay.toggle();
         }, this);
+        buttonGroup.addChild(btnChat);
+
         this.addEventListener(egret.TouchEvent.TOUCH_TAP, (event: egret.TextEvent) => {
             this.context.chatOverlay.popOut();
         }, this);
-        this.chessboard.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            this.playingRoundButtonsOverlay.visible = false;
-        }, this);
 
-        this.updateWaitInfo();
 
         let channel = new Channel();
         channel.id = this.room.channelId;
-        channel.name = `当前房间`;
+        channel.name = `当前棋桌`;
         channel.type = ChannelType.ROOM;
         this.channelManager.joinChannel(channel);
+
+        if ('Notification' in window) {
+            setTimeout(() => {
+                Notification.requestPermission();
+            }, 500);
+        }
 
         this.initListeners();
     }
 
     private initListeners() {
+
         socketClient.addEventListener(egret.Event.CLOSE, this.connectionCloseHandler = (event: egret.Event) => {
             this.popScene();
         }, this);
@@ -220,14 +242,14 @@ export default class PlayScene extends AbstractScene {
                 this.chessboard.getChessList().forEach(chess => {
                     chess.touchEnabled = false;
                 });
-                messager.info(`${msg.user.nickname} 已离开房间`, this);
+                messager.info(`${msg.user.nickname} 已离开棋桌`, this);
             }
         };
 
         this.listeners['user.offline'] = (msg: any) => {
             messager.info(`${msg.nickname} 已下线或掉线，
                 你可以等待对方一会儿，重新连接之后选择继续下棋（自动恢复棋局状态）。
-                你也可以直接离开房间，但是房间和棋局状态会被清理。`, this);
+                你也可以直接离开棋桌，但是棋桌和棋局状态会被清理。`, this);
             return;
         };
         
@@ -237,7 +259,12 @@ export default class PlayScene extends AbstractScene {
             this.otherUserInfoPane.load(msg.user);
             this.updateWaitInfo();
             setTimeout(() => {
-                messager.info(`玩家[${msg.user.nickname}]已加入房间`, this);
+                let info = `玩家[${msg.user.nickname}]已加入棋桌`;
+                if (document.hidden && allowNotify()) {
+                    notify(info, this);
+                } else {
+                    messager.info(info, this);
+                }
             }, 100);
         };
 
@@ -262,7 +289,7 @@ export default class PlayScene extends AbstractScene {
             this.isPlaying = true;
             this.player.startRound(this.chessHost);
             this.playingRoundButtonsOverlay.onPlaying(true);
-            this.textOverlay.show(`棋局开始，${this.chessHost == ChessHost.RED ? '你' : '对方'}先走棋`, 2000);
+            this.textOverlay.show(`开始对局`, 2000);
         };
 
         this.listeners['chessplay.chess_pick'] = (msg) => {
@@ -322,7 +349,7 @@ export default class PlayScene extends AbstractScene {
 
             switch (msg.reqType) {
                 case confirmRequest.Type.WHITE_FLAG:
-                    this.onWin(ChessHost.reverse(msg.chessHost));
+                    this.onWin(msg.chessHost);
                     break;
                 case confirmRequest.Type.DRAW:
                     this.onWin(null);
@@ -349,11 +376,22 @@ export default class PlayScene extends AbstractScene {
     }
 
     onSceneExit() {
+        super.onSceneExit();
+
         for (let key in this.listeners) {
             socketClient.signals[key].remove(this.listeners[key]);
         }
         socketClient.removeEventListener(egret.Event.CLOSE, this.connectionCloseHandler, this);
         this.channelManager.leaveChannel(this.room.channelId);
+    }
+
+    onAppVisibilityChange(hidden: boolean) {
+        if (!hidden || this.isPlaying) {
+            return;
+        }
+        if (this.readyed) {
+            socketClient.send('chessplay.ready', {readyed: false});
+        }
     }
 
     private onWin(winChessHost: ChessHost) {
@@ -373,7 +411,7 @@ export default class PlayScene extends AbstractScene {
 
         // 请求对局结束
         socketClient.send('chessplay.round_over');
-        this.resultDialog.show(winChessHost == null ? null : winChessHost != this.chessHost);
+        this.resultDialog.show(winChessHost == null ? null : winChessHost == this.chessHost);
         this.resultDialog.onOk = () => {
             this.isPlaying = false;
             // 显示准备按钮
@@ -483,7 +521,9 @@ export default class PlayScene extends AbstractScene {
         this.activeChessHost = activeChessHost;
 
         this.otherUserInfoPane.setActive(this.chessHost != this.activeChessHost);
-        console.log("现在 " + (this.activeChessHost == ChessHost.BLACK ? "黑方" : "红方") + " 持棋");
+        if (this.activeChessHost == this.chessHost) {
+            messager.info(`${this.activeChessHost == ChessHost.BLACK ? "黑方" : "红方"}走棋`, this);
+        }
         this.chessboard.touchEnabled = this.activeChessHost == this.chessHost;
         this.chessboard.getChessList().forEach(chess => {
             // 如果当前是本方走，将敌方棋子禁用；否则，全部禁用

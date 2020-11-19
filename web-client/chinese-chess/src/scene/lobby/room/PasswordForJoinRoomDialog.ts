@@ -22,7 +22,7 @@ export default class PasswordForJoinRoomDialog extends Dialog {
 
     showFor(room: Room) {
         this.visible = true;
-        this.title = `输入房间 ${room.name} 的密码`;
+        this.title = `输入棋桌 ${room.name} 的密码`;
     }
 
     private createPasswordGroup() {
@@ -30,13 +30,13 @@ export default class PasswordForJoinRoomDialog extends Dialog {
         group.layout = new eui.HorizontalLayout();
 
         let label = new eui.Label();
-        label.text = "房间密码";
-        label.size = 18;
+        label.text = "棋桌密码";
+        label.size = 20;
         group.addChild(label);
 
         let textEdit = new eui.EditableText();
         textEdit.displayAsPassword = true;
-        textEdit.size = 18;
+        textEdit.size = 20;
         textEdit.width = 300;
         textEdit.border = true;
         textEdit.borderColor = 0xffffff;

@@ -1,52 +1,53 @@
 package io.github.hulang1024.chinesechessserver.chat;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
 
-import io.github.hulang1024.chinesechessserver.dao.mapper.ChannelDao;
-import io.github.hulang1024.chinesechessserver.entity.Channel;
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.Resource;
 
-public class ChatChannelManager {
-    @Autowired
-    private ChannelDao channelDao;
+@Service
+public class ChannelManager {
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
 
-    private static Map<Long, ChatChannel> chatChannelMap = new ConcurrentHashMap<>();
-    private static long currentId = 20;
-
-    private static ChatChannel global = createPublic(1);
-
-    /**
-     * 返回全局聊天频道，id为1
-     * @return
-     */
-    public static ChatChannel getGlobal() {
-        return global;
+    public void remove(Long id) {
+        redisTemplate.delete(id.toString());
     }
 
-    public static ChatChannel create(ChannelType type) {
-        ChatChannel channel = new ChatChannel(++currentId, type);
-        chatChannelMap.put(channel.getId(), channel);
+    public Channel getChannelById(Long id) {
+        JSONObject jsonObject = (JSONObject)redisTemplate.opsForValue().get(id.toString());
+        return jsonObject.toJavaObject(Channel.class);
+    }
+
+
+    public void create(Channel channel) {
+        channel.setId(nextChannelId());
+        if (redisTemplate.hasKey(channel.getId().toString())) {
+            return;
+        }
+        redisTemplate.opsForValue().set(channel.getId().toString(), channel);
+    }
+
+    public void joinChannel(Channel channel, long userId) {
+
+    }
+
+    private Channel createDefault(long id) {
+        Channel channel = new Channel();
+        channel.setId(id);
+        channel.setType(ChannelType.PUBLIC);
+        create(channel);
         return channel;
     }
 
-    public static void remove(long id) {
-        chatChannelMap.remove(id);
+    private long nextChannelId() {
+        final String key = "chat:channel:next_id";
+        if (redisTemplate.hasKey(key)) {
+            return redisTemplate.opsForValue().increment(key);
+        } else {
+            redisTemplate.opsForValue().set(key, 21);
+            return 21;
+        }
     }
-
-    public static ChatChannel getChannelById(long id) {
-        return chatChannelMap.get(id);
-    }
-
-
-    private static ChatChannel createPublic(long id) {
-        ChatChannel channel = new ChatChannel(id, ChannelType.PUBLIC);
-        chatChannelMap.put(channel.getId(), channel);
-        return channel;
-    }
-
-    private void create(Channel channel) {
-        channelDao.insert(channel);
-    }
-
 }

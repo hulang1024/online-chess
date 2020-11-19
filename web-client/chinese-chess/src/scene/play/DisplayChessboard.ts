@@ -5,12 +5,13 @@ import ChessPos from "../../rule/ChessPos";
 
 export default class DisplayChessboard extends eui.Group implements Chessboard {
     private chessArray: Array<Array<DisplayChess>> = new Array(CHESSBOARD_ROW_NUM);
+    private bitmap = new egret.Bitmap();
 
-    constructor() {
+    constructor(width: number) {
         super();
 
-        this.width = 530;
-        this.height = 580;
+        this.width = width;
+        this.height = 567;
 
         for (let row = 0; row < CHESSBOARD_ROW_NUM; row++) {
             this.chessArray[row] = new Array(CHESSBOARD_COL_NUM);
@@ -19,11 +20,13 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
             }
         }
 
-        let bitmap = new egret.Bitmap();
-        bitmap.width = this.width;
+        let { bitmap } = this;
+        bitmap.width = width;
         bitmap.height = this.height;
+        bitmap.touchEnabled = true;
         bitmap.texture = RES.getRes('chessboard');
-        
+        bitmap.width = this.width;
+        bitmap.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onClick, this);
 
         let mask = new egret.Shape();
         mask.graphics.beginFill(0xffffff, 1);
@@ -31,18 +34,32 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
         mask.graphics.endFill();
         this.addChild(mask);
         bitmap.mask = mask;
-
+        
         this.addChild(bitmap);
-        bitmap.touchEnabled = true;
-        bitmap.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onClick, this);
     }
 
     onClick(touchEvent: egret.TouchEvent) {
         if (!this.touchEnabled) {
             return;
         }
-        let row = Math.floor((touchEvent.localY - 5) / 57);
-        let col = Math.floor((touchEvent.localX - 3) / 57);
+        let { localX, localY } = touchEvent;
+        let { paddingH, paddingV, h, v } = this.getGap();
+        let row: number;
+        let col: number;
+        if (localY < paddingV) {
+            row = 0;
+        } else if (localY > this.height - paddingV) {
+            row = 9;
+        } else {
+            row = Math.round((localY - paddingV) / h);
+        }
+        if (localX < paddingH) {
+            col = 0;
+        } else if (localX > this.width - paddingH) {
+            col = 8;
+        } else {
+            col = Math.round((localX - paddingH) / v);
+        }
         let pos = new ChessPos(row, col);
 
         let event = new ChessboardClickEvent();
@@ -90,9 +107,26 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
         return ret;
     }
 
+    getGap() {
+        // 假设是正方形图片，并且内外边距相同
+        const paddingV = 31;
+        const paddingH = 35;
+        return {
+            paddingH,
+            paddingV,
+            h: Math.round((this.width - paddingH * 2) / 8),
+            v: Math.round((this.height - paddingV * 2) / 9)
+        };
+    }
+
     calcChessDisplayPos(pos: ChessPos) {
-        const x = 2 + pos.col * 57.5;
-        const y = 5 + pos.row * 57.5;
-        return {x, y};
+        let { paddingH, paddingV, h, v } = this.getGap();
+        const x = paddingH + pos.col * h;
+        const y = paddingV + pos.row * v;
+        return egret.Point.create(x, y);
+    }
+
+    calcChessSize() {
+        return (this.width - this.getGap().paddingH * 2) / 8;
     }
 }

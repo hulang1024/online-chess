@@ -1,12 +1,9 @@
 import messager from "../component/messager";
 import platform from "../Platform";
 
-interface MessageSignal {
-    [index: string]: Signal;
-}
 
 class SocketClient extends egret.WebSocket {
-    signals: MessageSignal = {};
+    signals: { [s: string]: Signal } = {};
     reconnectedSignal = new Signal();
     private connectedSignal = new Signal();
     private connectStarted: boolean = false;

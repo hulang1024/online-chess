@@ -1,5 +1,6 @@
-package io.github.hulang1024.chinesechessserver.service;
+package io.github.hulang1024.chinesechessserver.room;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -31,9 +32,8 @@ public class RoomService {
         room.setName(StringUtils.isEmpty(create.getRoomName())
             ? String.valueOf("#" + room.getId())
             : create.getRoomName());
-        room.setCreateAt(new Date());
+        room.setCreateAt(LocalDateTime.now());
         room.setPassword(StringUtils.isEmpty(create.getPassword()) ? null : create.getPassword());
-        = ChannelManager.create(ChannelType.ROOM)
         roomMap.put(room.getId(), room);
 
         return room;

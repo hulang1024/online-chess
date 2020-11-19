@@ -4,39 +4,47 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.Gson;
 
-import io.github.hulang1024.chinesechessserver.domain.SessionUser;
+import io.github.hulang1024.chinesechessserver.service.SessionUser;
+import io.github.hulang1024.chinesechessserver.database.entity.EntityUser;
 import io.github.hulang1024.chinesechessserver.message.server.chat.ChatMessageMsg;
+import lombok.Data;
 
-public class ChatChannel {
-    private static final int MAX_HISTORY = 300;
-    private long id;
+@Data
+public class Channel {
+    private Long id;
+    private String name;
     private ChannelType type;
-    private List<SessionUser> users = new ArrayList<>();
+
+    @JsonIgnore
+    private static final int MAX_HISTORY = 300;
+    @JsonIgnore
+    private List<SessionUser> users1 = new ArrayList<>();
+    @JsonIgnore
+    private List<EntityUser> users = new ArrayList<>();
+
+    @JsonIgnore
     public final ArrayBlockingQueue<Message> messages = new ArrayBlockingQueue<>(MAX_HISTORY);
 
+    @JsonIgnore
     private static Gson gson = new Gson();
-
-    public ChatChannel(long id, ChannelType type) {
-        this.id = id;
-        this.type = type;
-    }
-
-    public long getId() {
-        return id;
-    }
-    
-    public ChannelType getType() {
-        return type;
-    }
 
 
     public void joinUser(SessionUser user) {
+        users1.add(user);
+    }
+
+    public void joinUser(EntityUser user) {
         users.add(user);
     }
 
     public void removeUser(SessionUser user) {
+        users1.remove(user);
+    }
+
+    public void removeUser(EntityUser user) {
         users.remove(user);
     }
 
@@ -60,7 +68,7 @@ public class ChatChannel {
         msgMsg.setContent(msg.getContent());
         msgMsg.setTimestamp(msg.getTimestamp());
         String msgJson = gson.toJson(msgMsg);
-        users.forEach(user -> {
+        users1.forEach(user -> {
             user.getSession().sendText(msgJson);
         });
     }

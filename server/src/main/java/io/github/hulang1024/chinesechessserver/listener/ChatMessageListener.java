@@ -1,17 +1,22 @@
 package io.github.hulang1024.chinesechessserver.listener;
 
-import io.github.hulang1024.chinesechessserver.domain.SessionUser;
-import io.github.hulang1024.chinesechessserver.domain.chat.ChatChannel;
-import io.github.hulang1024.chinesechessserver.domain.chat.ChatMessage;
+import io.github.hulang1024.chinesechessserver.service.SessionUser;
+import io.github.hulang1024.chinesechessserver.chat.Channel;
+import io.github.hulang1024.chinesechessserver.chat.Message;
 import io.github.hulang1024.chinesechessserver.message.client.chat.ChatClientMessage;
 import io.github.hulang1024.chinesechessserver.message.client.chat.FetchMessage;
 import io.github.hulang1024.chinesechessserver.message.server.chat.FetchMessagesResponse;
-import io.github.hulang1024.chinesechessserver.service.ChatChannelManager;
+import io.github.hulang1024.chinesechessserver.chat.ChannelManager;
 import io.github.hulang1024.chinesechessserver.service.UserSessionService;
 import io.github.hulang1024.chinesechessserver.utils.TimeUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ChatMessageListener extends MessageListener {
     private UserSessionService userSessionService = new UserSessionService();
+    @Autowired
+    private ChannelManager channelManager;
 
     @Override
     public void init() {
@@ -21,8 +26,8 @@ public class ChatMessageListener extends MessageListener {
 
     private void onChatMessage(ChatClientMessage msg) {
         SessionUser fromUser = userSessionService.getUserBySession(msg.getSession());
-        ChatChannel channel = ChatChannelManager.getChannelById(msg.getChannelId());
-        ChatMessage chatMsg = new ChatMessage();
+        Channel channel = channelManager.getChannelById(msg.getChannelId());
+        Message chatMsg = new Message();
         chatMsg.setChannelId(channel.getId());
         chatMsg.setTimestamp(TimeUtils.nowTimestamp());
         chatMsg.setSender(fromUser.getUser());
@@ -31,10 +36,10 @@ public class ChatMessageListener extends MessageListener {
     }
 
     private void onFetchMessage(FetchMessage msg) {
-        ChatChannel channel = ChatChannelManager.getChannelById(msg.getChannelId());
+        Channel channel = channelManager.getChannelById(msg.getChannelId());
         
         FetchMessagesResponse response = new FetchMessagesResponse();
-        response.setMsgs(channel.messages.toArray(new ChatMessage[0]));
+        response.setMsgs(channel.messages.toArray(new Message[0]));
         send(response, msg.getSession());
     }
 }

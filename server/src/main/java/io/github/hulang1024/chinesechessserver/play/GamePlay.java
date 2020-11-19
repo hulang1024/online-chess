@@ -1,10 +1,10 @@
-package io.github.hulang1024.chinesechessserver.domain;
+package io.github.hulang1024.chinesechessserver.play;
 
 import java.util.Stack;
 
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.ChessAction;
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessHost;
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessboardState;
+import io.github.hulang1024.chinesechessserver.service.SessionUser;
+import io.github.hulang1024.chinesechessserver.play.rule.ChessHost;
+import io.github.hulang1024.chinesechessserver.play.rule.ChessboardState;
 import lombok.Getter;
 
 /**

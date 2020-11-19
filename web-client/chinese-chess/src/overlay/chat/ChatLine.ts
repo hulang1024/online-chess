@@ -5,7 +5,7 @@ export default class ChatLine extends eui.Group {
         super();
         
         let layout = new eui.HorizontalLayout();
-        layout.gap = 16;
+        layout.gap = 18;
         let container = new eui.Group();
         container.layout = layout;
 
@@ -17,7 +17,7 @@ export default class ChatLine extends eui.Group {
         // 时间
         let txtTime = new eui.Label();
         txtTime.text = this.formatTime(msg.timestamp);
-        txtTime.size = 16;
+        txtTime.size = 18;
         group.addChild(txtTime);
 
         // 昵称
@@ -25,7 +25,7 @@ export default class ChatLine extends eui.Group {
         txtNickname.width = 130;
         txtNickname.textColor = msg.isFromMe ? 0xcc2200 : 0xffffff;
         txtNickname.text = msg.sender.nickname + ':';
-        txtNickname.size = 18;
+        txtNickname.size = 20;
         txtNickname.textAlign = egret.HorizontalAlign.RIGHT;
         group.addChild(txtNickname);
 
@@ -34,7 +34,7 @@ export default class ChatLine extends eui.Group {
         // 内容
         let txtContent = new eui.Label();
         txtContent.text = msg.content;
-        txtContent.size = 18;
+        txtContent.size = 20;
         container.addChild(txtContent);
 
         this.addChild(container);

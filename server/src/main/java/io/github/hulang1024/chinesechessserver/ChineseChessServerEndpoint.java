@@ -27,7 +27,7 @@ public class ChineseChessServerEndpoint {
     @OnOpen
     public void onOpen(Session session, HttpHeaders headers){
         //log.info("一个连接打开");
-        connectedSessionCount++;session.channel().remoteAddress()
+        connectedSessionCount++;
         ClientEventManager.emitSessionOpenEvent(session);
     }
 

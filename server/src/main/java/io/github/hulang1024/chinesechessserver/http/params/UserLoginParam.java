@@ -1,4 +1,4 @@
-package io.github.hulang1024.chinesechessserver.user;
+package io.github.hulang1024.chinesechessserver.http.params;
 
 import lombok.Data;
 

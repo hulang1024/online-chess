@@ -12,8 +12,7 @@ export default class Overlay extends eui.Group {
 
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
             if (center) {
-                this.x = (this.parent.width - this.width) / 2;
-                this.y = (this.parent.height - this.height) / 2;
+                this.setCenter();
             }
             this.setSize(this.width, this.height);
         }, this);
@@ -25,11 +24,16 @@ export default class Overlay extends eui.Group {
 
         // 背景
         this.background.graphics.clear();
-        this.background.graphics.beginFill(0x333333, 0.6);
+        this.background.graphics.beginFill(0x000000, 0.5);
         if (this.round) {
             this.background.graphics.drawRoundRect(0, 0, this.width, this.height, 8, 8);
         } else {
             this.background.graphics.drawRect(0, 0, this.width, this.height);
         }
+    }
+
+    setCenter() {
+        this.x = (this.parent.getBounds().x + this.parent.width - this.width) / 2;
+        this.y = (this.parent.height - this.height) / 2;
     }
 }

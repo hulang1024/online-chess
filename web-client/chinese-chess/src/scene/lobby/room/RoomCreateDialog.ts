@@ -12,7 +12,7 @@ export default class RoomCreateDialog extends Dialog {
         super();
 
         this.visible = false;
-        this.title = "创建房间";
+        this.title = "创建棋桌";
 
         this.body.addChild(this.createRoomNameGroup());
         this.body.addChild(this.createLockOptionGroup());
@@ -35,7 +35,7 @@ export default class RoomCreateDialog extends Dialog {
         group.layout = new eui.HorizontalLayout();
 
         let label = new eui.Label();
-        label.text = "房间名称";
+        label.text = "棋桌名称";
         label.size = 20;
         group.addChild(label);
 
@@ -80,7 +80,7 @@ export default class RoomCreateDialog extends Dialog {
         group.layout = new eui.HorizontalLayout();
 
         let label = new eui.Label();
-        label.text = "房间密码";
+        label.text = "棋桌密码";
         label.size = 20;
         group.addChild(label);
 

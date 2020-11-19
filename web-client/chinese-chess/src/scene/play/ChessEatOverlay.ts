@@ -1,4 +1,4 @@
-import Overlay from "../../component/Overlay";
+import Overlay from "../../overlay/Overlay";
 
 export default class ChessEatOverlay extends Overlay {
     constructor() {
@@ -20,6 +20,7 @@ export default class ChessEatOverlay extends Overlay {
     }
 
     show() {
+        this.parent.setChildIndex(this, 1000);
         this.visible = true;
         setTimeout(() => {
             this.visible = false;

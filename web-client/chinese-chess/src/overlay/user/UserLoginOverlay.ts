@@ -1,4 +1,4 @@
-import Overlay from "../../component/Overlay";
+import Overlay from "../Overlay";
 
 export default class UserLoginOverlay extends Overlay {
     private textEditUsername: eui.EditableText;

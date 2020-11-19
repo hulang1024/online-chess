@@ -1,4 +1,4 @@
-import Overlay from "../../component/Overlay";
+import Overlay from "../Overlay";
 import DrawableChannel from "./DrawableChannel";
 import Channel from "../../online/chat/Channel";
 import MessageInput from "./MessageInput";
@@ -41,7 +41,7 @@ export default class ChatOverlay extends Overlay {
 
     async onAddToStage() {
         this.width = this.stage.stageWidth;
-        this.height = this.stage.stageHeight / 2.8;
+        this.height = this.stage.stageHeight / 2.3;
         this.setSize(this.stage.stageWidth, this.height);
         this.minY = this.stage.stageHeight;
         this.maxY = this.stage.stageHeight - this.height;

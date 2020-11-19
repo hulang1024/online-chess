@@ -1,10 +1,9 @@
-package io.github.hulang1024.chinesechessserver.api.controller;
+package io.github.hulang1024.chinesechessserver.http.controller;
 
-import io.github.hulang1024.chinesechessserver.entity.EntityRoom;
-import io.github.hulang1024.chinesechessserver.api.params.room.RoomJoinParam;
+import io.github.hulang1024.chinesechessserver.http.params.RoomJoinParam;
+import io.github.hulang1024.chinesechessserver.room.Room;
 import io.github.hulang1024.chinesechessserver.room.RoomUpdateParam;
 import io.github.hulang1024.chinesechessserver.message.server.room.RoomLeaveResult;
-import io.github.hulang1024.chinesechessserver.room.CreatedRoom;
 import io.github.hulang1024.chinesechessserver.room.RoomManager;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,7 @@ public class RoomController {
      * @return
      */
     @GetMapping
-    public ResponseEntity<List<CreatedRoom>> getRooms() {
+    public ResponseEntity<List<Room>> getRooms() {
         return ResponseEntity.ok(roomManager.getRooms());
     }
 
@@ -40,12 +39,12 @@ public class RoomController {
      * @return
      */
     @GetMapping("/{id}")
-    public ResponseEntity<CreatedRoom> getRoom(@NotNull @PathVariable("id") Long id) {
+    public ResponseEntity<Room> getRoom(@NotNull @PathVariable("id") Long id) {
         return ResponseEntity.ok(roomManager.getRoom(id));
     }
 
     @PostMapping
-    public ResponseEntity<CreatedRoom> create(@Validated @RequestBody EntityRoom room) {
+    public ResponseEntity<Room> create(@Validated @RequestBody Room room) {
         // 房间名，如果没有指定，就生成一个
         if (StringUtils.isNotEmpty(room.getName())) {
             room.setName(room.getName());
@@ -58,7 +57,7 @@ public class RoomController {
             room.setPassword(room.getPassword());
         }
 
-        CreatedRoom createdRoom = roomManager.create(room);
+        Room createdRoom = roomManager.create(room);
         if (createdRoom == null) {
             return new ResponseEntity(HttpStatus.EXPECTATION_FAILED);
         }

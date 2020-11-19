@@ -5,7 +5,7 @@ import org.yeauty.pojo.Session;
 
 import io.github.hulang1024.chinesechessserver.ChineseChessServerEndpoint;
 import io.github.hulang1024.chinesechessserver.ClientEventManager;
-import io.github.hulang1024.chinesechessserver.domain.SessionUser;
+import io.github.hulang1024.chinesechessserver.service.SessionUser;
 import io.github.hulang1024.chinesechessserver.message.client.user.UserNicknameSet;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomLeave;
 import io.github.hulang1024.chinesechessserver.message.client.spectator.SpectatorLeaveReqMsg;
@@ -13,7 +13,6 @@ import io.github.hulang1024.chinesechessserver.message.server.stat.OnlineStatMes
 import io.github.hulang1024.chinesechessserver.message.server.user.UserLoginResult;
 import io.github.hulang1024.chinesechessserver.message.server.user.UserNicknameSetResult;
 import io.github.hulang1024.chinesechessserver.message.server.user.UserOfflineMsg;
-import io.github.hulang1024.chinesechessserver.service.ChatChannelManager;
 import io.github.hulang1024.chinesechessserver.service.LobbyService;
 import io.github.hulang1024.chinesechessserver.service.UserSessionService;
 
@@ -32,8 +31,6 @@ public class UserMessageListener extends MessageListener {
         // 这里做个"登录"的逻辑，暂时支持游客登录
         userSessionService.login(session);
         SessionUser user = userSessionService.getUserBySession(session);
-
-        ChatChannelManager.getGlobal().joinUser(user);
 
         UserLoginResult loginResult = new UserLoginResult();
         loginResult.setCode(0);
@@ -67,8 +64,6 @@ public class UserMessageListener extends MessageListener {
 
         lobbyService.removeStayLobbySession(session);
         userSessionService.remove(session);
-
-        ChatChannelManager.getGlobal().removeUser(user);
 
         // 发送统计消息
         sendUpdateStat();

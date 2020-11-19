@@ -1,20 +1,28 @@
 package io.github.hulang1024.chinesechessserver.database.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 
 @Data
-public class User {
+@TableName("users")
+public class EntityUser {
     private Long id;
-    private String username;
+
+    @NotEmpty
     private String nickname;
+
+    @NotEmpty
+    private String password;
+
     private LocalDateTime registerTime;
 
-    public static User SYSTEM_USER = new User(0, "系统");
+    public static EntityUser SYSTEM_USER = new EntityUser(0, "系统");
 
-    public User() {}
-    private User(long id, String nickname) {
+    public EntityUser() {}
+    private EntityUser(long id, String nickname) {
         this.id = id;
         this.nickname = nickname;
     }

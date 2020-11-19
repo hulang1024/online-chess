@@ -1,5 +1,9 @@
 import messager from "./messager";
 
+export function allowNotify(): boolean {
+    return 'Notification' in window && Notification.permission == 'granted';
+}
+
 export default async function notify(msg: string, context: egret.DisplayObject) {
     if (!('Notification' in window)) {
         messager.info(msg, context);

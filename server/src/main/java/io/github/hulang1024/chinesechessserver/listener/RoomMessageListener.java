@@ -3,13 +3,14 @@ package io.github.hulang1024.chinesechessserver.listener;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
 import org.yeauty.pojo.Session;
 
 import io.github.hulang1024.chinesechessserver.convert.UserConvert;
 import io.github.hulang1024.chinesechessserver.convert.RoomConvert;
-import io.github.hulang1024.chinesechessserver.domain.SessionUser;
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessHost;
-import io.github.hulang1024.chinesechessserver.domain.Room;
+import io.github.hulang1024.chinesechessserver.service.SessionUser;
+import io.github.hulang1024.chinesechessserver.play.rule.ChessHost;
+import io.github.hulang1024.chinesechessserver.room.Room;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomCreate;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomJoin;
 import io.github.hulang1024.chinesechessserver.message.client.room.RoomLeave;
@@ -20,8 +21,9 @@ import io.github.hulang1024.chinesechessserver.message.server.room.RoomJoinResul
 import io.github.hulang1024.chinesechessserver.message.server.room.RoomLeaveResult;
 import io.github.hulang1024.chinesechessserver.service.LobbyService;
 import io.github.hulang1024.chinesechessserver.service.UserSessionService;
-import io.github.hulang1024.chinesechessserver.service.RoomService;
+import io.github.hulang1024.chinesechessserver.room.RoomService;
 
+@Component
 public class RoomMessageListener extends MessageListener {
     private RoomService roomService = new RoomService();
     private UserSessionService userSessionService = new UserSessionService();
@@ -115,7 +117,7 @@ public class RoomMessageListener extends MessageListener {
         if (room.getUserCount() == 0) {
             userToJoin.setChessHost(ChessHost.RED);
         } else {
-            SessionUser otherUser = room.getUsers().get(0);
+            SessionUser otherUser = room.getUsers1().get(0);
             userToJoin.setChessHost(otherUser.getChessHost().reverse()); 
         }
 
@@ -126,7 +128,7 @@ public class RoomMessageListener extends MessageListener {
         result.setUser(new UserConvert().toRoomUserInfo(userToJoin));
         
         // 广播给已在此房间的参与者
-        room.getUsers().forEach(user -> {
+        room.getUsers1().forEach(user -> {
             send(result, user.getSession());
         });
 
@@ -158,7 +160,7 @@ public class RoomMessageListener extends MessageListener {
 
         Room room = userToLeave.getJoinedRoom();
 
-        List<Session> userSessions = room.getUsers().stream()
+        List<Session> userSessions = room.getUsers1().stream()
             .map(SessionUser::getSession)
             .collect(Collectors.toList());
 
@@ -180,7 +182,7 @@ public class RoomMessageListener extends MessageListener {
             });
         } else {
             // 房主变成留下的人
-            SessionUser user = room.getUsers().get(0);
+            SessionUser user = room.getUsers1().get(0);
             room.setOwner(user);
             user.setChessHost(user.getChessHost().reverse());
 

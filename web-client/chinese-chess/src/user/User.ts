@@ -1,12 +1,14 @@
 export default class User {
     id: number;
     username: string;
+    password: string;
     nickname: string;
 
-    constructor(id: number, nickname: string) {
-        this.id = id;
-        this.nickname = nickname;
-    }
-
-    static SYSTEM = new User(0, "系统");
+    static SYSTEM: User;
 }
+
+let user = new User();
+user.id = 0;
+user.nickname = '系统';
+
+User.SYSTEM = user;

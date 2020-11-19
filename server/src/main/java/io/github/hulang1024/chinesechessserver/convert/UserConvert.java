@@ -1,6 +1,6 @@
 package io.github.hulang1024.chinesechessserver.convert;
 
-import io.github.hulang1024.chinesechessserver.domain.SessionUser;
+import io.github.hulang1024.chinesechessserver.service.SessionUser;
 import io.github.hulang1024.chinesechessserver.message.server.room.RoomUserInfo;
 
 public class UserConvert {

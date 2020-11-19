@@ -1,5 +1,5 @@
 import messager from "../../component/messager";
-import Overlay from "../../component/Overlay";
+import Overlay from "../Overlay";
 import ChatOverlay from "../chat/ChatOverlay";
 import UserLoginOverlay from "../user/UserLoginOverlay";
 

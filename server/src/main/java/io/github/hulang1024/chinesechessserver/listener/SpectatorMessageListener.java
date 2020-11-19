@@ -5,22 +5,24 @@ import java.util.List;
 
 import io.github.hulang1024.chinesechessserver.convert.RoomConvert;
 import io.github.hulang1024.chinesechessserver.convert.UserConvert;
-import io.github.hulang1024.chinesechessserver.domain.Room;
-import io.github.hulang1024.chinesechessserver.domain.SessionUser;
-import io.github.hulang1024.chinesechessserver.domain.chat.ChatMessage;
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.Chess;
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessHost;
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessboardState;
-import io.github.hulang1024.chinesechessserver.entity.User;
+import io.github.hulang1024.chinesechessserver.room.Room;
+import io.github.hulang1024.chinesechessserver.service.SessionUser;
+import io.github.hulang1024.chinesechessserver.chat.Message;
+import io.github.hulang1024.chinesechessserver.play.rule.Chess;
+import io.github.hulang1024.chinesechessserver.play.rule.ChessHost;
+import io.github.hulang1024.chinesechessserver.play.rule.ChessboardState;
+import io.github.hulang1024.chinesechessserver.database.entity.EntityUser;
 import io.github.hulang1024.chinesechessserver.message.client.spectator.JoinWatchMsg;
 import io.github.hulang1024.chinesechessserver.message.client.spectator.SpectatorLeaveReqMsg;
 import io.github.hulang1024.chinesechessserver.message.server.spectator.SpectatorLeaveMsg;
 import io.github.hulang1024.chinesechessserver.message.server.spectator.RoomRoundStateMsg;
 import io.github.hulang1024.chinesechessserver.message.server.spectator.SpectatorJoinMsg;
-import io.github.hulang1024.chinesechessserver.service.RoomService;
+import io.github.hulang1024.chinesechessserver.room.RoomService;
 import io.github.hulang1024.chinesechessserver.service.UserSessionService;
 import io.github.hulang1024.chinesechessserver.utils.TimeUtils;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SpectatorMessageListener extends MessageListener {
     private RoomService roomService = new RoomService();
     private UserSessionService userSessionService = new UserSessionService();
@@ -50,7 +52,7 @@ public class SpectatorMessageListener extends MessageListener {
         }
         
         room.getSpectators().add(spectator);
-        room.getChatChannel().joinUser(spectator);
+        room.getChannel().joinUser(spectator);
         spectator.setSpectatingRoom(room);
 
         // 发送观众当前房间信息和棋局状态
@@ -68,7 +70,7 @@ public class SpectatorMessageListener extends MessageListener {
         SpectatorJoinMsg joinMsg = new SpectatorJoinMsg();
         joinMsg.setUser(new UserConvert().toRoomUserInfo(spectator));
         joinMsg.setSpectatorCount(room.getSpectators().size());
-        room.getUsers().forEach(user -> {
+        room.getUsers1().forEach(user -> {
             send(joinMsg, user.getSession());
         });
         room.getSpectators().forEach(user -> {
@@ -76,12 +78,12 @@ public class SpectatorMessageListener extends MessageListener {
         });
 
         // 发送消息
-        ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setChannelId(room.getChatChannel().getId());
+        Message chatMessage = new Message();
+        chatMessage.setChannelId(room.getChannel().getId());
         chatMessage.setTimestamp(TimeUtils.nowTimestamp());
-        chatMessage.setSender(User.SYSTEM_USER);
+        chatMessage.setSender(EntityUser.SYSTEM_USER);
         chatMessage.setContent(spectator.getUser().getNickname() + " 加入观看");
-        room.getChatChannel().addNewMessage(chatMessage);
+        room.getChannel().addNewMessage(chatMessage);
     }
 
     private void onLeave(SpectatorLeaveReqMsg msg) {
@@ -89,13 +91,13 @@ public class SpectatorMessageListener extends MessageListener {
         Room room = spectator.getSpectatingRoom();
         
         room.getSpectators().remove(spectator);
-        room.getChatChannel().removeUser(spectator);
+        room.getChannel().removeUser(spectator);
         spectator.setSpectatingRoom(null);
 
         SpectatorLeaveMsg leaveMsg = new SpectatorLeaveMsg();
         leaveMsg.setUser(new UserConvert().toRoomUserInfo(spectator));
         leaveMsg.setSpectatorCount(room.getSpectators().size());
-        room.getUsers().forEach(user -> {
+        room.getUsers1().forEach(user -> {
             send(leaveMsg, user.getSession());
         });
         room.getSpectators().forEach(user -> {
@@ -103,12 +105,12 @@ public class SpectatorMessageListener extends MessageListener {
         });
 
         // 发送消息
-        ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setChannelId(room.getChatChannel().getId());
+        Message chatMessage = new Message();
+        chatMessage.setChannelId(room.getChannel().getId());
         chatMessage.setTimestamp(TimeUtils.nowTimestamp());
-        chatMessage.setSender(User.SYSTEM_USER);
+        chatMessage.setSender(EntityUser.SYSTEM_USER);
         chatMessage.setContent(spectator.getUser().getNickname() + " 离开观看");
-        room.getChatChannel().addNewMessage(chatMessage);
+        room.getChannel().addNewMessage(chatMessage);
     }
 
     private List<RoomRoundStateMsg.Chess> toStateChesses(ChessboardState chessboardState) {

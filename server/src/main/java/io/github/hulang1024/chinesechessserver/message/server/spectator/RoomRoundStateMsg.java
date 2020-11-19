@@ -3,7 +3,7 @@ package io.github.hulang1024.chinesechessserver.message.server.spectator;
 import java.util.List;
 import java.util.Stack;
 
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.ChessAction;
+import io.github.hulang1024.chinesechessserver.play.ChessAction;
 import io.github.hulang1024.chinesechessserver.message.ServerMessage;
 import io.github.hulang1024.chinesechessserver.message.server.room.RoomInfo;
 import lombok.Data;

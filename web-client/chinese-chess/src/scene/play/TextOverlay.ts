@@ -1,4 +1,4 @@
-import Overlay from "../../component/Overlay";
+import Overlay from "../../overlay/Overlay";
 
 export default class TextOverlay extends Overlay {
     private text: egret.TextField;
@@ -7,15 +7,22 @@ export default class TextOverlay extends Overlay {
         super(true);
 
         this.visible = false;
-        this.setSize(510, 50);
+
+        this.height = 52;
 
         let text = new egret.TextField();
-        text.size = 24;
-        text.width = 510;
-        text.height = 50;
+        text.size = 26;
+        text.height = this.height;
         text.verticalAlign = egret.VerticalAlign.MIDDLE;
         text.textAlign = egret.HorizontalAlign.CENTER;
         this.addChild(text);
+
+        this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
+            this.width = this.stage.stageWidth - 4;
+            this.text.width = this.width;
+            this.setSize(this.width, this.height);
+            this.setCenter();
+        }, this);
         this.text = text;
     }
 

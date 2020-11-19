@@ -1,12 +1,12 @@
 package io.github.hulang1024.chinesechessserver.listener;
 
 import io.github.hulang1024.chinesechessserver.convert.RoomConvert;
-import io.github.hulang1024.chinesechessserver.domain.RoundGame;
-import io.github.hulang1024.chinesechessserver.domain.SessionUser;
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.ChessAction;
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessHost;
-import io.github.hulang1024.chinesechessserver.domain.chinesechess.rule.ChessboardState;
-import io.github.hulang1024.chinesechessserver.domain.Room;
+import io.github.hulang1024.chinesechessserver.play.GamePlay;
+import io.github.hulang1024.chinesechessserver.service.SessionUser;
+import io.github.hulang1024.chinesechessserver.play.ChessAction;
+import io.github.hulang1024.chinesechessserver.play.rule.ChessHost;
+import io.github.hulang1024.chinesechessserver.play.rule.ChessboardState;
+import io.github.hulang1024.chinesechessserver.room.Room;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessMoveResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPickResult;
 import io.github.hulang1024.chinesechessserver.message.server.chessplay.ChessPlayReadyResult;
@@ -24,7 +24,9 @@ import io.github.hulang1024.chinesechessserver.message.server.lobby.LobbyRoomUpd
 import io.github.hulang1024.chinesechessserver.message.server.spectator.SpectatorChessPlayRoundStart;
 import io.github.hulang1024.chinesechessserver.service.LobbyService;
 import io.github.hulang1024.chinesechessserver.service.UserSessionService;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ChessPlayMessageListener extends MessageListener {
     private UserSessionService userSessionService = new UserSessionService();
     private LobbyService lobbyService = new LobbyService();
@@ -56,7 +58,7 @@ public class ChessPlayMessageListener extends MessageListener {
         result.setReadyed(userToReady.isReadyed());
 
         // 广播给已在此房间的参与者
-        room.getUsers().forEach(user -> {
+        room.getUsers1().forEach(user -> {
             send(result, user.getSession());
         });
         // 观众
@@ -73,7 +75,7 @@ public class ChessPlayMessageListener extends MessageListener {
 
         // 如果全部准备好，开始游戏
         boolean isAllReadyed = room.getUserCount() == 2
-            && room.getUsers().stream().allMatch(user -> user.isReadyed());
+            && room.getUsers1().stream().allMatch(user -> user.isReadyed());
         if (isAllReadyed) {
             startRound(room);
         }
@@ -89,7 +91,7 @@ public class ChessPlayMessageListener extends MessageListener {
         result.setPickup(chessPick.isPickup());
         
         // 广播给已在此房间的其它用户
-        room.getUsers().forEach((user) -> {
+        room.getUsers1().forEach((user) -> {
             if (user.getSession() != actionUser.getSession()) {
                 send(result, user.getSession());
             }
@@ -129,7 +131,7 @@ public class ChessPlayMessageListener extends MessageListener {
         result.setToPos(chessMove.getToPos());
         
         // 广播给已在此房间的参与者
-        room.getUsers().forEach((user) -> {
+        room.getUsers1().forEach((user) -> {
             send(result, user.getSession());
         });
         // 观众
@@ -145,7 +147,7 @@ public class ChessPlayMessageListener extends MessageListener {
         ChessPlayConfirmRequestResult result = new ChessPlayConfirmRequestResult();
         result.setReqType(msg.getReqType());
         result.setChessHost(requester.getChessHost().code());
-        room.getUsers().forEach(user -> {
+        room.getUsers1().forEach(user -> {
             send(result, user.getSession());
         });
         room.getSpectators().forEach(user -> {
@@ -173,7 +175,7 @@ public class ChessPlayMessageListener extends MessageListener {
             }
         }
 
-        room.getUsers().forEach(user -> {
+        room.getUsers1().forEach(user -> {
             send(result, user.getSession());
         });
         room.getSpectators().forEach(user -> {
@@ -195,10 +197,10 @@ public class ChessPlayMessageListener extends MessageListener {
 
     private void startRound(Room room) {
         // 创建棋局
-        RoundGame round;
+        GamePlay round;
         SessionUser redChessUser = null;
         SessionUser blackChessUser = null;
-        for (SessionUser user : room.getUsers()) {
+        for (SessionUser user : room.getUsers1()) {
             if (user.getChessHost() == ChessHost.RED) {
                 redChessUser = user;
             } else {
@@ -206,10 +208,10 @@ public class ChessPlayMessageListener extends MessageListener {
             }
         }
         if (room.getRound() == null) {
-            round = new RoundGame(redChessUser, blackChessUser);
+            round = new GamePlay(redChessUser, blackChessUser);
             room.setRound(round);
         } else {
-            round = new RoundGame(blackChessUser, redChessUser);
+            round = new GamePlay(blackChessUser, redChessUser);
             room.setRound(round);
         }
 

@@ -5,8 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.yeauty.pojo.Session;
 
-import io.github.hulang1024.chinesechessserver.domain.SessionUser;
-import io.github.hulang1024.chinesechessserver.entity.User;
+import io.github.hulang1024.chinesechessserver.database.entity.EntityUser;
 import io.netty.channel.ChannelId;
 
 public class UserSessionService {
@@ -17,7 +16,7 @@ public class UserSessionService {
             return;
         }
 
-        User user = new User();
+        EntityUser user = new EntityUser();
         user.setId(Long.parseLong(session.id().asShortText(), 16));
         user.setNickname(user.getId() + "");
 

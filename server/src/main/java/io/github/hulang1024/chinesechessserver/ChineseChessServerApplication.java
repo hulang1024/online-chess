@@ -1,25 +1,26 @@
 package io.github.hulang1024.chinesechessserver;
 
-import org.reflections.Reflections;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import io.github.hulang1024.chinesechessserver.listener.MessageListener;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
-/**
- * @author Hu Lang
- */
 @SpringBootApplication
-public class ChineseChessServerApplication {
+public class ChineseChessServerApplication implements ApplicationListener<ContextRefreshedEvent> {
 
     public static void main(String[] args) {
         SpringApplication.run(ChineseChessServerApplication.class, args);
+    }
 
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
         // 扫描消息监听器并初始化
-        Reflections reflections = new Reflections("io.github.hulang1024.chinesechessserver.listener");
-        reflections.getSubTypesOf(MessageListener.class).forEach(listener -> {
+        event.getApplicationContext().getBeansOfType(MessageListener.class).values().forEach(listener -> {
             try {
-                ((MessageListener)listener.newInstance()).init();
+                listener.init();
             } catch (Exception e) {
                 e.printStackTrace();
             }

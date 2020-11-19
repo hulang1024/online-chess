@@ -1,4 +1,4 @@
-import Overlay from "../../component/Overlay";
+import Overlay from "../../overlay/Overlay";
 import ChessHost from "../../rule/chess_host";
 
 export default class CheckmateOverlay extends Overlay {

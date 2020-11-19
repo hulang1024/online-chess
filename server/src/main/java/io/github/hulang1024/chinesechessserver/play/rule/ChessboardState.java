@@ -1,4 +1,4 @@
-package io.github.hulang1024.chinesechessserver.domain.chinesechess.rule;
+package io.github.hulang1024.chinesechessserver.play.rule;
 
 public class ChessboardState {
     private Chess[][] array = new Chess[10][9];

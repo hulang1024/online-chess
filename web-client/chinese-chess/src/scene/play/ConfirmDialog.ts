@@ -1,4 +1,4 @@
-import Overlay from "../../component/Overlay";
+import Overlay from "../../overlay/Overlay";
 
 export default class ConfirmDialog extends Overlay {
     private lblTitle = new eui.Label();
