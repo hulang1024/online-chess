@@ -1,1 +1,0 @@
-java -jar ./chinese-chess-0.0.1-SNAPSHOT-jfx.jar

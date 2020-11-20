@@ -28,6 +28,9 @@
 //////////////////////////////////////////////////////////////////////////////////////
 
 import SOUND from "./audio/SOUND";
+import messager from "./component/messager";
+import APIAccess from "./online/api/APIAccess";
+import { APIRequest } from "./online/api/api_request";
 import LoginRequest from "./online/api/LoginRequest";
 import ChannelManager from "./online/chat/ChannelManager";
 import socketClient from "./online/socket";
@@ -35,6 +38,7 @@ import ChatOverlay from "./overlay/chat/ChatOverlay";
 import LobbyScene from "./scene/lobby/LobbyScene";
 import SceneContext from "./scene/SceneContext";
 import SceneManager from "./scene/scene_manger";
+import User from "./user/User";
 
 class Main extends eui.UILayer  {
     public constructor() {
@@ -119,18 +123,24 @@ class Main extends eui.UILayer  {
         let sceneContainer = new egret.DisplayObjectContainer();
         group.addChild(sceneContainer);
 
-        let context = new SceneContext(this.stage, sceneContainer, chatOverlay);
-        SceneManager.of(context).pushScene(context => new LobbyScene(context, channelManager));
-/*
-        let loginRequest = new LoginRequest(new User());
+        let user = new User();
+        user.nickname = prompt('用户名（昵称）');
+        user.password = '123456';
+        let loginRequest = new LoginRequest(user);
         loginRequest.success = (content) => {
-            alert('success');
-            console.log('ss', content);
+            messager.info('登录成功', this);
+            APIAccess.token = content.token;
+            user.id = content.userId;
+            APIAccess.localUser = user;
+            socketClient.send('user.login', {userId: content.userId});
 
+            let context = new SceneContext(this.stage, sceneContainer, chatOverlay);
+            SceneManager.of(context).pushScene(context => new LobbyScene(context, channelManager));
+    
         };
         loginRequest.failure = () => {
-            alert('failure')
+            messager.fail('登录失败', this);
         };
-        loginRequest.perform();*/
+        loginRequest.perform();
     }
 }

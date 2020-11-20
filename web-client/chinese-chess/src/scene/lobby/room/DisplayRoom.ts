@@ -1,5 +1,5 @@
 import RoomUser from "../../../online/socket-message/response/RoomUser";
-import Room from "../../../online/socket-message/response/Room";
+import Room from "../../../online/room/Room";
 
 export default class DisplayRoom extends eui.Group {
     room: Room;
@@ -57,7 +57,7 @@ export default class DisplayRoom extends eui.Group {
             let i = 0;
             while (i < this.room.users.length) {
                 if ((newRoom.users[i].id != this.room.users[i].id) ||
-                    (newRoom.users[i].readyed != this.room.users[i].readyed)) {
+                    (newRoom.users[i].readied != this.room.users[i].readied)) {
                     same = false;
                     break;
                 }
@@ -131,7 +131,7 @@ export default class DisplayRoom extends eui.Group {
             lblUserName.text =  (user.nickname || user.id.toString())
                 + (room.status == 3
                     ? "" 
-                    : " " + (user.readyed ? "已准备" : users.length == 1 ? "" : "未准备"));
+                    : " " + (user.readied ? "已准备" : users.length == 1 ? "" : "未准备"));
             userGroup.addChild(lblUserName);
         }
     }

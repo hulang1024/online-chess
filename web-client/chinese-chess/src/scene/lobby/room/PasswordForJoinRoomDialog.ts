@@ -1,5 +1,5 @@
 import Dialog from "../../../component/Dialog";
-import Room from "../../../online/socket-message/response/Room";
+import Room from "../../../online/room/Room";
 
 export default class PasswordForJoinRoomDialog extends Dialog {
     private textEditPassword: eui.EditableText;

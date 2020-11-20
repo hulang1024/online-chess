@@ -1,6 +1,6 @@
 import messager from "../../component/messager";
 import socketClient from "../../online/socket";
-import Room from "../../online/socket-message/response/Room";
+import Room from "../../online/room/Room";
 import AbstractScene from "../AbstractScene";
 import Channel from "../../online/chat/Channel";
 import SceneContext from "../SceneContext";
@@ -16,6 +16,7 @@ import CHESS_CLASS_KEY_MAP from "../../rule/chess_map";
 import ChannelManager from "../../online/chat/ChannelManager";
 import ChannelType from "../../online/chat/ChannelType";
 import ChessPos from "../../rule/ChessPos";
+import SpectatorLeaveRequest from "../../online/spectator/SpectatorLeaveRequest";
 
 export default class SpectatorPlayScene extends AbstractScene {
     // socket消息监听器
@@ -132,7 +133,7 @@ export default class SpectatorPlayScene extends AbstractScene {
         btnLeave.height = 50;
         btnLeave.label = "离开棋桌";
         btnLeave.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            socketClient.send('spectator.leave');
+            new SpectatorLeaveRequest(this.room).perform();
             this.popScene();
         }, this);
         buttonGroup.addChild(btnLeave);
@@ -233,19 +234,19 @@ export default class SpectatorPlayScene extends AbstractScene {
             this.blackChessUserInfoPane.setActive(false);
         };
 
-        this.listeners['chessplay.ready'] = (msg: any) => {
-            let readyStatuText = msg.readyed ? '已经准备' : '取消准备';
+        this.listeners['play.ready'] = (msg: any) => {
+            let readyStatuText = msg.readied ? '已经准备' : '取消准备';
             if (this.redChessUser && msg.uid == this.redChessUser.id) {
-                this.redChessUser.readyed = msg.readyed;
+                this.redChessUser.readied = msg.readied;
                 this.textOverlay.show(`红方${readyStatuText}`);
             }
             if (this.blackChessUser && msg.uid == this.blackChessUser.id) {
-                this.blackChessUser.readyed = msg.readyed;
+                this.blackChessUser.readied = msg.readied;
                 this.textOverlay.show(`黑方${readyStatuText}`);
             }
         };
 
-        this.listeners['spectator.chessplay.round_start'] = (msg: any) => {
+        this.listeners['spectator.play.round_start'] = (msg: any) => {
             this.textOverlay.show('开始对局', 3000);
 
             let redChessUser: RoomUser;
@@ -272,21 +273,21 @@ export default class SpectatorPlayScene extends AbstractScene {
             this.player.startRound(this.viewChessHost);
         };
 
-        this.listeners['chessplay.chess_pick'] = (msg) => {            
+        this.listeners['play.chess_pick'] = (msg) => {            
             this.player.pickChess(msg.pickup, msg.pos, msg.chessHost);
         };
 
-        this.listeners['chessplay.chess_move'] = (msg: any) => {
+        this.listeners['play.chess_move'] = (msg: any) => {
             this.player.moveChess(msg.fromPos, msg.toPos, msg.chessHost, msg.moveType == 2);
         };
     
-        this.listeners['chessplay.confirm_request'] = (msg: any) => {
+        this.listeners['play.confirm_request'] = (msg: any) => {
             let text = msg.chessHost == ChessHost.BLACK ? '黑方' : '红方';
             text += `请求${confirmRequest.toReadableText(msg.reqType)}`;
             this.textOverlay.show(text);
         };
         
-        this.listeners['chessplay.confirm_response'] = (msg: any) => {
+        this.listeners['play.confirm_response'] = (msg: any) => {
             let text = '';
             text += msg.chessHost == ChessHost.BLACK ? '黑方' : '红方';
             text += msg.ok ? '同意' : '不同意';
@@ -367,8 +368,8 @@ export default class SpectatorPlayScene extends AbstractScene {
     }
     
     private onWin(winChessHost: ChessHost, delay: boolean = false) {
-        this.redChessUser.readyed = false;
-        this.blackChessUser.readyed = false;
+        this.redChessUser.readied = false;
+        this.blackChessUser.readied = false;
         setTimeout(() => {
             this.textOverlay.show(winChessHost == null
                 ? '平局'

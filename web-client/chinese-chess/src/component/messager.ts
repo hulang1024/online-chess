@@ -33,6 +33,8 @@ function message(type: MessageType, options: MessageOptions | string, context: e
     }
     if (typeof options.msg == 'string') {
         let text = new egret.TextField();
+        text.wordWrap = true;
+        text.multiline = true;
         text.size = 20;
         text.x = 8;
         text.y = 8;
@@ -63,7 +65,7 @@ function message(type: MessageType, options: MessageOptions | string, context: e
 }
 
 function messageContainer(child: egret.DisplayObject, context: egret.DisplayObject, offset: number) {
-    let layout = new eui.VerticalLayout();
+    let layout = new eui.HorizontalLayout();
     layout.paddingTop = 8;
     layout.paddingRight = 8;
     layout.paddingBottom = 8;

@@ -7,7 +7,7 @@ export default class LoginRequest extends APIRequest {
         this.method = HttpMethod.POST;
         this.path = 'users/login';
 
-        this.addParam('username', "test");
-        this.addParam('password', 'test');
+        this.addParam('username', user.nickname);
+        this.addParam('password', user.password);
     }
 }

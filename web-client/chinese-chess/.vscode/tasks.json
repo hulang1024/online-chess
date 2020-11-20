@@ -1,0 +1,11 @@
+{
+    "tasks": [
+        {
+            "type": "egret",
+            "isBackground": true,
+            "problemMatcher": "$egret",
+            "label": "egret: build"
+        }
+    ],
+    "version": "0.2.0"
+}

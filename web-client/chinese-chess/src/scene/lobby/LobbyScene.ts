@@ -6,10 +6,15 @@ import PlayScene from "../play/PlayScene";
 import SceneContext from "../SceneContext";
 import DisplayRoom from "./room/DisplayRoom";
 import PasswordForJoinRoomDialog from "./room/PasswordForJoinRoomDialog";
-import Room from "../../online/socket-message/response/Room";
+import Room from "../../online/room/Room";
 import RoomCreateDialog from "./room/RoomCreateDialog";
 import SpectatorPlayScene from "../play/SpectatorPlayScene";
 import ChannelManager from "../../online/chat/ChannelManager";
+import CreateRoomRequest from "../../online/room/CreateRoomRequest";
+import GetRoomsRequest from "../../online/room/GetRoomsRequest";
+import JoinRoomRequest from "../../online/room/JoinRoomRequest";
+import QuickStartRequest from "../../online/room/QuickStartRequest";
+import SpectateRequest from "../../online/spectator/SpectateRequest";
 
 export default class LobbyScene extends AbstractScene {
     private listeners = {};
@@ -96,67 +101,50 @@ export default class LobbyScene extends AbstractScene {
         }, this);
 
         (async () => {
-            socketClient.reconnectedSignal.add(this.reconnectHandler = () => {
-                socketClient.send('lobby.enter');
-                socketClient.send('lobby.search_rooms');
-            });
-            socketClient.add('lobby.search_rooms', this.listeners['lobby.search_rooms'] = (msg) => {
-                this.roomContainer.removeChildren();
-                msg.rooms.forEach(room => {
-                    this.addRoom(room);
-                });
-            });
-            socketClient.add('stat.online', this.listeners['stat.online'] = (msg) => {
+            this.listeners['stat.online'] = (msg) => {
                 lblOnlineNum.text = msg.online;
-            });
-            socketClient.add('room.create', this.listeners['room.create'] = (msg) => {
-                if (msg.code != 0) {
-                    messager.fail({msg: '创建棋桌失败'}, this);
-                    return;
-                }
+            };
+            this.listeners['lobby.room_create'] = (msg) => {
                 this.addRoom(msg.room);
-            });
-            socketClient.add('lobby.room_update', this.listeners['lobby.room_update'] = (msg) => {
+            };
+            this.listeners['lobby.room_update'] = (msg) => {
                 if (msg.code != 0) {
                     return;
                 }
                 let room = <DisplayRoom>this.roomContainer.$children
                     .filter(room => (<DisplayRoom>room).room.id == msg.room.id)[0];
                 room.update(msg.room);
-            });
-            socketClient.add('lobby.room_remove', this.listeners['lobby.room_remove'] = (msg) => {
+            };
+            this.listeners['lobby.room_remove'] = (msg) => {
                 if (msg.code != 0) {
                     return;
                 }
                 let room = <DisplayRoom>this.roomContainer.$children
                     .filter(room => (<DisplayRoom>room).room.id == msg.roomId)[0];
                 this.roomContainer.removeChild(room);
-            });
-            socketClient.add('room.join', this.listeners['room.join'] = (msg) => {
-                switch (msg.code) {
-                    case 2:
-                        messager.fail('加入棋桌失败：该棋桌已不存在', this);
-                        return;
-                    case 3:
-                        messager.fail('加入棋桌失败：棋桌已满', this);
-                        return;
-                    case 4:
-                        messager.fail('加入棋桌失败：你已加入本棋桌', this);
-                        return;
-                    case 5:
-                        messager.fail('加入棋桌失败：你已加入其它棋桌', this);
-                        return;
-                    case 6:
-                        messager.fail('加入棋桌失败：密码错误', this);
-                        return;
-                }
-                this.pushScene((context) => new PlayScene(context, msg, this.channelManager));
+            };
+
+            for (let key in this.listeners) {
+                socketClient.add(key, this.listeners[key]);
+            }
+
+            let getRoomsRequest = new GetRoomsRequest();
+            getRoomsRequest.success = (rooms) => {
+                this.roomContainer.removeChildren();
+                rooms.forEach((room: Room) => {
+                    this.addRoom(room);
+                });
+            };
+            getRoomsRequest.perform();
+
+            socketClient.reconnectedSignal.add(this.reconnectHandler = () => {
+                socketClient.send('lobby.enter');
+                getRoomsRequest.perform();
             });
 
             await socketClient.connect();
             
             socketClient.send('lobby.enter');
-            socketClient.send('lobby.search_rooms');
         })();
     }
 
@@ -174,24 +162,30 @@ export default class LobbyScene extends AbstractScene {
     onCreateRoomClick() {
         this.setChildIndex(this.roomCreateDialog, 1000);
         this.roomCreateDialog.visible = true;
-        this.roomCreateDialog.onOkClick = (room) => {
+        this.roomCreateDialog.onOkClick = (room: Room) => {
             this.roomCreateDialog.visible = false;
-            socketClient.send('room.create', {
-                roomName: room.name,
-                password: room.password
-            });
+
+            let createRoomRequest = new CreateRoomRequest(room);
+            createRoomRequest.success = (room) => {
+                this.addRoom(room);
+                this.pushScene((context) => new PlayScene(context, room, this.channelManager));
+            };
+            createRoomRequest.failure = () => {
+                messager.fail({msg: '创建棋桌失败'}, this);
+            };
+            createRoomRequest.perform();
         }
     }
 
     onQuickMatchClick() {
-        socketClient.send('lobby.quick_match');
-        socketClient.addOnce('lobby.quick_match', (msg) => {
-            if (msg.code != 0) {
-                messager.fail('快速加入失败，因为' + {2: '你已加入其它棋桌', 3: '没有可进入的棋桌，创建一个吧'}[msg.code] || '未知', this);
-                return;
-            }
-            // 成功会有加入棋桌事件消息，其它地方已处理
-        });
+        let quickStartRequest = new QuickStartRequest();
+        quickStartRequest.success = (room) => {
+            this.addRoom(room);
+            this.pushScene((context) => new PlayScene(context, room, this.channelManager));
+        };
+        quickStartRequest.failure = () => {
+            messager.fail('快速加入失败', this);
+        };
     }
 
     private addRoom(room: Room) {
@@ -205,25 +199,50 @@ export default class LobbyScene extends AbstractScene {
     private onJoinRoomClick(displayRoom: DisplayRoom) {
         let room = displayRoom.room;
         if (room.userCount == 1) {
+            let paramRoom = new Room();
+            paramRoom.id = room.id;
             if (room.locked) {
                 this.setChildIndex(this.passwordForJoinRoomDialog, 1000);
                 this.passwordForJoinRoomDialog.showFor(room);
-                this.passwordForJoinRoomDialog.onOkClick = (password) => {
+                this.passwordForJoinRoomDialog.onOkClick = (password: string) => {
                     this.passwordForJoinRoomDialog.visible = false;
-                    socketClient.send('room.join', {roomId: room.id, password});
+                    paramRoom.password = password;
                 }
-            } else {
-                socketClient.send('room.join', {roomId: room.id});
             }
-        } else {
-            socketClient.send('spectator.spectate', {roomId: room.id});
-            socketClient.addOnce('spectator.room_round_state', (msg: any) => {
-                if (msg.code != 0) {
-                    messager.info('失败', this);
-                    return;
+
+            let joinRoomRequest = new JoinRoomRequest(room);
+            joinRoomRequest.success = (result) => {
+                this.pushScene((context) => new PlayScene(context, result.room, this.channelManager));
+            };
+
+            joinRoomRequest.failure = (result) => {
+                switch (result.code) {
+                    case 2:
+                        messager.fail('加入棋桌失败：该棋桌已不存在', this);
+                        return;
+                    case 3:
+                        messager.fail('加入棋桌失败：棋桌已满', this);
+                        return;
+                    case 4:
+                        messager.fail('加入棋桌失败：你已加入本棋桌', this);
+                        return;
+                    case 5:
+                        messager.fail('加入棋桌失败：你已加入其它棋桌', this);
+                        return;
+                    case 6:
+                        messager.fail('加入棋桌失败：密码错误', this);
+                        return;
                 }
-                this.pushScene((context) => new SpectatorPlayScene(context, msg, this.channelManager));
-            });
+            }
+            joinRoomRequest.perform();
+        } else {
+            let spectateRequest = new SpectateRequest(room);
+            spectateRequest.success = (states) => {
+                this.pushScene((context) => new SpectatorPlayScene(context, states, this.channelManager));
+            };
+            spectateRequest.failure = () => {
+                messager.info('观看请求失败', this);
+            };
         }
     }
 

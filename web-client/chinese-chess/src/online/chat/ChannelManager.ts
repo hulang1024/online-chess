@@ -1,11 +1,12 @@
-import platform from "../../Platform";
-import User from "../../user/User";
+import APIAccess from "../api/APIAccess";
 import socketClient from "../socket";
 import Channel from "./Channel";
 import ChannelType from "./ChannelType";
+import GetMessagesRequest from "./GetMessagesRequest";
 import InfoMessage from "./InfoMessage";
 import LocalEchoMessage from "./LocalEchoMessage";
 import Message from "./Message";
+import PostMessageRequest from "./PostMessageRequest";
 
 export default class ChannelManager {
     private _joinedChannels: Channel[] = [];
@@ -78,15 +79,16 @@ export default class ChannelManager {
         let message = new LocalEchoMessage();
         message.channelId = this.currentChannel.id;
         message.timestamp = new Date().getTime();
-        message.sender = platform.getUserInfo();
+        message.sender = APIAccess.localUser;
         message.content = text;
         /*
         this.currentChannel.addLocalEcho(message);*/
-
-        socketClient.send('chat.message', {
-            channelId: message.channelId,
-            content: message.content
-        });
+        let postMessagesRequest = new PostMessageRequest(message);
+        postMessagesRequest.success = (msgs) => {
+        }
+        postMessagesRequest.failure = (msgs) => {
+        }
+        postMessagesRequest.perform();
     }
 
     loadDefaultChannels() {
@@ -106,7 +108,7 @@ export default class ChannelManager {
     private async initSocketListeners() {
         socketClient.add('chat.message', (msg: any) => {
             let channel = this._joinedChannels.filter(c => c.id == msg.channelId)[0];
-            msg.isFromMe = platform.getUserInfo().id == msg.sender.id;
+            msg.isFromMe = APIAccess.localUser.id == msg.sender.id;
             channel.addNewMessages([msg]);
         });
 
@@ -120,10 +122,11 @@ export default class ChannelManager {
 
     private async fetchInitalMessages(channel: Channel) {
         await socketClient.connect();
-        socketClient.send('chat.fetch_messages', {channelId: channel.id});
-        socketClient.addOnce('chat.fetch_messages_response', (msg: any) => {
-            this.handleChannelMessages(msg.msgs);
-        });
+        let getMessagesRequest = new GetMessagesRequest(channel);
+        getMessagesRequest.success = (msgs) => {
+            this.handleChannelMessages(msgs);
+        }
+        getMessagesRequest.perform();
     }
 
     private handleChannelMessages(messages: Message[]) {
