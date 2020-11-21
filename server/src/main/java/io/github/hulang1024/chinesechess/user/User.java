@@ -1,43 +1,39 @@
 package io.github.hulang1024.chinesechess.user;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.github.hulang1024.chinesechess.database.entity.EntityUser;
-import io.github.hulang1024.chinesechess.play.rule.ChessHost;
-import io.github.hulang1024.chinesechess.room.Room;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import org.yeauty.pojo.Session;
 
+import java.time.LocalDateTime;
 
 @Data
-public class User extends EntityUser {
-    @JsonIgnore
+@TableName("users")
+public class User {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
+    private String nickname;
+
+    private Integer gender;
+
+    private String avatarUrl;
+
     @JSONField(serialize = false)
-    private Session session;
+    private String password;
 
-    /**
-     * 持棋方
-     */
-    private ChessHost chessHost;
-
-    /**
-     * 已加入的房间
-     */
-    @JsonIgnore
     @JSONField(serialize = false)
-    private Room joinedRoom;
+    private int source;
 
-    /**
-     * 观看的房间
-     */
-    @JsonIgnore
     @JSONField(serialize = false)
-    private Room spectatingRoom;
+    private String openId;
 
-    /**
-     * 准备状态
-     */
-    private boolean readied = false;
+    @JSONField(serialize = false)
+    private LocalDateTime registerTime;
+
+    @JSONField(serialize = false)
+    private LocalDateTime lastLoginTime;
 
     public static User SYSTEM_USER;
     static {
@@ -47,30 +43,20 @@ public class User extends EntityUser {
         SYSTEM_USER = systemUser;
     }
 
-    public void joinRoom(Room room) {
-        joinedRoom = room;
-        joinedRoom.joinUser(this);
-    }
-
-    public void partRoom() {
-        if (joinedRoom == null) {
-            return;
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof User)) {
+            return false;
         }
 
-        joinedRoom.partUser(this);
-        joinedRoom = null;
-        readied = false;
+        return ((User)other).id.equals(this.id);
     }
 
-    @JsonIgnore
-    @JSONField(serialize = false)
-    public boolean isJoinedAnyRoom() {
-        return joinedRoom != null;
-    }
-
-    @JsonIgnore
-    @JSONField(serialize = false)
-    public boolean isSpectatingAnyRoom() {
-        return spectatingRoom != null;
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
     }
 }

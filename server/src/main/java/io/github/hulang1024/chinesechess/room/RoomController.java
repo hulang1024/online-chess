@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.room;
 
-import io.github.hulang1024.chinesechess.message.server.room.LeaveRoomServerMsg;
-import io.github.hulang1024.chinesechess.user.OnlineUserManager;
+import io.github.hulang1024.chinesechess.http.GuestAPI;
+import io.github.hulang1024.chinesechess.websocket.message.server.room.LeaveRoomServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +24,7 @@ public class RoomController {
      * 查询房间
      * @return
      */
+    @GuestAPI
     @GetMapping
     public ResponseEntity<Collection<Room>> getRooms() {
         return ResponseEntity.ok(roomManager.getRooms());
@@ -62,8 +63,7 @@ public class RoomController {
         @NotNull @PathVariable("room_id") Long roomId,
         @NotNull @PathVariable("user_id") Long userId,
         @RequestBody JoinRoomParam param) {
-        JoinRoomResult result = roomManager.join(
-            roomManager.getRoom(roomId), OnlineUserManager.getUserById(userId), param);
+        JoinRoomResult result = roomManager.join(roomId, userId, param);
         return new ResponseEntity(result, result.getCode() == 0 ? HttpStatus.OK : HttpStatus.EXPECTATION_FAILED);
     }
 
@@ -71,7 +71,7 @@ public class RoomController {
     public ResponseEntity<LeaveRoomServerMsg> part(
         @NotNull @PathVariable("room_id") Long roomId,
         @NotNull @PathVariable("user_id") Long userId) {
-        int ret = roomManager.part(roomManager.getRoom(roomId), OnlineUserManager.getUserById(userId));
+        int ret = roomManager.part(roomId, userId);
         return new ResponseEntity(ret == 0 ? HttpStatus.OK : HttpStatus.EXPECTATION_FAILED);
     }
 

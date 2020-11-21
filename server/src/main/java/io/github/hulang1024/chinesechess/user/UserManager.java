@@ -1,64 +1,94 @@
 package io.github.hulang1024.chinesechess.user;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import io.github.hulang1024.chinesechess.database.dao.UserDao;
-import io.github.hulang1024.chinesechess.database.entity.EntityUser;
+import io.github.hulang1024.chinesechess.http.AuthenticationUtils;
+import io.github.hulang1024.chinesechess.user.login.LoginResult;
+import io.github.hulang1024.chinesechess.user.login.UserLoginParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.yeauty.pojo.Session;
 
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class UserManager {
+    private static Map<Long, GuestUser> guestUserMap = new ConcurrentHashMap<>();
+    private static Map<Long, User> loggedInUserMap = new ConcurrentHashMap<>();
     @Autowired
     private UserDao userDao;
 
-    public User getById(long id) {
-        EntityUser entityUser = userDao.selectById(id);
-        User user = new User();
-        user.setId(entityUser.getId());
-        user.setNickname(entityUser.getNickname());
+    public User getOnlineUser(long userId) {
+        return loggedInUserMap.get(userId);
+    }
 
-        return user;
+    public GuestUser getGuestUser(long userId) {
+        return guestUserMap.get(userId);
+    }
+
+    public User getOnlineUser(Session session) {
+        Long userId = session.getAttribute(UserSessionManager.USER_ID_KEY);
+        return userId != null ? getOnlineUser(userId) : null;
+    }
+
+    public User getGuestUser(Session session) {
+        Long userId = session.getAttribute(UserSessionManager.USER_ID_KEY);
+        return userId != null ? getGuestUser(userId) : null;
+    }
+
+    public void removeGuestUser(User user) {
+        guestUserMap.remove(user.getId());
+    }
+
+    public User getDatabaseUser(long id) {
+        return userDao.selectById(id);
     }
 
 
-    public User register(UserRegisterParam param) {
-        EntityUser entityUser = new EntityUser();
-        entityUser.setNickname(param.getNickname());
-        entityUser.setPassword(PasswordUtils.cipherText(param.getPassword()));
-        entityUser.setRegisterTime(LocalDateTime.now());
+    public RegisterResult register(UserRegisterParam param) {
+        User user = new User();
+        user.setNickname(param.getNickname());
+        user.setPassword(PasswordUtils.cipherText(param.getPassword()));
+        user.setRegisterTime(LocalDateTime.now());
+        user.setSource(0);
 
-        boolean ok = userDao.insert(entityUser) > 0;
-        if (!ok) {
-            return null;
+        try {
+            boolean ok = userDao.insert(user) > 0;
+            if (!ok) {
+                return RegisterResult.fail(1);
+            }
+        } catch (ConstraintViolationException e) {
+            return RegisterResult.fail(2);
         }
 
-        User user = new User();
-        user.setId(entityUser.getId());
-
-        return user;
+        return RegisterResult.ok();
     }
 
     public LoginResult login(UserLoginParam param) {
-        EntityUser entityUser = userDao.selectOne(
-            new QueryWrapper<EntityUser>()
+        User user = userDao.selectOne(
+            new QueryWrapper<User>()
                 .eq("nickname", param.getUsername()));
-        if (entityUser == null
-            || !PasswordUtils.isRight(param.getPassword(), entityUser.getPassword())) {
-            return LoginResult.failed();
+        if (user == null) {
+            return LoginResult.fail(1);
+        }
+        if (!PasswordUtils.isRight(param.getPassword(), user.getPassword())) {
+            return LoginResult.fail(2);
         }
 
+        user.setLastLoginTime(LocalDateTime.now());
+        userDao.updateById(user);
+
         LoginResult result = LoginResult.ok();
-        result.setUserId(entityUser.getId());
-        result.setToken(entityUser.getId().toString());
-
-        User user = new User();
-        user.setId(entityUser.getId());
-        user.setNickname(entityUser.getNickname());
-
-        OnlineUserManager.addUser(user);
+        result.setUserId(user.getId());
+        result.setAccessToken(AuthenticationUtils.generateAccessToken(user));
+        loggedInUserMap.put(user.getId(), user);
 
         return result;
+    }
+
+    public void loginGuestUser(GuestUser user) {
+        guestUserMap.put(user.getId(), user);
     }
 }

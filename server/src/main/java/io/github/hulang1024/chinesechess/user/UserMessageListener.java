@@ -1,96 +1,142 @@
 package io.github.hulang1024.chinesechess.user;
 
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
-import io.github.hulang1024.chinesechess.message.AbstractMessageListener;
+import io.github.hulang1024.chinesechess.room.LobbyService;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
-import io.github.hulang1024.chinesechess.spectator.SpectatorService;
+import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
+import io.github.hulang1024.chinesechess.user.login.UserLoginClientMsg;
+import io.github.hulang1024.chinesechess.websocket.ClientSessionEventManager;
+import io.github.hulang1024.chinesechess.websocket.message.AbstractMessageListener;
+import io.github.hulang1024.chinesechess.websocket.message.server.stat.OnlineStatServerMsg;
+import io.github.hulang1024.chinesechess.websocket.message.server.user.UserLoginServerMsg;
+import io.github.hulang1024.chinesechess.websocket.message.server.user.UserOfflineServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yeauty.pojo.Session;
 
-import io.github.hulang1024.chinesechess.websocket.ChineseChessWebSocketServerEndpoint;
-import io.github.hulang1024.chinesechess.websocket.ClientEventManager;
-import io.github.hulang1024.chinesechess.message.server.stat.OnlineStatServerMsg;
-import io.github.hulang1024.chinesechess.message.server.user.UserLoginServerMsg;
-import io.github.hulang1024.chinesechess.message.server.user.UserOfflineServerMsg;
-import io.github.hulang1024.chinesechess.room.LobbyService;
-
 @Component
 public class UserMessageListener extends AbstractMessageListener {
-    private LobbyService lobbyService = new LobbyService();
+    @Autowired
+    private LobbyService lobbyService;
     @Autowired
     private ChannelManager channelManager;
     @Autowired
+    private UserManager userManager;
+    @Autowired
     private RoomManager roomManager;
     @Autowired
-    private SpectatorService spectatorService;
+    private SpectatorManager spectatorManager;
+
+    public static int sessionUserCount = 0;
 
     @Override
     public void init() {
-        ClientEventManager.addSessionCloseEventHandler(this::onSessionClose);
-        ClientEventManager.addSessionOpenEventHandler(this::onSessionOpen);
+        ClientSessionEventManager.addSessionCloseEventHandler(this::onSessionClose);
+        ClientSessionEventManager.addSessionOpenEventHandler(this::onSessionOpen);
         addMessageHandler(UserLoginClientMsg.class, this::onUserLogin);
 
     }
 
     private void onSessionOpen(Session session) {
+        sessionUserCount++;
+    }
+
+    private void onUserLogin(UserLoginClientMsg loginMsg) {
+        UserLoginServerMsg loginResult = new UserLoginServerMsg();
+
+        if (loginMsg.getUserId() == -1) {
+            // 现在游客登录
+            GuestUser guestUser = new GuestUser();
+            userSessionManager.setBinding(guestUser, loginMsg.getSession());
+            userManager.loginGuestUser(guestUser);
+            for (long channelId : ChannelManager.defaultChannelIds) {
+                channelManager.joinChannel(channelManager.getChannelById(channelId), guestUser);
+            }
+        } else {
+            // 现在用户登录
+            // 如果该session游客登录过
+            User guestUser = userManager.getGuestUser(loginMsg.getSession());
+            if (guestUser != null) {
+                userSessionManager.removeBinding(loginMsg.getSession());
+                userManager.removeGuestUser(guestUser);
+                for (long channelId : ChannelManager.defaultChannelIds) {
+                    channelManager.getChannelById(channelId).removeUser(guestUser);
+                }
+            }
+
+            User user = userManager.getOnlineUser(loginMsg.getUserId());
+            if (user != null) {
+                if (userSessionManager.getSession(user) == null ||
+                    userSessionManager.getSession(user).equals(loginMsg.getSession())) {
+                    boolean isOk = userSessionManager.setBinding(user, loginMsg.getSession());
+
+                    if (isOk) {
+                        for (long channelId : ChannelManager.defaultChannelIds) {
+                            channelManager.joinChannel(channelManager.getChannelById(channelId), user);
+                        }
+                    }
+
+                    loginResult.setCode(isOk ? 0 : 1);
+                } else {
+                    // 此用户已经(可能在别处)登陆
+                    loginResult.setCode(2);
+                }
+            }
+        }
+
+        send(loginResult, loginMsg.getSession());
     }
 
     private void onSessionClose(Session session) {
-        User user = OnlineUserManager.getUser(session);
-
+        User user = userManager.getOnlineUser(session);
         if (user != null) {
             // 离开房间
-            if (user.isJoinedAnyRoom()) {
-                Room room = user.getJoinedRoom();
-
-                roomManager.part(user.getJoinedRoom(), user);
-
+            Room room = roomManager.getJoinedRoom(user);
+            if (room != null) {
                 // 发送用户离线消息
                 UserOfflineServerMsg userOfflineMsg = new UserOfflineServerMsg();
                 userOfflineMsg.setUid(user.getId());
                 userOfflineMsg.setNickname(user.getNickname());
-                room.getUsers().forEach(roomUser -> {
-                    if (!roomUser.equals(user)) {
-                        send(userOfflineMsg, roomUser.getSession());
-                    }
-                });
+                roomManager.broadcast(room, userOfflineMsg, user);
+
+                roomManager.part(room, user);
             }
 
             // 离开观看
-            if (user.isSpectatingAnyRoom()) {
-                spectatorService.leave(user);
+            room = spectatorManager.getSpectatingRoom(user);
+            if (room != null) {
+                spectatorManager.leave(user, room);
             }
-
-            channelManager.getChannelById(1L).removeUser(user);
-
-            OnlineUserManager.removeBinding(session);
+        } else {
+            // 游客退出
+            User guestUser = userManager.getGuestUser(session);
+            if (guestUser != null) {
+                userManager.removeGuestUser(guestUser);
+            }
+            user = guestUser;
         }
 
+        if (user != null) {
+            for (long channelId : ChannelManager.defaultChannelIds) {
+                channelManager.getChannelById(channelId).removeUser(user);
+            }
+        }
+
+        userSessionManager.removeBinding(session);
+
         lobbyService.removeStayLobbySession(session);
+
+        sessionUserCount--;
 
         // 发送统计消息
         sendUpdateStat();
     }
 
-    private void onUserLogin(UserLoginClientMsg msg) {
-        OnlineUserManager.setBinding(msg.getUserId(), msg.getSession());
-        User user = OnlineUserManager.getUser(msg.getSession());
-        channelManager.getChannelById(1L).joinUser(user);
-
-        // 发送登录成功
-        UserLoginServerMsg loginResult = new UserLoginServerMsg();
-        loginResult.setCode(0);
-        send(loginResult, msg.getSession());
-    }
-
     private void sendUpdateStat() {
         OnlineStatServerMsg statMsg = new OnlineStatServerMsg();
-        statMsg.setOnline(ChineseChessWebSocketServerEndpoint.connectedSessionCount);
+        statMsg.setOnline(sessionUserCount);
         
-        lobbyService.getAllStayLobbySessions().forEach(session -> {
-            send(statMsg, session);
-        });
+        lobbyService.broadcast(statMsg, null);
     }
 }

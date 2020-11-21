@@ -1,6 +1,5 @@
 import messager from "../../component/messager";
 import socketClient from "../../online/socket";
-import platform from "../../Platform";
 import AbstractScene from "../AbstractScene";
 import PlayScene from "../play/PlayScene";
 import SceneContext from "../SceneContext";
@@ -15,19 +14,24 @@ import GetRoomsRequest from "../../online/room/GetRoomsRequest";
 import JoinRoomRequest from "../../online/room/JoinRoomRequest";
 import QuickStartRequest from "../../online/room/QuickStartRequest";
 import SpectateRequest from "../../online/spectator/SpectateRequest";
+import APIAccess from "../../online/api/APIAccess";
+import SocketClient from "../../online/socket";
 
 export default class LobbyScene extends AbstractScene {
     private listeners = {};
+    private api: APIAccess;
+    private socketClient: SocketClient;
     private channelManager: ChannelManager;
     private reconnectHandler: Function;
     private roomContainer = new eui.Group();
     private roomCreateDialog = new RoomCreateDialog();
     private passwordForJoinRoomDialog = new PasswordForJoinRoomDialog();
-
-    constructor(context: SceneContext, channelManager: ChannelManager) {
+    
+    constructor(context: SceneContext) {
         super(context);
-
-        this.channelManager = channelManager;
+        this.api = context.api;
+        this.channelManager = context.channelManager;
+        this.socketClient = context.socketClient;
 
         let layout = new eui.VerticalLayout();
         layout.paddingTop = 8;
@@ -125,7 +129,7 @@ export default class LobbyScene extends AbstractScene {
             };
 
             for (let key in this.listeners) {
-                socketClient.add(key, this.listeners[key]);
+                this.socketClient.add(key, this.listeners[key]);
             }
 
             let getRoomsRequest = new GetRoomsRequest();
@@ -135,16 +139,16 @@ export default class LobbyScene extends AbstractScene {
                     this.addRoom(room);
                 });
             };
-            getRoomsRequest.perform();
+            this.api.perform(getRoomsRequest);
 
-            socketClient.reconnectedSignal.add(this.reconnectHandler = () => {
-                socketClient.send('lobby.enter');
-                getRoomsRequest.perform();
+            this.socketClient.reconnectedSignal.add(this.reconnectHandler = () => {
+                this.socketClient.send('lobby.enter');
+                this.api.perform(getRoomsRequest);
             });
 
-            await socketClient.connect();
+            await this.socketClient.connect();
             
-            socketClient.send('lobby.enter');
+            this.socketClient.send('lobby.enter');
         })();
     }
 
@@ -152,14 +156,18 @@ export default class LobbyScene extends AbstractScene {
         super.onSceneExit();
         
         for (let key in this.listeners) {
-            socketClient.signals[key].remove(this.listeners[key]);
+            this.socketClient.signals[key].remove(this.listeners[key]);
         }
-        socketClient.reconnectedSignal.remove(this.reconnectHandler);
-        socketClient.send('lobby.exit');
+        this.socketClient.reconnectedSignal.remove(this.reconnectHandler);
+        this.socketClient.send('lobby.exit');
         this.context.chatOverlay.popOut();
     }
 
     onCreateRoomClick() {
+        if (this.notLoggedIn()) {
+            return;
+        }
+
         this.setChildIndex(this.roomCreateDialog, 1000);
         this.roomCreateDialog.visible = true;
         this.roomCreateDialog.onOkClick = (room: Room) => {
@@ -168,24 +176,29 @@ export default class LobbyScene extends AbstractScene {
             let createRoomRequest = new CreateRoomRequest(room);
             createRoomRequest.success = (room) => {
                 this.addRoom(room);
-                this.pushScene((context) => new PlayScene(context, room, this.channelManager));
+                this.pushScene((context) => new PlayScene(context, room));
             };
             createRoomRequest.failure = () => {
                 messager.fail({msg: '创建棋桌失败'}, this);
             };
-            createRoomRequest.perform();
+            this.api.perform(createRoomRequest);
         }
     }
 
     onQuickMatchClick() {
+        if (this.notLoggedIn()) {
+            return;
+        }
+
         let quickStartRequest = new QuickStartRequest();
         quickStartRequest.success = (room) => {
             this.addRoom(room);
-            this.pushScene((context) => new PlayScene(context, room, this.channelManager));
+            this.pushScene((context) => new PlayScene(context, room));
         };
         quickStartRequest.failure = () => {
             messager.fail('快速加入失败', this);
         };
+        this.api.perform(quickStartRequest);
     }
 
     private addRoom(room: Room) {
@@ -197,6 +210,10 @@ export default class LobbyScene extends AbstractScene {
     }
 
     private onJoinRoomClick(displayRoom: DisplayRoom) {
+        if (this.notLoggedIn()) {
+            return;
+        }
+
         let room = displayRoom.room;
         if (room.userCount == 1) {
             let paramRoom = new Room();
@@ -212,7 +229,7 @@ export default class LobbyScene extends AbstractScene {
 
             let joinRoomRequest = new JoinRoomRequest(room);
             joinRoomRequest.success = (result) => {
-                this.pushScene((context) => new PlayScene(context, result.room, this.channelManager));
+                this.pushScene((context) => new PlayScene(context, result.room));
             };
 
             joinRoomRequest.failure = (result) => {
@@ -234,16 +251,26 @@ export default class LobbyScene extends AbstractScene {
                         return;
                 }
             }
-            joinRoomRequest.perform();
+            this.api.perform(joinRoomRequest);
         } else {
             let spectateRequest = new SpectateRequest(room);
             spectateRequest.success = (states) => {
-                this.pushScene((context) => new SpectatorPlayScene(context, states, this.channelManager));
+                this.pushScene((context) => new SpectatorPlayScene(context, states));
             };
             spectateRequest.failure = () => {
                 messager.info('观看请求失败', this);
             };
+            this.api.perform(spectateRequest);
         }
+    }
+
+    private notLoggedIn(): boolean {
+        if (this.api.isLoggedIn) {
+            return false;
+        }
+
+        messager.fail('你现在是游客，请先登录', this);
+        return true;
     }
 
 }

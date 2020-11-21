@@ -6,7 +6,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 
 @Configuration
-@MapperScan("io.github.hulang1024.chinesechessserver.database.dao")
+@MapperScan({
+    "io.github.hulang1024.chinesechess.user"
+})
 @EnableTransactionManagement(proxyTargetClass = true)
 public class MyBatisPlusConfig {
 

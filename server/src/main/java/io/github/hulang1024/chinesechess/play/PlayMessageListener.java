@@ -1,32 +1,28 @@
 package io.github.hulang1024.chinesechess.play;
 
-import io.github.hulang1024.chinesechess.message.AbstractMessageListener;
-import io.github.hulang1024.chinesechess.play.rule.ChessHost;
+import io.github.hulang1024.chinesechess.play.message.*;
 import io.github.hulang1024.chinesechess.play.rule.ChessboardState;
-import io.github.hulang1024.chinesechess.room.Room;
-import io.github.hulang1024.chinesechess.message.server.play.ChessMoveResult;
-import io.github.hulang1024.chinesechess.message.server.play.ChessPickServerMsg;
-import io.github.hulang1024.chinesechess.message.server.play.ReadyServerMsg;
-import io.github.hulang1024.chinesechess.message.server.play.PlayRoundStart;
-import io.github.hulang1024.chinesechess.message.server.play.PlayConfirmServerMsg;
-import io.github.hulang1024.chinesechess.message.server.play.PlayConfirmResponseServerMsg;
-import io.github.hulang1024.chinesechess.play.message.ChessMoveMsg;
-import io.github.hulang1024.chinesechess.play.message.ChessPickMsg;
-import io.github.hulang1024.chinesechess.play.message.ConfirmRequestMsg;
-import io.github.hulang1024.chinesechess.play.message.ConfirmResponseMsg;
-import io.github.hulang1024.chinesechess.play.message.ConfirmRequestType;
-import io.github.hulang1024.chinesechess.play.message.ReadyMsg;
-import io.github.hulang1024.chinesechess.play.message.GameOverMsg;
-import io.github.hulang1024.chinesechess.message.server.lobby.LobbyRoomUpdateServerMsg;
-import io.github.hulang1024.chinesechess.message.server.spectator.SpectatorPlayRoundStartServerMsg;
 import io.github.hulang1024.chinesechess.room.LobbyService;
-import io.github.hulang1024.chinesechess.user.OnlineUserManager;
+import io.github.hulang1024.chinesechess.room.Room;
+import io.github.hulang1024.chinesechess.room.RoomManager;
+import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.user.User;
+import io.github.hulang1024.chinesechess.user.UserManager;
+import io.github.hulang1024.chinesechess.websocket.message.AbstractMessageListener;
+import io.github.hulang1024.chinesechess.websocket.message.server.lobby.LobbyRoomUpdateServerMsg;
+import io.github.hulang1024.chinesechess.websocket.message.server.play.*;
+import io.github.hulang1024.chinesechess.websocket.message.server.spectator.SpectatorPlayRoundStartServerMsg;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PlayMessageListener extends AbstractMessageListener {
-    private LobbyService lobbyService = new LobbyService();
+    @Autowired
+    private LobbyService lobbyService;
+    @Autowired
+    private RoomManager roomManager;
+    @Autowired
+    private UserManager userManager;
 
     @Override
     public void init() {
@@ -39,95 +35,96 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     public void ready(ReadyMsg readyMsg) {
-        User user = OnlineUserManager.getUser(readyMsg.getSession());
-        Room room = user.getJoinedRoom();
+        User user = userManager.getOnlineUser(readyMsg.getSession());
+        Room room = roomManager.getJoinedRoom(user);
+        UserGameState userGameState = room.getUserGameState(user);
+
         if (room == null) {
             return;
         }
 
-        user.setReadied(readyMsg.getReadyed() != null
-            ? readyMsg.getReadyed()
-            : !user.isReadied());
+        userGameState.setReadied(readyMsg.getReadied() != null
+            ? readyMsg.getReadied()
+            : !userGameState.isReadied());
 
         ReadyServerMsg readyServerMsg = new ReadyServerMsg();
         readyServerMsg.setCode(0);
         readyServerMsg.setUid(user.getId());
-        readyServerMsg.setReadied(user.isReadied());
+        readyServerMsg.setReadied(userGameState.isReadied());
 
-        room.broadcast(readyServerMsg);
-
+        roomManager.broadcast(room, readyServerMsg);
 
         lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);
 
         // 如果全部准备好，开始游戏
-        boolean isAllReadied = room.getUserCount() == 2
-            && room.getUsers().stream().allMatch(u -> u.isReadied());
+        boolean isAllReadied = room.getUserCount() == Room.MAX_PARTICIPANTS
+            && room.getUsers().stream().allMatch(u -> room.getUserGameState(u).isReadied());
         if (isAllReadied) {
             startRound(room);
         }
     }
 
     private void pickChess(ChessPickMsg chessPickMsg) {
-        User user = OnlineUserManager.getUser(chessPickMsg.getSession());
-        Room room = user.getJoinedRoom();
+        User user = userManager.getOnlineUser(chessPickMsg.getSession());
+        Room room = roomManager.getJoinedRoom(user);
 
         ChessPickServerMsg chessPickServerMsg = new ChessPickServerMsg();
-        chessPickServerMsg.setChessHost(user.getChessHost().code());
+        chessPickServerMsg.setChessHost(room.getChessHost(user).code());
         chessPickServerMsg.setPos(chessPickMsg.getPos());
         chessPickServerMsg.setPickup(chessPickMsg.isPickup());
 
-        room.broadcast(chessPickServerMsg, user);
+        roomManager.broadcast(room, chessPickServerMsg, user);
     }
 
     private void moveChess(ChessMoveMsg chessMoveMsg) {
-        User user = OnlineUserManager.getUser(chessMoveMsg.getSession());
-        Room room = user.getJoinedRoom();
+        User user = userManager.getOnlineUser(chessMoveMsg.getSession());
+        Room room = roomManager.getJoinedRoom(user);
 
-        ChessboardState chessboardState = room.getRound().getChessboardState();
+        ChessboardState chessboardState = room.getGame().getChessboardState();
 
         // 记录动作
         ChessAction action = new ChessAction();
-        action.setChessHost(user.getChessHost());
+        action.setChessHost(room.getChessHost(user));
         action.setChessType(chessboardState.chessAt(chessMoveMsg.getFromPos(), action.getChessHost()).type);
         action.setFromPos(chessMoveMsg.getFromPos());
         action.setToPos(chessMoveMsg.getToPos());
         if (chessMoveMsg.getMoveType() == 2) {
             action.setEatenChess(chessboardState.chessAt(chessMoveMsg.getToPos(), action.getChessHost()));
         }
-        room.getRound().getActionStack().push(action);
+        room.getGame().getActionStack().push(action);
 
         chessboardState.moveChess(
-            chessMoveMsg.getFromPos(), chessMoveMsg.getToPos(), user.getChessHost());
+            chessMoveMsg.getFromPos(), chessMoveMsg.getToPos(), room.getChessHost(user));
         
-        room.getRound().turnActiveChessHost();
+        room.getGame().turnActiveChessHost();
 
         ChessMoveResult result = new ChessMoveResult();
-        result.setChessHost(user.getChessHost().code());
+        result.setChessHost(room.getChessHost(user).code());
         result.setMoveType(chessMoveMsg.getMoveType());
         result.setFromPos(chessMoveMsg.getFromPos());
         result.setToPos(chessMoveMsg.getToPos());
 
-        room.broadcast(result);
+        roomManager.broadcast(room, result);
     }
 
     private void onConfirmRequest(ConfirmRequestMsg confirmRequestMsg) {
-        User user = OnlineUserManager.getUser(confirmRequestMsg.getSession());
-        Room room = user.getJoinedRoom();
+        User user = userManager.getOnlineUser(confirmRequestMsg.getSession());
+        Room room = roomManager.getJoinedRoom(user);
 
         PlayConfirmServerMsg result = new PlayConfirmServerMsg();
         result.setReqType(confirmRequestMsg.getReqType());
-        result.setChessHost(user.getChessHost().code());
+        result.setChessHost(room.getChessHost(user).code());
 
-        room.broadcast(result);
+        roomManager.broadcast(room, result);
     }
 
     private void onConfirmResponse(ConfirmResponseMsg confirmResponseMsg) {
-        User user = OnlineUserManager.getUser(confirmResponseMsg.getSession());
-        Room room = user.getJoinedRoom();
+        User user = userManager.getOnlineUser(confirmResponseMsg.getSession());
+        Room room = roomManager.getJoinedRoom(user);
 
         PlayConfirmResponseServerMsg result = new PlayConfirmResponseServerMsg();
         result.setReqType(confirmResponseMsg.getReqType());
-        result.setChessHost(user.getChessHost().code());
+        result.setChessHost(room.getChessHost(user).code());
         result.setOk(confirmResponseMsg.isOk());
 
         if (confirmResponseMsg.isOk()) {
@@ -137,19 +134,19 @@ public class PlayMessageListener extends AbstractMessageListener {
                 //todo something
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.WITHDRAW.code()) {
                 withdraw(room);
-                room.getRound().turnActiveChessHost();
+                room.getGame().turnActiveChessHost();
             }
         }
 
-        room.broadcast(result);
+        roomManager.broadcast(room, result);
     }
 
     private void withdraw(Room room) {
-        ChessboardState chessboardState = room.getRound().getChessboardState();
-        if (room.getRound().getActionStack().isEmpty()) {
+        ChessboardState chessboardState = room.getGame().getChessboardState();
+        if (room.getGame().getActionStack().isEmpty()) {
             return;
         }
-        ChessAction lastAction = room.getRound().getActionStack().pop();
+        ChessAction lastAction = room.getGame().getActionStack().pop();
         chessboardState.moveChess(lastAction.getToPos(), lastAction.getFromPos(), lastAction.getChessHost());
         if (lastAction.getEatenChess() != null) {
             chessboardState.setChess(lastAction.getToPos(), lastAction.getEatenChess(), lastAction.getChessHost());
@@ -157,46 +154,42 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void startRound(Room room) {
-        // 创建棋局
-        GamePlay round;
-        User redChessUser = null;
-        User blackChessUser = null;
-        for (User user : room.getUsers()) {
-            if (user.getChessHost() == ChessHost.RED) {
-                redChessUser = user;
-            } else {
-                blackChessUser = user;
-            }
+        Game round = new Game();
+        room.setGame(round);
+
+        room.setRoundCount(room.getUserCount() + 1);
+
+        if (room.getRoundCount() > 1) {
+            // 第n个对局，交换棋方
+            User redChessUser = room.getRedChessUser();
+            User blackChessUser = room.getBlackChessUser();
+            room.setBlackChessUser(redChessUser);
+            room.setRedChessUser(blackChessUser);
         }
-        if (room.getRound() == null) {
-            round = new GamePlay(redChessUser, blackChessUser);
-            room.setRound(round);
-        } else {
-            round = new GamePlay(blackChessUser, redChessUser);
-            room.setRound(round);
-        }
+
+        room.setStatus(RoomStatus.PLAYING);
 
         PlayRoundStart redStart = new PlayRoundStart();
         redStart.setChessHost(1);
-        send(redStart, round.getRedChessUser().getSession());
+        send(redStart, room.getRedChessUser());
 
         PlayRoundStart blackStart = new PlayRoundStart();
         blackStart.setChessHost(2);
-        send(blackStart, round.getBlackChessUser().getSession());
+        send(blackStart, room.getBlackChessUser());
 
         // 观众
         SpectatorPlayRoundStartServerMsg roundStart = new SpectatorPlayRoundStartServerMsg();
-        roundStart.setRedChessUid(round.getRedChessUser().getId());
-        roundStart.setBlackChessUid(round.getBlackChessUser().getId());
+        roundStart.setRedChessUid(room.getRedChessUser().getId());
+        roundStart.setBlackChessUid(room.getBlackChessUser().getId());
         room.getSpectators().forEach(user -> {
-            send(roundStart, user.getSession());
+            send(roundStart, user);
         });
     }
 
     private void onRoundOver(GameOverMsg msg) {
-        User user = OnlineUserManager.getUser(msg.getSession());
-        Room room = user.getJoinedRoom();
-
+        User user = userManager.getOnlineUser(msg.getSession());
+        Room room = roomManager.getJoinedRoom(user);
+        room.setStatus(RoomStatus.BEGINNING);
         lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);
     }
 }

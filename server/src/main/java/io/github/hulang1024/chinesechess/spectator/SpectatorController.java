@@ -1,7 +1,6 @@
 package io.github.hulang1024.chinesechess.spectator;
 
 import io.github.hulang1024.chinesechess.room.Room;
-import io.github.hulang1024.chinesechess.user.OnlineUserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +14,13 @@ import javax.validation.constraints.NotNull;
 @Validated
 public class SpectatorController {
     @Autowired
-    private SpectatorService spectatorService;
+    private SpectatorManager spectatorManager;
 
     @PostMapping("/{user_id}")
     public ResponseEntity<Room> add(
         @NotNull @PathVariable("user_id") Long userId,
         @Validated @RequestBody SpectateParam param) {
-        SpectateResponseData responseData = spectatorService.spectate(
-            OnlineUserManager.getUserById(userId), param);
+        SpectateResponseData responseData = spectatorManager.spectate(userId, param);
         return new ResponseEntity(responseData, responseData.getCode() == 0
             ? HttpStatus.OK
             : HttpStatus.EXPECTATION_FAILED);
@@ -30,7 +28,7 @@ public class SpectatorController {
 
     @DeleteMapping("/{user_id}")
     public ResponseEntity<Void> delete(@NotNull @PathVariable("user_id") Long userId) {
-        spectatorService.leave(OnlineUserManager.getUserById(userId));
+        spectatorManager.leave(userId);
         return ResponseEntity.ok().build();
     }
 }

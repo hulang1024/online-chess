@@ -1,7 +1,9 @@
 import APIAccess from "../api/APIAccess";
+import SocketClient from "../socket";
 import socketClient from "../socket";
 import Channel from "./Channel";
 import ChannelType from "./ChannelType";
+import ErrorMessage from "./ErrorMessage";
 import GetMessagesRequest from "./GetMessagesRequest";
 import InfoMessage from "./InfoMessage";
 import LocalEchoMessage from "./LocalEchoMessage";
@@ -11,12 +13,16 @@ import PostMessageRequest from "./PostMessageRequest";
 export default class ChannelManager {
     private _joinedChannels: Channel[] = [];
     private currentChannel: Channel;
+    private api: APIAccess;
+    private socketClient: SocketClient;
+    public onOpenChannel: Function;
+    public onJoinChannel: Function;
+    public onLeaveChannel: Function;
 
-    onOpenChannel: Function;
-    onJoinChannel: Function;
-    onLeaveChannel: Function;
+    constructor(api: APIAccess, socketClient: SocketClient) {
+        this.api = api;
+        this.socketClient = socketClient;
 
-    constructor() {
         this.initSocketListeners();
     }
 
@@ -24,12 +30,12 @@ export default class ChannelManager {
         return this._joinedChannels;
     }
 
-    openChannel(channelId: number) {
+    public openChannel(channelId: number) {
         this.currentChannel = this._joinedChannels.filter(c => c.id == channelId)[0];
         this.onOpenChannel(this.currentChannel);
     }
 
-    joinChannel(channel: Channel, fetchInitalMessages: boolean = true) {
+    public joinChannel(channel: Channel, fetchInitalMessages: boolean = true) {
         if (!channel.joined) {
             channel.joined = true;
             this._joinedChannels.push(channel);
@@ -51,7 +57,7 @@ export default class ChannelManager {
         this.currentChannel = channel;
     }
 
-    leaveChannel(channelId: number) {
+    public leaveChannel(channelId: number) {
         let channel: Channel;
         let channels = this._joinedChannels;
         for (let i = 0; i < channels.length; i++) {
@@ -67,7 +73,7 @@ export default class ChannelManager {
         
         if (channel.joined) {
             if (channel.type !== ChannelType.ROOM) { // 房间聊天频道离开已隐式（服务端）随着对局结束
-                socketClient.send('chat.channel.leave', {channelId: channel.id});
+                this.socketClient.send('chat.channel.leave', {channelId: channel.id});
             }
             channel.joined = false;
         }
@@ -75,11 +81,15 @@ export default class ChannelManager {
         this.onLeaveChannel(channel);
     }
 
-    postMessage(text: string) {
+    public postMessage(text: string) {
+        if (!this.api.isLoggedIn) {
+            this.currentChannel.addNewMessages([new ErrorMessage('请先登录以参与聊天')]);
+            return;
+        }
         let message = new LocalEchoMessage();
         message.channelId = this.currentChannel.id;
         message.timestamp = new Date().getTime();
-        message.sender = APIAccess.localUser;
+        message.sender = this.api.localUser;
         message.content = text;
         /*
         this.currentChannel.addLocalEcho(message);*/
@@ -88,10 +98,11 @@ export default class ChannelManager {
         }
         postMessagesRequest.failure = (msgs) => {
         }
-        postMessagesRequest.perform();
+
+        this.api.queue(postMessagesRequest);
     }
 
-    loadDefaultChannels() {
+    public loadDefaultChannels() {
         let channel = new Channel();
         channel.id = 1;
         channel.type = ChannelType.PUBLIC;
@@ -99,20 +110,18 @@ export default class ChannelManager {
 
         this.joinChannel(channel);
         
-        let welcome = new InfoMessage();
+        let welcome = new InfoMessage('欢迎来到在线中国象棋');
         welcome.channelId = 1;
-        welcome.content = '欢迎来到在线中国象棋';
         channel.addNewMessages([welcome]);
     }
 
     private async initSocketListeners() {
-        socketClient.add('chat.message', (msg: any) => {
+        this.socketClient.add('chat.message', (msg: any) => {
             let channel = this._joinedChannels.filter(c => c.id == msg.channelId)[0];
-            msg.isFromMe = APIAccess.localUser.id == msg.sender.id;
             channel.addNewMessages([msg]);
         });
 
-        socketClient.reconnectedSignal.add(() => {
+        this.socketClient.reconnectedSignal.add(() => {
             if (!this.currentChannel) {
                 return;
             }
@@ -121,12 +130,12 @@ export default class ChannelManager {
     }
 
     private async fetchInitalMessages(channel: Channel) {
-        await socketClient.connect();
+        await this.socketClient.connect();
         let getMessagesRequest = new GetMessagesRequest(channel);
         getMessagesRequest.success = (msgs) => {
             this.handleChannelMessages(msgs);
         }
-        getMessagesRequest.perform();
+        this.api.queue(getMessagesRequest);
     }
 
     private handleChannelMessages(messages: Message[]) {

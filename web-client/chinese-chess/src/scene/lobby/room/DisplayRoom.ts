@@ -1,4 +1,3 @@
-import RoomUser from "../../../online/socket-message/response/RoomUser";
 import Room from "../../../online/room/Room";
 
 export default class DisplayRoom extends eui.Group {
@@ -34,7 +33,7 @@ export default class DisplayRoom extends eui.Group {
         this.addChild(lblUsersTitle);
 
         this.addChild(this.userGroup);
-        this.addUserList(room, room.users);
+        this.addUserList(room);
 
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
             this.drawStatus(room.status);
@@ -54,20 +53,22 @@ export default class DisplayRoom extends eui.Group {
         if (newRoom.userCount != this.room.userCount) {
             same = false;
         } else {
-            let i = 0;
-            while (i < this.room.users.length) {
-                if ((newRoom.users[i].id != this.room.users[i].id) ||
-                    (newRoom.users[i].readied != this.room.users[i].readied)) {
+            let oldUsers = [this.room.blackChessUser, this.room.redChessUser];
+            let oldUserGameStates = [this.room.blackGameState, this.room.redGameState];
+            let newUsers = [newRoom.blackChessUser, newRoom.redChessUser];
+            let newUserGameStates = [newRoom.blackGameState, newRoom.redGameState];
+            for (let i = 0; i < oldUsers.length; i++) {
+                if ((oldUsers[i].id != newUsers[i].id) ||
+                    (oldUserGameStates[i].readied != newUserGameStates[i].readied)) {
                     same = false;
                     break;
                 }
-                i++;
             }
         }
 
         if (!same) {
             this.userGroup.removeChildren();
-            this.addUserList(newRoom, newRoom.users);
+            this.addUserList(newRoom);
         }
 
         this.room = newRoom;
@@ -115,23 +116,22 @@ export default class DisplayRoom extends eui.Group {
         lblStatus.text = text;
     }
 
-    private addUserList(room: Room, users: Array<RoomUser>) {
-        if (users == null) {
-            return;
-        }
-
+    private addUserList(room: Room) {
         let userGroupLayout = new eui.HorizontalLayout();
         userGroupLayout.gap = 20;
         let { userGroup } = this;
         userGroup.layout = userGroupLayout;
-
-        for (let user of users) {
+        let users = [room.blackChessUser, room.redChessUser].filter(Boolean);
+        let userGameStates = [room.blackGameState, room.redGameState].filter(Boolean);
+        for (let i = 0; i < users.length; i++) {
             let lblUserName = new eui.Label();
             lblUserName.size = 18;
-            lblUserName.text =  (user.nickname || user.id.toString())
-                + (room.status == 3
-                    ? "" 
-                    : " " + (user.readied ? "已准备" : users.length == 1 ? "" : "未准备"));
+            lblUserName.text =  (users[i].nickname || users[i].id.toString());
+            if (room.status != 3) {
+                lblUserName.text += (userGameStates[i].readied
+                    ? " 已准备"
+                    : users.length == 1 ? "" : " 未准备");
+            }
             userGroup.addChild(lblUserName);
         }
     }

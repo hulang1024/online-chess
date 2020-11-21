@@ -81,9 +81,6 @@ export default class ChatOverlay extends Overlay {
             let drawableChannel = this.viewStack.getChildByName(channel.name);
             this.viewStack.selectedChild = drawableChannel;
         };
-
-        this.manager.loadDefaultChannels();
-        this.manager.openChannel(1);
     }
 
     private onTabSelected(event: eui.ItemTapEvent) {

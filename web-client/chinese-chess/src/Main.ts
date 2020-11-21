@@ -30,14 +30,15 @@
 import SOUND from "./audio/SOUND";
 import messager from "./component/messager";
 import APIAccess from "./online/api/APIAccess";
-import { APIRequest } from "./online/api/api_request";
-import LoginRequest from "./online/api/LoginRequest";
+import RegisterRequest from "./online/api/RegisterRequest";
 import ChannelManager from "./online/chat/ChannelManager";
+import SocketClient from "./online/socket";
 import socketClient from "./online/socket";
 import ChatOverlay from "./overlay/chat/ChatOverlay";
 import LobbyScene from "./scene/lobby/LobbyScene";
 import SceneContext from "./scene/SceneContext";
 import SceneManager from "./scene/scene_manger";
+import WelcomeScene from "./scene/welcome/WelcomeScene";
 import User from "./user/User";
 
 class Main extends eui.UILayer  {
@@ -106,41 +107,35 @@ class Main extends eui.UILayer  {
     }
 
     private createGameScene() {
-        // socket要访问到stage
-        socketClient.stage = this.stage;
-        
+        if (window['yaochat']) {
+            alert('yaochat');
+            let yaochat = window['yaochat'];
+            yaochat.getCode('yx4b11c08aa09d44ed', 'http://180.76.185.34/api/oauth_callback/yao_xin/code', 'snsapi_userinfo', "ok");
+            return;
+        }
+
+        let api = new APIAccess();
+        let socketClient = new SocketClient(api, this.stage);
+        let channelManager = new ChannelManager(api, socketClient);
+
+        // 布局
         let layout = new eui.VerticalLayout();
         let group = new eui.Group();
         group.layout = layout;
         this.stage.addChild(group);
 
-        let channelManager = new ChannelManager();
-
-        let chatOverlay = new ChatOverlay(channelManager);
-        this.stage.addChild(chatOverlay);
-        
         // 场景容器
         let sceneContainer = new egret.DisplayObjectContainer();
         group.addChild(sceneContainer);
 
-        let user = new User();
-        user.nickname = prompt('用户名（昵称）');
-        user.password = '123456';
-        let loginRequest = new LoginRequest(user);
-        loginRequest.success = (content) => {
-            messager.info('登录成功', this);
-            APIAccess.token = content.token;
-            user.id = content.userId;
-            APIAccess.localUser = user;
-            socketClient.send('user.login', {userId: content.userId});
+        let chatOverlay = new ChatOverlay(channelManager);
+        this.stage.addChild(chatOverlay);
 
-            let context = new SceneContext(this.stage, sceneContainer, chatOverlay);
-            SceneManager.of(context).pushScene(context => new LobbyScene(context, channelManager));
-    
-        };
-        loginRequest.failure = () => {
-            messager.fail('登录失败', this);
-        };
-        loginRequest.perform();
+        let context = new SceneContext(this.stage, sceneContainer);
+        context.chatOverlay = chatOverlay;
+        context.channelManager = channelManager;
+        context.api = api;
+        context.socketClient = socketClient;
+        SceneManager.of(context).pushScene(context => new WelcomeScene(context));
     }
 }

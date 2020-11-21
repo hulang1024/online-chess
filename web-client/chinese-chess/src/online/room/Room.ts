@@ -1,4 +1,5 @@
-import RoomUser from "../socket-message/response/RoomUser";
+import User from "../../user/User";
+import UserGameState from "./UserGameState";
 
 export default class Room {
     id: number;
@@ -7,8 +8,11 @@ export default class Room {
     password?: string;
     status: number;
     channelId: number;
+    owner: User;
     userCount: number;
-    users: Array<RoomUser>;
+    redChessUser: User;
+    redGameState: UserGameState;
+    blackChessUser: User;
+    blackGameState: UserGameState;
     spectatorCount: number;
-    spectators: Array<RoomUser>;
 }

@@ -6,7 +6,6 @@ export default class Message {
     timestamp: number;
     sender: User;
     content: string;
-    isFromMe?: boolean;//todo:删掉
 
     constructor(id: number) {
         this.id = id;

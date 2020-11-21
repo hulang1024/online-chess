@@ -1,5 +1,8 @@
 package io.github.hulang1024.chinesechess.user;
 
+import io.github.hulang1024.chinesechess.http.GuestAPI;
+import io.github.hulang1024.chinesechess.user.login.LoginResult;
+import io.github.hulang1024.chinesechess.user.login.UserLoginParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,20 +19,26 @@ public class UserController {
     private UserManager userManager;
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getById(@NotNull @PathVariable("id") Long id) {
-        User user = userManager.getById(id);
+    public ResponseEntity<User> getUser(@NotNull @PathVariable("id") Long id) {
+        User user = userManager.getDatabaseUser(id);
         return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
     }
 
+    @GuestAPI
     @PostMapping("/login")
     public ResponseEntity<LoginResult> login(@Validated @RequestBody UserLoginParam param) {
-        LoginResult loginResult = userManager.login(param);
-        return new ResponseEntity(loginResult, loginResult.isOk() ? HttpStatus.OK : HttpStatus.SEE_OTHER);
+        LoginResult ret = userManager.login(param);
+        return new ResponseEntity(ret, ret.getCode() == 0
+            ? HttpStatus.OK
+            : HttpStatus.BAD_REQUEST);
     }
 
+    @GuestAPI
     @PostMapping
-    public ResponseEntity<User> register(@Validated @RequestBody UserRegisterParam param) {
-        User user = userManager.register(param);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<RegisterResult> register(@Validated @RequestBody UserRegisterParam param) {
+        RegisterResult ret = userManager.register(param);
+        return new ResponseEntity(ret, ret.getCode() == 0
+            ? HttpStatus.OK
+            : HttpStatus.BAD_REQUEST);
     }
 }

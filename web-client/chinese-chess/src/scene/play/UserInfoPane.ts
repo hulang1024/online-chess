@@ -1,4 +1,5 @@
-import RoomUser from "../../online/socket-message/response/RoomUser";
+import ChessHost from "../../rule/chess_host";
+import User from "../../user/User";
 
 export default class UserInfoPane extends eui.Group {
     private rect = new egret.Shape();
@@ -18,10 +19,10 @@ export default class UserInfoPane extends eui.Group {
 
         this.txtNickname.size = 20;
         this.addChild(this.txtNickname);
-        this.load(null);
+        this.load(null, null);
     }
 
-    load(user: RoomUser) {
+    load(user: User, chessHost: ChessHost) {
         this.user = user;
         if (user == null) {
             this.visible = false;
@@ -30,7 +31,7 @@ export default class UserInfoPane extends eui.Group {
             this.visible = true;
         }
         this.txtNickname.text = `(${this.isOther ? '对方'
-            : user.chessHost == null ? '?' : (user.chessHost == 1 ? '红方' : '黑方')}) ${user.nickname}`;
+            : chessHost == null ? '?' : (chessHost == 1 ? '红方' : '黑方')}) ${user.nickname}`;
         this.setActive(false);
     }
 

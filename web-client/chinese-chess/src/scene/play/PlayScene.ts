@@ -23,10 +23,14 @@ import ChannelType from "../../online/chat/ChannelType";
 import notify, { allowNotify } from "../../component/notify";
 import APIAccess from "../../online/api/APIAccess";
 import PartRoomRequest from "../../online/room/PartRoomRequest";
+import SocketClient from "../../online/socket";
+import UserGameState from "../../online/room/UserGameState";
 
 export default class PlayScene extends AbstractScene {
     // socket消息监听器
     private listeners = {};
+    private api: APIAccess;
+    private socketClient: SocketClient;
     private channelManager: ChannelManager;
     // 连接关闭处理器
     private connectionCloseHandler: Function;
@@ -53,16 +57,26 @@ export default class PlayScene extends AbstractScene {
     private textOverlay = new TextOverlay();
     private resultDialog = new ResultDialog();
     
-    constructor(context: SceneContext, room: Room, channelManager: ChannelManager) {
+    constructor(context: SceneContext, room: Room) {
         super(context);
 
-        this.channelManager = channelManager;
-
-        this.user = APIAccess.localUser;
+        this.api = context.api;
+        this.channelManager = context.channelManager;
+        this.socketClient = context.socketClient;
+        
+        this.user = this.api.localUser;
         this.room = room;
-        let roomUser = room.users[room.users.length - 1];
-        this.readied = roomUser.readied;
-        this.chessHost = ChessHost[roomUser.chessHost + ''];
+
+        let userGameState: UserGameState;
+        if (room.blackChessUser && room.blackChessUser.id == this.user.id) {
+            userGameState = room.blackGameState;
+            this.chessHost = ChessHost.BLACK;
+        }
+        if (room.redChessUser && room.redChessUser.id == this.user.id) {
+            userGameState = room.redGameState;
+            this.chessHost = ChessHost.RED;
+        }
+        this.readied = userGameState.readied;
 
         let layout = new eui.VerticalLayout();
         layout.paddingLeft = 0;
@@ -109,12 +123,15 @@ export default class PlayScene extends AbstractScene {
 
         // 对方玩家信息
         let otherUser = null;
-        room.users.forEach((user: any) => {
-            if (user.id != this.user.id) {
-                otherUser = user;
-                this.otherReadied = user.readied;
+        if (room.userCount > 1) {
+            if (this.chessHost == ChessHost.RED) {
+                otherUser = room.blackChessUser;
+                this.otherReadied = room.blackGameState.readied;
+            } else {
+                otherUser = room.redChessUser;
+                this.otherReadied = room.redGameState.readied;
             }
-        });
+        }
 
         if (otherUser != null) {
             this.otherUserInfoPane.load(otherUser);
@@ -163,8 +180,11 @@ export default class PlayScene extends AbstractScene {
         btnLeave.height = 50;
         btnLeave.label = "离开棋桌";
         btnLeave.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+            if (this.isPlaying && !confirm('正在游戏中，确认退出吗?')) {
+                return;
+            }
             let partRoomRequest = new PartRoomRequest(this.room);
-            partRoomRequest.perform();
+            this.api.perform(partRoomRequest);
             this.popScene();
         }, this);
         buttonGroup.addChild(btnLeave);
@@ -173,7 +193,7 @@ export default class PlayScene extends AbstractScene {
         this.btnReady = new ReadyButton(this.otherReadied != null && this.otherReadied ? 3 : +this.readied);
         this.btnReady.visible = !(this.readied && this.otherReadied != null && this.otherReadied);
         this.btnReady.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            socketClient.send('play.ready');
+            this.socketClient.send('play.ready');
         }, this);
         buttonGroup.addChild(this.btnReady);
 
@@ -218,7 +238,7 @@ export default class PlayScene extends AbstractScene {
 
     private initListeners() {
 
-        socketClient.addEventListener(egret.Event.CLOSE, this.connectionCloseHandler = (event: egret.Event) => {
+        this.socketClient.addEventListener(egret.Event.CLOSE, this.connectionCloseHandler = (event: egret.Event) => {
             this.popScene();
         }, this);
 
@@ -256,7 +276,7 @@ export default class PlayScene extends AbstractScene {
         
         this.listeners['room.join'] = (msg: any) => {
             window.focus();
-            this.otherReadied = msg.user.readied;
+            this.otherReadied = false;
             this.otherUserInfoPane.load(msg.user);
             this.updateWaitInfo();
             setTimeout(() => {
@@ -326,10 +346,10 @@ export default class PlayScene extends AbstractScene {
             this.confirmDialog.show(confirmRequest.toReadableText(msg.reqType));
             this.confirmDialog.onOkClick = () => {
                 // 发送回应到服务器
-                socketClient.send('play.confirm_response', {reqType: msg.reqType, ok: true});
+                this.socketClient.send('play.confirm_response', {reqType: msg.reqType, ok: true});
             };
             this.confirmDialog.onNoClick = () => {
-                socketClient.send('play.confirm_response', {reqType: msg.reqType, ok: false});
+                this.socketClient.send('play.confirm_response', {reqType: msg.reqType, ok: false});
             };
         };
 
@@ -372,7 +392,7 @@ export default class PlayScene extends AbstractScene {
         };
         
         for (let key in this.listeners) {
-            socketClient.add(key, this.listeners[key]);
+            this.socketClient.add(key, this.listeners[key]);
         }
     }
 
@@ -380,18 +400,25 @@ export default class PlayScene extends AbstractScene {
         super.onSceneExit();
 
         for (let key in this.listeners) {
-            socketClient.signals[key].remove(this.listeners[key]);
+            this.socketClient.signals[key].remove(this.listeners[key]);
         }
-        socketClient.removeEventListener(egret.Event.CLOSE, this.connectionCloseHandler, this);
+        this.socketClient.removeEventListener(egret.Event.CLOSE, this.connectionCloseHandler, this);
         this.channelManager.leaveChannel(this.room.channelId);
     }
 
-    onAppVisibilityChange(hidden: boolean) {
-        if (!hidden || this.isPlaying) {
+    notReadyTimer: any;
+    onAppVisibilityChange(hidden: boolean) {        
+        if (this.isPlaying) {
             return;
         }
         if (this.readied) {
-            socketClient.send('play.ready', {readied: false});
+            if (hidden) {
+                this.notReadyTimer = setTimeout(() => {
+                    this.socketClient.send('play.ready', {readied: false});
+                }, 10 * 1000);
+            } else {
+                clearTimeout(this.notReadyTimer);
+            }
         }
     }
 
@@ -411,7 +438,7 @@ export default class PlayScene extends AbstractScene {
         this.btnReady.setState(0);
 
         // 请求对局结束
-        socketClient.send('play.round_over');
+        this.socketClient.send('play.round_over');
         this.resultDialog.show(winChessHost == null ? null : winChessHost == this.chessHost);
         this.resultDialog.onOk = () => {
             this.isPlaying = false;
@@ -437,7 +464,7 @@ export default class PlayScene extends AbstractScene {
                 let toPos = event.pos;
                 let chess = this.chessboard.chessAt(fromPos);
                 if (chess.canGoTo(toPos, this.player)) {
-                    socketClient.send('play.chess_move', {
+                    this.socketClient.send('play.chess_move', {
                         moveType: 1,
                         fromPos,
                         toPos
@@ -452,7 +479,7 @@ export default class PlayScene extends AbstractScene {
                 if (event.chess.getHost() == this.activeChessHost) {
                     this.lastSelected = event.chess;
                     this.lastSelected.setSelected(true);
-                    socketClient.send('play.chess_pick', {
+                    this.socketClient.send('play.chess_pick', {
                         pos: this.lastSelected.getPos(),
                         pickup: true
                     });
@@ -467,7 +494,7 @@ export default class PlayScene extends AbstractScene {
             } else if (event.chess.isSelected() && event.chess.getHost() == this.chessHost) {
                 // 重复点击，取消选中
                 this.lastSelected.setSelected(false);
-                socketClient.send('play.chess_pick', {
+                this.socketClient.send('play.chess_pick', {
                     pos: this.lastSelected.getPos(),
                     pickup: false
                 });
@@ -479,7 +506,7 @@ export default class PlayScene extends AbstractScene {
                     let toPos = event.pos;
                     let chess = this.chessboard.chessAt(fromPos);
                     if (chess.canGoTo(toPos, this.player)) {
-                        socketClient.send('play.chess_move', {
+                        this.socketClient.send('play.chess_move', {
                             moveType: 2,
                             fromPos,
                             toPos
@@ -490,7 +517,7 @@ export default class PlayScene extends AbstractScene {
                     this.lastSelected.setSelected(false);
                     event.chess.setSelected(true);
                     this.lastSelected = event.chess;
-                    socketClient.send('play.chess_pick', {
+                    this.socketClient.send('play.chess_pick', {
                         pos: this.lastSelected.getPos(),
                         pickup: true
                     });
@@ -500,17 +527,17 @@ export default class PlayScene extends AbstractScene {
     }
 
     private onWhiteFlagClick() {
-        socketClient.send('play.confirm_request', {reqType: confirmRequest.Type.WHITE_FLAG});
+        this.socketClient.send('play.confirm_request', {reqType: confirmRequest.Type.WHITE_FLAG});
         this.textOverlay.show('已发送认输请求，等待对方回应', 3000);
     }
 
     private onChessDrawClick() {
-        socketClient.send('play.confirm_request', {reqType: confirmRequest.Type.DRAW});
+        this.socketClient.send('play.confirm_request', {reqType: confirmRequest.Type.DRAW});
         this.textOverlay.show('已发送和棋请求，等待对方回应', 3000);
     }
 
     private onWithdrawClick() {
-        socketClient.send('play.confirm_request', {reqType: confirmRequest.Type.WITHDRAW});
+        this.socketClient.send('play.confirm_request', {reqType: confirmRequest.Type.WITHDRAW});
         this.textOverlay.show('已发送悔棋请求，等待对方回应', 3000);
     }
 

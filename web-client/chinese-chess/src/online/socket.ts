@@ -1,17 +1,21 @@
 import messager from "../component/messager";
+import SceneContext from "../scene/SceneContext";
+import APIAccess from "./api/APIAccess";
 
-
-class SocketClient extends egret.WebSocket {
+export default class SocketClient extends egret.WebSocket {
     signals: { [s: string]: Signal } = {};
     reconnectedSignal = new Signal();
     private connectedSignal = new Signal();
     private connectStarted: boolean = false;
     private onConnected: Function;
     private connectedTimes: number = 0;
-    stage: egret.Stage;
+    private api: APIAccess;
+    private stage: egret.Stage;
 
-    constructor() {
+    constructor(api: APIAccess, stage: egret.Stage) {
         super();
+        this.api = api;
+        this.stage = stage;
 
         this.addEventListener(egret.ProgressEvent.SOCKET_DATA, this.onSocketMessage, this);
         
@@ -38,11 +42,12 @@ class SocketClient extends egret.WebSocket {
 
         // 重新登录监听暂时写在这里
         this.add('user.login', (msg: any) => {
-            messager.info(`游客登录成功`, this.stage);
+            messager.success(`${this.api.isLoggedIn ? '' : '游客'}登录成功`, this.stage);
         });
     }
 
     connect(): Promise<void> {
+        //todo: 队列，未连接前保存未发送或发送失败的消息，连接成功后再尝试
         return new Promise((resolve, reject) => {
             if (this.connected) {
                 resolve();
@@ -52,6 +57,9 @@ class SocketClient extends egret.WebSocket {
                 if (!this.onConnected) {
                     this.addEventListener(egret.Event.CONNECT, this.onConnected = (event: any) => {
                         messager.info('成功连接到服务器', this.stage);
+
+                        this.send('user.login', {userId: this.api.localUser.id});
+
                         this.connectStarted = false;
 
                         this.runPingTimer();
@@ -69,7 +77,7 @@ class SocketClient extends egret.WebSocket {
                 if (!this.connectStarted) {
                     messager.info({msg: '正在连接到服务器', duration: 2000}, this.stage);
 
-                    super.connect(DEBUG ? "192.168.1.100" : "180.76.185.34", 9097);
+                    super.connect(DEBUG ? location.hostname : "180.76.185.34", 9097);
                     this.connectStarted = true;
                 }
             }
@@ -116,6 +124,3 @@ class SocketClient extends egret.WebSocket {
         }, 1000 * 30);
     }
 }
-
-let socketClient = new SocketClient();
-export default socketClient;

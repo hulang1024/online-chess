@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.websocket;
 
 
-import io.github.hulang1024.chinesechess.message.ClientMessageDispatcher;
+import io.github.hulang1024.chinesechess.websocket.message.ClientMessageDispatcher;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +17,7 @@ import java.io.IOException;
 @ServerEndpoint(port = "${websocket.port}")
 @Slf4j
 public class ChineseChessWebSocketServerEndpoint {
-    public static int connectedSessionCount = 0;
-    
+
     @BeforeHandshake
     public void handshake(Session session, HttpHeaders headers){
         session.setSubprotocols("stomp");
@@ -26,16 +25,12 @@ public class ChineseChessWebSocketServerEndpoint {
 
     @OnOpen
     public void onOpen(Session session, HttpHeaders headers){
-        //log.info("一个连接打开");
-        connectedSessionCount++;
-        ClientEventManager.emitSessionOpenEvent(session);
+        ClientSessionEventManager.emitSessionOpenEvent(session);
     }
 
     @OnClose
     public void onClose(Session session) throws IOException {
-        //log.info("一个连接关闭");
-        connectedSessionCount--;
-        ClientEventManager.emitSessionCloseEvent(session);
+        ClientSessionEventManager.emitSessionCloseEvent(session);
     }
 
     @OnError
@@ -45,7 +40,7 @@ public class ChineseChessWebSocketServerEndpoint {
 
     @OnMessage
     public void onMessage(Session session, String message) {
-        if (message.equals("ping")) {
+        if ("ping".equals(message)) {
             session.sendText("pong");
             return;
         }

@@ -2,11 +2,16 @@ import { APIRequest, HttpMethod } from "../api/api_request";
 import Room from "./Room";
 
 export default class JoinRoomRequest extends APIRequest {
+    private room: Room;
+    
     constructor(room: Room) {
         super();
-        this.method = HttpMethod.PUT;
-        this.path = `rooms/${room.id}/users/${this.user.id}`;
+        this.room = room;
+    }
 
-        this.addParam('password', room.password || '');
+    prepare() {
+        this.method = HttpMethod.PUT;
+        this.path = `rooms/${this.room.id}/users/${this.user.id}`;
+        this.addParam('password', this.room.password || '');
     }
 }

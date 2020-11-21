@@ -17,3 +17,7 @@ spring:
 
 websocket:
   port: 9097
+
+yao-xin:
+  endpoint: http://47.112.238.235:10018/open
+  app-id: yx4b11c08aa09d44ed

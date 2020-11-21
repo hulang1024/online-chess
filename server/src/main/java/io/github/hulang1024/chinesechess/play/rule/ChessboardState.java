@@ -67,7 +67,7 @@ public class ChessboardState {
     /**
      * 将源视角棋方的棋子位置转换为当前设置的视角棋方((this.viewChessHost)的棋子位置
      * @param pos 源视角棋方的棋子位置
-     * @param chessHost 源视角棋方
+     * @param host 源视角棋方
      */
     public static ChessPos convertViewPos(ChessPos pos, ChessHost host) {
         return ChessHost.RED == host

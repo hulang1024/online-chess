@@ -15,10 +15,6 @@ public class QuickStartService {
     public Room quickStart() {
         User user = UserUtils.get();
 
-        if (user.isJoinedAnyRoom()) {
-            return null;
-        }
-
         Optional<Room> roomOpt = roomManager.getRooms().stream()
             .filter(room -> room.getUserCount() < 2 && !room.isLocked()).findAny();
         if (roomOpt.isPresent()) {

@@ -2,26 +2,31 @@ import User from "../../user/User";
 import APIAccess from "./APIAccess";
 
 export abstract class APIRequest {
-    public success: APISuccessHandler;
-    public failure: APIFailureHandler;
-
+    protected api: APIAccess;
     protected httpRequest: egret.HttpRequest;
     protected path: string;
     protected method: HttpMethod;
     private params: {} = null;
-
-    constructor() {
-
-    }
+    
+    public success: APISuccessHandler;
+    public failure: APIFailureHandler;
 
     get user(): User {
-        return APIAccess.localUser;
+        return this.api.localUser;
     }
 
-    public perform() {
-        this.httpRequest = this.createHttpRequest();
-        //this.httpRequest.withCredentials = true;
-        this.httpRequest.open(`http://192.168.1.100:9000/api/${this.path}`, this.method);
+    public perform(api: APIAccess) {
+        this.api = api;
+        this.httpRequest = this.createJSONRequest();
+        if (this.api.accessToken) {
+            this.httpRequest.setRequestHeader("Authorization", `Bearer ${this.api.accessToken.accessToken}`);
+        }
+
+        if (this.prepare) {
+            this.prepare();
+        }
+
+        this.httpRequest.open(`${api.endpoint}/api/${this.path}`, this.method);
 
         this.httpRequest.addEventListener(egret.Event.COMPLETE, (event: egret.Event) => {
             let request = <egret.HttpRequest>event.currentTarget;
@@ -38,7 +43,6 @@ export abstract class APIRequest {
         this.httpRequest.addEventListener(egret.IOErrorEvent.IO_ERROR, (event: egret.Event) => {
             let request = <egret.HttpRequest>event.currentTarget;
             let responseObject = request.response ? JSON.parse(request.response) : void 0;
-            this.triggerSuccess(responseObject);
             this.triggerFailure(responseObject || event);
         }, this);
 
@@ -46,14 +50,18 @@ export abstract class APIRequest {
     }
 
     protected createHttpRequest() {
+        // 默认JSON请求
+        return this.createJSONRequest();
+    }
+
+    protected createJSONRequest() {
         const req = new egret.HttpRequest();
         req.responseType = egret.HttpResponseType.TEXT;
         req.setRequestHeader("Content-Type", "application/json");
-        if (APIAccess.token) {
-            req.setRequestHeader("token", APIAccess.token);
-        }
         return req;
     }
+
+    protected abstract prepare();//todo: 重构
 
     protected addParam(key: string, value: any) {
         this.params = this.params || {};

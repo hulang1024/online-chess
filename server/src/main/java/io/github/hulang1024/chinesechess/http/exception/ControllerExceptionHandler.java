@@ -1,6 +1,6 @@
 package io.github.hulang1024.chinesechess.http.exception;
 
-import io.github.hulang1024.chinesechess.http.results.room.ErrorRet;
+import io.github.hulang1024.chinesechess.http.results.ErrorRet;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
