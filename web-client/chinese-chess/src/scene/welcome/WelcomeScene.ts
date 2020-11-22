@@ -68,11 +68,15 @@ export default class WelcomeScene extends AbstractScene {
     }
 
     private onLoginClick() {
-        let user = new User();
-        user.nickname = prompt('登陆用户名（昵称）');
-        if (!user.nickname) return;
-        user.password = prompt('登陆密码');
-        this.api.login(user)
+        setTimeout(() => {
+            let user = new User();
+            user.nickname = prompt('登陆用户名（昵称）');
+            if (!user.nickname) return;
+            user.password = prompt('登陆密码');
+
+            messager.info('登录中...', this);
+
+            this.api.login(user)
             .then(() => {
                 SceneManager.of(this.context).pushScene(context => new LobbyScene(context));
                 this.channelManager.loadDefaultChannels();
@@ -101,6 +105,7 @@ export default class WelcomeScene extends AbstractScene {
             .catch((ret) => {
                 messager.fail({1: '用户不存在', 2: '密码错误'}[ret.code], this);
             });
+        }, 100);
     }
 
     private onCreateUserClick() {

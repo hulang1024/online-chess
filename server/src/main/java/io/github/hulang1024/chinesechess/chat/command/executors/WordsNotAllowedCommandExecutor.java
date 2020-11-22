@@ -27,7 +27,7 @@ public class WordsNotAllowedCommandExecutor implements CommandExecutor {
             return;
         }
 
-        if (!(cmdParams.length != 2
+        if (!(cmdParams.length == 2
             && cmdParams[0].matches("\\d+")
             && cmdParams[1].matches("on|off"))) {
             return;
@@ -45,12 +45,12 @@ public class WordsNotAllowedCommandExecutor implements CommandExecutor {
             if (!wordsNotAllowedUserIds.contains(userId)) {
                 wordsNotAllowedUserIds.add(userId);
             }
-            channelManager.broadcast(channel, new InfoMessage( user.getNickname() + " 已禁言!"));
+            channelManager.broadcast(channel, new InfoMessage( user.getNickname() + " 已被禁言!"));
         } else {
             if (wordsNotAllowedUserIds.contains(userId)) {
                 wordsNotAllowedUserIds.remove(userId);
             }
-            channelManager.broadcast(channel, new InfoMessage( user.getNickname() + " 已解除禁言"));
+            channelManager.broadcast(channel, new InfoMessage( user.getNickname() + " 已被解除禁言"));
         }
     }
 

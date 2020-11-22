@@ -20,6 +20,14 @@ export default class APIAccess {
         request.perform(this);
     }
 
+    public handleHttpExceptionStatus(statusCode: number) {
+        switch (statusCode) {
+            case 401:
+                this.logout();
+                break;
+        }
+    }
+
     public login(user: User): Promise<void> {
         let loginRequest = new LoginRequest(user);
         return new Promise((resolve, reject) => {
@@ -35,6 +43,11 @@ export default class APIAccess {
             }
             loginRequest.perform(this);
         });
+    }
+
+    public logout() {
+        this.isLoggedIn = false;
+        this.localUser = new GuestUser();
     }
 }
 

@@ -67,6 +67,7 @@ public class ChannelController {
         @NotNull @PathVariable("channel_id") Long channelId,
         @Validated @RequestBody PostMessageParam param) {
         User sender = UserUtils.get();
+
         Channel channel = channelManager.getChannelById(channelId);
         Message message = new Message();
         message.setChannelId(channel.getId());

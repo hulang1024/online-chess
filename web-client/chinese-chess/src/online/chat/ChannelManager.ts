@@ -123,7 +123,7 @@ export default class ChannelManager {
         const command = tokens[0];
 
         switch (command) {
-            case 'fwords':
+            case 'words':
             case 'recall':
             case 'roll':
                 this.postMessage(text, true);
