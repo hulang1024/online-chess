@@ -12,6 +12,7 @@ import SOUND from "../../audio/SOUND";
 import ChessboardClickEvent from "./ChessboardClickEvent";
 import ChessAction from "../../rule/ChessAction";
 import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList } from "../../rule/chess_map";
+import GameStates from "../../online/play/GameStates";
 
 export default class Player extends eui.Group implements RoundGame {
     public chessboard: DisplayChessboard;
@@ -61,21 +62,21 @@ export default class Player extends eui.Group implements RoundGame {
         return chessHost != this.viewChessHost;
     }
 
-    startRound(viewChessHost: ChessHost, activeChessHost?: ChessHost, chesses?: Array<any>) {
+    startRound(viewChessHost: ChessHost, gameStates?: GameStates) {
         this.lastViewChessHost = this.viewChessHost;
         this.viewChessHost = viewChessHost;
         if (this.lastViewChessHost == null) {
             this.lastViewChessHost = viewChessHost;
         }
-        this.activeChessHost = activeChessHost || ChessHost.RED;
+        this.activeChessHost = (gameStates && gameStates.activeChessHost) || ChessHost.RED;
         this.chessActionStack = [];
 
         this.fromPosTargetDrawer.clear();
 
-        if (chesses) {
+        if (gameStates && gameStates.chesses) {
             // 把棋子放到棋盘上
             this.clearChessboard();
-            chesses.forEach(chess => {
+            gameStates.chesses.forEach(chess => {
                 let pos = new ChessPos(chess.row, chess.col);
                 // 服务器保存数据默认视角是红方，如果当前视图是黑方就要翻转下
                 if (this.viewChessHost == ChessHost.BLACK) {
@@ -96,6 +97,10 @@ export default class Player extends eui.Group implements RoundGame {
         });
 
         this.onTurnActiveChessHost(this.activeChessHost);
+
+        if (gameStates) {
+            this.loadActionStackState(gameStates);
+        }
     }
 
     pickChess(picked: boolean, pos: ChessPos, chessHost: ChessHost) {
@@ -107,6 +112,36 @@ export default class Player extends eui.Group implements RoundGame {
         
         pos = this.convertViewPos(pos, chessHost);
         this.chessboard.chessAt(pos).setSelected(picked);
+    }
+
+    private loadActionStackState(states: GameStates) {
+        if (!(states.actionStack && states.actionStack.length)) {
+            return;
+        }
+        let actionStack: Array<ChessAction> = states.actionStack.map(act => {
+            let action = new ChessAction();
+            action.chessHost = ChessHost[<string>act.chessHost];
+            action.chessType = CHESS_CLASS_KEY_MAP[act.chessType];
+            action.fromPos = ChessPos.make(act.fromPos);
+            action.toPos = ChessPos.make(act.toPos);
+            if (act.eatenChess) {
+                let chessClass = CHESS_CLASS_KEY_MAP[act.eatenChess.type];
+                let chess = new chessClass(
+                    this.convertViewPos(act.toPos, action.chessHost),
+                    ChessHost[<string>act.eatenChess.chessHost]);
+                action.eatenChess = chess;
+            }
+            return action;
+        });
+        this.loadActionStack(actionStack);
+
+        let lastAction = actionStack[actionStack.length - 1];
+        let { chessHost, fromPos, toPos } = lastAction;
+        this.fromPosTargetDrawer.draw(this.convertViewPos(fromPos, chessHost));
+        let chess = this.chessboard.chessAt(this.convertViewPos(toPos, chessHost));
+        if (chess) {
+            chess.setLit(true);
+        }
     }
 
     moveChess(fromPos: ChessPos, toPos: ChessPos, chessHost: ChessHost, isEat: boolean) {

@@ -4,12 +4,13 @@ import Channel from "../../online/chat/Channel";
 import MessageInput from "./MessageInput";
 import ChannelManager from "../../online/chat/ChannelManager";
 import messager from "../../component/messager";
+import ChatLine from "./ChatLine";
 
 export default class ChatOverlay extends Overlay {
     private tabBar = new eui.TabBar();
     private viewStack = new eui.ViewStack();
     private manager: ChannelManager;
-    private messageInput = new MessageInput();
+    private messageInput;
     private maxY: number;
     private minY: number;
     private popIned: boolean;
@@ -47,15 +48,21 @@ export default class ChatOverlay extends Overlay {
         this.maxY = this.stage.stageHeight - this.height;
         this.y = this.minY;
 
-        let { messageInput } = this;
-        messageInput.x = this.width - messageInput.width - 8;
+        let messageInput = new MessageInput(this.stage.stageWidth - ChatLine.NICKNAME_PADDING - 8);
+        this.messageInput = messageInput;
+        messageInput.x = ChatLine.NICKNAME_PADDING;
         messageInput.y = this.height - messageInput.height - 8;
         messageInput.onSend = (text: string) => {
             if (text.length > 100) {
                 messager.fail('消息过长',this);
                 return false;
             }
-            this.manager.postMessage(text);
+
+            if (text[0] == '/' && text.length > 1) {
+                this.manager.postCommand(text);
+            } else {
+                this.manager.postMessage(text);
+            }
             return true;
         }
         this.addChild(messageInput);

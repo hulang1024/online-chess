@@ -10,14 +10,14 @@ export default class Channel {
     joined: boolean = false;
 
     onNewMessages: Function;
+    onRemoveMessage: Function;
 
     addLocalEcho(message: Message) {
-        this.messages.push(message);
-
-        this.addNewMessages([message]);
+        this.addNewMessages(message);
     }
 
-    addNewMessages(messages: Message[]) {
+    addNewMessages(messages: Message[] | Message) {
+        messages = messages instanceof Array ? messages : [messages];
         // 排除重复
         messages = messages.filter(newMsg =>
             this.messages.filter(m => m.id == newMsg.id).length == 0);
@@ -25,5 +25,10 @@ export default class Channel {
         this.messages = this.messages.concat(messages);
 
         this.onNewMessages(messages);
+    }
+
+    removeMessage(messageId: number) {
+        this.messages = this.messages.filter(msg => msg.id == messageId);
+        this.onRemoveMessage(messageId);
     }
 }

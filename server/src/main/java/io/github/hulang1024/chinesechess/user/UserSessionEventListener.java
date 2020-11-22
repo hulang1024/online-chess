@@ -4,10 +4,12 @@ import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.room.LobbyService;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
+import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.login.UserLoginClientMsg;
 import io.github.hulang1024.chinesechess.websocket.ClientSessionEventManager;
 import io.github.hulang1024.chinesechess.websocket.message.AbstractMessageListener;
+import io.github.hulang1024.chinesechess.websocket.message.server.play.GamePlayStatesServerMsg;
 import io.github.hulang1024.chinesechess.websocket.message.server.stat.OnlineStatServerMsg;
 import io.github.hulang1024.chinesechess.websocket.message.server.user.UserLoginServerMsg;
 import io.github.hulang1024.chinesechess.websocket.message.server.user.UserOfflineServerMsg;
@@ -16,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.yeauty.pojo.Session;
 
 @Component
-public class UserMessageListener extends AbstractMessageListener {
+public class UserSessionEventListener extends AbstractMessageListener {
     @Autowired
     private LobbyService lobbyService;
     @Autowired
@@ -45,35 +47,30 @@ public class UserMessageListener extends AbstractMessageListener {
     private void onUserLogin(UserLoginClientMsg loginMsg) {
         UserLoginServerMsg loginResult = new UserLoginServerMsg();
 
-        if (loginMsg.getUserId() == -1) {
+        if (loginMsg.getUserId() < 0) {
             // 现在游客登录
-            GuestUser guestUser = new GuestUser();
-            userSessionManager.setBinding(guestUser, loginMsg.getSession());
-            userManager.loginGuestUser(guestUser);
-            for (long channelId : ChannelManager.defaultChannelIds) {
-                channelManager.joinChannel(channelManager.getChannelById(channelId), guestUser);
-            }
+            onGuestLogin(loginMsg);
         } else {
             // 现在用户登录
             // 如果该session游客登录过
             User guestUser = userManager.getGuestUser(loginMsg.getSession());
             if (guestUser != null) {
-                userSessionManager.removeBinding(loginMsg.getSession());
-                userManager.removeGuestUser(guestUser);
-                for (long channelId : ChannelManager.defaultChannelIds) {
-                    channelManager.getChannelById(channelId).removeUser(guestUser);
-                }
+                onGuestLogout(loginMsg.getSession(), guestUser);
             }
 
-            User user = userManager.getOnlineUser(loginMsg.getUserId());
+            User user = userManager.getLoggedInUser(loginMsg.getUserId());
             if (user != null) {
                 if (userSessionManager.getSession(user) == null ||
                     userSessionManager.getSession(user).equals(loginMsg.getSession())) {
+                    // 绑定session
                     boolean isOk = userSessionManager.setBinding(user, loginMsg.getSession());
-
                     if (isOk) {
-                        for (long channelId : ChannelManager.defaultChannelIds) {
-                            channelManager.joinChannel(channelManager.getChannelById(channelId), user);
+                        Room recentJoinedRoom = roomManager.getJoinedRoom(user);
+                        if (recentJoinedRoom != null && !recentJoinedRoom.getUserGameState(user).isOnline()) {
+                            // 最近在游戏中掉线过，现在尝试继续
+                            onBackContinuePlay(user, recentJoinedRoom);
+                        } else {
+                            channelManager.joinDefaultChannels(user);
                         }
                     }
 
@@ -89,41 +86,43 @@ public class UserMessageListener extends AbstractMessageListener {
     }
 
     private void onSessionClose(Session session) {
-        User user = userManager.getOnlineUser(session);
+        User user = userManager.getLoggedInUser(session);
         if (user != null) {
-            // 离开房间
-            Room room = roomManager.getJoinedRoom(user);
-            if (room != null) {
-                // 发送用户离线消息
+            // 如果之前加入了房间
+            Room joinedRoom = roomManager.getJoinedRoom(user);
+            if (joinedRoom != null) {
+                if (joinedRoom.getStatus() == RoomStatus.PLAYING) {
+                    // 之前正在游戏中，现在是非常规离线，记录离线状态
+                    joinedRoom.getUserGameState(user).setOnline(false);
+                } else {
+                    roomManager.partRoom(joinedRoom, user);
+                    channelManager.leaveDefaultChannels(user);
+                }
+
                 UserOfflineServerMsg userOfflineMsg = new UserOfflineServerMsg();
                 userOfflineMsg.setUid(user.getId());
-                userOfflineMsg.setNickname(user.getNickname());
-                roomManager.broadcast(room, userOfflineMsg, user);
-
-                roomManager.part(room, user);
+                if (joinedRoom.getOnlineUserCount() > 0) {
+                    // 发送用户离线消息
+                    roomManager.broadcast(joinedRoom, userOfflineMsg, user);
+                } else {
+                    spectatorManager.broadcast(joinedRoom, userOfflineMsg);
+                }
+            } else {
+                // 如果之前旁观，现在离开观看
+                Room spectatingRoom = spectatorManager.getSpectatingRoom(user);
+                if (spectatingRoom != null) {
+                    spectatorManager.leaveRoom(user, spectatingRoom);
+                    channelManager.leaveDefaultChannels(user);
+                }
             }
-
-            // 离开观看
-            room = spectatorManager.getSpectatingRoom(user);
-            if (room != null) {
-                spectatorManager.leave(user, room);
-            }
+            userSessionManager.removeBinding(session);
         } else {
             // 游客退出
             User guestUser = userManager.getGuestUser(session);
             if (guestUser != null) {
-                userManager.removeGuestUser(guestUser);
-            }
-            user = guestUser;
-        }
-
-        if (user != null) {
-            for (long channelId : ChannelManager.defaultChannelIds) {
-                channelManager.getChannelById(channelId).removeUser(user);
+                onGuestLogout(session, guestUser);
             }
         }
-
-        userSessionManager.removeBinding(session);
 
         lobbyService.removeStayLobbySession(session);
 
@@ -133,10 +132,30 @@ public class UserMessageListener extends AbstractMessageListener {
         sendUpdateStat();
     }
 
+    private void onBackContinuePlay(User user, Room room) {
+        GamePlayStatesServerMsg gamePlayStatesServerMsg = new GamePlayStatesServerMsg();
+        gamePlayStatesServerMsg.setStates(room.getGame().buildGamePlayStatesResponse());
+        room.getUserGameState(user).setOnline(true);
+        send(gamePlayStatesServerMsg, user);
+    }
+
+    private void onGuestLogin(UserLoginClientMsg loginMsg) {
+        GuestUser guestUser = new GuestUser();
+        userSessionManager.setBinding(guestUser, loginMsg.getSession());
+        userManager.loginGuestUser(guestUser);
+        channelManager.joinDefaultChannels(guestUser);
+    }
+
+    private void onGuestLogout(Session session, User guestUser) {
+        userSessionManager.removeBinding(session);
+        userManager.removeGuestUser(guestUser);
+        channelManager.leaveDefaultChannels(guestUser);
+    }
+
     private void sendUpdateStat() {
         OnlineStatServerMsg statMsg = new OnlineStatServerMsg();
         statMsg.setOnline(sessionUserCount);
         
-        lobbyService.broadcast(statMsg, null);
+        lobbyService.broadcast(statMsg);
     }
 }

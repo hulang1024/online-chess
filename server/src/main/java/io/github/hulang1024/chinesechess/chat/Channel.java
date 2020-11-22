@@ -37,6 +37,11 @@ public class Channel {
         this.messages.add(message);
     }
 
+    public void removeMessage(long messageId) {
+        messages.removeIf(m -> m.getId() == messageId);
+    }
+
+
     public void removeUser(User user) {
         users.remove(user);
     }

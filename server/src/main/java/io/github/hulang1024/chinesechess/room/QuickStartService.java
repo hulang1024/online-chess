@@ -20,7 +20,7 @@ public class QuickStartService {
         if (roomOpt.isPresent()) {
             Room room = roomOpt.get();
             // 加入房间
-            JoinRoomResult joinRoomResult = roomManager.join(room, user, null);
+            JoinRoomResult joinRoomResult = roomManager.joinRoom(room, user, null);
             if (joinRoomResult.getCode() == 0) {
                 return room;
             } else {

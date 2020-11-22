@@ -1,16 +1,19 @@
 import messager from "../component/messager";
 import SceneContext from "../scene/SceneContext";
 import APIAccess from "./api/APIAccess";
+import ChannelManager from "./chat/ChannelManager";
+import InfoMessage from "./chat/InfoMessage";
 
 export default class SocketClient extends egret.WebSocket {
     signals: { [s: string]: Signal } = {};
     reconnectedSignal = new Signal();
-    private connectedSignal = new Signal();
+    connectedSignal = new Signal();
     private connectStarted: boolean = false;
     private onConnected: Function;
     private connectedTimes: number = 0;
     private api: APIAccess;
     private stage: egret.Stage;
+    public channelManager: ChannelManager;
 
     constructor(api: APIAccess, stage: egret.Stage) {
         super();
@@ -42,7 +45,8 @@ export default class SocketClient extends egret.WebSocket {
 
         // 重新登录监听暂时写在这里
         this.add('user.login', (msg: any) => {
-            messager.success(`${this.api.isLoggedIn ? '' : '游客'}登录成功`, this.stage);
+            this.channelManager.getChannel(1).addNewMessages(
+                new InfoMessage(`${this.api.isLoggedIn ? '' : '游客'}登录成功，欢迎来到在线中国象棋。`));
         });
     }
 
@@ -56,9 +60,12 @@ export default class SocketClient extends egret.WebSocket {
 
                 if (!this.onConnected) {
                     this.addEventListener(egret.Event.CONNECT, this.onConnected = (event: any) => {
-                        messager.info('成功连接到服务器', this.stage);
-
-                        this.send('user.login', {userId: this.api.localUser.id});
+                        if (this.connectedTimes > 0) {
+                            messager.info('成功连接到服务器', this.stage);
+                        }
+                        this.send('user.login', {
+                            userId: this.api.isLoggedIn ? this.api.localUser.id : -1
+                        });
 
                         this.connectStarted = false;
 

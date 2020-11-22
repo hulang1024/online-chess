@@ -1,28 +1,32 @@
+import UserGameState from "../../online/room/UserGameState";
 import ChessHost from "../../rule/chess_host";
 import User from "../../user/User";
 
 export default class UserInfoPane extends eui.Group {
     private rect = new egret.Shape();
-    private txtNickname = new egret.TextField();
+    private lblNickname = new eui.Label();
+    private lblOnline = new eui.Label();
     private user: any;
-    private isOther: boolean;
 
-    constructor(isOther?: boolean) {
+    constructor() {
         super();
         
-        this.isOther = isOther;
-
-        this.minWidth = 100;
+        this.minWidth = 140;
         this.height = 20;
 
         this.addChild(this.rect);
+        
+        this.lblOnline.width = 60;
+        this.lblOnline.size = 20;
+        this.addChild(this.lblOnline);
 
-        this.txtNickname.size = 20;
-        this.addChild(this.txtNickname);
+        this.lblNickname.size = 20;
+        this.addChild(this.lblNickname);
+
         this.load(null, null);
     }
 
-    load(user: User, chessHost: ChessHost) {
+    load(user: User, chessHost?: ChessHost, userGameState?: UserGameState) {
         this.user = user;
         if (user == null) {
             this.visible = false;
@@ -30,9 +34,19 @@ export default class UserInfoPane extends eui.Group {
         } else {
             this.visible = true;
         }
-        this.txtNickname.text = `(${this.isOther ? '对方'
-            : chessHost == null ? '?' : (chessHost == 1 ? '红方' : '黑方')}) ${user.nickname}`;
+        let text = '';
+        text += `(${chessHost == null ? '?' : (chessHost == 1 ? '红方' : '黑方')})`;
+        text += ' ' + user.nickname;
+        if (userGameState) {
+            this.updateOnline(userGameState.online);
+            text += userGameState.readied ? '' : '  (未准备)';
+        }
+        this.lblNickname.text = text;
         this.setActive(false);
+    }
+
+    updateOnline(online: boolean) {
+        this.lblOnline.text = online ? '' : '(离线)';
     }
 
     getUser() {

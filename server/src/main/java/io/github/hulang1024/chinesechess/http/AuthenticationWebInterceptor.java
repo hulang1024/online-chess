@@ -36,13 +36,13 @@ public class AuthenticationWebInterceptor implements HandlerInterceptor {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             return false;
         }
-        UserUtils.set(userManager.getOnlineUser(user.getId()));
+        UserUtils.set(userManager.getLoggedInUser(user.getId()));
 
         return true;
 }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-        UserUtils.set(null);
+        UserUtils.clear();
     }
 }

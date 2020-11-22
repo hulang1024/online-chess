@@ -61,7 +61,7 @@ export abstract class APIRequest {
         return req;
     }
 
-    protected abstract prepare();//todo: 重构
+    protected prepare() {}//todo: 重构
 
     protected addParam(key: string, value: any) {
         this.params = this.params || {};

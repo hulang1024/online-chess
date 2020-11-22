@@ -20,7 +20,7 @@ public class UserManager {
     @Autowired
     private UserDao userDao;
 
-    public User getOnlineUser(long userId) {
+    public User getLoggedInUser(long userId) {
         return loggedInUserMap.get(userId);
     }
 
@@ -28,9 +28,9 @@ public class UserManager {
         return guestUserMap.get(userId);
     }
 
-    public User getOnlineUser(Session session) {
+    public User getLoggedInUser(Session session) {
         Long userId = session.getAttribute(UserSessionManager.USER_ID_KEY);
-        return userId != null ? getOnlineUser(userId) : null;
+        return userId != null ? getLoggedInUser(userId) : null;
     }
 
     public User getGuestUser(Session session) {
@@ -49,8 +49,9 @@ public class UserManager {
 
     public RegisterResult register(UserRegisterParam param) {
         User user = new User();
-        user.setNickname(param.getNickname());
-        user.setPassword(PasswordUtils.cipherText(param.getPassword()));
+        // todo:验证格式
+        user.setNickname(param.getNickname().trim());
+        user.setPassword(PasswordUtils.cipherText(param.getPassword().trim()));
         user.setRegisterTime(LocalDateTime.now());
         user.setSource(0);
 

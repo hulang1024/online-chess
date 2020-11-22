@@ -24,12 +24,17 @@ export default class Overlay extends eui.Group {
 
         // 背景
         this.background.graphics.clear();
-        this.background.graphics.beginFill(0x000000, 0.5);
+        this.background.graphics.beginFill(0x000000, 0.4);
         if (this.round) {
             this.background.graphics.drawRoundRect(0, 0, this.width, this.height, 8, 8);
         } else {
             this.background.graphics.drawRect(0, 0, this.width, this.height);
         }
+        this.background.filters = [
+            new egret.DropShadowFilter(
+                2, 0, 0x000000, 0.3, 0, 4, 2,
+                egret.BitmapFilterQuality.MEDIUM, false, false)
+        ];
     }
 
     setCenter() {

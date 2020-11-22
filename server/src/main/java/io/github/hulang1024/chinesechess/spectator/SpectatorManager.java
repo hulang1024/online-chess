@@ -1,22 +1,19 @@
 package io.github.hulang1024.chinesechess.spectator;
 
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
-import io.github.hulang1024.chinesechess.chat.Message;
-import io.github.hulang1024.chinesechess.user.User;
-import io.github.hulang1024.chinesechess.websocket.message.server.spectator.SpectatorJoinServerMsg;
-import io.github.hulang1024.chinesechess.websocket.message.server.spectator.SpectatorLeaveServerMsg;
-import io.github.hulang1024.chinesechess.play.GamePlayStatesResponse;
-import io.github.hulang1024.chinesechess.play.rule.Chess;
-import io.github.hulang1024.chinesechess.play.rule.ChessHost;
-import io.github.hulang1024.chinesechess.play.rule.ChessboardState;
+import io.github.hulang1024.chinesechess.chat.InfoMessage;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
+import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
-import io.github.hulang1024.chinesechess.utils.TimeUtils;
+import io.github.hulang1024.chinesechess.user.UserSessionManager;
+import io.github.hulang1024.chinesechess.websocket.message.MessageUtils;
+import io.github.hulang1024.chinesechess.websocket.message.ServerMessage;
+import io.github.hulang1024.chinesechess.websocket.message.server.spectator.SpectatorJoinServerMsg;
+import io.github.hulang1024.chinesechess.websocket.message.server.spectator.SpectatorLeaveServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,25 +28,35 @@ public class SpectatorManager {
     private RoomManager roomManager;
     @Autowired
     private ChannelManager channelManager;
+    @Autowired
+    private UserSessionManager userSessionManager;
 
     public Room getSpectatingRoom(User user) {
         return spectatorRoomMap.get(user.getId());
     }
 
-    public SpectateResponseData spectate(long userId, SpectateParam param) {
-        User user = userManager.getOnlineUser(userId);
-        SpectateResponseData responseData = new SpectateResponseData();
-        Room room = roomManager.getRoom(param.getRoomId());
-        responseData.setRoom(room);
+    public List<User> getSpectators(Room room) {
+        return room.getSpectators();
+    }
 
+    public SpectateResponse spectate(long userId, SpectateParam param) {
+        SpectateResponse response = new SpectateResponse();
+
+        User user = userManager.getLoggedInUser(userId);
+        if (user == null) {
+            response.setCode(1);
+            return response;
+        }
+
+        Room room = roomManager.getRoom(param.getRoomId());
         if (room == null) {
-            responseData.setCode(2);
-            return responseData;
+            response.setCode(2);
+            return response;
         }
 
         if (room.getUserCount() < 2) {
-            responseData.setCode(3);
-            return responseData;
+            response.setCode(3);
+            return response;
         }
 
         room.getSpectators().add(user);
@@ -57,15 +64,7 @@ public class SpectatorManager {
 
         spectatorRoomMap.put(user.getId(), room);
 
-        GamePlayStatesResponse gamePlayStates = new GamePlayStatesResponse();
-        if (room.getGame() != null) {
-            if (room.getGame().getActiveChessHost() != null) {
-                gamePlayStates.setActiveChessHost(room.getGame().getActiveChessHost().code());
-            }
-            gamePlayStates.setChesses(toStateChesses(room.getGame().getChessboardState()));
-            gamePlayStates.setActionStack(room.getGame().getActionStack());
-        }
-        responseData.setStates(gamePlayStates);
+        response.setStates(room.getGame().buildGamePlayStatesResponse());
 
         // 发送给房间玩家用户观众信息
         SpectatorJoinServerMsg joinMsg = new SpectatorJoinServerMsg();
@@ -73,59 +72,38 @@ public class SpectatorManager {
         joinMsg.setSpectatorCount(room.getSpectators().size());
         roomManager.broadcast(room, joinMsg, user);
 
-        // 发送消息
-        Message chatMessage = new Message();
-        chatMessage.setChannelId(room.getChannel().getId());
-        chatMessage.setTimestamp(TimeUtils.nowTimestamp());
-        chatMessage.setSender(User.SYSTEM_USER);
-        chatMessage.setContent(user.getNickname() + " 加入观看");
-        channelManager.broadcast(room.getChannel(), chatMessage, user);
+        // 玩家可能都离线/掉线
+        if (room.getOnlineUserCount() > 0) {
+            channelManager.broadcast(room.getChannel(),
+                new InfoMessage(user.getNickname() + " 加入观看"), user);
+        }
 
-        return responseData;
+        return response;
     }
 
-    public void leave(long userId) {
-        User user = userManager.getOnlineUser(userId);
+    public void leaveRoom(long userId) {
+        User user = userManager.getLoggedInUser(userId);
         Room room = spectatorRoomMap.get(user.getId());
-        leave(user, room);
+        leaveRoom(user, room);
     }
 
-    public void leave(User spectator, Room room) {
-
+    public void leaveRoom(User spectator, Room room) {
         room.getSpectators().remove(spectator);
         room.getChannel().removeUser(spectator);
         spectatorRoomMap.remove(spectator.getId());
 
         SpectatorLeaveServerMsg leaveMsg = new SpectatorLeaveServerMsg();
-        leaveMsg.setUser(spectator);
+        leaveMsg.setUid(spectator.getId());
         leaveMsg.setSpectatorCount(room.getSpectators().size());
         roomManager.broadcast(room, leaveMsg);
 
-        // 发送消息
-        Message chatMessage = new Message();
-        chatMessage.setChannelId(room.getChannel().getId());
-        chatMessage.setTimestamp(TimeUtils.nowTimestamp());
-        chatMessage.setSender(User.SYSTEM_USER);
-        chatMessage.setContent(spectator.getNickname() + " 离开观看");
-        channelManager.broadcast(room.getChannel(), chatMessage);
+        channelManager.broadcast(room.getChannel(),
+            new InfoMessage(spectator.getNickname() + " 离开观看"));
     }
 
-    private List<GamePlayStatesResponse.Chess> toStateChesses(ChessboardState chessboardState) {
-        List<GamePlayStatesResponse.Chess> chesses = new ArrayList<>();
-        for (int r = 0; r < 10; r++) {
-            for (int c = 0; c < 9; c++) {
-                Chess chess = chessboardState.chessAt(r, c);
-                if (chess != null) {
-                    GamePlayStatesResponse.Chess sChess = new GamePlayStatesResponse.Chess();
-                    sChess.setHost(chess.chessHost == ChessHost.RED ? 1 : 2);
-                    sChess.setType(chess.type.name().charAt(0));
-                    sChess.setRow(r);
-                    sChess.setCol(c);
-                    chesses.add(sChess);
-                }
-            }
-        }
-        return chesses;
+    public void broadcast(Room room, ServerMessage message) {
+        room.getSpectators().forEach(user -> {
+            MessageUtils.send(message, userSessionManager.getSession(user));
+        });
     }
-
 }

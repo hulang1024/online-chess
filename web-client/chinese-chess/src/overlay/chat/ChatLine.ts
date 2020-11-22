@@ -1,6 +1,8 @@
 import Message from "../../online/chat/Message";
 
 export default class ChatLine extends eui.Group {
+    public static NICKNAME_PADDING = 222;
+
     constructor(msg: Message) {
         super();
         
@@ -26,6 +28,7 @@ export default class ChatLine extends eui.Group {
         txtNickname.textColor = ChatLine.USERNAME_COLORS[msg.sender.id % ChatLine.USERNAME_COLORS.length];
         txtNickname.text = msg.sender.nickname + ':';
         txtNickname.size = 20;
+        txtNickname.italic = true;
         txtNickname.textAlign = egret.HorizontalAlign.RIGHT;
         group.addChild(txtNickname);
 

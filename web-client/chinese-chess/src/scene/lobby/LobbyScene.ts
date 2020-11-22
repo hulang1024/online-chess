@@ -44,7 +44,7 @@ export default class LobbyScene extends AbstractScene {
         (<eui.HorizontalLayout>headGroup.layout).gap = 4;
   
         let lblTitle = new eui.Label();
-        lblTitle.size = 24;
+        lblTitle.size = 26;
         lblTitle.text = "多人游戏大厅";
         headGroup.addChild(lblTitle);
 

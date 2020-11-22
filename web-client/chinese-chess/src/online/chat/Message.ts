@@ -6,6 +6,7 @@ export default class Message {
     timestamp: number;
     sender: User;
     content: string;
+    isAction: boolean;
 
     constructor(id: number) {
         this.id = id;

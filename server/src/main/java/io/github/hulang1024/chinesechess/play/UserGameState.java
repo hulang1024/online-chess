@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class UserGameState {
+    private boolean online = true;
     /**
      * 准备状态
      */

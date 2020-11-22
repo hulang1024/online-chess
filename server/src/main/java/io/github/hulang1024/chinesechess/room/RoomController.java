@@ -42,7 +42,7 @@ public class RoomController {
 
     @PostMapping
     public ResponseEntity<Room> create(@Validated @RequestBody Room room) {
-        Room createdRoom = roomManager.create(room);
+        Room createdRoom = roomManager.createRoom(room);
         if (createdRoom == null) {
             return new ResponseEntity(HttpStatus.EXPECTATION_FAILED);
         }
@@ -54,7 +54,7 @@ public class RoomController {
     public ResponseEntity<Void> update(
         @NotNull @PathVariable("room_id") Long roomId,
         @Validated @RequestBody RoomUpdateParam param) {
-        boolean ok = roomManager.update(roomId, param);
+        boolean ok = roomManager.updateRoomInfo(roomId, param);
         return new ResponseEntity(ok ? HttpStatus.OK : HttpStatus.EXPECTATION_FAILED);
     }
 
@@ -63,7 +63,7 @@ public class RoomController {
         @NotNull @PathVariable("room_id") Long roomId,
         @NotNull @PathVariable("user_id") Long userId,
         @RequestBody JoinRoomParam param) {
-        JoinRoomResult result = roomManager.join(roomId, userId, param);
+        JoinRoomResult result = roomManager.joinRoom(roomId, userId, param);
         return new ResponseEntity(result, result.getCode() == 0 ? HttpStatus.OK : HttpStatus.EXPECTATION_FAILED);
     }
 
@@ -71,7 +71,7 @@ public class RoomController {
     public ResponseEntity<LeaveRoomServerMsg> part(
         @NotNull @PathVariable("room_id") Long roomId,
         @NotNull @PathVariable("user_id") Long userId) {
-        int ret = roomManager.part(roomId, userId);
+        int ret = roomManager.partRoom(roomId, userId);
         return new ResponseEntity(ret == 0 ? HttpStatus.OK : HttpStatus.EXPECTATION_FAILED);
     }
 

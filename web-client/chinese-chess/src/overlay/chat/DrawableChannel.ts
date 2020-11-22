@@ -3,7 +3,7 @@ import ChatLine from "./ChatLine";
 import Message from "../../online/chat/Message";
 
 export default class DrawableChannel extends eui.Group {
-    channel: Channel;
+    private channel: Channel;
     private container: eui.Group;
     private scroller = new eui.Scroller();
 
@@ -33,11 +33,16 @@ export default class DrawableChannel extends eui.Group {
         }, this);
 
         channel.onNewMessages = this.onNewMessages.bind(this);
+        channel.onRemoveMessage = this.onRemoveMessage.bind(this);
     }
 
     onNewMessages(msgs: Message[]) {
         msgs.forEach(msg => {
-            this.container.addChild(new ChatLine(msg));
+            let chatLine = new ChatLine(msg);
+            if (msg.id) {
+                chatLine.name = msg.id + '';
+            }
+            this.container.addChild(chatLine);
         });
         setTimeout(() => {
             let contentHeight = this.scroller.viewport.contentHeight;
@@ -45,5 +50,12 @@ export default class DrawableChannel extends eui.Group {
                 this.scroller.viewport.scrollV = contentHeight - this.scroller.height;
             }
         }, 200); // 不设置延时就不能正确显示
+    }
+
+    onRemoveMessage(messageId: number) {
+        let chatLine = this.container.getChildByName(messageId + '');
+        if (chatLine) {
+            this.container.removeChild(chatLine);
+        }
     }
 }

@@ -1,6 +1,6 @@
 package io.github.hulang1024.chinesechess.room;
 
-import io.github.hulang1024.chinesechess.user.UserMessageListener;
+import io.github.hulang1024.chinesechess.user.UserSessionEventListener;
 import io.github.hulang1024.chinesechess.websocket.message.AbstractMessageListener;
 import io.github.hulang1024.chinesechess.websocket.message.server.stat.OnlineStatServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +17,8 @@ public class LobbyMessageListener extends AbstractMessageListener {
             lobbyService.addStayLobbySession(lobbyEnter.getSession());
 
             OnlineStatServerMsg statMsg = new OnlineStatServerMsg();
-            statMsg.setOnline(UserMessageListener.sessionUserCount);
-            lobbyService.broadcast(statMsg, null);
+            statMsg.setOnline(UserSessionEventListener.sessionUserCount);
+            lobbyService.broadcast(statMsg);
         });
         
         addMessageHandler(LobbyExitMsg.class, (lobbyExit) -> {

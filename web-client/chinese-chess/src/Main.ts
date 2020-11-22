@@ -72,9 +72,19 @@ class Main extends eui.UILayer  {
     }
 
     private async runGame() {
+        switch (egret.Capabilities.os) {
+            case 'iOS':
+            case 'Android':
+            case 'Windows Phone':
+                this.stage.scaleMode = egret.StageScaleMode.FIXED_WIDTH;
+                break;
+            default:
+                this.stage.scaleMode = egret.StageScaleMode.FIXED_HEIGHT;
+        }
+
         await this.loadResource()
+        await RES.getResAsync("description_json");
         this.createGameScene();
-        await RES.getResAsync("description_json")
     }
 
     private async loadResource() {
@@ -117,6 +127,7 @@ class Main extends eui.UILayer  {
         let api = new APIAccess();
         let socketClient = new SocketClient(api, this.stage);
         let channelManager = new ChannelManager(api, socketClient);
+        socketClient.channelManager = channelManager;
 
         // 布局
         let layout = new eui.VerticalLayout();
@@ -125,7 +136,7 @@ class Main extends eui.UILayer  {
         this.stage.addChild(group);
 
         // 场景容器
-        let sceneContainer = new egret.DisplayObjectContainer();
+        let sceneContainer = new eui.UILayer();
         group.addChild(sceneContainer);
 
         let chatOverlay = new ChatOverlay(channelManager);

@@ -45,7 +45,6 @@ public class ChineseChessWebSocketServerEndpoint {
             return;
         }
         
-        //log.info("收到消息: {}", message);
         ClientMessageDispatcher.dispatch(message, session);
     }
 

@@ -2,11 +2,10 @@ export default class MessageInput extends eui.Group {
     private textEdit = new eui.EditableText();
     onSend: Function;
 
-    constructor() {
+    constructor(width: number) {
         super();
 
         const height = 56;
-        const width = 320;
 
         this.layout = new eui.HorizontalLayout();
 

@@ -15,8 +15,6 @@ import java.util.List;
 
 @Data
 public class Room {
-    public static final int MAX_PARTICIPANTS = 2;
-
     private Long id;
 
     private String name;
@@ -41,9 +39,6 @@ public class Room {
     @JSONField(serialize = false)
     private Channel channel;
 
-    @JSONField(serialize = false)
-    private List<User> users = new ArrayList<>();
-
     private User redChessUser;
 
     private UserGameState redGameState;
@@ -61,50 +56,45 @@ public class Room {
     private int roundCount = 0;
 
     public Room() {
-        game = new Game();
-        redGameState = new UserGameState();
-        blackGameState = new UserGameState();
+        game = new Game(this);
     }
 
     public void joinUser(User user) {
-        if (getUserCount() == MAX_PARTICIPANTS) {
-            status = RoomStatus.BEGINNING;
-        }
-
         UserGameState joinUserGameState = null;
         if (redChessUser == null) {
             redChessUser = user;
+            redGameState = new UserGameState();
             joinUserGameState = redGameState;
         } else if (blackChessUser == null) {
             blackChessUser = user;
+            blackGameState = new UserGameState();
             joinUserGameState = blackGameState;
         }
-        if (getUserCount() == 0) {
+        if (getUserCount() == 1) {
             joinUserGameState.setReadied(true);
-        } else if (getUserCount() == 1) {
+        } else if (getUserCount() == 2) {
             joinUserGameState.setReadied(false);
         }
 
-        users.add(user);
-
         channel.joinUser(user);
 
-        if (getUserCount() > 1) {
-            status = RoomStatus.BEGINNING;
-        }
+        status = getUserCount() < 2 ? RoomStatus.OPEN : RoomStatus.BEGINNING;
     }
 
     public void partUser(User user) {
         channel.removeUser(user);
-        users.remove(user);
         status = RoomStatus.OPEN;
 
         if (getChessHost(user) == ChessHost.RED) {
             redChessUser = null;
+            redGameState = null;
         }
         if (getChessHost(user) == ChessHost.BLACK) {
             blackChessUser = null;
+            blackGameState = null;
         }
+
+        roundCount = 0;
     }
 
     public ChessHost getChessHost(User user) {
@@ -118,17 +108,61 @@ public class Room {
     }
 
     public UserGameState getUserGameState(User user) {
-        if (user.equals(this.redChessUser)) {
+        if (user.equals(redChessUser)) {
             return redGameState;
         }
-        if (user.equals(this.blackChessUser)) {
+        if (user.equals(blackChessUser)) {
             return blackGameState;
         }
         return null;
     }
 
+    @JSONField(serialize = false)
+    public int getOnlineUserCount() {
+        int count = 0;
+        if (this.redChessUser != null && redGameState.isOnline()) {
+            count++;
+        }
+        if (this.blackChessUser != null && blackGameState.isOnline()) {
+            count++;
+        }
+        return count;
+    }
+
+    public boolean isFull() {
+        return getUserCount() == 2;
+    }
+
     public int getUserCount() {
-        return users.size();
+        int count = 0;
+        if (this.redChessUser != null) {
+            count++;
+        }
+        if (this.blackChessUser != null) {
+            count++;
+        }
+        return count;
+    }
+
+    public User getOneUser() {
+        if (this.redChessUser != null) {
+            return this.redChessUser;
+        }
+        if (this.blackChessUser != null) {
+            return this.blackChessUser;
+        }
+        return null;
+    }
+
+    public List<User> getUsers() {
+        List<User> users = new ArrayList<>();
+        if (redChessUser != null) {
+            users.add(redChessUser);
+        }
+        if (blackChessUser != null) {
+            users.add(blackChessUser);
+        }
+        return users;
     }
 
     public int getSpectatorCount() {

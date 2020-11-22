@@ -3,6 +3,7 @@ package io.github.hulang1024.chinesechess.room;
 import io.github.hulang1024.chinesechess.chat.Channel;
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.chat.ChannelType;
+import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
 import io.github.hulang1024.chinesechess.user.UserSessionManager;
@@ -10,12 +11,14 @@ import io.github.hulang1024.chinesechess.user.UserUtils;
 import io.github.hulang1024.chinesechess.websocket.message.MessageUtils;
 import io.github.hulang1024.chinesechess.websocket.message.ServerMessage;
 import io.github.hulang1024.chinesechess.websocket.message.server.lobby.LobbyRoomCreateServerMsg;
+import io.github.hulang1024.chinesechess.websocket.message.server.lobby.LobbyRoomRemoveServerMsg;
 import io.github.hulang1024.chinesechess.websocket.message.server.lobby.LobbyRoomUpdateServerMsg;
 import io.github.hulang1024.chinesechess.websocket.message.server.room.JoinRoomServerMsg;
 import io.github.hulang1024.chinesechess.websocket.message.server.room.LeaveRoomServerMsg;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.yeauty.pojo.Session;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,6 +43,8 @@ public class RoomManager {
     private UserManager userManager;
     @Autowired
     private UserSessionManager userSessionManager;
+    @Autowired
+    private SpectatorManager spectatorManager;
     @Autowired
     private LobbyService lobbyService;
 
@@ -72,7 +77,7 @@ public class RoomManager {
      * @param room
      * @return 创建的房间
      */
-    public Room create(Room room) {
+    public Room createRoom(Room room) {
         User creator = UserUtils.get();
 
         if (getJoinedRoom(creator) != null) {
@@ -106,7 +111,7 @@ public class RoomManager {
         // 创建者默认进入房间
         JoinRoomParam roomJoinParam = new JoinRoomParam();
         roomJoinParam.setPassword(room.getPassword());
-        join(createdRoom, creator, roomJoinParam);
+        joinRoom(createdRoom, creator, roomJoinParam);
 
         return createdRoom;
     }
@@ -118,9 +123,15 @@ public class RoomManager {
      * @param userId
      * @return
      */
-    public JoinRoomResult join(long roomId, long userId, JoinRoomParam joinRoomParam) {
-        User user = userManager.getOnlineUser(userId);
+    public JoinRoomResult joinRoom(long roomId, long userId, JoinRoomParam joinRoomParam) {
+        User user = userManager.getLoggedInUser(userId);
         Room room = getRoom(roomId);
+        if (room == null) {
+            JoinRoomResult result = new JoinRoomResult();
+            result.setCode(7);
+            return result;
+        }
+
         Room joinedRoom = getJoinedRoom(user);
         // 判断该用户是否早就已经加入了任何房间
         if (joinedRoom != null) {
@@ -129,15 +140,14 @@ public class RoomManager {
             return result;
         }
 
-        return join(room, user, joinRoomParam);
+        return joinRoom(room, user, joinRoomParam);
     }
 
-    public JoinRoomResult join(Room room, User user, JoinRoomParam joinRoomParam) {
+    public JoinRoomResult joinRoom(Room room, User user, JoinRoomParam joinRoomParam) {
         JoinRoomResult result = new JoinRoomResult();
         result.setRoom(room);
 
-        // 限定2个人
-        if (room.getUserCount() == Room.MAX_PARTICIPANTS) {
+        if (room.isFull()) {
             result.setCode(3);
             return result;
         }
@@ -170,39 +180,60 @@ public class RoomManager {
      * @param userId
      * @return 0=成功，2=未加入该房间
      */
-    public int part(long roomId, long userId) {
-        User user = userManager.getOnlineUser(userId);
+    public int partRoom(long roomId, long userId) {
+        User user = userManager.getLoggedInUser(userId);
         Room room = getJoinedRoom(userId);
         // 未加入该房间
-        if (room == null) {
+        if (room == null || roomId != room.getId()) {
             return 2;
         }
 
-        return part(room, user);
+        return partRoom(room, user);
     }
 
 
-    public int part(Room room, User user) {
+    public int partRoom(Room room, User user) {
         room.partUser(user);
         userJoinedRoomMap.remove(user.getId());
 
-        // 如果全部离开了
-        if (room.getUserCount() == 0) {
-            channelManager.remove(room.getChannel());
-            roomMap.remove(room.getId());
+        // 离开之后，房间内还有用户
+        if (room.getUserCount() == 1) {
+            User otherUser = room.getOneUser();
+            // 但是该用户是离线状态
+            if (!room.getUserGameState(otherUser).isOnline()) {
+                // 那么也将此离线用户移除房间
+                partRoom(room, otherUser);
+                // 导致解散房间
+                if (room.getStatus() == RoomStatus.DISMISS) {
+                    return 0;
+                }
+            }
         }
 
-        lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);
+        if (room.getUserCount() == 0) {
+            // 如果全部离开了，解散房间
+            room.setStatus(RoomStatus.DISMISS);
+            channelManager.remove(room.getChannel());
+            roomMap.remove(room.getId());
+            lobbyService.broadcast(new LobbyRoomRemoveServerMsg(room));
+        } else {
+            lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room));
+        }
 
-        // 离开消息发送给已在此房间的用户
+        // 如果有在线用户，发送离开消息
         LeaveRoomServerMsg leaveRoomMsg = new LeaveRoomServerMsg();
-        leaveRoomMsg.setUser(user);
-        broadcast(room, leaveRoomMsg);
+        leaveRoomMsg.setUid(user.getId());
+        if (room.getOnlineUserCount() > 0) {
+            broadcast(room, leaveRoomMsg);
+        } else {
+            // 观众一定要收到
+            spectatorManager.broadcast(room, leaveRoomMsg);
+        }
 
         return 0;
     }
 
-    public boolean update(Long roomId, RoomUpdateParam param) {
+    public boolean updateRoomInfo(Long roomId, RoomUpdateParam param) {
         Room room = getRoom(roomId);
         if (StringUtils.isNotEmpty(param.getName())) {
             room.setName(param.getName());
@@ -211,7 +242,7 @@ public class RoomManager {
             room.setPassword(param.getPassword());
         }
 
-        lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), null);
+        lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room));
         return true;
     }
 
@@ -224,17 +255,14 @@ public class RoomManager {
             if (user.equals(exclude)) {
                 return;
             }
-            MessageUtils.send(message, userSessionManager.getSession(user));
-        });
-        room.getSpectators().forEach(user -> {
-            if (user.equals(exclude)) {
-                return;
+            // 用户可能是离线状态，此时没有session，但是用户可能会重新连接回来
+            Session session = userSessionManager.getSession(user);
+            if (room.getUserGameState(user).isOnline() && session != null) {
+                MessageUtils.send(message, session);
             }
-            MessageUtils.send(message, userSessionManager.getSession(user));
         });
+        spectatorManager.broadcast(room, message);
     }
-
-
 
     private static long nextRoomId = 1000;
     private long nextRoomId() {

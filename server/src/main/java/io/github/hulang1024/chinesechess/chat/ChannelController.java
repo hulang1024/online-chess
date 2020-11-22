@@ -1,5 +1,6 @@
 package io.github.hulang1024.chinesechess.chat;
 
+import io.github.hulang1024.chinesechess.chat.command.CommandService;
 import io.github.hulang1024.chinesechess.http.GuestAPI;
 import io.github.hulang1024.chinesechess.user.*;
 import io.github.hulang1024.chinesechess.utils.TimeUtils;
@@ -18,6 +19,8 @@ import java.util.Collection;
 public class ChannelController {
     @Autowired
     private ChannelManager channelManager;
+    @Autowired
+    private CommandService commandService;
 
     /**
      * 加入频道
@@ -70,8 +73,13 @@ public class ChannelController {
         message.setTimestamp(TimeUtils.nowTimestamp());
         message.setSender(sender);
         message.setContent(param.getContent());
-        channelManager.broadcast(channel, message);
 
-        return ResponseEntity.ok(message.getId());
+        boolean ok = channelManager.broadcast(channel, message);
+
+        if (param.isAction()) {
+            commandService.execute(param.getContent(), sender, channel);
+        }
+
+        return new ResponseEntity(message.getId(), ok ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 }

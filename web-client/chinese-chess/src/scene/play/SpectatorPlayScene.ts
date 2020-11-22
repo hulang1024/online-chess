@@ -18,6 +18,7 @@ import SpectatorLeaveRequest from "../../online/spectator/SpectatorLeaveRequest"
 import APIAccess from "../../online/api/APIAccess";
 import SocketClient from "../../online/socket";
 import User from "../../user/User";
+import UserGameState from "../../online/room/UserGameState";
 
 export default class SpectatorPlayScene extends AbstractScene {
     // socket消息监听器
@@ -37,7 +38,7 @@ export default class SpectatorPlayScene extends AbstractScene {
     private blackChessUserInfoPane = new UserInfoPane();
     private lblSpectatorNum = new eui.Label();
 
-    constructor(context: SceneContext, roomRoundState: any) {
+    constructor(context: SceneContext, spectateResponse: any) {
         super(context);
 
         this.api = context.api;
@@ -55,7 +56,7 @@ export default class SpectatorPlayScene extends AbstractScene {
 
 
         this.viewChessHost = ChessHost.BLACK;
-        this.room = roomRoundState.room;
+        this.room = spectateResponse.states.room;
 
         // 头部
         let head = new eui.Group();
@@ -100,8 +101,8 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.blackChessUser = this.room.blackChessUser;
         this.redChessUser = this.room.redChessUser;
 
-        this.redChessUserInfoPane.load(this.redChessUser, ChessHost.RED);
-        this.blackChessUserInfoPane.load(this.blackChessUser, ChessHost.BLACK);
+        this.redChessUserInfoPane.load(this.redChessUser, ChessHost.RED, this.room.redGameState);
+        this.blackChessUserInfoPane.load(this.blackChessUser, ChessHost.BLACK, this.room.blackGameState);
 
         this.player = new Player();
         this.player.onWin = this.onWin.bind(this);
@@ -110,11 +111,11 @@ export default class SpectatorPlayScene extends AbstractScene {
 
         this.chessboard.addChild(this.textOverlay);
 
-        if (roomRoundState.room.status == 2) {
+        if (this.room.status == 2) {
             this.textOverlay.show('等待对局开始');
         }
 
-        this.loadRoundState(roomRoundState.states);
+        this.player.startRound(ChessHost.BLACK, spectateResponse.states)
         group.addChild(this.player);
 
         let buttonGroup = new eui.Group();
@@ -194,18 +195,21 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.listeners['room.join'] = (msg: any) => {
             this.textOverlay.show('玩家加入', 3000);
             
+            let joinUserGameState = new UserGameState();
+            joinUserGameState.online = true;
+            joinUserGameState.readied = false;
             if (this.blackChessUser == null) {
                 this.blackChessUser = msg.user;
-                this.blackChessUserInfoPane.load(this.blackChessUser, ChessHost.BLACK);
+                this.blackChessUserInfoPane.load(this.blackChessUser, ChessHost.BLACK, joinUserGameState);
             } else {
                 this.redChessUser = msg.user;
-                this.redChessUserInfoPane.load(this.redChessUser, ChessHost.RED);
+                this.redChessUserInfoPane.load(this.redChessUser, ChessHost.RED, joinUserGameState);
             }
         };
         
         this.listeners['room.leave'] = (msg: any) => {
             let leaveChessHost: ChessHost;
-            if (this.redChessUser && msg.user.id == this.redChessUser.id) {
+            if (this.redChessUser && msg.uid == this.redChessUser.id) {
                 this.redChessUser = null;
                 leaveChessHost = ChessHost.RED;
             } else {
@@ -217,7 +221,7 @@ export default class SpectatorPlayScene extends AbstractScene {
 
             (leaveChessHost == ChessHost.RED
                 ? this.redChessUserInfoPane
-                : this.blackChessUserInfoPane).load(null, null);
+                : this.blackChessUserInfoPane).load(null);
             
             if (this.redChessUser == null && this.blackChessUser == null) {
                 messager.info('棋桌已解散', this.stage);
@@ -242,6 +246,7 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.listeners['spectator.play.round_start'] = (msg: any) => {
             this.textOverlay.show('开始对局', 3000);
 
+            // 新对局可能交换棋方，找红方用户和黑方用户
             let redChessUser: User;
             let blackChessUser: User;
             [this.redChessUser, this.blackChessUser].forEach(user => {
@@ -302,6 +307,39 @@ export default class SpectatorPlayScene extends AbstractScene {
             }
         };
 
+        this.listeners['user.offline'] = (msg: any) => {
+            let offlineUser: User;
+            if (msg.uid == this.redChessUser.id) {
+                offlineUser = this.redChessUser;
+                this.redChessUserInfoPane.updateOnline(false);
+            }
+            if (msg.uid == this.blackChessUser.id) {
+                offlineUser = this.blackChessUser;
+                this.blackChessUserInfoPane.updateOnline(false);
+            }
+            let text = `${offlineUser.nickname}已下线或掉线，可等待对方回来继续`;
+            messager.info(text, this);
+        };
+
+        this.listeners['play.offline_continue'] = (msg: any) => {
+            let offlineUser: User;
+            if (msg.uid == this.redChessUser.id) {
+                offlineUser = this.redChessUser;
+                this.redChessUserInfoPane.updateOnline(true);
+            }
+            if (msg.uid == this.blackChessUser.id) {
+                offlineUser = this.blackChessUser;
+                this.blackChessUserInfoPane.updateOnline(true);
+            }
+            if (msg.ok) {
+                let text = `${offlineUser.nickname}已回来`;
+                messager.info(text, this);
+            } else {
+                let text = `${offlineUser.nickname}已选择不继续对局`;
+                messager.info(text, this);
+            }
+        };
+
         this.listeners['chat.message'] = (msg: any) => {
             if (msg.channelId == this.room.channelId && msg.sender.id != 0) {
                 this.channelManager.openChannel(this.room.channelId);
@@ -311,37 +349,6 @@ export default class SpectatorPlayScene extends AbstractScene {
 
         for (let key in this.listeners) {
             this.socketClient.add(key, this.listeners[key]);
-        }
-    }
-
-    private loadRoundState(states: any) {
-        this.player.startRound(this.viewChessHost, states.activeChessHost, states.chesses);
-        if (!(states.actionStack && states.actionStack.length)) {
-            return;
-        }
-        let actionStack: Array<ChessAction> = states.actionStack.map(act => {
-            let action = new ChessAction();
-            action.chessHost = ChessHost[<string>act.chessHost];
-            action.chessType = CHESS_CLASS_KEY_MAP[act.chessType];
-            action.fromPos = ChessPos.make(act.fromPos);
-            action.toPos = ChessPos.make(act.toPos);
-            if (act.eatenChess) {
-                let chessClass = CHESS_CLASS_KEY_MAP[act.eatenChess.type];
-                let chess = new chessClass(
-                    this.player.convertViewPos(act.toPos, action.chessHost),
-                    ChessHost[<string>act.eatenChess.chessHost]);
-                action.eatenChess = chess;
-            }
-            return action;
-        });
-        this.player.loadActionStack(actionStack);
-
-        let lastAction = actionStack[actionStack.length - 1];
-        let { chessHost, fromPos, toPos } = lastAction;
-        this.player.fromPosTargetDrawer.draw(this.player.convertViewPos(fromPos, chessHost));
-        let chess = this.chessboard.chessAt(this.player.convertViewPos(toPos, chessHost));
-        if (chess) {
-            chess.setLit(true);
         }
     }
 

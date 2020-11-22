@@ -1,6 +1,7 @@
 package io.github.hulang1024.chinesechess.play;
 
 import io.github.hulang1024.chinesechess.play.message.*;
+import io.github.hulang1024.chinesechess.play.message.servermsg.OfflineContinueServerMsg;
 import io.github.hulang1024.chinesechess.play.rule.ChessboardState;
 import io.github.hulang1024.chinesechess.room.LobbyService;
 import io.github.hulang1024.chinesechess.room.Room;
@@ -32,10 +33,11 @@ public class PlayMessageListener extends AbstractMessageListener {
         addMessageHandler(GameOverMsg.class, this::onRoundOver);
         addMessageHandler(ConfirmRequestMsg.class, this::onConfirmRequest);
         addMessageHandler(ConfirmResponseMsg.class, this::onConfirmResponse);
+        addMessageHandler(OfflineContinueClientMsg.class, this::onOfflineContinue);
     }
 
     public void ready(ReadyMsg readyMsg) {
-        User user = userManager.getOnlineUser(readyMsg.getSession());
+        User user = userManager.getLoggedInUser(readyMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
         UserGameState userGameState = room.getUserGameState(user);
 
@@ -57,7 +59,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);
 
         // 如果全部准备好，开始游戏
-        boolean isAllReadied = room.getUserCount() == Room.MAX_PARTICIPANTS
+        boolean isAllReadied = room.isFull()
             && room.getUsers().stream().allMatch(u -> room.getUserGameState(u).isReadied());
         if (isAllReadied) {
             startRound(room);
@@ -65,7 +67,7 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void pickChess(ChessPickMsg chessPickMsg) {
-        User user = userManager.getOnlineUser(chessPickMsg.getSession());
+        User user = userManager.getLoggedInUser(chessPickMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
 
         ChessPickServerMsg chessPickServerMsg = new ChessPickServerMsg();
@@ -77,7 +79,7 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void moveChess(ChessMoveMsg chessMoveMsg) {
-        User user = userManager.getOnlineUser(chessMoveMsg.getSession());
+        User user = userManager.getLoggedInUser(chessMoveMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
 
         ChessboardState chessboardState = room.getGame().getChessboardState();
@@ -108,7 +110,7 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void onConfirmRequest(ConfirmRequestMsg confirmRequestMsg) {
-        User user = userManager.getOnlineUser(confirmRequestMsg.getSession());
+        User user = userManager.getLoggedInUser(confirmRequestMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
 
         PlayConfirmServerMsg result = new PlayConfirmServerMsg();
@@ -119,7 +121,7 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void onConfirmResponse(ConfirmResponseMsg confirmResponseMsg) {
-        User user = userManager.getOnlineUser(confirmResponseMsg.getSession());
+        User user = userManager.getLoggedInUser(confirmResponseMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
 
         PlayConfirmResponseServerMsg result = new PlayConfirmResponseServerMsg();
@@ -154,10 +156,10 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void startRound(Room room) {
-        Game round = new Game();
+        Game round = new Game(room);
         room.setGame(round);
 
-        room.setRoundCount(room.getUserCount() + 1);
+        room.setRoundCount(room.getRoundCount() + 1);
 
         if (room.getRoundCount() > 1) {
             // 第n个对局，交换棋方
@@ -186,8 +188,24 @@ public class PlayMessageListener extends AbstractMessageListener {
         });
     }
 
+    private void onOfflineContinue(OfflineContinueClientMsg clientMsg) {
+        User user = userManager.getLoggedInUser(clientMsg.getSession());
+        Room joinedRoom = roomManager.getJoinedRoom(user);
+        if (!clientMsg.isOk()) {
+            // 如果不想继续，离开房间
+            roomManager.partRoom(joinedRoom, user);
+        }
+
+        if (joinedRoom.getOnlineUserCount() > 0) {
+            OfflineContinueServerMsg serverMsg = new OfflineContinueServerMsg();
+            serverMsg.setOk(clientMsg.isOk());
+            serverMsg.setUid(user.getId());
+            roomManager.broadcast(joinedRoom, serverMsg);
+        }
+    }
+
     private void onRoundOver(GameOverMsg msg) {
-        User user = userManager.getOnlineUser(msg.getSession());
+        User user = userManager.getLoggedInUser(msg.getSession());
         Room room = roomManager.getJoinedRoom(user);
         room.setStatus(RoomStatus.BEGINNING);
         lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);

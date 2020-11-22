@@ -1,6 +1,5 @@
 import APIAccess from "../api/APIAccess";
 import SocketClient from "../socket";
-import socketClient from "../socket";
 import Channel from "./Channel";
 import ChannelType from "./ChannelType";
 import ErrorMessage from "./ErrorMessage";
@@ -28,6 +27,10 @@ export default class ChannelManager {
 
     get joinedChannels() {
         return this._joinedChannels;
+    }
+
+    public getChannel(channelId: number) {
+        return this._joinedChannels.filter(c => c.id == channelId)[0];
     }
 
     public openChannel(channelId: number) {
@@ -81,25 +84,57 @@ export default class ChannelManager {
         this.onLeaveChannel(channel);
     }
 
-    public postMessage(text: string) {
+    public postMessage(text: string, isAction: boolean = false) {
         if (!this.api.isLoggedIn) {
-            this.currentChannel.addNewMessages([new ErrorMessage('请先登录以参与聊天')]);
+            this.currentChannel.addNewMessages(new ErrorMessage('请先登录以参与聊天'));
             return;
         }
+
+        if (this.currentChannel == null) {
+            return;
+        }
+
         let message = new LocalEchoMessage();
         message.channelId = this.currentChannel.id;
         message.timestamp = new Date().getTime();
         message.sender = this.api.localUser;
         message.content = text;
-        /*
-        this.currentChannel.addLocalEcho(message);*/
+        message.isAction = isAction;
+
+        //this.currentChannel.addLocalEcho(message);
+
         let postMessagesRequest = new PostMessageRequest(message);
         postMessagesRequest.success = (msgs) => {
+            
         }
         postMessagesRequest.failure = (msgs) => {
+            this.currentChannel.addNewMessages(new ErrorMessage('消息发送失败'));
         }
 
         this.api.queue(postMessagesRequest);
+    }
+
+    public postCommand(text: string) {
+        if (this.currentChannel == null) {
+            return;
+        }
+
+        const tokens = text.substring(1).split(' ');
+        const command = tokens[0];
+
+        switch (command) {
+            case 'fwords':
+            case 'recall':
+            case 'roll':
+                this.postMessage(text, true);
+                break;
+            case 'help':
+                let helpText = '可用命令：摇骰子：/roll [最大点]'
+                this.currentChannel.addNewMessages(new InfoMessage(helpText));
+                break;
+            default:
+                this.postMessage(text);
+        }
     }
 
     public loadDefaultChannels() {
@@ -109,18 +144,17 @@ export default class ChannelManager {
         channel.name = '中国象棋';
 
         this.joinChannel(channel);
-        
-        let welcome = new InfoMessage('欢迎来到在线中国象棋');
-        welcome.channelId = 1;
-        channel.addNewMessages([welcome]);
     }
 
     private async initSocketListeners() {
         this.socketClient.add('chat.message', (msg: any) => {
-            let channel = this._joinedChannels.filter(c => c.id == msg.channelId)[0];
-            channel.addNewMessages([msg]);
+            let channel = this.getChannel(msg.channelId);
+            channel.addNewMessages(msg);
         });
-
+        this.socketClient.add('chat.recall_message', (msg: any) => {
+            let channel = this.getChannel(msg.channelId);
+            channel.removeMessage(msg.messageId);
+        });
         this.socketClient.reconnectedSignal.add(() => {
             if (!this.currentChannel) {
                 return;
@@ -129,8 +163,7 @@ export default class ChannelManager {
         });
     }
 
-    private async fetchInitalMessages(channel: Channel) {
-        await this.socketClient.connect();
+    private fetchInitalMessages(channel: Channel) {
         let getMessagesRequest = new GetMessagesRequest(channel);
         getMessagesRequest.success = (msgs) => {
             this.handleChannelMessages(msgs);
@@ -142,7 +175,7 @@ export default class ChannelManager {
         let channels = this._joinedChannels;
         let channelMap = channels.reduce((map, c) => (map[c.id] = c, map), {});
         messages.forEach(msg => {
-            channelMap[msg.channelId].addNewMessages([msg]);
+            channelMap[msg.channelId].addNewMessages(msg);
         });
     }
 }

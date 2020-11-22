@@ -9,5 +9,6 @@ export default class PostMessageRequest extends APIRequest {
         this.path = `chat/channels/${message.channelId}/messages`;
 
         this.addParam('content', message.content);
+        this.addParam('isAction', message.isAction);
     }
 }

@@ -21,8 +21,8 @@ public class LobbyService {
     @Autowired
     private UserSessionManager userSessionManager;
 
-    public void broadcast(ServerMessage message, User exclude) {
-        Session excludeSession = exclude == null ? null : userSessionManager.getSession(exclude);
+    public void broadcast(ServerMessage message, User... excludes) {
+        Session excludeSession = excludes.length == 0 ? null : userSessionManager.getSession(excludes[0]);
         stayLobbySessions.forEach(session -> {
             if (session.equals(excludeSession)) {
                 return;

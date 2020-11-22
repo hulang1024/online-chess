@@ -1,5 +1,6 @@
 package io.github.hulang1024.chinesechess.chat;
 
+import io.github.hulang1024.chinesechess.chat.command.executors.WordsNotAllowedCommandExecutor;
 import io.github.hulang1024.chinesechess.user.GuestUser;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
@@ -21,6 +22,8 @@ public class ChannelManager {
     private UserManager userManager;
     @Autowired
     private UserSessionManager userSessionManager;
+    @Autowired
+    private WordsNotAllowedCommandExecutor wordsNotAllowedCommandExecutor;
 
     public static long[] defaultChannelIds = new long[]{
         /** 中国象棋 */
@@ -44,7 +47,7 @@ public class ChannelManager {
 
         User user = userId < 0
             ? userManager.getGuestUser(userId)
-            : userManager.getOnlineUser(userId);
+            : userManager.getLoggedInUser(userId);
         if (user == null) {
             return false;
         }
@@ -66,7 +69,28 @@ public class ChannelManager {
         return true;
     }
 
-    public void broadcast(Channel channel, Message message, User... excludes) {
+
+    public boolean joinDefaultChannels(User user) {
+        for (long channelId : ChannelManager.defaultChannelIds) {
+            joinChannel(getChannelById(channelId), user);
+        }
+        return true;
+    }
+
+    public boolean leaveDefaultChannels(User user) {
+        for (long channelId : ChannelManager.defaultChannelIds) {
+            getChannelById(channelId).removeUser(user);
+        }
+        return true;
+    }
+
+    public boolean broadcast(Channel channel, Message message, User... excludes) {
+        if (wordsNotAllowedCommandExecutor.isWordsNotAllowedUser(message.getSender())) {
+            return false;
+        }
+
+        message.setChannelId(channel.getId());
+
         channel.addNewMessage(message);
 
         ChatMessageServerMsg msgMsg = new ChatMessageServerMsg();
@@ -86,6 +110,8 @@ public class ChannelManager {
             }
             MessageUtils.send(msgMsg, userSessionManager.getSession(user));
         });
+
+        return true;
     }
 
     public void remove(Channel channel) {

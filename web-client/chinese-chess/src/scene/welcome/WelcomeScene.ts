@@ -10,6 +10,7 @@ import RegisterRequest from "../../online/api/RegisterRequest";
 import SceneManager from "../scene_manger";
 import LobbyScene from "../lobby/LobbyScene";
 import SocketClient from "../../online/socket";
+import PlayScene from "../play/PlayScene";
 
 export default class WelcomeScene extends AbstractScene {
     private api: APIAccess;
@@ -26,9 +27,9 @@ export default class WelcomeScene extends AbstractScene {
         let layout = new eui.VerticalLayout();
         layout.verticalAlign = egret.VerticalAlign.MIDDLE;
         layout.horizontalAlign = egret.HorizontalAlign.CONTENT_JUSTIFY;
-        layout.paddingTop = 32;
+        layout.paddingTop = 0;
         layout.paddingRight = 32;
-        layout.paddingBottom = 32;
+        layout.paddingBottom = 0;
         layout.paddingLeft = 32;
         layout.gap = 36;
         group.layout = layout;
@@ -73,10 +74,27 @@ export default class WelcomeScene extends AbstractScene {
         user.password = prompt('登陆密码');
         this.api.login(user)
             .then(() => {
-                messager.success('登录成功', this);
                 SceneManager.of(this.context).pushScene(context => new LobbyScene(context));
                 this.channelManager.loadDefaultChannels();
                 this.channelManager.openChannel(1);
+
+                this.socketClient.add('play.game_states', (gameStatesMsg: any) => {
+                    if (confirm('你还有进行中的对局，是否回到游戏？')) {
+                        this.context.chatOverlay.popOut();
+                        this.socketClient.send('play.offline_continue', {ok: true});
+                        SceneManager.of(this.context).pushScene(
+                            context => new PlayScene(context, gameStatesMsg.states, true));
+                    } else {
+                        //todo: 不要这样判断
+                        if (this.socketClient.connected) {
+                            this.socketClient.send('play.offline_continue', {ok: false});
+                        } else {
+                            this.socketClient.connectedSignal.add(() => {
+                                this.socketClient.send('play.offline_continue', {ok: false});
+                            });
+                        }
+                    }
+                });
 
                 this.socketClient.connect();
             })

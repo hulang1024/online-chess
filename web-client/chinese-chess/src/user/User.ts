@@ -1,7 +1,9 @@
 export default class User {
     id: number;
-    password: string;
     nickname: string;
+    gender: number;
+    avatarUrl: string;
+    password: string;
 
     static SYSTEM: User;
 }

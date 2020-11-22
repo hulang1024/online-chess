@@ -5,8 +5,6 @@ import ChessboardClickEvent from "./ChessboardClickEvent";
 import AbstractScene from "../AbstractScene";
 import SceneContext from "../SceneContext";
 import ReadyButton from "./ReadyButton";
-import socketClient from "../../online/socket";
-import platform from "../../Platform";
 import UserInfoPane from "./UserInfoPane";
 import messager from "../../component/messager";
 import ResultDialog from "./ResultDialog";
@@ -25,6 +23,7 @@ import APIAccess from "../../online/api/APIAccess";
 import PartRoomRequest from "../../online/room/PartRoomRequest";
 import SocketClient from "../../online/socket";
 import UserGameState from "../../online/room/UserGameState";
+import GameStates from "../../online/play/GameStates";
 
 export default class PlayScene extends AbstractScene {
     // socket消息监听器
@@ -44,11 +43,12 @@ export default class PlayScene extends AbstractScene {
     private lastSelected: DisplayChess;
     // 准备状态
     private readied: boolean;
-    private otherReadied: boolean = null;
+    private otherUserGameState: UserGameState;
     private isPlaying = false;
     private room: Room;
     private user: User;
-    private otherUserInfoPane =  new UserInfoPane(true);
+    private otherUser: User;
+    private otherUserInfoPane = new UserInfoPane();
     private lblSpectatorNum = new eui.Label();
     private btnReady: ReadyButton;
     private btnRoundOps = new eui.Button();
@@ -57,7 +57,7 @@ export default class PlayScene extends AbstractScene {
     private textOverlay = new TextOverlay();
     private resultDialog = new ResultDialog();
     
-    constructor(context: SceneContext, room: Room) {
+    constructor(context: SceneContext, states: Room | GameStates, isContinue: boolean = false) {
         super(context);
 
         this.api = context.api;
@@ -65,16 +65,24 @@ export default class PlayScene extends AbstractScene {
         this.socketClient = context.socketClient;
         
         this.user = this.api.localUser;
-        this.room = room;
+        if (!isContinue) {
+            this.room = <Room>states;
+        } else {
+            this.room = (<GameStates>states).room;
+        }
 
         let userGameState: UserGameState;
-        if (room.blackChessUser && room.blackChessUser.id == this.user.id) {
-            userGameState = room.blackGameState;
+        if (this.room.blackChessUser && this.room.blackChessUser.id == this.user.id) {
+            userGameState = this.room.blackGameState;
             this.chessHost = ChessHost.BLACK;
+            this.otherUser = this.room.redChessUser;
+            this.otherUserGameState = this.room.redGameState;
         }
-        if (room.redChessUser && room.redChessUser.id == this.user.id) {
-            userGameState = room.redGameState;
+        if (this.room.redChessUser && this.room.redChessUser.id == this.user.id) {
+            userGameState = this.room.redGameState;
             this.chessHost = ChessHost.RED;
+            this.otherUser = this.room.blackChessUser;
+            this.otherUserGameState = this.room.blackGameState;
         }
         this.readied = userGameState.readied;
 
@@ -83,7 +91,8 @@ export default class PlayScene extends AbstractScene {
         layout.paddingTop = 8;
         layout.paddingRight = 0;
         layout.paddingBottom = 8;
-        layout.horizontalAlign = egret.HorizontalAlign.CONTENT_JUSTIFY;
+        layout.verticalAlign = egret.VerticalAlign.MIDDLE;
+        layout.horizontalAlign = egret.HorizontalAlign.CENTER;
         let group = new eui.Group();
         group.layout = layout;
 
@@ -121,20 +130,8 @@ export default class PlayScene extends AbstractScene {
 
         this.updateSpectatorCount(this.room.spectatorCount);
 
-        // 对方玩家信息
-        let otherUser = null;
-        if (room.userCount > 1) {
-            if (this.chessHost == ChessHost.RED) {
-                otherUser = room.blackChessUser;
-                this.otherReadied = room.blackGameState.readied;
-            } else {
-                otherUser = room.redChessUser;
-                this.otherReadied = room.redGameState.readied;
-            }
-        }
-
-        if (otherUser != null) {
-            this.otherUserInfoPane.load(otherUser);
+        if (this.otherUser != null) {
+            this.otherUserInfoPane.load(this.otherUser, ChessHost.reverse(this.chessHost), this.otherUserGameState);
         }
         head.addChild(this.otherUserInfoPane);
         
@@ -156,10 +153,6 @@ export default class PlayScene extends AbstractScene {
         this.chessboard.addChild(this.playingRoundButtonsOverlay);
         this.chessboard.addChild(this.textOverlay);
         this.chessboard.addChild(this.resultDialog);
-
-        this.player.startRound(this.chessHost);
-
-        this.updateWaitInfo();
 
         group.addChild(this.player);
 
@@ -190,8 +183,8 @@ export default class PlayScene extends AbstractScene {
         buttonGroup.addChild(btnLeave);
 
         // 准备按钮
-        this.btnReady = new ReadyButton(this.otherReadied != null && this.otherReadied ? 3 : +this.readied);
-        this.btnReady.visible = !(this.readied && this.otherReadied != null && this.otherReadied);
+        this.btnReady = new ReadyButton(this.otherUserGameState != null && this.otherUserGameState.readied ? 3 : +this.readied);
+        this.btnReady.visible = !(this.readied && this.otherUserGameState != null && this.otherUserGameState.readied);
         this.btnReady.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             this.socketClient.send('play.ready');
         }, this);
@@ -234,6 +227,15 @@ export default class PlayScene extends AbstractScene {
         }
 
         this.initListeners();
+
+        this.updateWaitInfo();
+
+        if (isContinue) {
+            this.isPlaying = true;
+        }
+        this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
+            this.player.startRound(this.chessHost, (<GameStates>states));
+        }, this);
     }
 
     private initListeners() {
@@ -252,10 +254,11 @@ export default class PlayScene extends AbstractScene {
         };
 
         this.listeners['room.leave'] = (msg: any) => {
-            if (msg.user.id == this.user.id) {
+            if (msg.uid == this.user.id) {
                 return;
             } else {
-                this.otherReadied = null;
+                this.isPlaying = false;
+                this.otherUserGameState = null;
                 this.otherUserInfoPane.load(null);
                 this.updateWaitInfo();
                 this.btnReady.visible = true;
@@ -265,22 +268,38 @@ export default class PlayScene extends AbstractScene {
                 this.chessboard.getChessList().forEach(chess => {
                     chess.touchEnabled = false;
                 });
-                messager.info(`${msg.user.nickname} 已离开棋桌`, this);
+                this.textOverlay.visible = false;
+                messager.info('对手已离开棋桌', this);
             }
         };
 
         this.listeners['user.offline'] = (msg: any) => {
-            let text = `${msg.nickname}已下线或掉线，你可以等待对方回来继续该棋局。`;
-            messager.info(text, this);  
+            this.textOverlay.show('对手已下线或掉线，你可以等待对方回来继续。');
+            this.otherUserInfoPane.updateOnline(false);
         };
         
+        this.listeners['play.offline_continue'] = (msg: any) => {
+            if (msg.uid == this.user.id) {
+                return;
+            }
+            if (msg.ok) {
+                this.textOverlay.show('对手已回来', 3000);
+                this.otherUserInfoPane.updateOnline(true);
+            } else {
+                this.textOverlay.show('对手已选择不继续对局', 3000);
+            }
+        };
+
         this.listeners['room.join'] = (msg: any) => {
             window.focus();
-            this.otherReadied = false;
-            this.otherUserInfoPane.load(msg.user);
+            this.otherUser = msg.user;
+            this.otherUserGameState = new UserGameState();
+            this.otherUserGameState.online = true;
+            this.otherUserGameState.readied = false;
+            this.otherUserInfoPane.load(this.otherUser, ChessHost.reverse(this.chessHost));
             this.updateWaitInfo();
             setTimeout(() => {
-                let info = `玩家[${msg.user.nickname}]已加入棋桌`;
+                let info = `玩家[${this.otherUser.nickname}]已加入棋桌`;
                 if (document.hidden && allowNotify()) {
                     notify(info, this);
                 } else {
@@ -293,12 +312,12 @@ export default class PlayScene extends AbstractScene {
             if (msg.uid == this.user.id) {
                 this.readied = msg.readied;
             } else {
-                this.otherReadied = msg.readied;
+                this.otherUserGameState.readied = msg.readied;
             }
             if (!this.isPlaying) {
                 this.updateWaitInfo();
             }
-            this.btnReady.setState(this.otherReadied != null && this.otherReadied ? 3 : +this.readied);
+            this.btnReady.setState(this.otherUserGameState != null && this.otherUserGameState.readied ? 3 : +this.readied);
         };
 
         this.listeners['play.round_start'] = (msg: any) => {
@@ -429,7 +448,7 @@ export default class PlayScene extends AbstractScene {
             chess.touchEnabled = false;
         });
         // 设置未准备状态
-        this.otherReadied = false;
+        this.otherUserGameState.readied = false;
         this.readied = false;
         // 隐藏对局操作按钮
         this.btnRoundOps.visible = false;
@@ -548,10 +567,7 @@ export default class PlayScene extends AbstractScene {
 
         this.activeChessHost = activeChessHost;
 
-        this.otherUserInfoPane.setActive(this.chessHost != this.activeChessHost);
-        if (this.activeChessHost == this.chessHost) {
-            messager.info(`${this.activeChessHost == ChessHost.BLACK ? "黑方" : "红方"}走棋`, this);
-        }
+        this.otherUserInfoPane.setActive(ChessHost.reverse(this.chessHost) == this.activeChessHost);
         this.chessboard.touchEnabled = this.activeChessHost == this.chessHost;
         this.chessboard.getChessList().forEach(chess => {
             // 如果当前是本方走，将敌方棋子禁用；否则，全部禁用
@@ -564,13 +580,13 @@ export default class PlayScene extends AbstractScene {
 
     private updateWaitInfo() {
         let status = 4;
-        if (this.otherReadied === null) {
+        if (this.otherUserGameState === null) {
             status = 0;
-        } else if (!this.readied && !this.otherReadied) {
+        } else if (!this.readied && !this.otherUserGameState.readied) {
             status = 1;
-        } else if (this.readied && !this.otherReadied) {
+        } else if (this.readied && !this.otherUserGameState.readied) {
             status = 2;
-        } else if (!this.readied && this.otherReadied) {
+        } else if (!this.readied && this.otherUserGameState.readied) {
             status = 3;
         } else {
             status = 4;

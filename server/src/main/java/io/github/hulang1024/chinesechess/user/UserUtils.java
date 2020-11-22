@@ -7,8 +7,12 @@ public class UserUtils {
         if (user != null) {
             THREAD_LOCAL.set(user);
         } else {
-            THREAD_LOCAL.remove();
+            clear();
         }
+    }
+
+    public static void clear() {
+        THREAD_LOCAL.remove();
     }
 
     public static User get() {

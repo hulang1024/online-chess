@@ -20,7 +20,7 @@ public class SpectatorController {
     public ResponseEntity<Room> add(
         @NotNull @PathVariable("user_id") Long userId,
         @Validated @RequestBody SpectateParam param) {
-        SpectateResponseData responseData = spectatorManager.spectate(userId, param);
+        SpectateResponse responseData = spectatorManager.spectate(userId, param);
         return new ResponseEntity(responseData, responseData.getCode() == 0
             ? HttpStatus.OK
             : HttpStatus.EXPECTATION_FAILED);
@@ -28,7 +28,7 @@ public class SpectatorController {
 
     @DeleteMapping("/{user_id}")
     public ResponseEntity<Void> delete(@NotNull @PathVariable("user_id") Long userId) {
-        spectatorManager.leave(userId);
+        spectatorManager.leaveRoom(userId);
         return ResponseEntity.ok().build();
     }
 }
