@@ -45,6 +45,21 @@ export default class SocketClient extends egret.WebSocket {
 
         // 重新登录监听暂时写在这里
         this.add('user.login', (msg: any) => {
+            if (msg.code != 0) {
+                switch (msg.code) {
+                    case 1:
+                        messager.info('未知原因登录失败', this.stage);
+                        break;
+                    case 2:
+                        messager.info('你的账号已经在别处登录', this.stage);
+                        break;
+                    case 3:
+                        messager.info('你还未登录', this.stage);
+                        break;
+                }
+                api.logout();
+                return;
+            }
             this.channelManager.getChannel(1).addNewMessages(
                 new InfoMessage(`${this.api.isLoggedIn ? '' : '游客'}登录成功，欢迎来到在线中国象棋。`));
         });

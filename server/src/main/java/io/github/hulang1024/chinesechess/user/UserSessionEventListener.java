@@ -79,6 +79,8 @@ public class UserSessionEventListener extends AbstractMessageListener {
                     // 此用户已经(可能在别处)登陆
                     loginResult.setCode(2);
                 }
+            } else {
+                loginResult.setCode(3);
             }
         }
 
