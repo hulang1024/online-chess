@@ -1,18 +1,4 @@
-/*
- Navicat Premium Data Transfer
-
- Source Server         : chess
- Source Server Type    : MySQL
- Source Server Version : 80016
- Source Host           : 127.0.0.1:3306
- Source Schema         : chess
-
- Target Server Type    : MySQL
- Target Server Version : 80016
- File Encoding         : 65001
-
- Date: 22/11/2020 00:11:23
-*/
+set global time_zone = '+08:00';
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

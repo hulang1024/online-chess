@@ -10,7 +10,10 @@ import io.github.hulang1024.chinesechess.websocket.message.server.chat.ChatMessa
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.yeauty.pojo.Session;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -104,11 +107,16 @@ public class ChannelManager {
         msgMsg.setTimestamp(message.getTimestamp());
 
         User exclude = excludes.length == 1 ? excludes[0] : null;
+        List<User> usersToRemove = new ArrayList<>();
         channel.getUsers().forEach(user -> {
             if (user.equals(exclude)) {
                 return;
             }
-            MessageUtils.send(msgMsg, userSessionManager.getSession(user));
+            Session session = userSessionManager.getSession(user);
+            if (session == null) { // TODO: 不应该出现此情况，查找原因
+                return;
+            }
+            MessageUtils.send(msgMsg, session);
         });
 
         return true;

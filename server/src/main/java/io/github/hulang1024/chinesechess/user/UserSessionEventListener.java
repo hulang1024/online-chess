@@ -36,7 +36,7 @@ public class UserSessionEventListener extends AbstractMessageListener {
     public void init() {
         ClientSessionEventManager.addSessionCloseEventHandler(this::onSessionClose);
         ClientSessionEventManager.addSessionOpenEventHandler(this::onSessionOpen);
-        addMessageHandler(UserLoginClientMsg.class, this::onUserLogin);
+        addMessageHandler(UserLoginClientMsg.class, this::onWebSocketUserLogin);
 
     }
 
@@ -44,41 +44,45 @@ public class UserSessionEventListener extends AbstractMessageListener {
         sessionUserCount++;
     }
 
-    private void onUserLogin(UserLoginClientMsg loginMsg) {
+    private void onWebSocketUserLogin(UserLoginClientMsg loginMsg) {
         UserLoginServerMsg loginResult = new UserLoginServerMsg();
 
         if (loginMsg.getUserId() < 0) {
             // 现在游客登录
-            onGuestLogin(loginMsg);
+            userManager.guestLogin(loginMsg.getSession());
         } else {
             // 现在用户登录
             // 如果该session游客登录过
-            User guestUser = userManager.getGuestUser(loginMsg.getSession());
+            GuestUser guestUser = userManager.getGuestUser(loginMsg.getSession());
             if (guestUser != null) {
-                onGuestLogout(loginMsg.getSession(), guestUser);
+                userManager.guestLogout(loginMsg.getSession(), guestUser);
             }
 
             User user = userManager.getLoggedInUser(loginMsg.getUserId());
             if (user != null) {
-                if (userSessionManager.getSession(user) == null ||
-                    userSessionManager.getSession(user).equals(loginMsg.getSession())) {
-                    // 绑定session
-                    boolean isOk = userSessionManager.setBinding(user, loginMsg.getSession());
-                    if (isOk) {
-                        Room recentJoinedRoom = roomManager.getJoinedRoom(user);
-                        if (recentJoinedRoom != null && !recentJoinedRoom.getUserGameState(user).isOnline()) {
-                            // 最近在游戏中掉线过，现在尝试继续
-                            onBackContinuePlay(user, recentJoinedRoom);
-                        } else {
-                            channelManager.joinDefaultChannels(user);
-                        }
-                    }
-
-                    loginResult.setCode(isOk ? 0 : 1);
-                } else {
-                    // 此用户已经(可能在别处)登陆
-                    loginResult.setCode(2);
+                // 别处登录过
+                Session otherSession = userSessionManager.getSession(user);
+                if (otherSession != null) {
+                    userSessionManager.removeBinding(otherSession);
+                    userManager.guestLogin(otherSession);
+                    UserLoginServerMsg serverMsg = new UserLoginServerMsg();
+                    serverMsg.setCode(2);
+                    send(serverMsg, otherSession);
                 }
+
+                // 绑定新session
+                boolean isOk = userSessionManager.setBinding(user, loginMsg.getSession());
+                if (isOk) {
+                    Room recentJoinedRoom = roomManager.getJoinedRoom(user);
+                    if (recentJoinedRoom != null && !recentJoinedRoom.getUserGameState(user).isOnline()) {
+                        // 最近在游戏中掉线过，现在尝试继续
+                        onBackContinuePlay(user, recentJoinedRoom);
+                    } else {
+                        channelManager.joinDefaultChannels(user);
+                    }
+                }
+
+                loginResult.setCode(isOk ? 0 : 1);
             } else {
                 loginResult.setCode(3);
             }
@@ -120,17 +124,18 @@ public class UserSessionEventListener extends AbstractMessageListener {
             userSessionManager.removeBinding(session);
         } else {
             // 游客退出
-            User guestUser = userManager.getGuestUser(session);
+            GuestUser guestUser = userManager.getGuestUser(session);
             if (guestUser != null) {
-                onGuestLogout(session, guestUser);
+                userManager.guestLogout(session, guestUser);
             }
         }
+
+        userSessionManager.removeBinding(session);
 
         lobbyService.removeStayLobbySession(session);
 
         sessionUserCount--;
 
-        // 发送统计消息
         sendUpdateStat();
     }
 
@@ -139,19 +144,6 @@ public class UserSessionEventListener extends AbstractMessageListener {
         gamePlayStatesServerMsg.setStates(room.getGame().buildGamePlayStatesResponse());
         room.getUserGameState(user).setOnline(true);
         send(gamePlayStatesServerMsg, user);
-    }
-
-    private void onGuestLogin(UserLoginClientMsg loginMsg) {
-        GuestUser guestUser = new GuestUser();
-        userSessionManager.setBinding(guestUser, loginMsg.getSession());
-        userManager.loginGuestUser(guestUser);
-        channelManager.joinDefaultChannels(guestUser);
-    }
-
-    private void onGuestLogout(Session session, User guestUser) {
-        userSessionManager.removeBinding(session);
-        userManager.removeGuestUser(guestUser);
-        channelManager.leaveDefaultChannels(guestUser);
     }
 
     private void sendUpdateStat() {

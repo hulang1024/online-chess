@@ -38,9 +38,10 @@ export default class Player extends eui.Group implements RoundGame {
         layout.paddingRight = 1;
         this.layout = layout;
 
+        this.height = 567;
         this.width = 548 - 2;
 
-        this.chessboard = new DisplayChessboard(this.width);
+        this.chessboard = new DisplayChessboard(this.height, this.width);
         this.chessboard.addEventListener(ChessboardClickEvent.TYPE, (event: ChessboardClickEvent) => {
             this.dispatchEvent(event);
         }, this);
@@ -187,7 +188,7 @@ export default class Player extends eui.Group implements RoundGame {
             this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = null;
             this.chessboard.getChessArray()[toPos.row][toPos.col] = chess;
             chess.setPos(toPos);
-    
+        
             if (isEat) {
                 // 判断胜负
                 if (targetChess != null && targetChess.is(ChessK)) {
@@ -224,12 +225,6 @@ export default class Player extends eui.Group implements RoundGame {
         const {x, y} = this.chessboard.calcChessDisplayPos(fromPos);
         chess.setLit(false);
         egret.Tween.get(chess).to({x, y}, 200, egret.Ease.circOut).call(() => {
-
-            // 恢复之前的状态
-            chess.setPos(fromPos);
-            this.chessboard.getChessArray()[fromPos.row][fromPos.col] = chess;
-            this.chessboard.getChessArray()[toPos.row][toPos.col] = null;
-
             // 如果吃了子，把被吃的子加回来
             if (lastAction.eatenChess) {
                 if (lastAction.eatenChess instanceof DisplayChess) {
@@ -238,6 +233,11 @@ export default class Player extends eui.Group implements RoundGame {
                     this.addChess(new DisplayChess(lastAction.eatenChess));
                 }
             }
+            
+            // 恢复之前的状态
+            chess.setPos(fromPos);
+            this.chessboard.getChessArray()[fromPos.row][fromPos.col] = chess;
+            this.chessboard.getChessArray()[toPos.row][toPos.col] = null;
 
             // 画上手的棋子走位标记
             if (this.chessActionStack.length > 0) {

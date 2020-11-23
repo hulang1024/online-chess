@@ -45,16 +45,6 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.channelManager = context.channelManager;
         this.socketClient = context.socketClient;
 
-        let layout = new eui.VerticalLayout();
-        layout.paddingLeft = 0;
-        layout.paddingTop = 8;
-        layout.paddingRight = 0;
-        layout.paddingBottom = 8;
-        let group = new eui.Group();
-        group.layout = layout;
-        this.addChild(group);
-
-
         this.viewChessHost = ChessHost.BLACK;
         this.room = spectateResponse.states.room;
 
@@ -67,12 +57,11 @@ export default class SpectatorPlayScene extends AbstractScene {
         headLayout.paddingRight = 8;
         headLayout.paddingBottom = 0;
         headLayout.paddingLeft = 8;
-        group.addChild(head);
+        this.addChild(head);
 
         let headInfoLayout = new eui.HorizontalLayout();
         headInfoLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
         let headInfo = new eui.Group();
-        headInfo.width = 510;
         headInfo.layout = headInfoLayout;
         headInfo.height = 20;
 
@@ -116,24 +105,23 @@ export default class SpectatorPlayScene extends AbstractScene {
         }
 
         this.player.startRound(ChessHost.BLACK, spectateResponse.states)
-        group.addChild(this.player);
+        this.addChild(this.player);
 
         let buttonGroup = new eui.Group();
+        buttonGroup.height = 84;
         let buttonGroupLayout = new eui.HorizontalLayout();
         buttonGroupLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
-        buttonGroupLayout.paddingTop = 32;
         buttonGroupLayout.paddingRight = 8;
-        buttonGroupLayout.paddingBottom = 32;
         buttonGroupLayout.paddingLeft = 8;
         buttonGroupLayout.gap = 24;
         buttonGroup.layout = buttonGroupLayout;
-        group.addChild(buttonGroup);
+        this.addChild(buttonGroup);
 
         // 离开按钮
         let btnLeave = new eui.Button();
         btnLeave.width = 120;
         btnLeave.height = 50;
-        btnLeave.label = "离开棋桌";
+        btnLeave.label = "返回";
         btnLeave.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             this.api.perform(new SpectatorLeaveRequest(this.room));
             this.popScene();
@@ -148,17 +136,15 @@ export default class SpectatorPlayScene extends AbstractScene {
         btnViewChange.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onViewChangeClick, this);
         buttonGroup.addChild(btnViewChange);
 
-        // 聊天切换按钮
-        let btnChat = new eui.Button();
-        btnChat.width = 100;
-        btnChat.label = "聊天";
-        btnChat.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            this.context.chatOverlay.toggle();
-        }, this);
-        buttonGroup.addChild(btnChat);
-
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
             buttonGroup.width = this.stage.stageWidth;
+            let height = this.stage.stageHeight - this.context.toolbar.height;
+            let width = this.stage.stageWidth;
+            this.player.x = (width - this.player.width) / 2;
+            this.player.y = (height - this.player.height) / 2;
+            buttonGroup.x = this.player.x;
+            buttonGroup.y = height - buttonGroup.height;
+            head.x = this.player.x;
         }, this);
         this.addEventListener(egret.TouchEvent.TOUCH_TAP, (event: egret.TextEvent) => {
             this.context.chatOverlay.popOut();
@@ -171,6 +157,7 @@ export default class SpectatorPlayScene extends AbstractScene {
         channel.name = `当前棋桌`;
         channel.type = ChannelType.ROOM;
         this.channelManager.joinChannel(channel);
+        
     }
 
     onSceneExit() {

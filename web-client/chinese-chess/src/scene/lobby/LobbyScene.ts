@@ -1,5 +1,4 @@
 import messager from "../../component/messager";
-import socketClient from "../../online/socket";
 import AbstractScene from "../AbstractScene";
 import PlayScene from "../play/PlayScene";
 import SceneContext from "../SceneContext";
@@ -8,7 +7,6 @@ import PasswordForJoinRoomDialog from "./room/PasswordForJoinRoomDialog";
 import Room from "../../online/room/Room";
 import RoomCreateDialog from "./room/RoomCreateDialog";
 import SpectatorPlayScene from "../play/SpectatorPlayScene";
-import ChannelManager from "../../online/chat/ChannelManager";
 import CreateRoomRequest from "../../online/room/CreateRoomRequest";
 import GetRoomsRequest from "../../online/room/GetRoomsRequest";
 import JoinRoomRequest from "../../online/room/JoinRoomRequest";
@@ -21,7 +19,6 @@ export default class LobbyScene extends AbstractScene {
     private listeners = {};
     private api: APIAccess;
     private socketClient: SocketClient;
-    private channelManager: ChannelManager;
     private reconnectHandler: Function;
     private roomContainer = new eui.Group();
     private roomCreateDialog = new RoomCreateDialog();
@@ -30,7 +27,6 @@ export default class LobbyScene extends AbstractScene {
     constructor(context: SceneContext) {
         super(context);
         this.api = context.api;
-        this.channelManager = context.channelManager;
         this.socketClient = context.socketClient;
 
         let layout = new eui.VerticalLayout();
@@ -45,7 +41,7 @@ export default class LobbyScene extends AbstractScene {
   
         let lblTitle = new eui.Label();
         lblTitle.size = 26;
-        lblTitle.text = "多人游戏大厅";
+        lblTitle.text = "游戏大厅";
         headGroup.addChild(lblTitle);
 
         let lblOnline = new eui.Label();
@@ -139,16 +135,14 @@ export default class LobbyScene extends AbstractScene {
                     this.addRoom(room);
                 });
             };
-            this.api.perform(getRoomsRequest);
+            this.api.queue(getRoomsRequest);
 
             this.socketClient.reconnectedSignal.add(this.reconnectHandler = () => {
                 this.socketClient.send('lobby.enter');
                 this.api.perform(getRoomsRequest);
             });
-
-            await this.socketClient.connect();
             
-            this.socketClient.send('lobby.enter');
+            this.socketClient.queue((send: Function) => send('lobby.enter'));
         })();
     }
 

@@ -3,8 +3,8 @@ package io.github.hulang1024.chinesechess.chat.command.executors;
 import io.github.hulang1024.chinesechess.chat.Channel;
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.chat.InfoMessage;
+import io.github.hulang1024.chinesechess.chat.Message;
 import io.github.hulang1024.chinesechess.chat.command.CommandExecutor;
-import io.github.hulang1024.chinesechess.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,9 @@ public class RollCommandExecutor implements CommandExecutor {
     private Random random = new Random();
 
     @Override
-    public void execute(String[] cmdParams, User sender, Channel channel) {
+    public void execute(String[] cmdParams, Message message, Channel channel) {
+        channelManager.broadcast(channel, message);
+
         int bound = 6;
         if (cmdParams.length == 1) {
             if (!cmdParams[0].matches("\\d+")) {
@@ -27,7 +29,8 @@ public class RollCommandExecutor implements CommandExecutor {
         }
 
         int result = random.nextInt(bound);
-        String text = String.format("%s 得到了 %d 点", sender.getNickname(), result == 0 ? 1 : result);
+        String text = String.format("%s 得到了 %d 点",
+            message.getSender().getNickname(), result == 0 ? 1 : result);
         channelManager.broadcast(channel, new InfoMessage(text));
     }
 

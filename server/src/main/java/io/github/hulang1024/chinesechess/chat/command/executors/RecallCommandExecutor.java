@@ -2,8 +2,8 @@ package io.github.hulang1024.chinesechess.chat.command.executors;
 
 import io.github.hulang1024.chinesechess.chat.Channel;
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
+import io.github.hulang1024.chinesechess.chat.Message;
 import io.github.hulang1024.chinesechess.chat.command.CommandExecutor;
-import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserSessionManager;
 import io.github.hulang1024.chinesechess.websocket.message.MessageUtils;
 import io.github.hulang1024.chinesechess.websocket.message.server.chat.RecallMessageServerMsg;
@@ -18,8 +18,8 @@ public class RecallCommandExecutor implements CommandExecutor {
     private UserSessionManager userSessionManager;
 
     @Override
-    public void execute(String[] cmdParams, User sender, Channel channel) {
-        if (!sender.isAdmin()) {
+    public void execute(String[] cmdParams, Message message, Channel channel) {
+        if (!message.getSender().isAdmin()) {
             return;
         }
         if (cmdParams.length != 1) {

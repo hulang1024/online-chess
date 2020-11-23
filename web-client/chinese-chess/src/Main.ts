@@ -29,16 +29,18 @@
 
 import SOUND from "./audio/SOUND";
 import messager from "./component/messager";
+import ConfigManager, { ConfigItem } from "./config/ConfigManager";
 import APIAccess from "./online/api/APIAccess";
 import RegisterRequest from "./online/api/RegisterRequest";
 import ChannelManager from "./online/chat/ChannelManager";
 import SocketClient from "./online/socket";
 import socketClient from "./online/socket";
 import ChatOverlay from "./overlay/chat/ChatOverlay";
+import Toolbar from "./overlay/toolbar/Toolbar";
 import LobbyScene from "./scene/lobby/LobbyScene";
+import PlayScene from "./scene/play/PlayScene";
 import SceneContext from "./scene/SceneContext";
 import SceneManager from "./scene/scene_manger";
-import WelcomeScene from "./scene/welcome/WelcomeScene";
 import User from "./user/User";
 
 class Main extends eui.UILayer  {
@@ -87,6 +89,85 @@ class Main extends eui.UILayer  {
         this.createGameScene();
     }
 
+    private createGameScene() {
+        let configManager = new ConfigManager();
+
+        if (window['yaochat']) {
+            alert('yaochat');
+            let yaochat = window['yaochat'];
+            yaochat.getCode('yx4b11c08aa09d44ed', 'http://180.76.185.34/api/oauth_callback/yao_xin/code', 'snsapi_userinfo', "ok");
+            return;
+        }
+
+        let context = new SceneContext();
+
+        context.configManager = configManager;
+
+        context.stage = this.stage;
+
+        let api = new APIAccess(context);
+
+        context.api = api;
+
+        let socketClient = new SocketClient(api, this.stage);
+        context.socketClient = socketClient;
+
+        let channelManager = new ChannelManager(api, socketClient);
+        context.channelManager = channelManager;
+        socketClient.channelManager = channelManager;
+
+        let container = new eui.Group();
+        this.stage.addChild(container);
+        let layout = new eui.VerticalLayout();
+        container.layout = layout;
+
+        let toolbar = new Toolbar(context);
+        context.toolbar = toolbar;
+        container.addChild(toolbar);
+
+        let sceneContainer = new eui.Group();
+        context.sceneContainer = sceneContainer;
+        container.addChild(sceneContainer);
+
+        let chatOverlay = new ChatOverlay(channelManager);
+        context.chatOverlay = chatOverlay;
+        this.stage.addChild(chatOverlay);
+        
+        toolbar.chatOverlay = chatOverlay;
+
+        SceneManager.of(context).pushScene(context => new LobbyScene(context));
+        channelManager.initializeChannels();
+        channelManager.openChannel(1);
+
+        if (configManager.get(ConfigItem.loginAuto)) {
+            let user = new User();
+            user.nickname = configManager.get(ConfigItem.username);
+            user.password = configManager.get(ConfigItem.password);
+            if (!(user.nickname && user.password)) {
+                return;
+            }
+            api.login(user).then(() => {
+                socketClient.add('play.game_states', (gameStatesMsg: any) => {
+                    if (confirm('你还有进行中的对局，是否回到游戏？')) {
+                        chatOverlay.popOut();
+                        socketClient.queue((send: Function) => {
+                            send('play.offline_continue', {ok: true});
+                        });
+                        SceneManager.of(context).pushScene(
+                            context => new PlayScene(context, gameStatesMsg.states, true));
+                    } else {
+                        socketClient.queue((send: Function) => {
+                            send('play.offline_continue', {ok: false});
+                        });
+                    }
+                });
+            });
+        } else {
+            socketClient.doConnect();
+        }
+    }
+
+
     private async loadResource() {
         try {
             let loadingDiv = document.getElementById('loading');
@@ -114,39 +195,5 @@ class Main extends eui.UILayer  {
             }, this);
 
         })
-    }
-
-    private createGameScene() {
-        if (window['yaochat']) {
-            alert('yaochat');
-            let yaochat = window['yaochat'];
-            yaochat.getCode('yx4b11c08aa09d44ed', 'http://180.76.185.34/api/oauth_callback/yao_xin/code', 'snsapi_userinfo', "ok");
-            return;
-        }
-
-        let api = new APIAccess();
-        let socketClient = new SocketClient(api, this.stage);
-        let channelManager = new ChannelManager(api, socketClient);
-        socketClient.channelManager = channelManager;
-
-        // 布局
-        let layout = new eui.VerticalLayout();
-        let group = new eui.Group();
-        group.layout = layout;
-        this.stage.addChild(group);
-
-        // 场景容器
-        let sceneContainer = new eui.UILayer();
-        group.addChild(sceneContainer);
-
-        let chatOverlay = new ChatOverlay(channelManager);
-        this.stage.addChild(chatOverlay);
-
-        let context = new SceneContext(this.stage, sceneContainer);
-        context.chatOverlay = chatOverlay;
-        context.channelManager = channelManager;
-        context.api = api;
-        context.socketClient = socketClient;
-        SceneManager.of(context).pushScene(context => new WelcomeScene(context));
     }
 }

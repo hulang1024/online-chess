@@ -1,8 +1,7 @@
-import ChatOverlay from "../overlay/chat/ChatOverlay";
 import SceneContext from "./SceneContext";
 import SceneManager, { SceneBuilder } from "./scene_manger";
 
-export default abstract class AbstractScene extends egret.DisplayObjectContainer {
+export default abstract class AbstractScene extends eui.UILayer {
     private sceneManager: SceneManager;
     protected context: SceneContext;
     private onVisibilitychange: any;

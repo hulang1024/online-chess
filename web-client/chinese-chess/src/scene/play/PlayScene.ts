@@ -86,18 +86,6 @@ export default class PlayScene extends AbstractScene {
         }
         this.readied = userGameState.readied;
 
-        let layout = new eui.VerticalLayout();
-        layout.paddingLeft = 0;
-        layout.paddingTop = 8;
-        layout.paddingRight = 0;
-        layout.paddingBottom = 8;
-        layout.verticalAlign = egret.VerticalAlign.MIDDLE;
-        layout.horizontalAlign = egret.HorizontalAlign.CENTER;
-        let group = new eui.Group();
-        group.layout = layout;
-
-        this.addChild(group);
-
         // 头部
         let head = new eui.Group();
         head.height = 60;
@@ -107,12 +95,11 @@ export default class PlayScene extends AbstractScene {
         headLayout.paddingRight = 8;
         headLayout.paddingBottom = 0;
         headLayout.paddingLeft = 8;
-        group.addChild(head);
+        this.addChild(head);
 
         let headInfoLayout = new eui.HorizontalLayout();
         headInfoLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
         let headInfo = new eui.Group();
-        headInfo.width = 510;
         headInfo.layout = headInfoLayout;
         headInfo.height = 20;
 
@@ -154,31 +141,35 @@ export default class PlayScene extends AbstractScene {
         this.chessboard.addChild(this.textOverlay);
         this.chessboard.addChild(this.resultDialog);
 
-        group.addChild(this.player);
+        this.addChild(this.player);
 
         let buttonGroup = new eui.Group();
+        buttonGroup.height = 84;
         let buttonGroupLayout = new eui.HorizontalLayout();
         buttonGroupLayout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
-        buttonGroupLayout.paddingTop = 32;
         buttonGroupLayout.paddingRight = 8;
-        buttonGroupLayout.paddingBottom = 32;
         buttonGroupLayout.paddingLeft = 8;
         buttonGroupLayout.gap = 30;
         buttonGroup.layout = buttonGroupLayout;
-        group.addChild(buttonGroup);
+        this.addChild(buttonGroup);
 
         // 离开按钮
         let btnLeave = new eui.Button();
         btnLeave.width = 110;
         btnLeave.height = 50;
-        btnLeave.label = "离开棋桌";
+        btnLeave.label = "返回";
         btnLeave.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             if (this.isPlaying && !confirm('正在游戏中，确认退出吗?')) {
                 return;
             }
             let partRoomRequest = new PartRoomRequest(this.room);
-            this.api.perform(partRoomRequest);
-            this.popScene();
+            partRoomRequest.success = () => {
+                this.popScene();
+            };
+            partRoomRequest.failure = () => {
+                this.popScene();
+            };
+            this.api.queue(partRoomRequest);
         }, this);
         buttonGroup.addChild(btnLeave);
 
@@ -200,16 +191,7 @@ export default class PlayScene extends AbstractScene {
         }, this);
         buttonGroup.addChild(btnRoundOps);
 
-        // 聊天切换按钮
-        let btnChat = new eui.Button();
-        btnChat.width = 100;
-        btnChat.label = "聊天";
-        btnChat.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            this.context.chatOverlay.toggle();
-        }, this);
-        buttonGroup.addChild(btnChat);
-
-        this.addEventListener(egret.TouchEvent.TOUCH_TAP, (event: egret.TextEvent) => {
+        this.chessboard.addEventListener(egret.TouchEvent.TOUCH_TAP, (event: egret.TextEvent) => {
             this.context.chatOverlay.popOut();
         }, this);
 
@@ -234,6 +216,13 @@ export default class PlayScene extends AbstractScene {
             this.isPlaying = true;
         }
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
+            let height = this.stage.stageHeight - this.context.toolbar.height;
+            let width = this.stage.stageWidth;
+            this.player.x = (width - this.player.width) / 2;
+            this.player.y = (height - this.player.height) / 2;
+            buttonGroup.x = this.player.x;
+            buttonGroup.y = height - buttonGroup.height;
+            head.x = this.player.x;
             this.player.startRound(this.chessHost, (<GameStates>states));
         }, this);
     }
@@ -274,7 +263,7 @@ export default class PlayScene extends AbstractScene {
         };
 
         this.listeners['user.offline'] = (msg: any) => {
-            this.textOverlay.show('对手已下线或掉线，你可以等待对方回来继续。');
+            this.textOverlay.show('对手已下线/掉线，你可以等待对方回来继续');
             this.otherUserInfoPane.updateOnline(false);
         };
         
@@ -598,7 +587,7 @@ export default class PlayScene extends AbstractScene {
                 0: '等待玩家加入',
                 1: '请点击准备!',
                 2: '等待对方开始',
-                3: '对方已准备，请点击开始!'
+                3: '对方已准备'
             }[status]);
         }
     }

@@ -7,11 +7,11 @@ export default class DisplayChessboard extends eui.Group implements Chessboard {
     private chessArray: Array<Array<DisplayChess>> = new Array(CHESSBOARD_ROW_NUM);
     private bitmap = new egret.Bitmap();
 
-    constructor(width: number) {
+    constructor(height: number, width: number) {
         super();
 
         this.width = width;
-        this.height = 567;
+        this.height = height;
 
         for (let row = 0; row < CHESSBOARD_ROW_NUM; row++) {
             this.chessArray[row] = new Array(CHESSBOARD_COL_NUM);

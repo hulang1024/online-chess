@@ -1,7 +1,11 @@
 package io.github.hulang1024.chinesechess.user;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.http.AuthenticationUtils;
+import io.github.hulang1024.chinesechess.room.Room;
+import io.github.hulang1024.chinesechess.room.RoomManager;
+import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.login.LoginResult;
 import io.github.hulang1024.chinesechess.user.login.UserLoginParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +23,15 @@ public class UserManager {
     private static Map<Long, User> loggedInUserMap = new ConcurrentHashMap<>();
     @Autowired
     private UserDao userDao;
+    @Autowired
+    private RoomManager roomManager;
+    @Autowired
+    private ChannelManager channelManager;
+    @Autowired
+    private SpectatorManager spectatorManager;
+    @Autowired
+    private UserSessionManager userSessionManager;
+
 
     public User getLoggedInUser(long userId) {
         return loggedInUserMap.get(userId);
@@ -33,13 +46,9 @@ public class UserManager {
         return userId != null ? getLoggedInUser(userId) : null;
     }
 
-    public User getGuestUser(Session session) {
+    public GuestUser getGuestUser(Session session) {
         Long userId = session.getAttribute(UserSessionManager.USER_ID_KEY);
         return userId != null ? getGuestUser(userId) : null;
-    }
-
-    public void removeGuestUser(User user) {
-        guestUserMap.remove(user.getId());
     }
 
     public User getDatabaseUser(long id) {
@@ -89,7 +98,40 @@ public class UserManager {
         return result;
     }
 
-    public void loginGuestUser(GuestUser user) {
-        guestUserMap.put(user.getId(), user);
+    public boolean logout(User user) {
+        loggedInUserMap.remove(user.getId());
+
+        Room joinedRoom = roomManager.getJoinedRoom(user);
+        if (joinedRoom != null) {
+            roomManager.partRoom(joinedRoom, user);
+        }
+
+        Room spectatingRoom = spectatorManager.getSpectatingRoom(user);
+        if (spectatingRoom != null) {
+            spectatorManager.leaveRoom(user, spectatingRoom);
+        }
+
+        Session session = userSessionManager.getSession(user);
+        if (session != null) {
+            userSessionManager.removeBinding(session);
+        }
+        channelManager.leaveDefaultChannels(user);
+
+        guestLogin(session);
+
+        return true;
+    }
+
+    public void guestLogin(Session session) {
+        GuestUser guestUser = new GuestUser();
+        userSessionManager.setBinding(guestUser, session);
+        guestUserMap.put(guestUser.getId(), guestUser);
+        channelManager.joinDefaultChannels(guestUser);
+    }
+
+    public void guestLogout(Session session, GuestUser guestUser) {
+        userSessionManager.removeBinding(session);
+        guestUserMap.remove(guestUser.getId());
+        channelManager.leaveDefaultChannels(guestUser);
     }
 }

@@ -32,19 +32,27 @@ export abstract class APIRequest {
             let request = <egret.HttpRequest>event.currentTarget;
             let xhr = <XMLHttpRequest>(<any>request)._xhr;
             let isSuccessStatusCode = 200 <= xhr.status && xhr.status <= 299;
+            let responseObject: any;
+            try {
+                responseObject = request.response ? JSON.parse(request.response) : void 0;
+            } catch (e) {}
             if (isSuccessStatusCode) {
-                let responseObject = request.response ? JSON.parse(request.response) : void 0;
                 this.triggerSuccess(responseObject);
             } else {
-                this.triggerFailure();
+                this.triggerFailure(responseObject);
                 this.api.handleHttpExceptionStatus(xhr.status);
             }
         }, this);
 
         this.httpRequest.addEventListener(egret.IOErrorEvent.IO_ERROR, (event: egret.Event) => {
             let request = <egret.HttpRequest>event.currentTarget;
-            let responseObject = request.response ? JSON.parse(request.response) : void 0;
-            this.triggerFailure(responseObject || event);
+            let xhr = <XMLHttpRequest>(<any>request)._xhr;
+            let responseObject: any;
+            try {
+                responseObject = request.response ? JSON.parse(request.response) : void 0;
+            } catch (e) {}
+            this.triggerFailure(responseObject);
+            this.api.handleHttpExceptionStatus(xhr.status);
         }, this);
 
         this.httpRequest.send(this.params ? JSON.stringify(this.params) : void 0);

@@ -2,13 +2,19 @@ import messager from "../../component/messager";
 import Overlay from "../Overlay";
 import ChatOverlay from "../chat/ChatOverlay";
 import UserLoginOverlay from "../user/UserLoginOverlay";
+import SceneContext from "../../scene/SceneContext";
+import ToolbarUserButton from "./ToolbarUserButton";
 
 export default class Toolbar extends Overlay {
+    context: SceneContext;
     chatOverlay: ChatOverlay;
     userLoginOverlay: UserLoginOverlay;
+    toolbarUserButton: ToolbarUserButton;
 
-    constructor() {
-        super(true, false);
+    constructor(context: SceneContext) {
+        super(false, false);
+        this.context = context;
+        this.chatOverlay = context.chatOverlay;
                 
         this.height = 56;
 
@@ -26,7 +32,6 @@ export default class Toolbar extends Overlay {
         // 聊天切换按钮
         let btnChat = new eui.Button();
         btnChat.width = 100;
-        btnChat.height = 40;
         btnChat.label = "聊天";
         btnChat.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             this.chatOverlay.toggle();
@@ -35,30 +40,25 @@ export default class Toolbar extends Overlay {
 
         let btnSocial = new eui.Button();
         btnSocial.width = 100;
-        btnSocial.height = 40;
         btnSocial.label = "在线用户";
         btnSocial.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             messager.info('no content', this);
         }, this);
         //buttonGroup.addChild(btnSocial);
 
-        let btnUser = new eui.Button();
-        btnUser.width = 100;
-        btnUser.height = 40;
-        btnUser.label = "登录";
-        btnUser.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+        this.toolbarUserButton = new ToolbarUserButton(context);
+        this.toolbarUserButton.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             if (!this.userLoginOverlay) {
-                this.userLoginOverlay = new UserLoginOverlay();
+                this.userLoginOverlay = new UserLoginOverlay(context);
                 this.stage.addChild(this.userLoginOverlay);
             }
-            this.userLoginOverlay.visible = true;
+            this.userLoginOverlay.toggle();
         }, this);
-        //buttonGroup.addChild(btnUser);
+        buttonGroup.addChild(this.toolbarUserButton);
 
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
             this.width = this.stage.stageWidth;
             buttonGroup.width = this.width;
-            //this.setSize(this.width, this.height);  
         }, this);
     }
 }

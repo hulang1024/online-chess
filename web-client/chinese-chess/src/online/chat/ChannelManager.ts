@@ -14,6 +14,7 @@ export default class ChannelManager {
     private currentChannel: Channel;
     private api: APIAccess;
     private socketClient: SocketClient;
+    private channelsInitialised: boolean;
     public onOpenChannel: Function;
     public onJoinChannel: Function;
     public onLeaveChannel: Function;
@@ -34,7 +35,7 @@ export default class ChannelManager {
     }
 
     public openChannel(channelId: number) {
-        this.currentChannel = this._joinedChannels.filter(c => c.id == channelId)[0];
+        this.currentChannel = this.getChannel(channelId);
         this.onOpenChannel(this.currentChannel);
     }
 
@@ -137,7 +138,12 @@ export default class ChannelManager {
         }
     }
 
-    public loadDefaultChannels() {
+    public initializeChannels() {
+        if (this.channelsInitialised) {
+            return;
+        }
+        this.channelsInitialised = true;
+        
         let channel = new Channel();
         channel.id = 1;
         channel.type = ChannelType.PUBLIC;

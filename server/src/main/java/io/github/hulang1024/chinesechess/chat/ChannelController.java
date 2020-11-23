@@ -75,12 +75,12 @@ public class ChannelController {
         message.setSender(sender);
         message.setContent(param.getContent());
 
-        boolean ok = channelManager.broadcast(channel, message);
-
         if (param.isAction()) {
-            commandService.execute(param.getContent(), sender, channel);
+            commandService.execute(message, channel);
+            return ResponseEntity.ok().build();
+        } else {
+            boolean ok = channelManager.broadcast(channel, message);
+            return new ResponseEntity(message.getId(), ok ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
         }
-
-        return new ResponseEntity(message.getId(), ok ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 }

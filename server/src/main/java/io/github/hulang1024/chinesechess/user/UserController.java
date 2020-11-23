@@ -33,6 +33,12 @@ public class UserController {
             : HttpStatus.BAD_REQUEST);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<LoginResult> logout() {
+        boolean ok = userManager.logout(UserUtils.get());
+        return new ResponseEntity(ok ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
+
     @GuestAPI
     @PostMapping
     public ResponseEntity<RegisterResult> register(@Validated @RequestBody UserRegisterParam param) {

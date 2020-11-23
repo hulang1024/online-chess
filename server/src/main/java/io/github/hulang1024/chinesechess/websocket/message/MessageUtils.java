@@ -6,6 +6,9 @@ import org.yeauty.pojo.Session;
 
 public class MessageUtils {
     public static void send(ServerMessage message, Session session) {
+        if (message == null || session == null) {
+            return;
+        }
         String messageJson = JSONObject.toJSONString(message,
             SerializerFeature.WriteMapNullValue,
             SerializerFeature.DisableCircularReferenceDetect);

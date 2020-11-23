@@ -1,10 +1,9 @@
 package io.github.hulang1024.chinesechess;
 
 
+import io.github.hulang1024.chinesechess.websocket.message.AbstractMessageListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import io.github.hulang1024.chinesechess.websocket.message.AbstractMessageListener;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
