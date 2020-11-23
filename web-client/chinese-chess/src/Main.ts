@@ -144,6 +144,7 @@ class Main extends eui.UILayer  {
             user.nickname = configManager.get(ConfigItem.username);
             user.password = configManager.get(ConfigItem.password);
             if (!(user.nickname && user.password)) {
+                socketClient.doConnect();
                 return;
             }
             api.login(user).then(() => {
