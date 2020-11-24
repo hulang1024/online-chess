@@ -1,11 +1,13 @@
 import Dialog from "../../../component/Dialog";
+import PasswordInput from "../../../component/PasswordInput";
+import TextInput from "../../../component/TextInput";
 import Room from "../../../online/room/Room";
 
 export default class RoomCreateDialog extends Dialog {
-    private textEditRoomName: eui.EditableText;
+    private roomNameInput: TextInput;
     private groupPassword: eui.Group;
     private passwordSwitch: eui.ToggleSwitch;
-    private textEditPassword: eui.EditableText;
+    private passwordInput: PasswordInput;
     onOkClick: Function;
 
     constructor() {
@@ -23,9 +25,9 @@ export default class RoomCreateDialog extends Dialog {
 
         this.onOk = () => {
             let room = new Room();
-            room.name = this.textEditRoomName.text;
+            room.name = this.roomNameInput.value;
             room.locked = this.passwordSwitch.selected;
-            room.password = this.textEditPassword.text || null;
+            room.password = this.passwordInput.value || null;
             this.onOkClick(room); 
         };
     }
@@ -34,21 +36,20 @@ export default class RoomCreateDialog extends Dialog {
         let group = new eui.Group();
         group.layout = new eui.HorizontalLayout();
 
+        this.roomNameInput = new TextInput({
+            width: 396,
+            prompt: '可不填'
+        });
+
         let label = new eui.Label();
         label.text = "棋桌名称";
         label.size = 20;
+        label.height = this.roomNameInput.height;
+        label.verticalAlign = egret.VerticalAlign.MIDDLE;
         group.addChild(label);
 
-        let textEdit = new eui.EditableText();
-        textEdit.size = 20;
-        textEdit.width = 300;
-        textEdit.border = true;
-        textEdit.borderColor = 0xffffff;
-        textEdit.prompt = '可不填';
-        textEdit.promptColor = 0xcccccc;
-        textEdit.verticalAlign = egret.VerticalAlign.MIDDLE;
-        group.addChild(textEdit);
-        this.textEditRoomName = textEdit;
+
+        group.addChild(this.roomNameInput);
 
         return group;
     }
@@ -60,13 +61,14 @@ export default class RoomCreateDialog extends Dialog {
         let label = new eui.Label();
         label.text = "需要密码";
         label.size = 20;
+        label.verticalAlign = egret.VerticalAlign.MIDDLE;
         group.addChild(label);
 
         let passwordSwitch = new eui.ToggleSwitch();
         passwordSwitch.addEventListener(eui.UIEvent.CHANGE, (event: eui.UIEvent) => {
             this.groupPassword.visible = passwordSwitch.selected;
             if (!passwordSwitch.selected) {
-                this.textEditPassword.text = '';
+                this.passwordInput.value = '';
             }
         }, this);
         group.addChild(passwordSwitch);
@@ -79,20 +81,19 @@ export default class RoomCreateDialog extends Dialog {
         let group = new eui.Group();
         group.layout = new eui.HorizontalLayout();
 
+        this.passwordInput = new PasswordInput({
+            width: 396
+        });
+
         let label = new eui.Label();
         label.text = "棋桌密码";
         label.size = 20;
+        label.height = this.passwordInput.height;
+        label.verticalAlign = egret.VerticalAlign.MIDDLE;
         group.addChild(label);
 
-        let textEdit = new eui.EditableText();
-        textEdit.displayAsPassword = true;
-        textEdit.size = 20;
-        textEdit.width = 300;
-        textEdit.border = true;
-        textEdit.borderColor = 0xffffff;
-        textEdit.verticalAlign = egret.VerticalAlign.MIDDLE;
-        group.addChild(textEdit);
-        this.textEditPassword = textEdit;
+
+        group.addChild(this.passwordInput);
 
         return group;
     }

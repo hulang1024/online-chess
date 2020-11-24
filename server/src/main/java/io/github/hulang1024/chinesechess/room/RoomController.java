@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.room;
 
 import io.github.hulang1024.chinesechess.http.GuestAPI;
-import io.github.hulang1024.chinesechess.websocket.message.server.room.LeaveRoomServerMsg;
+import io.github.hulang1024.chinesechess.room.ws.LeaveRoomServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ public class RoomController {
     @GuestAPI
     @GetMapping
     public ResponseEntity<Collection<Room>> getRooms() {
-        return ResponseEntity.ok(roomManager.getRooms());
+        return ResponseEntity.ok(roomManager.searchRooms());
     }
 
     /**

@@ -2,8 +2,8 @@ package io.github.hulang1024.chinesechess.room;
 
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserSessionManager;
-import io.github.hulang1024.chinesechess.websocket.message.MessageUtils;
-import io.github.hulang1024.chinesechess.websocket.message.ServerMessage;
+import io.github.hulang1024.chinesechess.ws.message.MessageUtils;
+import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.yeauty.pojo.Session;

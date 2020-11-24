@@ -1,8 +1,8 @@
 package io.github.hulang1024.chinesechess.room;
 
 import io.github.hulang1024.chinesechess.user.UserSessionEventListener;
-import io.github.hulang1024.chinesechess.websocket.message.AbstractMessageListener;
-import io.github.hulang1024.chinesechess.websocket.message.server.stat.OnlineStatServerMsg;
+import io.github.hulang1024.chinesechess.user.ws.OnlineStatServerMsg;
+import io.github.hulang1024.chinesechess.ws.message.AbstractMessageListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

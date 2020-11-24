@@ -22,7 +22,7 @@ public class RollCommandExecutor implements CommandExecutor {
 
         int bound = 6;
         if (cmdParams.length == 1) {
-            if (!cmdParams[0].matches("\\d+")) {
+            if (!cmdParams[0].matches("^\\d+$")) {
                 return;
             }
             bound = Integer.parseInt(cmdParams[0]);

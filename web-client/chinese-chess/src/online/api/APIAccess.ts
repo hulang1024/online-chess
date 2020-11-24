@@ -58,7 +58,7 @@ export default class APIAccess {
             };
             loginRequest.failure = (ret) => {
                 messager.fail(
-                    ret.code != null ? {1: '用户不存在', 2: '密码错误'}[ret.code] : '登录失败',
+                    ret && ret.code != null ? {1: '用户不存在', 2: '密码错误'}[ret.code] : '登录失败',
                     this.context.stage);
                 this.configManager.set(ConfigItem.password, '');
                 this.configManager.save();

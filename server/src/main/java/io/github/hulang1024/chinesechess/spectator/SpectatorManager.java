@@ -7,10 +7,10 @@ import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
 import io.github.hulang1024.chinesechess.user.UserSessionManager;
-import io.github.hulang1024.chinesechess.websocket.message.MessageUtils;
-import io.github.hulang1024.chinesechess.websocket.message.ServerMessage;
-import io.github.hulang1024.chinesechess.websocket.message.server.spectator.SpectatorJoinServerMsg;
-import io.github.hulang1024.chinesechess.websocket.message.server.spectator.SpectatorLeaveServerMsg;
+import io.github.hulang1024.chinesechess.ws.message.MessageUtils;
+import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
+import io.github.hulang1024.chinesechess.spectator.ws.SpectatorJoinServerMsg;
+import io.github.hulang1024.chinesechess.spectator.ws.SpectatorLeaveServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

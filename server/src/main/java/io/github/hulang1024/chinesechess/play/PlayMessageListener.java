@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.play;
 
-import io.github.hulang1024.chinesechess.play.message.*;
-import io.github.hulang1024.chinesechess.play.message.servermsg.OfflineContinueServerMsg;
+import io.github.hulang1024.chinesechess.play.ws.*;
+import io.github.hulang1024.chinesechess.play.ws.servermsg.*;
 import io.github.hulang1024.chinesechess.play.rule.ChessboardState;
 import io.github.hulang1024.chinesechess.room.LobbyService;
 import io.github.hulang1024.chinesechess.room.Room;
@@ -9,10 +9,9 @@ import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
-import io.github.hulang1024.chinesechess.websocket.message.AbstractMessageListener;
-import io.github.hulang1024.chinesechess.websocket.message.server.lobby.LobbyRoomUpdateServerMsg;
-import io.github.hulang1024.chinesechess.websocket.message.server.play.*;
-import io.github.hulang1024.chinesechess.websocket.message.server.spectator.SpectatorPlayRoundStartServerMsg;
+import io.github.hulang1024.chinesechess.ws.message.AbstractMessageListener;
+import io.github.hulang1024.chinesechess.room.ws.LobbyRoomUpdateServerMsg;
+import io.github.hulang1024.chinesechess.spectator.ws.SpectatorPlayRoundStartServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -195,6 +194,8 @@ public class PlayMessageListener extends AbstractMessageListener {
             // 如果不想继续，离开房间
             roomManager.partRoom(joinedRoom, user);
         }
+
+        joinedRoom.setOfflineAt(null);
 
         if (joinedRoom.getOnlineUserCount() > 0) {
             OfflineContinueServerMsg serverMsg = new OfflineContinueServerMsg();

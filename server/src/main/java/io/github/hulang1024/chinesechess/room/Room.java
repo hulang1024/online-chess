@@ -53,6 +53,12 @@ public class Room {
     @JSONField(serialize = false)
     private RoomStatus status = RoomStatus.OPEN;
 
+    /**
+     * 房间内所有用户都离线则记录房间离线时间，否则为null
+     */
+    @JSONField(serialize = false)
+    private LocalDateTime offlineAt;
+
     private int roundCount = 0;
 
     public Room() {
@@ -79,6 +85,7 @@ public class Room {
         channel.joinUser(user);
 
         status = getUserCount() < 2 ? RoomStatus.OPEN : RoomStatus.BEGINNING;
+        offlineAt = null;
     }
 
     public void partUser(User user) {

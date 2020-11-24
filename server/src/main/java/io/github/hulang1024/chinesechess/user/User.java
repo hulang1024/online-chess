@@ -23,6 +23,7 @@ public class User {
     @JSONField(serialize = false)
     private String password;
 
+    @JSONField(name = "isAdmin")
     private boolean isAdmin;
 
     @JSONField(serialize = false)

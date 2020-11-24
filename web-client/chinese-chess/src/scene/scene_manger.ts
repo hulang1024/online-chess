@@ -13,11 +13,19 @@ export default class SceneManager {
     }
 
     pushScene(sceneBuilder: SceneBuilder) {
+        let prevScene = SceneManager.currentScene;
+        if (prevScene) {
+            prevScene.onSceneExit();
+        }
         SceneManager.sceneStack.push(sceneBuilder);
         this.setCurrentScene(sceneBuilder);
     }
 
     popScene() {
+        let prevScene = SceneManager.currentScene;
+        if (prevScene) {
+            prevScene.onSceneExit();
+        }
         SceneManager.sceneStack.pop();
         const sceneBuilder = SceneManager.sceneStack[SceneManager.sceneStack.length - 1];
         this.setCurrentScene(sceneBuilder);

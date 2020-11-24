@@ -4,6 +4,7 @@ export default class User {
     gender: number;
     avatarUrl: string;
     password: string;
+    isAdmin: boolean;
 
     static SYSTEM: User;
 }

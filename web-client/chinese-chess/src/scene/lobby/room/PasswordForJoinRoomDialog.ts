@@ -1,8 +1,9 @@
 import Dialog from "../../../component/Dialog";
+import PasswordInput from "../../../component/PasswordInput";
 import Room from "../../../online/room/Room";
 
 export default class PasswordForJoinRoomDialog extends Dialog {
-    private textEditPassword: eui.EditableText;
+    private passwordInput: PasswordInput;
     onOkClick: Function;
 
     constructor() {
@@ -10,10 +11,14 @@ export default class PasswordForJoinRoomDialog extends Dialog {
 
         this.visible = false;
 
-        this.body.addChild(this.createPasswordGroup());
+        this.passwordInput = new PasswordInput({
+            width: 396,
+            prompt: '请输入棋桌密码'
+        });
+        this.body.addChild(this.passwordInput);
 
         this.onOk = () => {
-            let password = this.textEditPassword.text;
+            let password = this.passwordInput.value;
             if (password) {
                 this.onOkClick(password);
             }
@@ -23,27 +28,5 @@ export default class PasswordForJoinRoomDialog extends Dialog {
     showFor(room: Room) {
         this.visible = true;
         this.title = `输入棋桌 ${room.name} 的密码`;
-    }
-
-    private createPasswordGroup() {
-        let group = new eui.Group();
-        group.layout = new eui.HorizontalLayout();
-
-        let label = new eui.Label();
-        label.text = "棋桌密码";
-        label.size = 20;
-        group.addChild(label);
-
-        let textEdit = new eui.EditableText();
-        textEdit.displayAsPassword = true;
-        textEdit.size = 20;
-        textEdit.width = 300;
-        textEdit.border = true;
-        textEdit.borderColor = 0xffffff;
-        textEdit.verticalAlign = egret.VerticalAlign.MIDDLE;
-        group.addChild(textEdit);
-        this.textEditPassword = textEdit;
-
-        return group;
     }
 }

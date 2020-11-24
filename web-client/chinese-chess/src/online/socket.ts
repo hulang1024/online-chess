@@ -99,13 +99,15 @@ export default class SocketClient extends egret.WebSocket {
 
         if (this.api.isLoggedIn) {
             this.channelManager.getChannel(1).addNewMessages(
-                new InfoMessage('登录成功'));
+                new InfoMessage(this.api.localUser.nickname + ' 登录成功'));
         }
     }
 
     public doConnect() {
         super.connect(DEBUG ? location.hostname : "180.76.185.34", 9097);
-        messager.info({msg: '正在连接到服务器', duration: 2000}, this.stage);
+        if (this.connectedTimes > 0) {
+            messager.info({msg: '正在连接到服务器', duration: 2000}, this.stage);
+        }
     }
 
     private onConnected(event: any) {

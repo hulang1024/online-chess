@@ -57,8 +57,15 @@ public class UserManager {
 
 
     public RegisterResult register(UserRegisterParam param) {
+        long length = param.getNickname().length();
+        if (!(1 <= length && length <= 20)) {
+            return RegisterResult.fail(3);
+        }
+        if (param.getPassword().length() > 20) {
+            return RegisterResult.fail(4);
+        }
+
         User user = new User();
-        // todo:验证格式
         user.setNickname(param.getNickname().trim());
         user.setPassword(PasswordUtils.cipherText(param.getPassword().trim()));
         user.setRegisterTime(LocalDateTime.now());

@@ -5,8 +5,8 @@ import io.github.hulang1024.chinesechess.user.GuestUser;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
 import io.github.hulang1024.chinesechess.user.UserSessionManager;
-import io.github.hulang1024.chinesechess.websocket.message.MessageUtils;
-import io.github.hulang1024.chinesechess.websocket.message.server.chat.ChatMessageServerMsg;
+import io.github.hulang1024.chinesechess.ws.message.MessageUtils;
+import io.github.hulang1024.chinesechess.chat.ws.ChatMessageServerMsg;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -101,6 +101,7 @@ public class ChannelManager {
         msgMsg.setChannelId(channel.getId());
         ChatMessageServerMsg.Sender sender = new ChatMessageServerMsg.Sender();
         sender.setId(message.getSender().getId());
+        sender.setAdmin(message.getSender().isAdmin());
         sender.setNickname(message.getSender().getNickname());
         msgMsg.setSender(sender);
         msgMsg.setContent(message.getContent());

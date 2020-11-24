@@ -7,15 +7,17 @@ import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.login.UserLoginClientMsg;
-import io.github.hulang1024.chinesechess.websocket.ClientSessionEventManager;
-import io.github.hulang1024.chinesechess.websocket.message.AbstractMessageListener;
-import io.github.hulang1024.chinesechess.websocket.message.server.play.GamePlayStatesServerMsg;
-import io.github.hulang1024.chinesechess.websocket.message.server.stat.OnlineStatServerMsg;
-import io.github.hulang1024.chinesechess.websocket.message.server.user.UserLoginServerMsg;
-import io.github.hulang1024.chinesechess.websocket.message.server.user.UserOfflineServerMsg;
+import io.github.hulang1024.chinesechess.user.ws.OnlineStatServerMsg;
+import io.github.hulang1024.chinesechess.ws.ClientSessionEventManager;
+import io.github.hulang1024.chinesechess.ws.message.AbstractMessageListener;
+import io.github.hulang1024.chinesechess.play.ws.servermsg.GamePlayStatesServerMsg;
+import io.github.hulang1024.chinesechess.user.ws.UserLoginServerMsg;
+import io.github.hulang1024.chinesechess.user.ws.UserOfflineServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yeauty.pojo.Session;
+
+import java.time.LocalDateTime;
 
 @Component
 public class UserSessionEventListener extends AbstractMessageListener {
@@ -100,18 +102,18 @@ public class UserSessionEventListener extends AbstractMessageListener {
                 if (joinedRoom.getStatus() == RoomStatus.PLAYING) {
                     // 之前正在游戏中，现在是非常规离线，记录离线状态
                     joinedRoom.getUserGameState(user).setOnline(false);
+                    UserOfflineServerMsg userOfflineMsg = new UserOfflineServerMsg();
+                    userOfflineMsg.setUid(user.getId());
+                    if (joinedRoom.getOnlineUserCount() > 0) {
+                        // 发送用户离线消息
+                        roomManager.broadcast(joinedRoom, userOfflineMsg, user);
+                    } else {
+                        joinedRoom.setOfflineAt(LocalDateTime.now());
+                        spectatorManager.broadcast(joinedRoom, userOfflineMsg);
+                    }
                 } else {
                     roomManager.partRoom(joinedRoom, user);
                     channelManager.leaveDefaultChannels(user);
-                }
-
-                UserOfflineServerMsg userOfflineMsg = new UserOfflineServerMsg();
-                userOfflineMsg.setUid(user.getId());
-                if (joinedRoom.getOnlineUserCount() > 0) {
-                    // 发送用户离线消息
-                    roomManager.broadcast(joinedRoom, userOfflineMsg, user);
-                } else {
-                    spectatorManager.broadcast(joinedRoom, userOfflineMsg);
                 }
             } else {
                 // 如果之前旁观，现在离开观看

@@ -23,14 +23,16 @@ export default class ChatLine extends eui.Group {
         group.addChild(txtTime);
 
         // 昵称
-        let txtNickname = new eui.Label();
-        txtNickname.width = 130;
-        txtNickname.textColor = ChatLine.USERNAME_COLORS[msg.sender.id % ChatLine.USERNAME_COLORS.length];
-        txtNickname.text = msg.sender.nickname + ':';
-        txtNickname.size = 20;
-        txtNickname.italic = true;
-        txtNickname.textAlign = egret.HorizontalAlign.RIGHT;
-        group.addChild(txtNickname);
+        let lblNickname = new eui.Label();
+        lblNickname.width = 130;
+        lblNickname.textColor = msg.id > 0
+            ? ChatLine.USERNAME_COLORS[msg.sender.id % ChatLine.USERNAME_COLORS.length]
+            : 0xdddddd
+        lblNickname.text = msg.sender.nickname + ':';
+        lblNickname.size = 20;
+        lblNickname.italic = true;
+        lblNickname.textAlign = egret.HorizontalAlign.RIGHT;
+        group.addChild(lblNickname);
 
         container.addChild(group);
 

@@ -4,7 +4,7 @@ public enum RoomStatus {
     OPEN(1),
     BEGINNING(2),
     PLAYING(3),
-    DISMISS(4);
+    DISMISSED(4);
 
     int code;
     RoomStatus(int code) {

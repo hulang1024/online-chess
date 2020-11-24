@@ -33,7 +33,7 @@ export default class Overlay extends eui.Group {
         this.background.filters = [
             new egret.DropShadowFilter(
                 2, 0, 0x000000, 0.3, 0, 4, 2,
-                egret.BitmapFilterQuality.MEDIUM, false, false)
+                egret.BitmapFilterQuality.LOW, false, false)
         ];
     }
 

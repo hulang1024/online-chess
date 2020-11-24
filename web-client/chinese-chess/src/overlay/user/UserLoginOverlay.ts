@@ -1,25 +1,21 @@
-import messager from "../../component/messager";
 import APIAccess from "../../online/api/APIAccess";
-import SocketClient from "../../online/socket";
-import PlayScene from "../../scene/play/PlayScene";
 import CreateUserOverlay from "./CreateUserOverlay";
 import SceneContext from "../../scene/SceneContext";
-import SceneManager from "../../scene/scene_manger";
 import User from "../../user/User";
 import Overlay from "../Overlay";
 import LogoutRequest from "../../online/api/LogoutRequest";
 import ConfigManager, { ConfigItem } from "../../config/ConfigManager";
+import PasswordInput from "../../component/PasswordInput";
+import TextInput from "../../component/TextInput";
 
 export default class UserLoginOverlay extends Overlay {
     private context: SceneContext;
     private api: APIAccess;
     private configManager: ConfigManager;
-    private textEditUsername: eui.EditableText;
-    private textEditPassword: eui.EditableText;
+    private usernameInput: TextInput;
+    private passwordInput: PasswordInput;
     private createUserOverlay: CreateUserOverlay;
     private btnLogin = new eui.Button();
-    private userNameGroup: eui.Group;
-    private passwordGroup: eui.Group;
     private staySignedInOptionGroup: eui.Group;
 
     constructor(context: SceneContext) {
@@ -42,13 +38,27 @@ export default class UserLoginOverlay extends Overlay {
 
         this.visible = false;
 
-        this.addChild(this.userNameGroup = this.createUserNameGroup());
-        this.addChild(this.passwordGroup = this.createPasswordGroup());
+        this.usernameInput = new TextInput({
+            width: 300,
+            prompt: '用户名',
+            initialValue: this.configManager.get(ConfigItem.username)
+        });
+        this.addChild(this.usernameInput);
+
+        this.passwordInput = new PasswordInput({
+            width: 300,
+            prompt: '密码'
+        });
+        this.passwordInput.onEnter = () => {
+            this.login();
+        };
+        this.addChild(this.passwordInput);
+
         this.addChild(this.staySignedInOptionGroup = this.createStaySignedInOptionGroup());
 
         let { btnLogin } = this;
         btnLogin.label = '登录';
-        btnLogin.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onLoginClick, this);
+        btnLogin.addEventListener(egret.TouchEvent.TOUCH_TAP, this.login, this);
         this.addChild(btnLogin);
 
         let btnRegister = new eui.Button();
@@ -67,8 +77,8 @@ export default class UserLoginOverlay extends Overlay {
             let { isLoggedIn } = this.api;
 
             [
-                this.userNameGroup,
-                this.passwordGroup,
+                this.usernameInput,
+                this.passwordInput,
                 this.staySignedInOptionGroup,
                 btnLogin, btnRegister].forEach(c => {
                 c.visible = !isLoggedIn;
@@ -101,10 +111,10 @@ export default class UserLoginOverlay extends Overlay {
         this.api.perform(logoutRequest);
     }
 
-    private onLoginClick() {
+    private login() {
         let user = new User();
-        user.nickname = this.textEditUsername.text;
-        user.password = this.textEditPassword.text;
+        user.nickname = this.usernameInput.value;
+        user.password = this.passwordInput.value;
         if (!(user.nickname && user.password)) {
             return;
         }
@@ -129,55 +139,12 @@ export default class UserLoginOverlay extends Overlay {
         this.createUserOverlay.show();
     }
 
-    private createUserNameGroup() {
-        let group = new eui.Group();
-        group.layout = new eui.HorizontalLayout();
-
-        let label = new eui.Label();
-        label.width = 80;
-        label.text = "用户名";
-        label.size = 20;
-        group.addChild(label);
-
-        let textEdit = new eui.EditableText();
-        textEdit.size = 20;
-        textEdit.width = 300;
-        textEdit.border = true;
-        textEdit.borderColor = 0xffffff;
-        textEdit.verticalAlign = egret.VerticalAlign.MIDDLE;
-        textEdit.text = this.configManager.get(ConfigItem.username);
-        group.addChild(textEdit);
-        this.textEditUsername = textEdit;
-
-        return group;
-    }
-
-    private createPasswordGroup() {
-        let group = new eui.Group();
-        group.layout = new eui.HorizontalLayout();
-
-        let label = new eui.Label();
-        label.width = 80;
-        label.text = "密码";
-        label.size = 20;
-        group.addChild(label);
-
-        let textEdit = new eui.EditableText();
-        textEdit.displayAsPassword = true;
-        textEdit.size = 20;
-        textEdit.width = 300;
-        textEdit.border = true;
-        textEdit.borderColor = 0xffffff;
-        textEdit.verticalAlign = egret.VerticalAlign.MIDDLE;
-        group.addChild(textEdit);
-        this.textEditPassword = textEdit;
-
-        return group;
-    }
 
     private createStaySignedInOptionGroup() {
+        let layout = new eui.HorizontalLayout();
+        layout.horizontalAlign = egret.HorizontalAlign.JUSTIFY;
         let group = new eui.Group();
-        group.layout = new eui.HorizontalLayout();
+        group.layout = layout;
 
         let label = new eui.Label();
         label.text = "保持登录";

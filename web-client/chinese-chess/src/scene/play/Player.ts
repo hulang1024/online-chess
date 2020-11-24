@@ -206,15 +206,18 @@ export default class Player extends eui.Group implements RoundGame {
     }
 
     /** 悔棋 */
-    withdraw(): boolean {        
+    withdraw(): boolean {       
+        let lastAction = this.chessActionStack.pop();
+        if (!lastAction) {
+            return false;
+        }
+        
         this.chessboard.getChessList().forEach((chess: DisplayChess) => {
             if (chess.isSelected()) {
                 chess.setSelected(false);
             }
         });
         this.fromPosTargetDrawer.clear(true);
-
-        let lastAction = this.chessActionStack.pop();
 
         // 视角可能变化了，需要转换下
         let fromPos = this.convertViewPos(lastAction.fromPos, lastAction.chessHost);

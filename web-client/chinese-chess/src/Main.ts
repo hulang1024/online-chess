@@ -36,6 +36,7 @@ import ChannelManager from "./online/chat/ChannelManager";
 import SocketClient from "./online/socket";
 import socketClient from "./online/socket";
 import ChatOverlay from "./overlay/chat/ChatOverlay";
+import OfflineContinueDialog from "./overlay/play/OfflineContinueDialog";
 import Toolbar from "./overlay/toolbar/Toolbar";
 import LobbyScene from "./scene/lobby/LobbyScene";
 import PlayScene from "./scene/play/PlayScene";
@@ -149,18 +150,21 @@ class Main extends eui.UILayer  {
             }
             api.login(user).then(() => {
                 socketClient.add('play.game_states', (gameStatesMsg: any) => {
-                    if (confirm('你还有进行中的对局，是否回到游戏？')) {
-                        chatOverlay.popOut();
+                    let offlineContinueDialog = new OfflineContinueDialog();
+                    this.stage.addChild(offlineContinueDialog);
+                    offlineContinueDialog.onOk = () => {
+                        offlineContinueDialog.visible = false;
                         socketClient.queue((send: Function) => {
                             send('play.offline_continue', {ok: true});
                         });
-                        SceneManager.of(context).pushScene(
-                            context => new PlayScene(context, gameStatesMsg.states, true));
-                    } else {
+                        SceneManager.of(context).pushScene(context => new PlayScene(context, gameStatesMsg.states, true));
+                    };
+                    offlineContinueDialog.onCancel = () => {
                         socketClient.queue((send: Function) => {
                             send('play.offline_continue', {ok: false});
                         });
-                    }
+                    };
+                    offlineContinueDialog.show();
                 });
             });
         } else {

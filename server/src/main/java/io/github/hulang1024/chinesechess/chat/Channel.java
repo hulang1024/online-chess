@@ -5,6 +5,7 @@ import io.github.hulang1024.chinesechess.user.User;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -14,14 +15,13 @@ public class Channel {
     private String name;
     private ChannelType type;
 
-    @JSONField(serialize = false)
-    private static final int MAX_HISTORY = 300;
+    public static final int MAX_HISTORY = 300;
 
     @JSONField(serialize = false)
     private List<User> users = new ArrayList<>();
 
     @JSONField(serialize = false)
-    public final ArrayBlockingQueue<Message> messages = new ArrayBlockingQueue<>(MAX_HISTORY);
+    private final ArrayBlockingQueue<Message> messages = new ArrayBlockingQueue<>(MAX_HISTORY);
 
 
     public void joinUser(User user) {
@@ -37,10 +37,21 @@ public class Channel {
         this.messages.add(message);
     }
 
-    public void removeMessage(long messageId) {
-        messages.removeIf(m -> m.getId() == messageId);
+    public Long getLastMessageId() {
+        Message lastMessage = this.messages.peek();
+        return lastMessage == null ? null : lastMessage.getId();
     }
 
+    public boolean removeMessage(Long messageId) {
+        if (messageId == null) {
+            return false;
+        }
+        return messages.removeIf(m -> m.getId() == messageId);
+    }
+
+    public void removeMessages(Collection<Message> messages) {
+        this.messages.removeAll(messages);
+    }
 
     public void removeUser(User user) {
         users.remove(user);

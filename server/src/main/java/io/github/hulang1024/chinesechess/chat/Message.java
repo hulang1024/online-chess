@@ -16,4 +16,22 @@ public class Message {
     public Message() {
         id = ID++;
     }
+
+    @Override
+    public boolean equals(Object that) {
+        if (this == that) {
+            return true;
+        }
+        if (!(that instanceof Message)) {
+            return false;
+        }
+
+        Message other = (Message)that;
+
+        if (this.id != other.id) {
+            return false;
+        }
+
+        return this.timestamp == other.timestamp;
+    }
 }

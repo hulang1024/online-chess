@@ -24,6 +24,7 @@ import PartRoomRequest from "../../online/room/PartRoomRequest";
 import SocketClient from "../../online/socket";
 import UserGameState from "../../online/room/UserGameState";
 import GameStates from "../../online/play/GameStates";
+import ConfirmLeaveDialog from "../../overlay/play/ConfirmLeaveDialog";
 
 export default class PlayScene extends AbstractScene {
     // socket消息监听器
@@ -56,6 +57,7 @@ export default class PlayScene extends AbstractScene {
     private confirmDialog = new ConfirmDialog();
     private textOverlay = new TextOverlay();
     private resultDialog = new ResultDialog();
+    private confirmLeaveDialog: ConfirmLeaveDialog = new ConfirmLeaveDialog();
     
     constructor(context: SceneContext, states: Room | GameStates, isContinue: boolean = false) {
         super(context);
@@ -63,7 +65,7 @@ export default class PlayScene extends AbstractScene {
         this.api = context.api;
         this.channelManager = context.channelManager;
         this.socketClient = context.socketClient;
-        
+
         this.user = this.api.localUser;
         if (!isContinue) {
             this.room = <Room>states;
@@ -140,8 +142,10 @@ export default class PlayScene extends AbstractScene {
         this.chessboard.addChild(this.playingRoundButtonsOverlay);
         this.chessboard.addChild(this.textOverlay);
         this.chessboard.addChild(this.resultDialog);
-
+        
         this.addChild(this.player);
+
+        this.addChild(this.confirmLeaveDialog);
 
         let buttonGroup = new eui.Group();
         buttonGroup.height = 84;
@@ -159,17 +163,24 @@ export default class PlayScene extends AbstractScene {
         btnLeave.height = 50;
         btnLeave.label = "返回";
         btnLeave.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            if (this.isPlaying && !confirm('正在游戏中，确认退出吗?')) {
+            const doLeave = () => {
+                let partRoomRequest = new PartRoomRequest(this.room);
+                partRoomRequest.success = () => {
+                    this.popScene();
+                };
+                partRoomRequest.failure = () => {
+                    this.popScene();
+                };
+                this.api.queue(partRoomRequest);
+            };
+
+            if (!this.isPlaying) {
+                doLeave();
                 return;
             }
-            let partRoomRequest = new PartRoomRequest(this.room);
-            partRoomRequest.success = () => {
-                this.popScene();
-            };
-            partRoomRequest.failure = () => {
-                this.popScene();
-            };
-            this.api.queue(partRoomRequest);
+
+            this.confirmLeaveDialog.onOk = doLeave;
+            this.confirmLeaveDialog.show();
         }, this);
         buttonGroup.addChild(btnLeave);
 
@@ -214,6 +225,7 @@ export default class PlayScene extends AbstractScene {
 
         if (isContinue) {
             this.isPlaying = true;
+            this.playingRoundButtonsOverlay.onPlaying(true);
         }
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
             let height = this.stage.stageHeight - this.context.toolbar.height;

@@ -1,4 +1,6 @@
 import messager from "../../component/messager";
+import PasswordInput from "../../component/PasswordInput";
+import TextInput from "../../component/TextInput";
 import APIAccess from "../../online/api/APIAccess";
 import RegisterRequest from "../../online/api/RegisterRequest";
 import SceneContext from "../../scene/SceneContext";
@@ -8,16 +10,18 @@ import UserLoginOverlay from "./UserLoginOverlay";
 
 export default class CreateUserOverlay extends Overlay {
     private context: SceneContext;
-    private userLoginOverlay: UserLoginOverlay;
     private api: APIAccess;
-    private textEditUsername: eui.EditableText;
-    private textEditPassword: eui.EditableText;
+    private usernameInput: TextInput;
+    private passwordInput: PasswordInput;
+    private userLoginOverlay: UserLoginOverlay;
 
     constructor(context: SceneContext, userLoginOverlay: UserLoginOverlay) {
         super(false, false);
         this.context = context;
         this.api = context.api;
         this.userLoginOverlay = userLoginOverlay;
+
+        this.visible = false;
 
         this.height = 300;
 
@@ -28,17 +32,26 @@ export default class CreateUserOverlay extends Overlay {
         layout.paddingLeft = 32;
         layout.gap = 16;
         layout.horizontalAlign = egret.HorizontalAlign.CONTENT_JUSTIFY;
-
         this.layout = layout;
 
-        this.visible = false;
+        this.usernameInput = new TextInput({
+            width: 300,
+            prompt: '用户名'
+        });
+        this.addChild(this.usernameInput);
 
-        this.addChild(this.createUserNameGroup());
-        this.addChild(this.createPasswordGroup());
+        this.passwordInput = new PasswordInput({
+            width: 300,
+            prompt: '密码'
+        });
+        this.passwordInput.onEnter = () => {
+            this.register();
+        };
+        this.addChild(this.passwordInput);
 
         let btnRegister = new eui.Button();
         btnRegister.label = '注册';
-        btnRegister.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onCreateUserClick, this);
+        btnRegister.addEventListener(egret.TouchEvent.TOUCH_TAP, this.register, this);
         this.addChild(btnRegister);
 
         let btnCancel = new eui.Button();
@@ -58,55 +71,10 @@ export default class CreateUserOverlay extends Overlay {
         this.visible = true;
     }
 
-    private createUserNameGroup() {
-        let group = new eui.Group();
-        group.layout = new eui.HorizontalLayout();
-
-        let label = new eui.Label();
-        label.width = 80;
-        label.text = "用户名";
-        label.size = 20;
-        group.addChild(label);
-
-        let textEdit = new eui.EditableText();
-        textEdit.size = 20;
-        textEdit.width = 300;
-        textEdit.border = true;
-        textEdit.borderColor = 0xffffff;
-        textEdit.verticalAlign = egret.VerticalAlign.MIDDLE;
-        group.addChild(textEdit);
-        this.textEditUsername = textEdit;
-
-        return group;
-    }
-
-    private createPasswordGroup() {
-        let group = new eui.Group();
-        group.layout = new eui.HorizontalLayout();
-
-        let label = new eui.Label();
-        label.width = 80;
-        label.text = "密码";
-        label.size = 20;
-        group.addChild(label);
-
-        let textEdit = new eui.EditableText();
-        textEdit.displayAsPassword = true;
-        textEdit.size = 20;
-        textEdit.width = 300;
-        textEdit.border = true;
-        textEdit.borderColor = 0xffffff;
-        textEdit.verticalAlign = egret.VerticalAlign.MIDDLE;
-        group.addChild(textEdit);
-        this.textEditPassword = textEdit;
-
-        return group;
-    }
-
-    private onCreateUserClick() {
+    private register() {
         let user = new User();
-        user.nickname = this.textEditUsername.text;
-        user.password = this.textEditPassword.text;
+        user.nickname = this.usernameInput.value;
+        user.password = this.passwordInput.value;
         if (!(user.nickname && user.password)) {
             return;
         }
@@ -118,7 +86,11 @@ export default class CreateUserOverlay extends Overlay {
             this.userLoginOverlay.toggle();
         };
         registerRequest.failure = (ret) => {
-            messager.fail(ret ? {1: '注册失败', 2: '昵称已被使用'}[ret.code] : '注册失败', this);
+            messager.fail(ret ? {
+                1: '注册失败', 
+                2: '昵称已被使用',
+                3: '用户名格式错误（允许1到20个字符）',
+                4: '密码格式错误（允许至多20位）'}[ret.code] : '注册失败', this);
         }
         this.api.perform(registerRequest);
     }

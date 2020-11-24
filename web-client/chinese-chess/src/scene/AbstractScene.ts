@@ -23,12 +23,10 @@ export default abstract class AbstractScene extends eui.UILayer {
     onAppVisibilityChange(hidden: boolean) {}
 
     protected pushScene(sceneBuilder: SceneBuilder) {        
-        this.onSceneExit();
         this.sceneManager.pushScene(sceneBuilder);
     }
 
     protected popScene() {
-        this.onSceneExit();
         this.sceneManager.popScene();
     }
 }

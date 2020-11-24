@@ -96,7 +96,7 @@ export default class LobbyScene extends AbstractScene {
             this.roomContainer.width = this.stage.stageWidth;
             scroller.height = this.stage.stageHeight;
             group.addChild(scroller);
-            
+
             this.context.chatOverlay.popIn();
         }, this);
 

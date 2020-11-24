@@ -29,8 +29,8 @@ public class WordsNotAllowedCommandExecutor implements CommandExecutor {
         }
 
         if (!(cmdParams.length == 2
-            && cmdParams[0].matches("\\d+")
-            && cmdParams[1].matches("on|off"))) {
+            && cmdParams[0].matches("^\\d+$")
+            && cmdParams[1].matches("^on$|^off$"))) {
             return;
         }
 
