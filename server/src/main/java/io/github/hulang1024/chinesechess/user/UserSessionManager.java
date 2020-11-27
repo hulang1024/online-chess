@@ -18,8 +18,20 @@ public class UserSessionManager {
 
     public static final String USER_ID_KEY = "userId";
 
+    public boolean isOnline(User user) {
+        return getSession(user) != null;
+    }
+
+    public boolean isOnline(long userId) {
+        return getSession(userId) != null;
+    }
+
     public Session getSession(User user) {
         return userSessionMap.get(user.getId());
+    }
+
+    public Session getSession(long userId) {
+        return userSessionMap.get(userId);
     }
 
     public Session getSession(ChannelId id) {

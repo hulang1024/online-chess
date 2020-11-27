@@ -1,8 +1,13 @@
 package io.github.hulang1024.chinesechess.user;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
+import io.github.hulang1024.chinesechess.database.DaoPageParam;
+import io.github.hulang1024.chinesechess.friend.FriendUserDao;
 import io.github.hulang1024.chinesechess.http.AuthenticationUtils;
+import io.github.hulang1024.chinesechess.http.params.PageParam;
+import io.github.hulang1024.chinesechess.http.results.PageRet;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
@@ -24,6 +29,8 @@ public class UserManager {
     @Autowired
     private UserDao userDao;
     @Autowired
+    private FriendUserDao friendUserDao;
+    @Autowired
     private RoomManager roomManager;
     @Autowired
     private ChannelManager channelManager;
@@ -32,6 +39,26 @@ public class UserManager {
     @Autowired
     private UserSessionManager userSessionManager;
 
+
+    public PageRet<SearchUserInfo> searchUsers(SearchUserParam searchUserParam, PageParam pageParam) {
+        IPage<SearchUserInfo> userPage;
+        if (searchUserParam.getOnlyFriends()) {
+            userPage = friendUserDao.searchFriends(new DaoPageParam(pageParam),
+                new QueryWrapper<User>()
+                    .eq("friends.user_id", UserUtils.get().getId()));
+            userPage.getRecords().forEach(user -> {
+                user.setIsFriend(true);
+            });
+        } else {
+            userPage = userDao.searchUsers(new DaoPageParam(pageParam), new QueryWrapper<User>());
+        }
+
+        userPage.getRecords().forEach(user -> {
+            user.setIsOnline(loggedInUserMap.get(user.getId()) != null);
+        });
+
+        return new PageRet<>(userPage);
+    }
 
     public User getLoggedInUser(long userId) {
         return loggedInUserMap.get(userId);

@@ -27,22 +27,23 @@ public class AuthenticationWebInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        if (((HandlerMethod) handler).hasMethodAnnotation(GuestAPI.class)) {
-            return true;
-        }
+        boolean isGuestAPI = ((HandlerMethod) handler).hasMethodAnnotation(GuestAPI.class);
 
         User user = AuthenticationUtils.verifyParseUserInfo(request.getHeader("Authorization"));
-        if (user == null) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            return false;
-        }
-        user = userManager.getLoggedInUser(user.getId());
-        if (user == null || user.getId() == null) {
+        if (user == null && !isGuestAPI) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             return false;
         }
 
-        UserUtils.set(user);
+        if (user != null) {
+            user = userManager.getLoggedInUser(user.getId());
+            if (user == null || user.getId() == null && !isGuestAPI) {
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                return false;
+            }
+
+            UserUtils.set(user);
+        }
 
         return true;
 }

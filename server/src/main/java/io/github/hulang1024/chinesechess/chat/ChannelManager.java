@@ -1,25 +1,29 @@
 package io.github.hulang1024.chinesechess.chat;
 
 import io.github.hulang1024.chinesechess.chat.command.executors.WordsNotAllowedCommandExecutor;
-import io.github.hulang1024.chinesechess.user.GuestUser;
-import io.github.hulang1024.chinesechess.user.User;
-import io.github.hulang1024.chinesechess.user.UserManager;
-import io.github.hulang1024.chinesechess.user.UserSessionManager;
-import io.github.hulang1024.chinesechess.ws.message.MessageUtils;
 import io.github.hulang1024.chinesechess.chat.ws.ChatMessageServerMsg;
+import io.github.hulang1024.chinesechess.chat.ws.ChatUpdatesServerMsg;
+import io.github.hulang1024.chinesechess.chat.ws.LeftChannelServerMsg;
+import io.github.hulang1024.chinesechess.user.*;
+import io.github.hulang1024.chinesechess.ws.message.WSMessageUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yeauty.pojo.Session;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Component
 public class ChannelManager {
+    /** 频道id -> 频道 */
     private static Map<Long, Channel> channelMap = new ConcurrentHashMap<>();
+
+    /**  用户id -> 已加入频道 */
+    private static Map<Long, List<UserChannel>> userJoinedChannelsMap = new ConcurrentHashMap<>();
+
 
     @Autowired
     private UserManager userManager;
@@ -29,12 +33,19 @@ public class ChannelManager {
     private WordsNotAllowedCommandExecutor wordsNotAllowedCommandExecutor;
 
     public static long[] defaultChannelIds = new long[]{
-        /** 中国象棋 */
+        /** 全局频道 */
         1
     };
 
     static {
         new ChannelManager().createDefault(1);
+    }
+
+    public List<Channel> getUserChannels(User user) {
+        List<UserChannel> userChannels = userJoinedChannelsMap.get(user.getId());
+        return userChannels != null
+            ? userChannels.stream().map(uc -> uc.getChannel()).collect(Collectors.toList())
+            : new ArrayList<>();
     }
 
     /**
@@ -64,12 +75,32 @@ public class ChannelManager {
                 return false;
             }
         }
-        if (userSessionManager.getSession(user) == null) {
+
+        if (channel.getType() != ChannelType.PM && userSessionManager.getSession(user) == null) {
             return false;
         }
 
-        channel.joinUser(user);
+        boolean ok = channel.joinUser(user);
+        if (!ok) {
+            return false;
+        }
+
+        if (!userJoinedChannelsMap.containsKey(user.getId())) {
+            userJoinedChannelsMap.put(user.getId(), new ArrayList<>());
+        }
+        userJoinedChannelsMap.get(user.getId()).add(new UserChannel(user, channel));
+
+
         return true;
+    }
+
+    public boolean leaveChannel(Channel channel, User user) {
+        boolean ok = channel.removeUser(user);
+        if (ok) {
+            userJoinedChannelsMap.get(user.getId()).remove(new UserChannel(user, channel));
+            onLeftChannel(channel, user);
+        }
+        return ok;
     }
 
 
@@ -82,9 +113,80 @@ public class ChannelManager {
 
     public boolean leaveDefaultChannels(User user) {
         for (long channelId : ChannelManager.defaultChannelIds) {
-            getChannelById(channelId).removeUser(user);
+            leaveChannel(getChannelById(channelId), user);
         }
         return true;
+    }
+
+    public boolean leaveChannels(User user) {
+        List<UserChannel> userChannels = userJoinedChannelsMap.get(user.getId());
+        if (userChannels == null) {
+            return true;
+        }
+
+        userChannels.forEach(userChannel -> {
+            Channel channel = userChannel.getChannel();
+            channel.removeUser(user);
+
+            onLeftChannel(channel, user);
+
+        });
+        userChannels.removeAll(userChannels);
+
+        return true;
+    }
+
+    public ChannelCreateRet createPMChannel(long targetUserId) {
+        ChannelCreateRet result = new ChannelCreateRet();
+
+        User targetUser = userManager.getLoggedInUser(targetUserId);
+        if (targetUser == null) {
+            result.setChannelId(0L);
+            return result;
+        }
+
+        Channel channel = new Channel();
+        channel.setType(ChannelType.PM);
+
+        channel.setName(UserUtils.get().getId() + "_" + targetUser.getId());
+
+        joinChannel(channel, targetUser);
+        joinChannel(channel, UserUtils.get());
+
+        createChannel(channel);
+        result.setChannelId(channel.getId());
+
+        return result;
+    }
+
+    public CreateNewPrivateMessageRet createNewPrivateMessage(@NotNull CreateNewPrivateMessageParam param) {
+        if (!userSessionManager.isOnline(param.getTargetId())) {
+            return CreateNewPrivateMessageRet.fail();
+        }
+
+        User targetUser = userManager.getLoggedInUser(param.getTargetId());
+        Optional<UserChannel> targetUserJoinedUserChannel = userJoinedChannelsMap.get(UserUtils.get().getId()).stream()
+             .filter(uc -> uc.getChannel().getType() == ChannelType.PM
+                 && uc.getChannel().getUsers().contains(targetUser))
+            .findAny();
+
+        Channel channel;
+        if (targetUserJoinedUserChannel.isPresent()) {
+            channel = targetUserJoinedUserChannel.get().getChannel();
+        } else {
+            ChannelCreateRet created = createPMChannel(targetUser.getId());
+            if (created.getChannelId() == null && created.getChannelId() == 0) {
+                return CreateNewPrivateMessageRet.fail();
+            }
+
+            channel = channelMap.get(created.getChannelId());
+        }
+
+        Message message = param;
+        message.setSender(UserUtils.get());
+        message.setChannelId(channel.getId());
+        broadcast(channelMap.get(channel.getId()), message);
+        return new CreateNewPrivateMessageRet(true, channel.getId());
     }
 
     public boolean broadcast(Channel channel, Message message, User... excludes) {
@@ -93,6 +195,37 @@ public class ChannelManager {
         }
 
         message.setChannelId(channel.getId());
+
+        if (channel.getType() == ChannelType.PM) {
+            // 无论如何都保存私聊消息
+            channel.addNewMessage(message);
+
+            Optional<User> targetUserOpt = channel.getUsers().stream()
+                .filter(u -> !u.equals(message.getSender())).findFirst();
+            if (!targetUserOpt.isPresent()) {
+                return false;
+            }
+            User targetUser = targetUserOpt.get();
+            if (!userSessionManager.isOnline(targetUser)) {
+                return false;
+            }
+
+            UserChannel targetUserChannel = userJoinedChannelsMap.get(targetUser.getId())
+                .stream().filter(uc -> uc.getChannel().equals(channel)).findFirst().get();
+            // 与之私聊用户是否从未实际打开过该频道？
+            if (targetUserChannel.getLastReadId() == null) {
+                ChatUpdatesServerMsg chatUpdatesServerMsg = new ChatUpdatesServerMsg();
+                chatUpdatesServerMsg.setSender(message.getSender());
+                chatUpdatesServerMsg.setChannel(channel);
+                targetUserChannel.setLastReadId(0L);
+                chatUpdatesServerMsg.setRecentMessages(channel.getMessages().stream()
+                    .filter(m -> m.getId() > targetUserChannel.getLastReadId())
+                    .collect(Collectors.toList()));
+                //todo:暂时在这里标记已读
+                targetUserChannel.setLastReadId(message.getId());
+                WSMessageUtils.send(chatUpdatesServerMsg, userSessionManager.getSession(targetUser));
+            }
+        }
 
         channel.addNewMessage(message);
 
@@ -108,7 +241,6 @@ public class ChannelManager {
         msgMsg.setTimestamp(message.getTimestamp());
 
         User exclude = excludes.length == 1 ? excludes[0] : null;
-        List<User> usersToRemove = new ArrayList<>();
         channel.getUsers().forEach(user -> {
             if (user.equals(exclude)) {
                 return;
@@ -117,13 +249,13 @@ public class ChannelManager {
             if (session == null) { // TODO: 不应该出现此情况，查找原因
                 return;
             }
-            MessageUtils.send(msgMsg, session);
+            WSMessageUtils.send(msgMsg, session);
         });
 
         return true;
     }
 
-    public void remove(Channel channel) {
+    public void removeChannel(Channel channel) {
         channelMap.remove(channel.getId());
     }
 
@@ -131,18 +263,29 @@ public class ChannelManager {
         return channelMap.get(id);
     }
 
-
-    public Channel create(Channel channel) {
+    public Channel createChannel(Channel channel) {
         channel.setId(nextChannelId());
         channelMap.put(channel.getId(), channel);
         return channel;
+    }
+
+    private void onLeftChannel(Channel channel, User user) {
+        if (channel.getType() == ChannelType.PM) {
+            if (channel.getUsers().isEmpty()) {
+                removeChannel(channel);
+            } else {
+                WSMessageUtils.send(
+                    new LeftChannelServerMsg(user, channel),
+                    userSessionManager.getSession(channel.getUsers().get(0)));
+            }
+        }
     }
 
     private Channel createDefault(long id) {
         Channel channel = new Channel();
         channel.setId(id);
         channel.setType(ChannelType.PUBLIC);
-        create(channel);
+        createChannel(channel);
         return channel;
     }
 

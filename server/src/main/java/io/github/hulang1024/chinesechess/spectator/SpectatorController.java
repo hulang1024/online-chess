@@ -10,25 +10,37 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.NotNull;
 
 @RestController
-@RequestMapping("/spectators")
+@RequestMapping
 @Validated
 public class SpectatorController {
     @Autowired
     private SpectatorManager spectatorManager;
 
-    @PostMapping("/{user_id}")
-    public ResponseEntity<Room> add(
-        @NotNull @PathVariable("user_id") Long userId,
-        @Validated @RequestBody SpectateParam param) {
-        SpectateResponse responseData = spectatorManager.spectate(userId, param);
+    @PutMapping("/rooms/{room_id}/spectators/{spectator_id}")
+    public ResponseEntity<Room> spectateRoom(
+        @NotNull @PathVariable("room_id") Long roomId,
+        @NotNull @PathVariable("spectator_id") Long spectatorId) {
+        SpectateResponse responseData = spectatorManager.spectateRoom(roomId, spectatorId);
         return new ResponseEntity(responseData, responseData.getCode() == 0
             ? HttpStatus.OK
             : HttpStatus.EXPECTATION_FAILED);
     }
 
-    @DeleteMapping("/{user_id}")
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("user_id") Long userId) {
-        spectatorManager.leaveRoom(userId);
+    @PutMapping("/users/{target_user_id}/spectators/{spectator_id}")
+    public ResponseEntity<Room> spectateUser(
+        @NotNull @PathVariable("target_user_id") Long targetUserId,
+        @NotNull @PathVariable("spectator_id") Long spectatorId) {
+        SpectateResponse responseData = spectatorManager.spectateUser(targetUserId, spectatorId);
+        return new ResponseEntity(responseData, responseData.getCode() == 0
+            ? HttpStatus.OK
+            : HttpStatus.EXPECTATION_FAILED);
+    }
+
+    @DeleteMapping("/rooms/{room_id}/spectators/{user_id}")
+    public ResponseEntity<Void> delete(
+        @NotNull @PathVariable("room_id") Long roomId,
+        @NotNull @PathVariable("user_id") Long userId) {
+        spectatorManager.leaveRoom(roomId, userId);
         return ResponseEntity.ok().build();
     }
 }

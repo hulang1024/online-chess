@@ -3,18 +3,14 @@ package io.github.hulang1024.chinesechess.room;
 import io.github.hulang1024.chinesechess.chat.Channel;
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.chat.ChannelType;
+import io.github.hulang1024.chinesechess.room.ws.*;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
 import io.github.hulang1024.chinesechess.user.UserSessionManager;
 import io.github.hulang1024.chinesechess.user.UserUtils;
-import io.github.hulang1024.chinesechess.ws.message.MessageUtils;
+import io.github.hulang1024.chinesechess.ws.message.WSMessageUtils;
 import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
-import io.github.hulang1024.chinesechess.room.ws.LobbyRoomCreateServerMsg;
-import io.github.hulang1024.chinesechess.room.ws.LobbyRoomRemoveServerMsg;
-import io.github.hulang1024.chinesechess.room.ws.LobbyRoomUpdateServerMsg;
-import io.github.hulang1024.chinesechess.room.ws.JoinRoomServerMsg;
-import io.github.hulang1024.chinesechess.room.ws.LeaveRoomServerMsg;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,7 +39,7 @@ public class RoomManager {
     @Autowired
     private UserManager userManager;
     @Autowired
-    private UserSessionManager userSessionManager;
+    public UserSessionManager userSessionManager;
     @Autowired
     private SpectatorManager spectatorManager;
     @Autowired
@@ -89,7 +85,7 @@ public class RoomManager {
             return null;
         }
 
-        Room createdRoom = new Room();
+        Room createdRoom = new Room(channelManager, userSessionManager);
         createdRoom.setId(nextRoomId());
         if (StringUtils.isNotBlank(room.getName())) {
             createdRoom.setName(room.getName());
@@ -105,7 +101,7 @@ public class RoomManager {
         Channel channel = new Channel();
         channel.setName(createdRoom.getId().toString());
         channel.setType(ChannelType.ROOM);
-        channelManager.create(channel);
+        channelManager.createChannel(channel);
 
         createdRoom.setChannel(channel);
 
@@ -205,7 +201,7 @@ public class RoomManager {
         if (room.getUserCount() == 1) {
             User otherUser = room.getOneUser();
             // 但是该用户是离线状态
-            if (!room.getUserGameState(otherUser).isOnline()) {
+            if (!userSessionManager.isOnline(otherUser)) {
                 // 那么也将此离线用户移除房间
                 partRoom(room, otherUser);
                 // 导致解散房间
@@ -250,7 +246,7 @@ public class RoomManager {
 
     public void dismissRoom(Room room) {
         room.setStatus(RoomStatus.DISMISSED);
-        channelManager.remove(room.getChannel());
+        channelManager.removeChannel(room.getChannel());
         roomMap.remove(room.getId());
         lobbyService.broadcast(new LobbyRoomRemoveServerMsg(room));
     }
@@ -266,8 +262,8 @@ public class RoomManager {
             }
             // 用户可能是离线状态，此时没有session，但是用户可能会重新连接回来
             Session session = userSessionManager.getSession(user);
-            if (room.getUserGameState(user).isOnline() && session != null) {
-                MessageUtils.send(message, session);
+            if (session != null) {
+                WSMessageUtils.send(message, session);
             }
         });
         spectatorManager.broadcast(room, message);

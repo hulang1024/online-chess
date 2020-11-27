@@ -5,7 +5,7 @@ import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.chat.Message;
 import io.github.hulang1024.chinesechess.chat.command.CommandExecutor;
 import io.github.hulang1024.chinesechess.user.UserSessionManager;
-import io.github.hulang1024.chinesechess.ws.message.MessageUtils;
+import io.github.hulang1024.chinesechess.ws.message.WSMessageUtils;
 import io.github.hulang1024.chinesechess.chat.ws.RecallMessageServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,15 +22,12 @@ public class RecallCommandExecutor implements CommandExecutor {
         if (!message.getSender().isAdmin()) {
             return;
         }
-        if (cmdParams.length != 1) {
-            return;
-        }
 
         Long messageId;
-        if (cmdParams[0].matches("^\\d$")) {
-            messageId = Long.parseLong(cmdParams[0]);
-        } else if (cmdParams[0].matches("^last$")) {
+        if (cmdParams.length == 0) {
             messageId = channel.getLastMessageId();
+        } else if (cmdParams.length == 1 && cmdParams[0].matches("^\\d$")) {
+            messageId = Long.parseLong(cmdParams[0]);
         } else {
             return;
         }
@@ -42,7 +39,7 @@ public class RecallCommandExecutor implements CommandExecutor {
         }
 
         channel.getUsers().forEach(user -> {
-            MessageUtils.send(
+            WSMessageUtils.send(
                 new RecallMessageServerMsg(channel.getId(), messageId),
                 userSessionManager.getSession(user));
         });

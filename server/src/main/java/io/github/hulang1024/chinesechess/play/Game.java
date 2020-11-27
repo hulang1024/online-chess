@@ -5,6 +5,7 @@ import io.github.hulang1024.chinesechess.play.rule.ChessHost;
 import io.github.hulang1024.chinesechess.play.rule.ChessboardState;
 import io.github.hulang1024.chinesechess.room.Room;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,10 @@ import java.util.Stack;
 public class Game {
     @Getter
     Room room;
+
+    @Getter
+    @Setter
+    private GameState state;
 
     @Getter
     private ChessHost activeChessHost;

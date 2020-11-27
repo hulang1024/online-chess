@@ -26,7 +26,7 @@ public abstract class AbstractMessageListener {
     }
 
     public void send(ServerMessage message, Session session) {
-        MessageUtils.send(message, session);
+        WSMessageUtils.send(message, session);
     }
 
     public void send(ServerMessage message, User user) {

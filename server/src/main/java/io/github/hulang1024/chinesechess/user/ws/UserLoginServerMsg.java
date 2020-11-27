@@ -6,7 +6,8 @@ import lombok.Data;
 @Data
 public class UserLoginServerMsg extends ServerMessage {
 
-    public UserLoginServerMsg() {
+    public UserLoginServerMsg(int code) {
         super("user.login");
+        this.code = code;
     }
 }

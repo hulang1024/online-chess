@@ -40,11 +40,6 @@ public class ChineseChessWebSocketServerEndpoint {
 
     @OnMessage
     public void onMessage(Session session, String message) {
-        if ("ping".equals(message)) {
-            session.sendText("pong");
-            return;
-        }
-        
         ClientMessageDispatcher.dispatch(message, session);
     }
 

@@ -2,10 +2,12 @@ package io.github.hulang1024.chinesechess.room;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import io.github.hulang1024.chinesechess.chat.Channel;
+import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.play.Game;
-import io.github.hulang1024.chinesechess.play.UserGameState;
+import io.github.hulang1024.chinesechess.play.GameState;
 import io.github.hulang1024.chinesechess.play.rule.ChessHost;
 import io.github.hulang1024.chinesechess.user.User;
+import io.github.hulang1024.chinesechess.user.UserSessionManager;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -41,17 +43,23 @@ public class Room {
 
     private User redChessUser;
 
-    private UserGameState redGameState;
-
     private User blackChessUser;
 
-    private UserGameState blackGameState;
+    private boolean redReadied;
+
+    private boolean blackReadied;
 
     @JSONField(serialize = false)
     private List<User> spectators = new ArrayList<>();
 
     @JSONField(serialize = false)
     private RoomStatus status = RoomStatus.OPEN;
+
+    @JSONField(serialize = false)
+    private ChannelManager channelManager;
+
+    @JSONField(serialize = false)
+    private UserSessionManager userSessionManager;
 
     /**
      * 房间内所有用户都离线则记录房间离线时间，否则为null
@@ -61,47 +69,53 @@ public class Room {
 
     private int roundCount = 0;
 
-    public Room() {
+    public Room(ChannelManager channelManager, UserSessionManager userSessionManager) {
         game = new Game(this);
+        this.channelManager = channelManager;
+        this.userSessionManager = userSessionManager;
     }
 
     public void joinUser(User user) {
-        UserGameState joinUserGameState = null;
         if (redChessUser == null) {
             redChessUser = user;
-            redGameState = new UserGameState();
-            joinUserGameState = redGameState;
+            redReadied = true;
         } else if (blackChessUser == null) {
             blackChessUser = user;
-            blackGameState = new UserGameState();
-            joinUserGameState = blackGameState;
-        }
-        if (getUserCount() == 1) {
-            joinUserGameState.setReadied(true);
-        } else if (getUserCount() == 2) {
-            joinUserGameState.setReadied(false);
+            blackReadied = true;
         }
 
-        channel.joinUser(user);
+        // 第二个加进来的默认未准备
+        if (getUserCount() == 2) {
+            updateUserReadyState(user, false);
+        }
+
+        channelManager.joinChannel(channel, user);
 
         status = getUserCount() < 2 ? RoomStatus.OPEN : RoomStatus.BEGINNING;
+        game.setState(GameState.READY);
         offlineAt = null;
     }
 
     public void partUser(User user) {
-        channel.removeUser(user);
+        channelManager.leaveChannel(channel, user);
         status = RoomStatus.OPEN;
 
         if (getChessHost(user) == ChessHost.RED) {
             redChessUser = null;
-            redGameState = null;
+            redReadied = false;
         }
         if (getChessHost(user) == ChessHost.BLACK) {
             blackChessUser = null;
-            blackGameState = null;
+            blackReadied = false;
         }
 
+        game.setState(GameState.READY);
         roundCount = 0;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+        this.channelId = channel.getId();
     }
 
     public ChessHost getChessHost(User user) {
@@ -114,23 +128,32 @@ public class Room {
         return null;
     }
 
-    public UserGameState getUserGameState(User user) {
+    public boolean getUserReadied(User user) {
         if (user.equals(redChessUser)) {
-            return redGameState;
+            return redReadied;
         }
         if (user.equals(blackChessUser)) {
-            return blackGameState;
+            return blackReadied;
         }
-        return null;
+        return false;
+    }
+
+    public void updateUserReadyState(User user, boolean readied) {
+        if (user.equals(redChessUser)) {
+            redReadied = readied;
+        }
+        if (user.equals(blackChessUser)) {
+            blackReadied = readied;
+        }
     }
 
     @JSONField(serialize = false)
     public int getOnlineUserCount() {
         int count = 0;
-        if (this.redChessUser != null && redGameState.isOnline()) {
+        if (this.redChessUser != null && userSessionManager.isOnline(redChessUser)) {
             count++;
         }
-        if (this.blackChessUser != null && blackGameState.isOnline()) {
+        if (this.blackChessUser != null && userSessionManager.isOnline(blackChessUser)) {
             count++;
         }
         return count;
@@ -161,6 +184,16 @@ public class Room {
         return null;
     }
 
+    public User getOtherUser(User user) {
+        if (user.equals(redChessUser)) {
+            return blackChessUser;
+        }
+        if (user.equals(blackChessUser)) {
+            return redChessUser;
+        }
+        return null;
+    }
+
     public List<User> getUsers() {
         List<User> users = new ArrayList<>();
         if (redChessUser != null) {
@@ -172,6 +205,20 @@ public class Room {
         return users;
     }
 
+    public boolean getRedOnline() {
+        if (this.redChessUser != null) {
+            return userSessionManager.isOnline(redChessUser);
+        }
+        return false;
+    }
+
+    public boolean getBlackOnline() {
+        if (this.blackChessUser != null) {
+            return userSessionManager.isOnline(blackChessUser);
+        }
+        return false;
+    }
+
     public int getSpectatorCount() {
         return spectators.size();
     }
@@ -180,13 +227,13 @@ public class Room {
         return password != null;
     }
 
-    public void setChannel(Channel channel) {
-        this.channel = channel;
-        this.channelId = channel.getId();
-    }
-
     @JSONField(name = "status")
     public int getStatusCode() {
         return status.getCode();
+    }
+
+    @JSONField(name = "gameStatus")
+    public int getGameStateCode() {
+        return game.getState() == null ? 0 : game.getState().getCode();
     }
 }

@@ -35,7 +35,6 @@ public class User {
     @JSONField(serialize = false)
     private LocalDateTime registerTime;
 
-    @JSONField(serialize = false)
     private LocalDateTime lastLoginTime;
 
     public static User SYSTEM_USER;

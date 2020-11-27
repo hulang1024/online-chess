@@ -5,11 +5,13 @@ import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
 import lombok.Data;
 
 @Data
-public class UserOfflineServerMsg extends ServerMessage {
+public class UserOnlineServerMsg extends ServerMessage {
     private long uid;
+    private String nickname;
 
-    public UserOfflineServerMsg(User user) {
-        super("user.offline");
+    public UserOnlineServerMsg(User user) {
+        super("user.online");
         this.uid = user.getId();
+        this.nickname = user.getNickname();
     }
 }

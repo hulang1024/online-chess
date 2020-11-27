@@ -2,7 +2,7 @@ package io.github.hulang1024.chinesechess.room;
 
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserSessionManager;
-import io.github.hulang1024.chinesechess.ws.message.MessageUtils;
+import io.github.hulang1024.chinesechess.ws.message.WSMessageUtils;
 import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class LobbyService {
             if (session.equals(excludeSession)) {
                 return;
             }
-            MessageUtils.send(message, session);
+            WSMessageUtils.send(message, session);
         });
     }
 

@@ -32,34 +32,33 @@ public class PlayMessageListener extends AbstractMessageListener {
         addMessageHandler(GameOverMsg.class, this::onRoundOver);
         addMessageHandler(ConfirmRequestMsg.class, this::onConfirmRequest);
         addMessageHandler(ConfirmResponseMsg.class, this::onConfirmResponse);
-        addMessageHandler(OfflineContinueClientMsg.class, this::onOfflineContinue);
+        addMessageHandler(GameContinueClientMsg.class, this::onGameContinue);
     }
 
     public void ready(ReadyMsg readyMsg) {
         User user = userManager.getLoggedInUser(readyMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
-        UserGameState userGameState = room.getUserGameState(user);
 
         if (room == null) {
             return;
         }
 
-        userGameState.setReadied(readyMsg.getReadied() != null
+        room.updateUserReadyState(user, readyMsg.getReadied() != null
             ? readyMsg.getReadied()
-            : !userGameState.isReadied());
+            : !room.getUserReadied(user));
 
         ReadyServerMsg readyServerMsg = new ReadyServerMsg();
         readyServerMsg.setCode(0);
         readyServerMsg.setUid(user.getId());
-        readyServerMsg.setReadied(userGameState.isReadied());
+        readyServerMsg.setReadied(room.getUserReadied(user));
 
         roomManager.broadcast(room, readyServerMsg);
 
         lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);
 
         // 如果全部准备好，开始游戏
-        boolean isAllReadied = room.isFull()
-            && room.getUsers().stream().allMatch(u -> room.getUserGameState(u).isReadied());
+        boolean isAllReadied = room.isFull() && room.getUsers().stream()
+            .allMatch(u -> room.getUserReadied(u));
         if (isAllReadied) {
             startRound(room);
         }
@@ -68,6 +67,10 @@ public class PlayMessageListener extends AbstractMessageListener {
     private void pickChess(ChessPickMsg chessPickMsg) {
         User user = userManager.getLoggedInUser(chessPickMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
+
+        if (room.getGame().getState() != GameState.PLAYING) {
+            return;
+        }
 
         ChessPickServerMsg chessPickServerMsg = new ChessPickServerMsg();
         chessPickServerMsg.setChessHost(room.getChessHost(user).code());
@@ -80,6 +83,10 @@ public class PlayMessageListener extends AbstractMessageListener {
     private void moveChess(ChessMoveMsg chessMoveMsg) {
         User user = userManager.getLoggedInUser(chessMoveMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
+
+        if (room.getGame().getState() != GameState.PLAYING) {
+            return;
+        }
 
         ChessboardState chessboardState = room.getGame().getChessboardState();
 
@@ -112,6 +119,10 @@ public class PlayMessageListener extends AbstractMessageListener {
         User user = userManager.getLoggedInUser(confirmRequestMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
 
+        if (room.getGame().getState() != GameState.PLAYING) {
+            return;
+        }
+
         PlayConfirmServerMsg result = new PlayConfirmServerMsg();
         result.setReqType(confirmRequestMsg.getReqType());
         result.setChessHost(room.getChessHost(user).code());
@@ -122,6 +133,10 @@ public class PlayMessageListener extends AbstractMessageListener {
     private void onConfirmResponse(ConfirmResponseMsg confirmResponseMsg) {
         User user = userManager.getLoggedInUser(confirmResponseMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
+
+        if (room.getGame().getState() != GameState.PLAYING) {
+            return;
+        }
 
         PlayConfirmResponseServerMsg result = new PlayConfirmResponseServerMsg();
         result.setReqType(confirmResponseMsg.getReqType());
@@ -168,6 +183,8 @@ public class PlayMessageListener extends AbstractMessageListener {
             room.setRedChessUser(blackChessUser);
         }
 
+        room.getGame().setState(GameState.PLAYING);
+
         room.setStatus(RoomStatus.PLAYING);
 
         PlayRoundStart redStart = new PlayRoundStart();
@@ -187,10 +204,21 @@ public class PlayMessageListener extends AbstractMessageListener {
         });
     }
 
-    private void onOfflineContinue(OfflineContinueClientMsg clientMsg) {
+    private void onGameContinue(GameContinueClientMsg clientMsg) {
         User user = userManager.getLoggedInUser(clientMsg.getSession());
         Room joinedRoom = roomManager.getJoinedRoom(user);
-        if (!clientMsg.isOk()) {
+        if (clientMsg.isOk()) {
+            if (joinedRoom.getGame().getState() == GameState.PAUSE) {
+                // 如果之前房间内用户一直在线并且没离开房间，现在继续游戏
+                if (joinedRoom.getOnlineUserCount() == 2) {
+                    joinedRoom.getGame().setState(GameState.PLAYING);
+                }
+            }
+
+            GamePlayStatesServerMsg gamePlayStatesServerMsg = new GamePlayStatesServerMsg();
+            gamePlayStatesServerMsg.setStates(joinedRoom.getGame().buildGamePlayStatesResponse());
+            send(gamePlayStatesServerMsg, user);
+        } else {
             // 如果不想继续，离开房间
             roomManager.partRoom(joinedRoom, user);
         }
@@ -198,10 +226,10 @@ public class PlayMessageListener extends AbstractMessageListener {
         joinedRoom.setOfflineAt(null);
 
         if (joinedRoom.getOnlineUserCount() > 0) {
-            OfflineContinueServerMsg serverMsg = new OfflineContinueServerMsg();
+            GameContinueResponseServerMsg serverMsg = new GameContinueResponseServerMsg();
             serverMsg.setOk(clientMsg.isOk());
             serverMsg.setUid(user.getId());
-            roomManager.broadcast(joinedRoom, serverMsg);
+            roomManager.broadcast(joinedRoom, serverMsg, user);
         }
     }
 
@@ -209,6 +237,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         User user = userManager.getLoggedInUser(msg.getSession());
         Room room = roomManager.getJoinedRoom(user);
         room.setStatus(RoomStatus.BEGINNING);
+        room.updateUserReadyState(user, false);
         lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);
     }
 }
