@@ -13,11 +13,11 @@ import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.login.LoginResult;
 import io.github.hulang1024.chinesechess.user.login.UserLoginParam;
+import io.github.hulang1024.chinesechess.userstats.UserStatsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.yeauty.pojo.Session;
 
-import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,6 +28,8 @@ public class UserManager {
     private static Map<Long, User> loggedInUserMap = new ConcurrentHashMap<>();
     @Autowired
     private UserDao userDao;
+    @Autowired
+    private UserStatsService userStatsService;
     @Autowired
     private FriendUserDao friendUserDao;
     @Autowired
@@ -45,16 +47,18 @@ public class UserManager {
         if (searchUserParam.getOnlyFriends()) {
             userPage = friendUserDao.searchFriends(new DaoPageParam(pageParam),
                 new QueryWrapper<User>()
-                    .eq("friends.user_id", UserUtils.get().getId()));
+                    .eq("friends.user_id", UserUtils.get().getId())
+                    .orderByDesc("win_count", "last_login_time"));
             userPage.getRecords().forEach(user -> {
                 user.setIsFriend(true);
             });
         } else {
-            userPage = userDao.searchUsers(new DaoPageParam(pageParam), new QueryWrapper<User>());
+            userPage = userDao.searchUsers(new DaoPageParam(pageParam),
+                new QueryWrapper<User>().orderByDesc("win_count", "last_login_time"));
         }
 
         userPage.getRecords().forEach(user -> {
-            user.setIsOnline(loggedInUserMap.get(user.getId()) != null);
+            user.setIsOnline(userSessionManager.isOnline(user.getId()));
         });
 
         return new PageRet<>(userPage);
@@ -103,9 +107,11 @@ public class UserManager {
             if (!ok) {
                 return RegisterResult.fail(1);
             }
-        } catch (ConstraintViolationException e) {
+        } catch (Exception e) {
             return RegisterResult.fail(2);
         }
+
+        userStatsService.initializeUser(user);
 
         return RegisterResult.ok();
     }
@@ -145,13 +151,14 @@ public class UserManager {
             spectatorManager.leaveRoom(user, spectatingRoom);
         }
 
-        Session session = userSessionManager.getSession(user);
-        if (session != null) {
-            userSessionManager.removeBinding(session);
-        }
+        userSessionManager.removeBinding(user);
+
         channelManager.leaveDefaultChannels(user);
 
-        guestLogin(session);
+        Session session = userSessionManager.getSession(user);
+        if (session != null) {
+            guestLogin(session);
+        }
 
         return true;
     }

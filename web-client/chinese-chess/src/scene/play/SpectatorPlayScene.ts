@@ -80,9 +80,9 @@ export default class SpectatorPlayScene extends AbstractScene {
 
         let channel = new Channel();
         channel.id = this.room.channelId;
-        channel.name = `当前棋桌`;
+        channel.name = '#当前棋桌';
         channel.type = ChannelType.ROOM;
-        this.channelManager.joinChannel(channel, true);
+        this.channelManager.joinChannel(channel);
         
         this.load(spectateResponse);
     }
@@ -139,7 +139,7 @@ export default class SpectatorPlayScene extends AbstractScene {
             
         this.addUserInfoPaneByView();
 
-        this.player.onWin = this.onWin.bind(this);
+        this.player.onGameOver = this.onGameOver.bind(this);
         this.chessboard = this.player.chessboard;
 
         this.chessboard.addChild(this.textOverlay);
@@ -271,7 +271,7 @@ export default class SpectatorPlayScene extends AbstractScene {
             }
         };
 
-        this.listeners['spectator.play.round_start'] = (msg: any) => {
+        this.listeners['play.game_start'] = (msg: any) => {
             this.textOverlay.show('对局开始', 3000);
 
             // 新对局可能交换棋方，找出新的红方用户和黑方用户
@@ -323,10 +323,10 @@ export default class SpectatorPlayScene extends AbstractScene {
 
             switch (msg.reqType) {
                 case confirmRequest.Type.WHITE_FLAG:
-                    this.onWin(msg.chessHost, true);
+                    this.onGameOver(msg.chessHost);
                     break;
                 case confirmRequest.Type.DRAW:
-                    this.onWin(null, true);
+                    this.onGameOver(null);
                     break;
                 case confirmRequest.Type.WITHDRAW:
                     this.player.withdraw();
@@ -394,12 +394,12 @@ export default class SpectatorPlayScene extends AbstractScene {
         this.addUserInfoPaneByView();
     }
 
-    private onWin(winChessHost: ChessHost, delay: boolean = false) {
+    private onGameOver(winChessHost: ChessHost) {
         setTimeout(() => {
             this.textOverlay.show(winChessHost == null
                 ? '平局'
                 : `${winChessHost == ChessHost.RED ? '红方' : '黑方'}赢！`);
-        }, delay ? 2000 : 0);
+        }, 2000);
 
         setTimeout(() => {
             this.textOverlay.show('等待新对局开始');

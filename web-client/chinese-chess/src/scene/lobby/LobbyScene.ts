@@ -177,7 +177,18 @@ export default class LobbyScene extends AbstractScene {
             this.pushScene((context) => new PlayScene(context, room));
         };
         quickStartRequest.failure = () => {
-            messager.fail('快速加入失败', this);
+            let room = new Room();
+            room.name = '';
+            let createRoomRequest = new CreateRoomRequest(room);
+            createRoomRequest.success = (room) => {
+                this.addRoom(room);
+                this.pushScene((context) => new PlayScene(context, room));
+            };
+            createRoomRequest.failure = () => {
+                messager.fail({msg: '创建棋桌失败'}, this);
+            };
+            this.api.perform(createRoomRequest);
+            //messager.fail('快速加入失败', this);
         };
         this.api.perform(quickStartRequest);
     }

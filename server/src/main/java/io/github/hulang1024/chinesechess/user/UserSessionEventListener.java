@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.user;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
-import io.github.hulang1024.chinesechess.friend.FriendsManager;
 import io.github.hulang1024.chinesechess.play.GameState;
 import io.github.hulang1024.chinesechess.play.ws.servermsg.GameContinueServerMsg;
 import io.github.hulang1024.chinesechess.room.LobbyService;
@@ -9,7 +9,6 @@ import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.login.UserLoginClientMsg;
-import io.github.hulang1024.chinesechess.user.ws.OnlineStatServerMsg;
 import io.github.hulang1024.chinesechess.user.ws.UserLoginServerMsg;
 import io.github.hulang1024.chinesechess.user.ws.UserOfflineServerMsg;
 import io.github.hulang1024.chinesechess.user.ws.UserOnlineServerMsg;
@@ -28,15 +27,13 @@ public class UserSessionEventListener extends AbstractMessageListener {
     @Autowired
     private ChannelManager channelManager;
     @Autowired
+    private UserDao userDao;
+    @Autowired
     private UserManager userManager;
     @Autowired
     private RoomManager roomManager;
     @Autowired
     private SpectatorManager spectatorManager;
-    @Autowired
-    private FriendsManager friendsManager;
-
-    public static int sessionUserCount = 0;
 
     @Override
     public void init() {
@@ -47,7 +44,7 @@ public class UserSessionEventListener extends AbstractMessageListener {
     }
 
     private void onSessionOpen(Session session) {
-        sessionUserCount++;
+
     }
 
     private void onWebSocketUserLogin(UserLoginClientMsg loginMsg) {
@@ -98,12 +95,11 @@ public class UserSessionEventListener extends AbstractMessageListener {
 
         send(new UserLoginServerMsg(0), loginMsg.getSession());
 
-        // 给该用户属于其好友的用户通知
-        friendsManager.getBelongFriendIds(user).forEach(userId -> {
-            if (userSessionManager.isOnline(userId)) {
-                send(new UserOnlineServerMsg(user), userSessionManager.getSession(userId));
-            }
-        });
+        // TODO：修改登录时间，后面独立出一个字段，不使用API last_login_time
+        userDao.update(null,
+            new UpdateWrapper<User>()
+                .set("last_login_time", LocalDateTime.now())
+                .eq("id", user.getId()));
     }
 
     private void onSessionClose(Session session) {
@@ -148,22 +144,10 @@ public class UserSessionEventListener extends AbstractMessageListener {
                 }
                 channelManager.leaveChannels(user);
             }
+
+            userSessionManager.removeBinding(user);
         }
 
-        userSessionManager.removeBinding(session);
-
         lobbyService.removeStayLobbySession(session);
-
-        sessionUserCount--;
-
-        sendUpdateStat();
-    }
-
-
-    private void sendUpdateStat() {
-        OnlineStatServerMsg statMsg = new OnlineStatServerMsg();
-        statMsg.setOnline(sessionUserCount);
-        
-        lobbyService.broadcast(statMsg);
     }
 }

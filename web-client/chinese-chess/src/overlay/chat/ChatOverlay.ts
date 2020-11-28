@@ -18,7 +18,7 @@ export default class ChatOverlay extends Overlay {
     private popIned: boolean;
 
     constructor(manager: ChannelManager) {
-        super(false, false, 0.5);
+        super(false, false, 0.6);
         this.manager = manager;
 
         this.visible = true;

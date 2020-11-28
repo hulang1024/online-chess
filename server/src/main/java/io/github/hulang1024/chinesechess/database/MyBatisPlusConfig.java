@@ -6,12 +6,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 
 @Configuration
-@MapperScan({
-    "io.github.hulang1024.chinesechess.user",
-    "io.github.hulang1024.chinesechess.friend"
-})
+@MapperScan("io.github.hulang1024.chinesechess")
 @EnableTransactionManagement(proxyTargetClass = true)
 public class MyBatisPlusConfig {
-
-
 }

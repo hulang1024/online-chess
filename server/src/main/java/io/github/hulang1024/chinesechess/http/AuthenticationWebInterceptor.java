@@ -37,7 +37,7 @@ public class AuthenticationWebInterceptor implements HandlerInterceptor {
 
         if (user != null) {
             user = userManager.getLoggedInUser(user.getId());
-            if (user == null || user.getId() == null && !isGuestAPI) {
+            if ((user == null || user.getId() == null) && !isGuestAPI) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 return false;
             }

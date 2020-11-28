@@ -7,9 +7,11 @@ import lombok.Data;
 @Data
 public class UserOfflineServerMsg extends ServerMessage {
     private long uid;
+    private String nickname;
 
     public UserOfflineServerMsg(User user) {
         super("user.offline");
         this.uid = user.getId();
+        this.nickname = user.getNickname();
     }
 }

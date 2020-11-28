@@ -88,7 +88,7 @@ export default class CreateUserOverlay extends Overlay {
         registerRequest.failure = (ret) => {
             messager.fail(ret ? {
                 1: '注册失败', 
-                2: '昵称已被使用',
+                2: '用户名已被使用',
                 3: '用户名格式错误（允许1到20个字符）',
                 4: '密码格式错误（允许至多20位）'}[ret.code] : '注册失败', this);
         }

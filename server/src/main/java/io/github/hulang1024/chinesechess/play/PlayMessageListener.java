@@ -9,9 +9,9 @@ import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
+import io.github.hulang1024.chinesechess.userstats.UserStatsService;
 import io.github.hulang1024.chinesechess.ws.message.AbstractMessageListener;
 import io.github.hulang1024.chinesechess.room.ws.LobbyRoomUpdateServerMsg;
-import io.github.hulang1024.chinesechess.spectator.ws.SpectatorPlayRoundStartServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,13 +23,15 @@ public class PlayMessageListener extends AbstractMessageListener {
     private RoomManager roomManager;
     @Autowired
     private UserManager userManager;
+    @Autowired
+    private UserStatsService userStatsService;
 
     @Override
     public void init() {
         addMessageHandler(ReadyMsg.class, this::ready);
         addMessageHandler(ChessPickMsg.class, this::pickChess);
         addMessageHandler(ChessMoveMsg.class, this::moveChess);
-        addMessageHandler(GameOverMsg.class, this::onRoundOver);
+        addMessageHandler(GameOverMsg.class, this::onGameOver);
         addMessageHandler(ConfirmRequestMsg.class, this::onConfirmRequest);
         addMessageHandler(ConfirmResponseMsg.class, this::onConfirmResponse);
         addMessageHandler(GameContinueClientMsg.class, this::onGameContinue);
@@ -60,7 +62,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         boolean isAllReadied = room.isFull() && room.getUsers().stream()
             .allMatch(u -> room.getUserReadied(u));
         if (isAllReadied) {
-            startRound(room);
+            startGame(room);
         }
     }
 
@@ -169,7 +171,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         }
     }
 
-    private void startRound(Room room) {
+    private void startGame(Room room) {
         Game round = new Game(room);
         room.setGame(round);
 
@@ -187,21 +189,7 @@ public class PlayMessageListener extends AbstractMessageListener {
 
         room.setStatus(RoomStatus.PLAYING);
 
-        PlayRoundStart redStart = new PlayRoundStart();
-        redStart.setChessHost(1);
-        send(redStart, room.getRedChessUser());
-
-        PlayRoundStart blackStart = new PlayRoundStart();
-        blackStart.setChessHost(2);
-        send(blackStart, room.getBlackChessUser());
-
-        // 观众
-        SpectatorPlayRoundStartServerMsg roundStart = new SpectatorPlayRoundStartServerMsg();
-        roundStart.setRedChessUid(room.getRedChessUser().getId());
-        roundStart.setBlackChessUid(room.getBlackChessUser().getId());
-        room.getSpectators().forEach(user -> {
-            send(roundStart, user);
-        });
+        roomManager.broadcast(room, new GameStartServerMsg(room.getRedChessUser(), room.getBlackChessUser()));
     }
 
     private void onGameContinue(GameContinueClientMsg clientMsg) {
@@ -233,11 +221,14 @@ public class PlayMessageListener extends AbstractMessageListener {
         }
     }
 
-    private void onRoundOver(GameOverMsg msg) {
+    private void onGameOver(GameOverMsg msg) {
         User user = userManager.getLoggedInUser(msg.getSession());
         Room room = roomManager.getJoinedRoom(user);
         room.setStatus(RoomStatus.BEGINNING);
         room.updateUserReadyState(user, false);
+
+        userStatsService.updateUser(user, GameResult.from(msg.getResult()));
+
         lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);
     }
 }

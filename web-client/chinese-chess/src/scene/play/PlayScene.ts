@@ -105,9 +105,9 @@ export default class PlayScene extends AbstractScene {
 
         let channel = new Channel();
         channel.id = this.room.channelId;
-        channel.name = `当前棋桌`;
+        channel.name = '#当前棋桌';
         channel.type = ChannelType.ROOM;
-        this.channelManager.joinChannel(channel, true);
+        this.channelManager.joinChannel(channel);
 
         this.initListeners();
 
@@ -155,7 +155,7 @@ export default class PlayScene extends AbstractScene {
             this.otherChessHost, this.activeChessHost));
 
         this.player = new Player();
-        this.player.onWin = this.onWin.bind(this);
+        this.player.onGameOver = this.onGameOver.bind(this);
         this.player.activeChessHost.changed.add(this.onTurnActiveChessHost, this);
         this.player.addEventListener(ChessboardClickEvent.TYPE, this.onChessboardClick, this);
         this.chessboard = this.player.chessboard;
@@ -288,8 +288,10 @@ export default class PlayScene extends AbstractScene {
             }
         };
 
-        this.listeners['play.round_start'] = (msg: any) => {
-            this.chessHost.value = msg.chessHost;
+        this.listeners['play.game_start'] = (msg: any) => {
+            this.chessHost.value = msg.redChessUid == this.user.id
+                ? ChessHost.RED
+                : ChessHost.BLACK;
             this.lastSelected = null;
             this.player.startRound(this.chessHost.value);
             this.gameState.value = GameState.PLAYING;
@@ -353,10 +355,10 @@ export default class PlayScene extends AbstractScene {
 
             switch (msg.reqType) {
                 case confirmRequest.Type.WHITE_FLAG:
-                    this.onWin(msg.chessHost);
+                    this.onGameOver(msg.chessHost);
                     break;
                 case confirmRequest.Type.DRAW:
-                    this.onWin(null);
+                    this.onGameOver(null);
                     break;
                 case confirmRequest.Type.WITHDRAW:
                     let more = this.player.withdraw();
@@ -453,15 +455,17 @@ export default class PlayScene extends AbstractScene {
         }
     }
 
-    private onWin(winChessHost: ChessHost) {
+    private onGameOver(winChessHost: ChessHost) {
         // 设置未准备状态
         this.otherReadied.value = false;
         this.readied.value = false;
         this.gameState.value = GameState.READY;
 
         // 请求对局结束
-        this.socketClient.send('play.game_over');
-        this.resultDialog.open(winChessHost == null ? null : winChessHost == this.chessHost.value);
+        let result = winChessHost == null
+            ? 0 : winChessHost == this.chessHost.value ? 1 : 2;
+        this.socketClient.send('play.game_over', {result});
+        this.resultDialog.open(result);
         this.resultDialog.onOk = () => {
             // 更新等待信息
             this.updateWaitInfo();

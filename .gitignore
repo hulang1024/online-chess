@@ -6,3 +6,5 @@
 
 dump.rdb
 .DS_Store
+
+src/db

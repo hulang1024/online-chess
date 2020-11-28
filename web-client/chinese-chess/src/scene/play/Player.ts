@@ -17,7 +17,7 @@ import Bindable from "../../utils/bindables/Bindable";
 
 export default class Player extends eui.Group implements RoundGame {
     public chessboard: DisplayChessboard;
-    public onWin: Function;
+    public onGameOver: Function;
     public activeChessHost: Bindable<ChessHost> = new Bindable<ChessHost>();
 
     // 视角棋方
@@ -193,7 +193,7 @@ export default class Player extends eui.Group implements RoundGame {
             if (isEat) {
                 // 判断胜负
                 if (targetChess != null && targetChess.is(ChessK)) {
-                    this.onWin(chess.getHost());
+                    this.onGameOver(chess.getHost());
                 } else {
                     this.chessEatOverlay.show();
                     this.checkCheckmate();

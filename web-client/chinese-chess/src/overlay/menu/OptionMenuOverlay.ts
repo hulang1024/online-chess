@@ -27,11 +27,11 @@ export default class OptionMenuOverlay extends Overlay {
     }
 
     public showOptions(options: MenuOption[]) {
-        super.show();
-
         this.height = 110 + 24 * options.length + options.length * 50;
+        super.show();
         this.setSize(this.width, this.height);
-        this.setCenter();
+        this.x = (this.parent.getBounds().x + this.parent.width - this.width) / 2;
+        this.y = (this.stage.stageHeight - this.height) / 2;
 
         this.group.removeChildren();
 

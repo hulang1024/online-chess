@@ -1,6 +1,7 @@
 package io.github.hulang1024.chinesechess.user;
 
 import io.netty.channel.ChannelId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yeauty.pojo.Session;
 
@@ -9,6 +10,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class UserSessionManager {
+    public static int onlineUserCount = 0;
+
+    @Autowired
+    private OnlineListener onlineListener;
+
     /**
      * 此map维护用户id和当前获得的session
      * session是随着连接（打开了一个新网页，或是更换了客户端，重新连接都会是一个新的session）。
@@ -50,6 +56,14 @@ public class UserSessionManager {
         session.setAttribute(USER_ID_KEY, user.getId());
         userSessionMap.put(user.getId(), session);
         sessionMap.put(session.id(), session);
+
+        // 是用户加入(非游客)
+        if (!(user instanceof GuestUser)) {
+            onlineUserCount++;
+
+            onlineListener.onOnline(user);
+        }
+
         return true;
     }
 
@@ -57,14 +71,30 @@ public class UserSessionManager {
      * 移除该session的用户绑定
      * @param session
      */
-    public void removeBinding(Session session) {
+    public boolean removeBinding(Session session) {
         Long userId = session.getAttribute(USER_ID_KEY);
         if (userId == null) {
-            return;
+            return false;
         }
         session.setAttribute(USER_ID_KEY, null);
         userSessionMap.remove(userId);
         sessionMap.remove(session.id());
+        return true;
     }
 
+    public void removeBinding(User user) {
+        Session session = getSession(user);
+        if (session == null) {
+            return;
+        }
+
+        boolean removed = removeBinding(session);
+
+        // 是用户连接断开(非游客)
+        if (removed && !(user instanceof GuestUser)) {
+            onlineUserCount--;
+
+            onlineListener.onOffline(user);
+        }
+    }
 }

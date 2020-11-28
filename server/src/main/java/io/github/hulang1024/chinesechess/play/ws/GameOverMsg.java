@@ -8,4 +8,5 @@ import lombok.Data;
 @Data
 @ClientMsgType("play.game_over")
 public class GameOverMsg extends ClientMessage {
+    private int result;
 }

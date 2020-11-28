@@ -4,4 +4,5 @@ export default class SearchUserInfo extends User {
     isOnline: boolean;
     isFriend: boolean;
     isMutual: boolean;
+    userStats: any;
 }

@@ -9,6 +9,15 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 public interface UserDao extends BaseMapper<User> {
-    @Select("select * from users ${ew.customSqlSegment}")
+    @Select("" +
+        " select" +
+        "     users.*," +
+        "     user_stats.play_count 'userStats.playCount'," +
+        "     user_stats.win_count 'userStats.winCount'," +
+        "     user_stats.lose_count 'userStats.loseCount'," +
+        "     user_stats.draw_count 'userStats.drawCount'" +
+        " from users" +
+        " left join user_stats on(users.id=user_stats.user_id)" +
+        " ${ew.customSqlSegment}")
     IPage<SearchUserInfo> searchUsers(DaoPageParam pageParam, @Param(Constants.WRAPPER) QueryWrapper wrapper);
 }

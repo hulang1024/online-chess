@@ -59,7 +59,7 @@ export default class SocialBrowser extends Overlay {
         });
 
         let viewStack = new eui.ViewStack();
-        ['全部','好友'].forEach(name => {
+        ['排名','好友'].forEach(name => {
             let tabContent = new UserCardGrid();
             tabContent.name = name;
             tabContent.onUserTap = (user: SearchUserInfo) => {

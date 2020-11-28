@@ -46,7 +46,7 @@ export default class ChannelManager {
             .filter((c: Channel) => c.type == ChannelType.PM
                 && c.users.length == 1
                 && c.users[0].id == user.id)[0]
-            || this.joinChannel(new Channel(user));
+            || this.joinChannel(new Channel(user), false);
 
         if (this.currentChannel.value.messages
             .filter(m => m.id == this.closeTipMessage.id).length == 0) {
@@ -54,7 +54,7 @@ export default class ChannelManager {
         }
     }
 
-    public joinChannel(channel: Channel, fetchInitalMessages: boolean = false): Channel {
+    public joinChannel(channel: Channel, fetchInitalMessages: boolean = true): Channel {
         channel = this.getChannel(channel, false, true);
 
         if (!channel.joined.value) {
@@ -229,11 +229,13 @@ export default class ChannelManager {
 
         this.channelsInitialised = true;
 
-        let channel = new Channel();
-        channel.id = 1;
-        channel.type = ChannelType.PUBLIC;
-        channel.name = '中国象棋';
-        this.joinChannel(channel, true);
+        [[1,'#象棋']].forEach(([id, name]) => {
+            let channel = new Channel();
+            channel.id = <number>id;
+            channel.type = ChannelType.PUBLIC;
+            channel.name = <string>name;
+            this.joinChannel(channel);
+        });
 
         let listChannels = () => {
             let req = new ListChannelsRequest();
@@ -271,7 +273,7 @@ export default class ChannelManager {
             channel.joined.value = true; // 从服务器接收到的频道应该都是已经加入的
             if (channel.type == ChannelType.PM) {                    
                 channel.name = msg.sender.nickname;
-                this.joinChannel(channel);
+                this.joinChannel(channel, false);
                 this.openPrivateChannel(msg.sender);
             }
         });
