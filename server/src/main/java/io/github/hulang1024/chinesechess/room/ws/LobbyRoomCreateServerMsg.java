@@ -5,10 +5,10 @@ import io.github.hulang1024.chinesechess.room.Room;
 import lombok.Data;
 
 @Data
-public class LobbyRoomCreateServerMsg extends ServerMessage {
+public class LobbyRoomCreateSvrMsg extends ServerMessage {
     private Room room;
 
-    public LobbyRoomCreateServerMsg(Room room) {
+    public LobbyRoomCreateSvrMsg(Room room) {
         super("lobby.room_create");
         this.room = room;
     }

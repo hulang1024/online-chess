@@ -1,4 +1,3 @@
-import Dialog from "../../component/Dialog";
 import Overlay from "../../overlay/Overlay";
 
 export default class ResultDialog extends Overlay {

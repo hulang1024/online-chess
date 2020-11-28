@@ -6,18 +6,18 @@ import SceneContext from "../SceneContext";
 import DisplayChessboard from "./DisplayChessboard";
 import Player from "./Player";
 import ChessHost from "../../rule/chess_host";
-import TextOverlay from "./TextOverlay";
 import confirmRequest from '../../rule/confirm_request';
 import UserInfoPane from "./UserInfoPane";
 import ChannelManager from "../../online/chat/ChannelManager";
 import ChannelType from "../../online/chat/ChannelType";
 import SpectatorLeaveRequest from "../../online/spectator/SpectatorLeaveRequest";
 import APIAccess from "../../online/api/APIAccess";
-import SocketClient from "../../online/socket";
+import SocketClient from "../../online/ws/socket";
 import User from "../../user/User";
 import Bindable from "../../utils/bindables/Bindable";
 import BindableBool from "../../utils/bindables/BindableBool";
 import GameState from "../../online/play/GameState";
+import TextOverlay from "./TextOverlay";
 
 export default class SpectatorPlayScene extends AbstractScene {
     // socket消息监听器
@@ -144,7 +144,7 @@ export default class SpectatorPlayScene extends AbstractScene {
 
         this.chessboard.addChild(this.textOverlay);
 
-        this.player.startRound(this.viewChessHost, spectateResponse.states)
+        this.player.startGame(this.viewChessHost, spectateResponse.states)
         this.addChild(this.player);
 
         let buttonGroup = new eui.Group();
@@ -222,11 +222,11 @@ export default class SpectatorPlayScene extends AbstractScene {
             this.spectatorCount.value = msg.spectatorCount;
         };
 
-        this.listeners['spectator.leave'] = (msg: any) => {
+        this.listeners['spectator.left'] = (msg: any) => {
             this.spectatorCount.value = msg.spectatorCount;
         };
 
-        this.listeners['room.join'] = (msg: any) => {
+        this.listeners['room.user_join'] = (msg: any) => {
             this.textOverlay.show('玩家加入', 3000);
             
             if (this.blackChessUser.value == null) {
@@ -238,7 +238,7 @@ export default class SpectatorPlayScene extends AbstractScene {
             }
         };
         
-        this.listeners['room.leave'] = (msg: any) => {
+        this.listeners['room.user_left'] = (msg: any) => {
             let leaveChessHost: ChessHost;
             if (this.redChessUser.value && msg.uid == this.redChessUser.value.id) {
                 this.redChessUser.value = null;
@@ -293,7 +293,7 @@ export default class SpectatorPlayScene extends AbstractScene {
                     ? ChessHost.RED : ChessHost.BLACK;
             }
 
-            this.player.startRound(this.viewChessHost);
+            this.player.startGame(this.viewChessHost);
         };
 
         this.listeners['play.chess_pick'] = (msg) => {            

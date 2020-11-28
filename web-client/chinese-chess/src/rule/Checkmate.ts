@@ -2,14 +2,14 @@ import Chess from "./Chess";
 import ChessK from "./chess/ChessK";
 import ChessPos from "./ChessPos";
 import ChessHost from "./chess_host";
-import RoundGame from "./RoundGame";
+import Game from "./Game";
 
 export default class Checkmate {
-    private game: RoundGame;
+    private game: Game;
     private redK: Chess;
     private blackK: Chess;
 
-    constructor(game: RoundGame, viewChessHost: ChessHost) {
+    constructor(game: Game, viewChessHost: ChessHost) {
         this.game = game;
 
         let chessboard = this.game.getChessboard();

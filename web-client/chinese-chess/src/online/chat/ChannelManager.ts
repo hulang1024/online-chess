@@ -2,7 +2,7 @@ import User from "../../user/User";
 import Bindable from "../../utils/bindables/Bindable";
 import BindableList from "../../utils/bindables/BindableList";
 import APIAccess from "../api/APIAccess";
-import SocketClient from "../socket";
+import SocketClient from "../ws/socket";
 import Channel from "./Channel";
 import ChannelType from "./ChannelType";
 import CreateChannelRequest from "./CreateChannelRequest";
@@ -278,7 +278,7 @@ export default class ChannelManager {
             }
         });
 
-        this.socketClient.add('chat.left', (msg: any) => {
+        this.socketClient.add('chat.user_left', (msg: any) => {
             let channel = this.getChannel(msg.channelId);
             if (channel.type == ChannelType.PM) {
                 // 该私聊频道中的对话用户已经离开

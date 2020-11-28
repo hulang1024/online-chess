@@ -1,7 +1,7 @@
 import Chess from "../Chess";
 import ChessPos from "../ChessPos";
 import ChessHost from "../chess_host";
-import RoundGame from "../RoundGame";
+import Game from "../Game";
 
 /**
  * 抽象的棋子
@@ -17,7 +17,7 @@ export default abstract class AbstractChess implements Chess {
         this.host = host;
     }
 
-    canGoTo(destPos: ChessPos, game: RoundGame) {
+    canGoTo(destPos: ChessPos, game: Game) {
         return false;
     }
 

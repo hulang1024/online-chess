@@ -56,7 +56,9 @@ export default class UserInfoPane extends eui.Group {
     }
 
     private onChessHostChange(chessHost: ChessHost) {
-        this.lblChessHost.text = `(${chessHost == null ? '?' : (chessHost == 1 ? '红方' : '黑方')})`;
+        this.lblChessHost.text = `(${chessHost == null
+            ? '?'
+            : (chessHost == ChessHost.RED ? '红方' : '黑方')})`;
     }
 
     private onActiveChessHostChange(activeChessHost: ChessHost) {

@@ -1,7 +1,7 @@
-import messager from "../component/messager";
-import APIAccess from "./api/APIAccess";
-import ChannelManager from "./chat/ChannelManager";
-import InfoMessage from "./chat/InfoMessage";
+import messager from "../../component/messager";
+import APIAccess from "../api/APIAccess";
+import ChannelManager from "../chat/ChannelManager";
+import InfoMessage from "../chat/InfoMessage";
 
 export default class SocketClient extends egret.WebSocket {
     signals: { [s: string]: Signal } = {};

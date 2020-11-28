@@ -3,19 +3,19 @@ import DisplayChessboard from "./DisplayChessboard";
 import ChessK from "../../rule/chess/ChessK";
 import ChessHost from "../../rule/chess_host";
 import ChessPos from "../../rule/ChessPos";
-import RoundGame from "../../rule/RoundGame";
+import Game from "../../rule/Game";
 import ChessTargetDrawer from "./ChessTargetDrawer";
 import Checkmate from "../../rule/Checkmate";
 import CheckmateOverlay from "./CheckmateOverlay";
-import ChessEatOverlay from "./ChessEatOverlay";
 import SOUND from "../../audio/SOUND";
 import ChessboardClickEvent from "./ChessboardClickEvent";
 import ChessAction from "../../rule/ChessAction";
 import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList } from "../../rule/chess_map";
 import GameStates from "../../online/play/GameStates";
 import Bindable from "../../utils/bindables/Bindable";
+import ChessEatOverlay from "./ChessEatOverlay";
 
-export default class Player extends eui.Group implements RoundGame {
+export default class Player extends eui.Group implements Game {
     public chessboard: DisplayChessboard;
     public onGameOver: Function;
     public activeChessHost: Bindable<ChessHost> = new Bindable<ChessHost>();
@@ -64,7 +64,7 @@ export default class Player extends eui.Group implements RoundGame {
         return chessHost != this.viewChessHost;
     }
 
-    startRound(viewChessHost: ChessHost, gameStates?: GameStates) {
+    startGame(viewChessHost: ChessHost, gameStates?: GameStates) {
         this.lastViewChessHost = this.viewChessHost;
         this.viewChessHost = viewChessHost;
         if (this.lastViewChessHost == null) {

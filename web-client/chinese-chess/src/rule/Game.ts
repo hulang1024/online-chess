@@ -1,7 +1,7 @@
 import Chessboard from "./chessboard";
 import ChessHost from "./chess_host";
 
-export default interface RoundGame {
+export default interface Game {
     getChessboard: () => Chessboard;
 
     /**

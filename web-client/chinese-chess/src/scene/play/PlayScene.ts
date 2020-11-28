@@ -7,7 +7,6 @@ import SceneContext from "../SceneContext";
 import ReadyButton from "./ReadyButton";
 import UserInfoPane from "./UserInfoPane";
 import messager from "../../component/messager";
-import ResultDialog from "./ResultDialog";
 import User from "../../user/User";
 import Player from "./Player";
 import DisplayChessboard from "./DisplayChessboard";
@@ -15,18 +14,19 @@ import Room from "../../online/room/Room";
 import Channel from "../../online/chat/Channel";
 import ConfirmDialog from "./ConfirmDialog";
 import GameButtonsOverlay from "./GameButtonsOverlay";
-import TextOverlay from "./TextOverlay";
 import ChannelManager from "../../online/chat/ChannelManager";
 import ChannelType from "../../online/chat/ChannelType";
 import notify, { allowNotify } from "../../component/notify";
 import APIAccess from "../../online/api/APIAccess";
 import PartRoomRequest from "../../online/room/PartRoomRequest";
-import SocketClient from "../../online/socket";
+import SocketClient from "../../online/ws/socket";
 import GameState from "../../online/play/GameState";
 import GameStates from "../../online/play/GameStates";
-import ConfirmLeaveDialog from "../../overlay/play/ConfirmLeaveDialog";
 import BindableBool from "../../utils/bindables/BindableBool";
 import Bindable from "../../utils/bindables/Bindable";
+import ConfirmLeaveDialog from "./ConfirmLeaveDialog";
+import TextOverlay from "./TextOverlay";
+import ResultDialog from "./ResultDialog";
 
 export default class PlayScene extends AbstractScene {
     // socket消息监听器
@@ -205,16 +205,16 @@ export default class PlayScene extends AbstractScene {
         buttonGroup.addChild(btnReady);
 
         // 对局操作按钮
-        let btnRoundOps = new eui.Button();
-        btnRoundOps.width = 110;
-        btnRoundOps.label = "对局操作";
-        btnRoundOps.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+        let btnGameOps = new eui.Button();
+        btnGameOps.width = 110;
+        btnGameOps.label = "对局操作";
+        btnGameOps.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             this.gameButtonsOverlay.toggle();
         }, this);
-        buttonGroup.addChild(btnRoundOps);
+        buttonGroup.addChild(btnGameOps);
 
         this.gameState.addAndRunOnce((gameState: GameState) => {
-            btnRoundOps.visible = gameState == GameState.PLAYING;
+            btnGameOps.visible = gameState == GameState.PLAYING;
         });
 
         this.chessboard.addEventListener(egret.TouchEvent.TOUCH_TAP, (event: egret.TextEvent) => {
@@ -229,7 +229,7 @@ export default class PlayScene extends AbstractScene {
             buttonGroup.x = this.player.x;
             buttonGroup.y = height - buttonGroup.height;
             head.x = this.player.x;
-            this.player.startRound(this.chessHost.value, (<GameStates>initialGameStates));
+            this.player.startGame(this.chessHost.value, (<GameStates>initialGameStates));
         }, this);
         
         if ('Notification' in window) {
@@ -248,7 +248,7 @@ export default class PlayScene extends AbstractScene {
     }
 
     private initListeners() {
-        this.listeners['room.leave'] = (msg: any) => {
+        this.listeners['room.user_left'] = (msg: any) => {
             if (msg.uid == this.user.id) {
                 return;
             } else {
@@ -262,7 +262,7 @@ export default class PlayScene extends AbstractScene {
             }
         };
 
-        this.listeners['room.join'] = (msg: any) => {
+        this.listeners['room.user_join'] = (msg: any) => {
             window.focus();
             this.otherUser.value = msg.user;
             this.otherOnline.value = true;
@@ -293,7 +293,7 @@ export default class PlayScene extends AbstractScene {
                 ? ChessHost.RED
                 : ChessHost.BLACK;
             this.lastSelected = null;
-            this.player.startRound(this.chessHost.value);
+            this.player.startGame(this.chessHost.value);
             this.gameState.value = GameState.PLAYING;
             this.textOverlay.show(`开始对局`, 2000);
         };
@@ -374,7 +374,7 @@ export default class PlayScene extends AbstractScene {
             this.spectatorCount.value = msg.spectatorCount;
         };
 
-        this.listeners['spectator.leave'] = (msg: any) => {
+        this.listeners['spectator.left'] = (msg: any) => {
             this.spectatorCount.value = msg.spectatorCount;
         };
 

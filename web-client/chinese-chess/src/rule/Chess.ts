@@ -1,12 +1,12 @@
 import ChessPos from './ChessPos';
 import ChessHost from './chess_host';
-import RoundGame from './RoundGame';
+import Game from './Game';
 
 /**
  * 棋子
  */
 export default interface Chess {
-    canGoTo: (destPos: ChessPos, game: RoundGame) => boolean;
+    canGoTo: (destPos: ChessPos, game: Game) => boolean;
 
     getPos: () => ChessPos;
 

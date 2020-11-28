@@ -46,7 +46,7 @@ export default class UserCard extends eui.Group {
         const winRate = (playCount ? winCount / playCount * 100 : 100).toFixed(2);
 
         let lblWinRate = new eui.Label();
-        lblWinRate.text = `胜率:${winRate}%`;
+        lblWinRate.text = `胜率:${playCount ? winRate + '%' : '-'}`;
         lblWinRate.size = 16;
         this.addChild(lblWinRate);
 
@@ -57,7 +57,8 @@ export default class UserCard extends eui.Group {
         
         let partText = [[winCount, '胜'], [loseCount, '负'], [drawCount, '和']]
             .map(p => p.join('')).join('/');
-        lblPlayCount.text = `局数:${user.userStats.playCount}  ( ${partText} )`;
+        lblPlayCount.text = `局数:${user.userStats.playCount}`
+            + (playCount ? `  ( ${partText} )` : '');
         lblPlayCount.size = 16;
         group2.addChild(lblPlayCount);
 

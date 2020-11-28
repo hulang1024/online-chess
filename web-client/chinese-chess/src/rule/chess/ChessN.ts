@@ -1,6 +1,6 @@
 import ChessHost from "../chess_host";
 import ChessPos from "../ChessPos";
-import RoundGame from "../RoundGame";
+import Game from "../Game";
 import AbstractChess from "./AbstractChess";
 import { sign } from "./move_rules";
 
@@ -12,7 +12,7 @@ export default class ChessN extends AbstractChess {
         super(pos, host);
     }
 
-    canGoTo(destPos: ChessPos, game: RoundGame) {
+    canGoTo(destPos: ChessPos, game: Game) {
         // 马走“日”，蹩马腿
         const rowOffset = destPos.row - this.pos.row;
         const colOffset = destPos.col - this.pos.col;

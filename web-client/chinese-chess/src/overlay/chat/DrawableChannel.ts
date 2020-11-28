@@ -62,5 +62,6 @@ export default class DrawableChannel extends eui.Group {
         if (chatLine) {
             this.container.removeChild(chatLine);
         }
+        this.scroller.validateNow();
     }
 }

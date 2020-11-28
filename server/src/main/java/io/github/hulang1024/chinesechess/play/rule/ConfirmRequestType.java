@@ -1,4 +1,4 @@
-package io.github.hulang1024.chinesechess.play.ws;
+package io.github.hulang1024.chinesechess.play;
 
 public enum ConfirmRequestType {
     /** 认输 */

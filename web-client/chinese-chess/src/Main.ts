@@ -28,15 +28,12 @@
 //////////////////////////////////////////////////////////////////////////////////////
 
 import SOUND from "./audio/SOUND";
-import messager from "./component/messager";
 import ConfigManager, { ConfigItem } from "./config/ConfigManager";
 import APIAccess from "./online/api/APIAccess";
-import RegisterRequest from "./online/api/RegisterRequest";
 import ChannelManager from "./online/chat/ChannelManager";
-import SocketClient from "./online/socket";
-import socketClient from "./online/socket";
+import SocketClient from "./online/ws/socket";
 import ChatOverlay from "./overlay/chat/ChatOverlay";
-import OfflineContinueDialog from "./overlay/play/OfflineContinueDialog";
+import OfflineContinueDialog from "./scene/play/OfflineContinueDialog";
 import Toolbar from "./overlay/toolbar/Toolbar";
 import LobbyScene from "./scene/lobby/LobbyScene";
 import PlayScene from "./scene/play/PlayScene";

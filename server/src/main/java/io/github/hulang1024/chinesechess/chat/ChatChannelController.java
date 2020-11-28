@@ -1,5 +1,6 @@
-package io.github.hulang1024.chinesechess.chat;
+package io.github.hulang1024.chinesechess.chat.http;
 
+import io.github.hulang1024.chinesechess.chat.*;
 import io.github.hulang1024.chinesechess.chat.command.CommandService;
 import io.github.hulang1024.chinesechess.http.GuestAPI;
 import io.github.hulang1024.chinesechess.user.User;
@@ -25,9 +26,9 @@ public class ChatChannelController {
     private CommandService commandService;
 
     @PostMapping("/new")
-    public ResponseEntity<CreateNewPrivateMessageRet> createNewPrivateMessage(
-        @Validated @RequestBody CreateNewPrivateMessageParam param) {
-        CreateNewPrivateMessageRet ret = channelManager.createNewPrivateMessage(param);
+    public ResponseEntity<CreateNewPMRet> createNewPrivateMessage(
+        @Validated @RequestBody CreateNewPMParam param) {
+        CreateNewPMRet ret = channelManager.createNewPrivateMessage(param);
         return ResponseEntity.ok(ret);
     }
 

@@ -59,5 +59,8 @@ export default class UserPanel extends Overlay {
         this.lblLastLoginTime.text = '最后登录时间: ' + (user.lastLoginTime || '未登录过');
 
         this.show();
+        //todo:调用this.setCenter() 有bug
+        this.x = (this.parent.getBounds().x + this.parent.width - this.width) / 2;
+        this.y = (this.stage.stageHeight - this.height) / 2;
     }
 }

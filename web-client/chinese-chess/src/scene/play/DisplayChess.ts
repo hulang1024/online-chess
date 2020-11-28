@@ -1,7 +1,7 @@
 import Chess from "../../rule/Chess";
 import ChessHost from "../../rule/chess_host";
 import ChessPos from "../../rule/ChessPos";
-import RoundGame from "../../rule/RoundGame";
+import Game from "../../rule/Game";
 import { classClassToKey } from "../../rule/chess_map";
 
 export default class DisplayChess extends egret.Sprite implements Chess {
@@ -31,7 +31,7 @@ export default class DisplayChess extends egret.Sprite implements Chess {
         this.height = height;
     }
 
-    canGoTo(destPos: ChessPos, game: RoundGame) {
+    canGoTo(destPos: ChessPos, game: Game) {
         return this.chessState.canGoTo(destPos, game);
     }
 

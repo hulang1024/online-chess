@@ -1,7 +1,7 @@
 import Chess from "../Chess";
 import ChessHost from "../chess_host";
 import ChessPos from "../ChessPos";
-import RoundGame from "../RoundGame";
+import Game from "../Game";
 
 export const MAX_DISTANCE = 10;
 
@@ -26,7 +26,7 @@ export function isStraightLineMove(rowOffset: number, colOffset: number, maxDist
  * @param destPos 目标位置
  * @return
  */
-export function isInBoundary(game: RoundGame, host: ChessHost, destPos: ChessPos) {
+export function isInBoundary(game: Game, host: ChessHost, destPos: ChessPos) {
     return game.isHostAtChessboardTop(host) ? destPos.row < 5 : destPos.row > 4;
 }
 
@@ -36,7 +36,7 @@ export function isInBoundary(game: RoundGame, host: ChessHost, destPos: ChessPos
  * @param destPos
  * @return
  */
-export function isInKingHome(chess: Chess, destPos: ChessPos, game: RoundGame) {
+export function isInKingHome(chess: Chess, destPos: ChessPos, game: Game) {
     return (3 <= destPos.col && destPos.col <= 5)
     && (game.isHostAtChessboardTop(chess.getHost())
         ? (0 <= destPos.row && destPos.row <= 2)

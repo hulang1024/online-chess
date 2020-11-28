@@ -13,7 +13,7 @@ import JoinRoomRequest from "../../online/room/JoinRoomRequest";
 import QuickStartRequest from "../../online/room/QuickStartRequest";
 import SpectateRoomRequest from "../../online/spectator/SpectateRoomRequest";
 import APIAccess from "../../online/api/APIAccess";
-import SocketClient from "../../online/socket";
+import SocketClient from "../../online/ws/socket";
 
 export default class LobbyScene extends AbstractScene {
     private listeners = {};
@@ -125,11 +125,8 @@ export default class LobbyScene extends AbstractScene {
             this.api.queue(getRoomsRequest);
 
             this.socketClient.reconnectedSignal.add(this.reconnectHandler = () => {
-                this.socketClient.send('lobby.enter');
                 this.api.perform(getRoomsRequest);
-            });
-            
-            this.socketClient.queue((send: Function) => send('lobby.enter'));
+            });            
         })();
     }
 
@@ -140,7 +137,6 @@ export default class LobbyScene extends AbstractScene {
             this.socketClient.signals[key].remove(this.listeners[key]);
         }
         this.socketClient.reconnectedSignal.remove(this.reconnectHandler);
-        this.socketClient.send('lobby.exit');
         this.context.chatOverlay.popOut();
     }
 

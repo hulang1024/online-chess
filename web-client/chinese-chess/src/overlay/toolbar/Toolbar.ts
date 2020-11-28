@@ -47,7 +47,11 @@ export default class Toolbar extends Overlay {
         btnSocial.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
             this.socialBrowser.toggle();
             if (this.socialBrowser.visible) {
+                //todo:改名send('activity.enter', {type:'users'})
+                this.context.socketClient.queue((send: Function) => send('lobby.enter'));
                 this.socialBrowser.loadTabConent(0);
+            } else {
+                this.context.socketClient.queue((send: Function) => send('lobby.exit'));
             }
         }, this);
         buttonGroup.addChild(btnSocial);
@@ -69,5 +73,9 @@ export default class Toolbar extends Overlay {
             buttonGroup.width = this.width;
             this.stage.addChild(this.socialBrowser);
         }, this);
+
+        //todo: 这是为了获得在线人数
+        this.context.socketClient.queue((send: Function) => send('lobby.enter'));
+
     }
 }

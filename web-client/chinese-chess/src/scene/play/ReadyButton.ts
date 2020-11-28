@@ -26,7 +26,7 @@ export default class ReadyButton extends eui.Button {
             let readied = this.readied.value;
             let otherReadied = this.otherReadied.value;
             if (!readied && !otherReadied) {
-                this.label = '准备';
+                this.label = '准备!';
             } else if (readied && !otherReadied) {
                 this.label = '取消准备';
             } else if (otherReadied) {
