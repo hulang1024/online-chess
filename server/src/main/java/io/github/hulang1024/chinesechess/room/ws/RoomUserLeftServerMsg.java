@@ -4,10 +4,10 @@ import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
 import lombok.Data;
 
 @Data
-public class RoomUserLeftSvrMsg extends ServerMessage {
+public class RoomUserLeftServerMsg extends ServerMessage {
     private long uid;
     
-    public RoomUserLeftSvrMsg() {
+    public RoomUserLeftServerMsg() {
         super("room.user_left");
     }
 }

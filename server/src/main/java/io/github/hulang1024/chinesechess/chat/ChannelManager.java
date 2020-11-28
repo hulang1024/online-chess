@@ -1,10 +1,11 @@
 package io.github.hulang1024.chinesechess.chat;
 
 import io.github.hulang1024.chinesechess.chat.command.executors.WordsNotAllowedCommandExecutor;
+import io.github.hulang1024.chinesechess.chat.ws.ChannelUserLeftServerMsg;
 import io.github.hulang1024.chinesechess.chat.ws.ChatMessageServerMsg;
 import io.github.hulang1024.chinesechess.chat.ws.ChatUpdatesServerMsg;
-import io.github.hulang1024.chinesechess.chat.ws.LeftChannelServerMsg;
 import io.github.hulang1024.chinesechess.user.*;
+import io.github.hulang1024.chinesechess.utils.TimeUtils;
 import io.github.hulang1024.chinesechess.ws.message.WSMessageUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yeauty.pojo.Session;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -159,9 +163,9 @@ public class ChannelManager {
         return result;
     }
 
-    public CreateNewPrivateMessageRet createNewPrivateMessage(@NotNull CreateNewPrivateMessageParam param) {
+    public CreateNewPMRet createNewPrivateMessage(@NotNull CreateNewPMParam param) {
         if (!userSessionManager.isOnline(param.getTargetId())) {
-            return CreateNewPrivateMessageRet.fail();
+            return CreateNewPMRet.fail();
         }
 
         User targetUser = userManager.getLoggedInUser(param.getTargetId());
@@ -176,17 +180,18 @@ public class ChannelManager {
         } else {
             ChannelCreateRet created = createPMChannel(targetUser.getId());
             if (created.getChannelId() == null && created.getChannelId() == 0) {
-                return CreateNewPrivateMessageRet.fail();
+                return CreateNewPMRet.fail();
             }
 
             channel = channelMap.get(created.getChannelId());
         }
 
         Message message = param;
+        message.setTimestamp(TimeUtils.nowTimestamp());
         message.setSender(UserUtils.get());
         message.setChannelId(channel.getId());
         broadcast(channelMap.get(channel.getId()), message);
-        return new CreateNewPrivateMessageRet(true, channel.getId());
+        return new CreateNewPMRet(true, channel.getId());
     }
 
     public boolean broadcast(Channel channel, Message message, User... excludes) {
@@ -275,7 +280,7 @@ public class ChannelManager {
                 removeChannel(channel);
             } else {
                 WSMessageUtils.send(
-                    new LeftChannelServerMsg(user, channel),
+                    new ChannelUserLeftServerMsg(user, channel),
                     userSessionManager.getSession(channel.getUsers().get(0)));
             }
         }

@@ -1,5 +1,7 @@
 package io.github.hulang1024.chinesechess.room;
 
+import io.github.hulang1024.chinesechess.room.ws.LobbyEnterMsg;
+import io.github.hulang1024.chinesechess.room.ws.LobbyExitMsg;
 import io.github.hulang1024.chinesechess.ws.message.AbstractMessageListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

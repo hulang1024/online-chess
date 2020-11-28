@@ -20,8 +20,4 @@ public enum ChessHost {
     public ChessHost reverse() {
         return this == RED ? BLACK : RED;
     }
-
-    public static ChessHost fromCode(int code) {
-        return code == 1 ? RED : BLACK;
-    }
 }

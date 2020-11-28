@@ -3,16 +3,16 @@ package io.github.hulang1024.chinesechess.chat;
 import lombok.Data;
 
 @Data
-public class CreateNewPrivateMessageRet {
+public class CreateNewPMRet {
     private boolean success;
     private Long channelId;
 
-    public CreateNewPrivateMessageRet(boolean success, Long channelId) {
+    public CreateNewPMRet(boolean success, Long channelId) {
         this.success = success;
         this.channelId = channelId;
     }
 
-    public static CreateNewPrivateMessageRet fail() {
-        return new CreateNewPrivateMessageRet(false,null);
+    public static CreateNewPMRet fail() {
+        return new CreateNewPMRet(false,null);
     }
 }

@@ -4,11 +4,11 @@ import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
 import lombok.Data;
 
 @Data
-public class SpectatorLeftSvrMsg extends ServerMessage {
+public class SpectatorLeftServerMsg extends ServerMessage {
     private long uid;
     private int spectatorCount;
 
-    public SpectatorLeftSvrMsg() {
+    public SpectatorLeftServerMsg() {
         super("spectator.left");
     }
 }

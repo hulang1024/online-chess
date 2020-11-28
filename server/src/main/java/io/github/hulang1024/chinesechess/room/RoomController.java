@@ -1,7 +1,6 @@
 package io.github.hulang1024.chinesechess.room;
 
 import io.github.hulang1024.chinesechess.http.GuestAPI;
-import io.github.hulang1024.chinesechess.room.ws.LeaveRoomServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,7 +67,7 @@ public class RoomController {
     }
 
     @DeleteMapping("/{room_id}/users/{user_id}")
-    public ResponseEntity<LeaveRoomServerMsg> part(
+    public ResponseEntity<Void> part(
         @NotNull @PathVariable("room_id") Long roomId,
         @NotNull @PathVariable("user_id") Long userId) {
         int ret = roomManager.partRoom(roomId, userId);

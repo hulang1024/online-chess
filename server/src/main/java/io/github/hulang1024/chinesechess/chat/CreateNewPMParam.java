@@ -5,7 +5,7 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class CreateNewPrivateMessageParam extends Message {
+public class CreateNewPMParam extends Message {
     @NotNull
     private Long targetId;
 }

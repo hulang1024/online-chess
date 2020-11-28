@@ -6,12 +6,12 @@ import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
 import lombok.Data;
 
 @Data
-public class LeftChannelServerMsg extends ServerMessage {
+public class ChannelUserLeftServerMsg extends ServerMessage {
     private long userId;
     private long channelId;
 
-    public LeftChannelServerMsg(User user, Channel channel) {
-        super("chat.left");
+    public ChannelUserLeftServerMsg(User user, Channel channel) {
+        super("chat.user_left");
 
         this.userId = user.getId();
         this.channelId = channel.getId();

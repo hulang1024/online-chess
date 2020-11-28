@@ -1,5 +1,7 @@
 package io.github.hulang1024.chinesechess.play;
 
+import io.github.hulang1024.chinesechess.play.rule.ConfirmRequestType;
+import io.github.hulang1024.chinesechess.play.rule.GameResult;
 import io.github.hulang1024.chinesechess.play.ws.*;
 import io.github.hulang1024.chinesechess.play.ws.servermsg.*;
 import io.github.hulang1024.chinesechess.play.rule.ChessboardState;
@@ -28,16 +30,16 @@ public class PlayMessageListener extends AbstractMessageListener {
 
     @Override
     public void init() {
-        addMessageHandler(ReadyMsg.class, this::ready);
-        addMessageHandler(ChessPickMsg.class, this::pickChess);
-        addMessageHandler(ChessMoveMsg.class, this::moveChess);
-        addMessageHandler(GameOverMsg.class, this::onGameOver);
+        addMessageHandler(ReadyMsg.class, this::onReady);
+        addMessageHandler(ChessPickMsg.class, this::onPickChess);
+        addMessageHandler(ChessMoveMsg.class, this::onMoveChess);
         addMessageHandler(ConfirmRequestMsg.class, this::onConfirmRequest);
         addMessageHandler(ConfirmResponseMsg.class, this::onConfirmResponse);
-        addMessageHandler(GameContinueClientMsg.class, this::onGameContinue);
+        addMessageHandler(GameOverMsg.class, this::onGameOver);
+        addMessageHandler(GameContinueMsg.class, this::onGameContinue);
     }
 
-    public void ready(ReadyMsg readyMsg) {
+    private void onReady(ReadyMsg readyMsg) {
         User user = userManager.getLoggedInUser(readyMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
 
@@ -66,7 +68,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         }
     }
 
-    private void pickChess(ChessPickMsg chessPickMsg) {
+    private void onPickChess(ChessPickMsg chessPickMsg) {
         User user = userManager.getLoggedInUser(chessPickMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
 
@@ -82,7 +84,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         roomManager.broadcast(room, chessPickServerMsg, user);
     }
 
-    private void moveChess(ChessMoveMsg chessMoveMsg) {
+    private void onMoveChess(ChessMoveMsg chessMoveMsg) {
         User user = userManager.getLoggedInUser(chessMoveMsg.getSession());
         Room room = roomManager.getJoinedRoom(user);
 
@@ -192,7 +194,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         roomManager.broadcast(room, new GameStartServerMsg(room.getRedChessUser(), room.getBlackChessUser()));
     }
 
-    private void onGameContinue(GameContinueClientMsg clientMsg) {
+    private void onGameContinue(GameContinueMsg clientMsg) {
         User user = userManager.getLoggedInUser(clientMsg.getSession());
         Room joinedRoom = roomManager.getJoinedRoom(user);
         if (clientMsg.isOk()) {

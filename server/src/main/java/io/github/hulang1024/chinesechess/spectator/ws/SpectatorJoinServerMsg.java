@@ -5,11 +5,11 @@ import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
 import lombok.Data;
 
 @Data
-public class SpectatorJoinSvrMsg extends ServerMessage {
+public class SpectatorJoinServerMsg extends ServerMessage {
     private User user;
     private int spectatorCount;
 
-    public SpectatorJoinSvrMsg() {
+    public SpectatorJoinServerMsg() {
         super("spectator.join");
     }
 }

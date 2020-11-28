@@ -1,6 +1,5 @@
-package io.github.hulang1024.chinesechess.chat.http;
+package io.github.hulang1024.chinesechess.chat;
 
-import io.github.hulang1024.chinesechess.chat.*;
 import io.github.hulang1024.chinesechess.chat.command.CommandService;
 import io.github.hulang1024.chinesechess.http.GuestAPI;
 import io.github.hulang1024.chinesechess.user.User;

@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.userstats;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import io.github.hulang1024.chinesechess.play.GameResult;
+import io.github.hulang1024.chinesechess.play.rule.GameResult;
 import io.github.hulang1024.chinesechess.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

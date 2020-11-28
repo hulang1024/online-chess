@@ -165,10 +165,10 @@ public class RoomManager {
 
         room.joinUser(user);
 
-        JoinRoomServerMsg joinRoomServerMsg = new JoinRoomServerMsg();
-        joinRoomServerMsg.setRoom(room);
-        joinRoomServerMsg.setUser(user);
-        broadcast(room, joinRoomServerMsg, user);
+        RoomUserJoinServerMsg joinMsg = new RoomUserJoinServerMsg();
+        joinMsg.setRoom(room);
+        joinMsg.setUser(user);
+        broadcast(room, joinMsg, user);
 
         lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);
 
@@ -219,13 +219,13 @@ public class RoomManager {
         }
 
         // 如果有在线用户，发送离开消息
-        LeaveRoomServerMsg leaveRoomMsg = new LeaveRoomServerMsg();
-        leaveRoomMsg.setUid(user.getId());
+        RoomUserLeftServerMsg leftMsg = new RoomUserLeftServerMsg();
+        leftMsg.setUid(user.getId());
         if (room.getOnlineUserCount() > 0) {
-            broadcast(room, leaveRoomMsg);
+            broadcast(room, leftMsg);
         } else {
             // 观众一定要收到
-            spectatorManager.broadcast(room, leaveRoomMsg);
+            spectatorManager.broadcast(room, leftMsg);
         }
 
         return 0;

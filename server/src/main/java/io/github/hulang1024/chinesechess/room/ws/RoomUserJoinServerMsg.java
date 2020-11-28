@@ -6,11 +6,11 @@ import io.github.hulang1024.chinesechess.room.Room;
 import lombok.Data;
 
 @Data
-public class RoomUserJoinSvrMsg extends ServerMessage {
+public class RoomUserJoinServerMsg extends ServerMessage {
     private Room room;
     private User user;
     
-    public RoomUserJoinSvrMsg() {
+    public RoomUserJoinServerMsg() {
         super("room.user_join");
     }
 }

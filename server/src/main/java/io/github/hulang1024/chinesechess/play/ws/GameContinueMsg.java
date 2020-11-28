@@ -6,6 +6,6 @@ import lombok.Data;
 
 @Data
 @ClientMsgType("play.game_continue")
-public class GameContinueClientMsg extends ClientMessage {
+public class GameContinueMsg extends ClientMessage {
     private boolean ok;
 }

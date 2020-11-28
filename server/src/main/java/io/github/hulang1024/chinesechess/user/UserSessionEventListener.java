@@ -71,7 +71,7 @@ public class UserSessionEventListener extends AbstractMessageListener {
         // 验证别处websocket登录过
         Session otherSession = userSessionManager.getSession(user);
         if (otherSession != null) {
-            userSessionManager.removeBinding(otherSession);
+            userSessionManager.removeBinding(user);
             userManager.guestLogin(otherSession);
             send(new UserLoginServerMsg(2), otherSession);
         }

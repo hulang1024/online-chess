@@ -10,7 +10,7 @@ import io.github.hulang1024.chinesechess.user.UserSessionManager;
 import io.github.hulang1024.chinesechess.ws.message.WSMessageUtils;
 import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
 import io.github.hulang1024.chinesechess.spectator.ws.SpectatorJoinServerMsg;
-import io.github.hulang1024.chinesechess.spectator.ws.SpectatorLeaveServerMsg;
+import io.github.hulang1024.chinesechess.spectator.ws.SpectatorLeftServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -113,10 +113,10 @@ public class SpectatorManager {
         room.getChannel().removeUser(spectator);
         spectatorRoomMap.remove(spectator.getId());
 
-        SpectatorLeaveServerMsg leaveMsg = new SpectatorLeaveServerMsg();
-        leaveMsg.setUid(spectator.getId());
-        leaveMsg.setSpectatorCount(room.getSpectators().size());
-        roomManager.broadcast(room, leaveMsg);
+        SpectatorLeftServerMsg leftMsg = new SpectatorLeftServerMsg();
+        leftMsg.setUid(spectator.getId());
+        leftMsg.setSpectatorCount(room.getSpectators().size());
+        roomManager.broadcast(room, leftMsg);
 
         channelManager.broadcast(room.getChannel(),
             new InfoMessage(spectator.getNickname() + " 离开观看"));

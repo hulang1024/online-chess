@@ -5,10 +5,10 @@ import io.github.hulang1024.chinesechess.room.Room;
 import lombok.Data;
 
 @Data
-public class LobbyRoomRemoveSvrMsg extends ServerMessage {
+public class LobbyRoomRemoveServerMsg extends ServerMessage {
     private long roomId;
 
-    public LobbyRoomRemoveSvrMsg(Room room) {
+    public LobbyRoomRemoveServerMsg(Room room) {
         super("lobby.room_remove");
         this.roomId = room.getId();
     }

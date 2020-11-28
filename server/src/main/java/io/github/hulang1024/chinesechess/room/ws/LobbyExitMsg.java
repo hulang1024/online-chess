@@ -1,4 +1,4 @@
-package io.github.hulang1024.chinesechess.room;
+package io.github.hulang1024.chinesechess.room.ws;
 
 import io.github.hulang1024.chinesechess.ws.message.ClientMessage;
 import io.github.hulang1024.chinesechess.ws.message.ClientMsgType;
