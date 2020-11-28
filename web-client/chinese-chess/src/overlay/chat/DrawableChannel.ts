@@ -3,7 +3,7 @@ import ChatLine from "./ChatLine";
 import Message from "../../online/chat/Message";
 
 export default class DrawableChannel extends eui.Group {
-    private channel: Channel;
+    public channel: Channel;
     private container: eui.Group;
     private scroller = new eui.Scroller();
 
@@ -32,11 +32,17 @@ export default class DrawableChannel extends eui.Group {
             scroller.verticalScrollBar.visible = true;     
         }, this);
 
-        channel.onNewMessages = this.onNewMessages.bind(this);
-        channel.onRemoveMessage = this.onRemoveMessage.bind(this);
+        channel.newMessagesArrived.add(this.onNewMessagesArrive, this);
+        channel.messageRemoved.add(this.onMessageRemove, this);
+
+        this.onNewMessagesArrive(this.channel.messages);
     }
 
-    onNewMessages(msgs: Message[]) {
+    public onOpen() {
+        this.scroller.validateNow();
+    }
+
+    private onNewMessagesArrive(msgs: Message[]) {
         msgs.forEach(msg => {
             let chatLine = new ChatLine(msg);
             if (msg.id) {
@@ -44,15 +50,14 @@ export default class DrawableChannel extends eui.Group {
             }
             this.container.addChild(chatLine);
         });
-        setTimeout(() => {
-            let contentHeight = this.scroller.viewport.contentHeight;
-            if (contentHeight >= this.scroller.height) {
-                this.scroller.viewport.scrollV = contentHeight - this.scroller.height;
-            }
-        }, 200); // 不设置延时就不能正确显示
+        this.scroller.validateNow();
+        let contentHeight = this.scroller.viewport.contentHeight;
+        if (contentHeight >= this.scroller.height) {
+            this.scroller.viewport.scrollV = contentHeight - this.scroller.height;
+        }
     }
 
-    onRemoveMessage(messageId: number) {
+    private onMessageRemove(messageId: number) {
         let chatLine = this.container.getChildByName(messageId + '');
         if (chatLine) {
             this.container.removeChild(chatLine);

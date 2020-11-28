@@ -3,41 +3,45 @@ import SceneContext from "./SceneContext";
 
 export default class SceneManager {
     private context: SceneContext;
-    private static currentScene: AbstractScene;
-    private static sceneStack: Array<SceneBuilder> = [];
+    private sceneStack: Array<SceneBuilder> = [];
+    public currentScene: AbstractScene;
 
-    static of(context: SceneContext) {
-        let sceneManager = new SceneManager();
-        sceneManager.context = context;
-        return sceneManager;
+    constructor(context: SceneContext) {
+        this.context = context;
     }
 
     pushScene(sceneBuilder: SceneBuilder) {
-        let prevScene = SceneManager.currentScene;
-        if (prevScene) {
-            prevScene.onSceneExit();
+        if (this.currentScene) {
+            this.currentScene.onSceneExit();
         }
-        SceneManager.sceneStack.push(sceneBuilder);
+        this.sceneStack.push(sceneBuilder);
         this.setCurrentScene(sceneBuilder);
     }
 
     popScene() {
-        let prevScene = SceneManager.currentScene;
-        if (prevScene) {
-            prevScene.onSceneExit();
+        if (this.currentScene) {
+            this.currentScene.onSceneExit();
         }
-        SceneManager.sceneStack.pop();
-        const sceneBuilder = SceneManager.sceneStack[SceneManager.sceneStack.length - 1];
+        this.sceneStack.pop();
+        const sceneBuilder = this.sceneStack[this.sceneStack.length - 1];
+        this.setCurrentScene(sceneBuilder);
+    }
+
+    replaceScene(sceneBuilder: SceneBuilder) {
+        if (this.currentScene) {
+            this.currentScene.onSceneExit();
+        }
+        this.sceneStack.pop();
         this.setCurrentScene(sceneBuilder);
     }
 
     private setCurrentScene(sceneBuilder: SceneBuilder) {
         const { sceneContainer } = this.context;
-        if (SceneManager.currentScene) {
-            sceneContainer.removeChild(SceneManager.currentScene);
+        if (this.currentScene) {
+            sceneContainer.removeChild(this.currentScene);
         }
-        SceneManager.currentScene = sceneBuilder(this.context);
-        sceneContainer.addChild(SceneManager.currentScene);
+        this.currentScene = sceneBuilder(this.context);
+        sceneContainer.addChild(this.currentScene);
     }
 }
 

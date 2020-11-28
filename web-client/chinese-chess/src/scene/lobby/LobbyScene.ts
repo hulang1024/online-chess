@@ -11,7 +11,7 @@ import CreateRoomRequest from "../../online/room/CreateRoomRequest";
 import GetRoomsRequest from "../../online/room/GetRoomsRequest";
 import JoinRoomRequest from "../../online/room/JoinRoomRequest";
 import QuickStartRequest from "../../online/room/QuickStartRequest";
-import SpectateRequest from "../../online/spectator/SpectateRequest";
+import SpectateRoomRequest from "../../online/spectator/SpectateRoomRequest";
 import APIAccess from "../../online/api/APIAccess";
 import SocketClient from "../../online/socket";
 
@@ -43,14 +43,6 @@ export default class LobbyScene extends AbstractScene {
         lblTitle.size = 26;
         lblTitle.text = "游戏大厅";
         headGroup.addChild(lblTitle);
-
-        let lblOnline = new eui.Label();
-        lblOnline.size = 20;
-        lblOnline.text = "在线人数:";
-        headGroup.addChild(lblOnline);
-        let lblOnlineNum = new eui.Label();
-        lblOnlineNum.size = 20;
-        headGroup.addChild(lblOnlineNum);
 
         group.addChild(headGroup);
 
@@ -96,14 +88,9 @@ export default class LobbyScene extends AbstractScene {
             this.roomContainer.width = this.stage.stageWidth;
             scroller.height = this.stage.stageHeight;
             group.addChild(scroller);
-
-            this.context.chatOverlay.popIn();
         }, this);
 
         (async () => {
-            this.listeners['stat.online'] = (msg) => {
-                lblOnlineNum.text = msg.online;
-            };
             this.listeners['lobby.room_create'] = (msg) => {
                 this.addRoom(msg.room);
             };
@@ -247,7 +234,7 @@ export default class LobbyScene extends AbstractScene {
             }
             this.api.perform(joinRoomRequest);
         } else {
-            let spectateRequest = new SpectateRequest(room);
+            let spectateRequest = new SpectateRoomRequest(room);
             spectateRequest.success = (states) => {
                 this.pushScene((context) => new SpectatorPlayScene(context, states));
             };
@@ -259,7 +246,7 @@ export default class LobbyScene extends AbstractScene {
     }
 
     private notLoggedIn(): boolean {
-        if (this.api.isLoggedIn) {
+        if (this.api.isLoggedIn.value) {
             return false;
         }
 

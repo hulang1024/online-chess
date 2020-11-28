@@ -13,21 +13,22 @@ import ChessboardClickEvent from "./ChessboardClickEvent";
 import ChessAction from "../../rule/ChessAction";
 import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList } from "../../rule/chess_map";
 import GameStates from "../../online/play/GameStates";
+import Bindable from "../../utils/bindables/Bindable";
 
 export default class Player extends eui.Group implements RoundGame {
     public chessboard: DisplayChessboard;
+    public onWin: Function;
+    public activeChessHost: Bindable<ChessHost> = new Bindable<ChessHost>();
+
     // 视角棋方
     private viewChessHost: ChessHost;
     private lastViewChessHost: ChessHost;
     // 当前走棋方
-    private activeChessHost: ChessHost;
     private checkmate: Checkmate;
     private chessEatOverlay = new ChessEatOverlay();
     private checkmateOverlay = new CheckmateOverlay();
     private chessActionStack: Array<ChessAction>;
-    fromPosTargetDrawer: ChessTargetDrawer;
-    onWin: Function;
-    onTurnActiveChessHost: Function;
+    private fromPosTargetDrawer: ChessTargetDrawer;
 
     constructor() {
         super();
@@ -69,8 +70,6 @@ export default class Player extends eui.Group implements RoundGame {
         if (this.lastViewChessHost == null) {
             this.lastViewChessHost = viewChessHost;
         }
-        this.activeChessHost = (gameStates && gameStates.activeChessHost) || ChessHost.RED;
-        this.chessActionStack = [];
 
         this.fromPosTargetDrawer.clear();
 
@@ -97,11 +96,13 @@ export default class Player extends eui.Group implements RoundGame {
             chess.touchEnabled = false;
         });
 
-        this.onTurnActiveChessHost(this.activeChessHost);
+        this.chessActionStack = [];
 
         if (gameStates) {
             this.loadActionStackState(gameStates);
         }
+
+        this.activeChessHost.value = (gameStates && gameStates.activeChessHost) || ChessHost.RED;
     }
 
     pickChess(picked: boolean, pos: ChessPos, chessHost: ChessHost) {
@@ -274,8 +275,7 @@ export default class Player extends eui.Group implements RoundGame {
     }
 
     turnActiveChessHost() {
-        this.activeChessHost = ChessHost.reverse(this.activeChessHost);
-        this.onTurnActiveChessHost(this.activeChessHost);
+        this.activeChessHost.value = ChessHost.reverse(this.activeChessHost.value);
     }
     
     reverseChessLayoutView() {
@@ -331,8 +331,8 @@ export default class Player extends eui.Group implements RoundGame {
 
     private checkCheckmate() {
         // 判断将军
-        if (this.checkmate.check(ChessHost.reverse(this.activeChessHost))) {
-            this.checkmateOverlay.show(this.activeChessHost);
+        if (this.checkmate.check(ChessHost.reverse(this.activeChessHost.value))) {
+            this.checkmateOverlay.show(this.activeChessHost.value);
         }
     }
 

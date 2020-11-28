@@ -1,5 +1,5 @@
 import User from "../../user/User";
-import UserGameState from "./UserGameState";
+import GameState from "../play/GameState";
 
 export default class Room {
     id: number;
@@ -10,9 +10,12 @@ export default class Room {
     channelId: number;
     owner: User;
     userCount: number;
+    gameStatus: GameState;
     redChessUser: User;
-    redGameState: UserGameState;
     blackChessUser: User;
-    blackGameState: UserGameState;
+    redReadied: boolean;
+    blackReadied: boolean;
+    redOnline: boolean;
+    blackOnline: boolean;
     spectatorCount: number;
 }

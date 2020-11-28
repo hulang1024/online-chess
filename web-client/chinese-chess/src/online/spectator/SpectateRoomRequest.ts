@@ -1,7 +1,7 @@
 import { APIRequest, HttpMethod } from "../api/api_request";
 import Room from "../room/Room";
 
-export default class SpectateRequest extends APIRequest {
+export default class SpectateRoomRequest extends APIRequest {
     private room: Room;
 
     constructor(room: Room) {
@@ -10,9 +10,7 @@ export default class SpectateRequest extends APIRequest {
     }
 
     prepare() {
-        this.method = HttpMethod.POST;
-        this.path = `spectators/${this.user.id}`;
-
-        this.addParam('roomId', this.room.id);
+        this.method = HttpMethod.PUT;
+        this.path = `rooms/${this.room.id}/spectators/${this.user.id}`;
     }
 }

@@ -53,13 +53,13 @@ export default class DisplayRoom extends eui.Group {
         if (newRoom.userCount != this.room.userCount) {
             same = false;
         } else {
-            let oldUsers = [this.room.blackChessUser, this.room.redChessUser];
-            let oldUserGameStates = [this.room.blackGameState, this.room.redGameState];
-            let newUsers = [newRoom.blackChessUser, newRoom.redChessUser];
-            let newUserGameStates = [newRoom.blackGameState, newRoom.redGameState];
+            let oldUsers = [this.room.blackChessUser, this.room.redChessUser].filter(Boolean);
+            let oldUserReadied = [this.room.blackReadied, this.room.redReadied].filter(Boolean);
+            let newUsers = [newRoom.blackChessUser, newRoom.redChessUser].filter(Boolean);
+            let newUserReadied = [newRoom.blackReadied, newRoom.redReadied].filter(Boolean);
             for (let i = 0; i < oldUsers.length; i++) {
                 if ((oldUsers[i].id != newUsers[i].id) ||
-                    (oldUserGameStates[i].readied != newUserGameStates[i].readied)) {
+                    (oldUserReadied[i] != newUserReadied[i])) {
                     same = false;
                     break;
                 }
@@ -122,13 +122,13 @@ export default class DisplayRoom extends eui.Group {
         let { userGroup } = this;
         userGroup.layout = userGroupLayout;
         let users = [room.blackChessUser, room.redChessUser].filter(Boolean);
-        let userGameStates = [room.blackGameState, room.redGameState].filter(Boolean);
+        let readyStates = [room.blackReadied, room.redReadied];
         for (let i = 0; i < users.length; i++) {
             let lblUserName = new eui.Label();
             lblUserName.size = 18;
             lblUserName.text =  (users[i].nickname || users[i].id.toString());
             if (room.status != 3) {
-                lblUserName.text += (userGameStates[i].readied
+                lblUserName.text += (readyStates[i]
                     ? " 已准备"
                     : users.length == 1 ? "" : " 未准备");
             }

@@ -23,7 +23,7 @@ export default class CreateUserOverlay extends Overlay {
 
         this.visible = false;
 
-        this.height = 300;
+        this.height = 320;
 
         let layout = new eui.VerticalLayout();
         layout.paddingTop = 32;
@@ -82,7 +82,7 @@ export default class CreateUserOverlay extends Overlay {
         let registerRequest = new RegisterRequest(user);
         registerRequest.success = () => {
             messager.success('注册成功', this);
-            this.visible = true;
+            this.visible = false;
             this.userLoginOverlay.toggle();
         };
         registerRequest.failure = (ret) => {

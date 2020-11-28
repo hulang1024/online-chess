@@ -54,7 +54,7 @@ export default class ConfirmDialog extends Overlay {
         group.addChild(btnNo);
     }
 
-    show(subject: string) {
+    open(subject: string) {
         this.parent.setChildIndex(this, 1000);
         this.lblTitle.text = `对方想要${subject}`;
         this.visible = true;

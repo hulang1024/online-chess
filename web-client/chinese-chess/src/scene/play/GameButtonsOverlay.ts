@@ -1,11 +1,13 @@
+import GameState from "../../online/play/GameState";
 import Overlay from "../../overlay/Overlay";
+import Bindable from "../../utils/bindables/Bindable";
 
-export default class PlayingRoundButtonsOverlay extends Overlay {
+export default class GameButtonsOverlay extends Overlay {
     btnWhiteFlag = new eui.Button();
     btnChessDraw = new eui.Button();
     btnWithdraw = new eui.Button();
 
-    constructor() {
+    constructor(gameState: Bindable<GameState>) {
         super(true);
 
         this.visible = false;
@@ -54,15 +56,18 @@ export default class PlayingRoundButtonsOverlay extends Overlay {
             this.visible = false;
         }, this);
         group.addChild(btnChessDraw);
+
+        gameState.addAndRunOnce((value: GameState) => {
+            this.btnWhiteFlag.enabled = value == GameState.PLAYING;
+            this.btnChessDraw.enabled = value == GameState.PLAYING;
+            if (value == GameState.READY) {
+                this.visible = false;
+            }
+        });
     }
 
     toggle() {
         this.parent.setChildIndex(this, this.visible ? 1 : 10000);
         this.visible = !this.visible;
-    }
-
-    onPlaying(playing: boolean) {
-        this.btnWhiteFlag.enabled = playing;
-        this.btnChessDraw.enabled = playing;
     }
 }

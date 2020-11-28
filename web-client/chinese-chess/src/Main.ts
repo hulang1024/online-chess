@@ -102,9 +102,12 @@ class Main extends eui.UILayer  {
 
         let context = new SceneContext();
 
+        context.stage = this.stage;
+
         context.configManager = configManager;
 
-        context.stage = this.stage;
+        let sceneManager = new SceneManager(context);
+        context.sceneManager = sceneManager;
 
         let api = new APIAccess(context);
 
@@ -136,7 +139,7 @@ class Main extends eui.UILayer  {
         
         toolbar.chatOverlay = chatOverlay;
 
-        SceneManager.of(context).pushScene(context => new LobbyScene(context));
+        sceneManager.pushScene(context => new LobbyScene(context));
         channelManager.initializeChannels();
         channelManager.openChannel(1);
 
@@ -148,28 +151,38 @@ class Main extends eui.UILayer  {
                 socketClient.doConnect();
                 return;
             }
-            api.login(user).then(() => {
-                socketClient.add('play.game_states', (gameStatesMsg: any) => {
-                    let offlineContinueDialog = new OfflineContinueDialog();
-                    this.stage.addChild(offlineContinueDialog);
-                    offlineContinueDialog.onOk = () => {
-                        offlineContinueDialog.visible = false;
-                        socketClient.queue((send: Function) => {
-                            send('play.offline_continue', {ok: true});
-                        });
-                        SceneManager.of(context).pushScene(context => new PlayScene(context, gameStatesMsg.states, true));
-                    };
-                    offlineContinueDialog.onCancel = () => {
-                        socketClient.queue((send: Function) => {
-                            send('play.offline_continue', {ok: false});
-                        });
-                    };
-                    offlineContinueDialog.show();
-                });
-            });
+            api.login(user);
         } else {
             socketClient.doConnect();
         }
+
+        let offlineContinueDialog: OfflineContinueDialog;
+        socketClient.addOnce('play.game_continue', () => {
+            if (sceneManager.currentScene instanceof PlayScene) {
+                return;
+            }
+
+            if (!offlineContinueDialog) {
+                offlineContinueDialog = new OfflineContinueDialog();
+                this.stage.addChild(offlineContinueDialog);
+            }
+            offlineContinueDialog.onOk = () => {
+                offlineContinueDialog.visible = false;
+                
+                socketClient.queue((send: Function) => {
+                    send('play.game_continue', {ok: true});
+                });
+                socketClient.addOnce('play.game_states', (gameStatesMsg: any) => {
+                    sceneManager.pushScene(context => new PlayScene(context, null, gameStatesMsg.states));
+                });
+            };
+            offlineContinueDialog.onCancel = () => {
+                socketClient.queue((send: Function) => {
+                    send('play.game_continue', {ok: false});
+                });
+            };
+            offlineContinueDialog.show();
+        });
     }
 
 

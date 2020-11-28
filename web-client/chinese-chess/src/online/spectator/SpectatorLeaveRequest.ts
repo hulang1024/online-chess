@@ -11,7 +11,6 @@ export default class SpectatorLeaveRequest extends APIRequest {
 
     prepare() {
         this.method = HttpMethod.DELET;
-        this.path = `spectators/${this.user.id}`;
-        this.addParam('roomId', this.room.id);
+        this.path = `rooms/${this.room.id}/spectators/${this.user.id}`;
     }
 }

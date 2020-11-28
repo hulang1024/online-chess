@@ -73,29 +73,25 @@ export default class UserLoginOverlay extends Overlay {
         btnLogout.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onLogoutClick, this);
         this.addChild(btnLogout);
 
-        let onAPIStateChange = () => {
-            let { isLoggedIn } = this.api;
-
-            [
-                this.usernameInput,
-                this.passwordInput,
-                this.staySignedInOptionGroup,
-                btnLogin, btnRegister].forEach(c => {
-                c.visible = !isLoggedIn;
-                c.includeInLayout = !isLoggedIn;
-            });
-            btnLogin.label = '登录';
-            btnLogin.enabled = !isLoggedIn;
-            btnLogout.visible = isLoggedIn;
-            btnLogout.includeInLayout = isLoggedIn;
-        };
-        
-        this.api.stateChanged.add(onAPIStateChange);
-
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
             this.x = this.stage.stageWidth - this.width;
             this.y = this.context.toolbar.height + 8;
-            onAPIStateChange();
+
+            this.api.isLoggedIn.addAndRunOnce((isLoggedIn: boolean) => {
+                [
+                    this.usernameInput,
+                    this.passwordInput,
+                    this.staySignedInOptionGroup,
+                    btnLogin, btnRegister].forEach(c => {
+                    c.visible = !isLoggedIn;
+                    c.includeInLayout = !isLoggedIn;
+                });
+                btnLogin.label = '登录';
+                btnLogin.enabled = !isLoggedIn;
+                btnLogout.visible = isLoggedIn;
+                btnLogout.includeInLayout = isLoggedIn;
+            });
+    
         }, this);
     }
 
@@ -107,6 +103,8 @@ export default class UserLoginOverlay extends Overlay {
         let logoutRequest = new LogoutRequest();
         logoutRequest.success = () => {
             this.api.logout();
+            this.configManager.set(ConfigItem.password, '');
+            this.configManager.save();
         };
         this.api.perform(logoutRequest);
     }

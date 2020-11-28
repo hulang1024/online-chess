@@ -2,15 +2,15 @@ import messager from "../../component/messager";
 import ConfigManager, { ConfigItem } from "../../config/ConfigManager";
 import SceneContext from "../../scene/SceneContext";
 import User from "../../user/User";
+import BindableBool from "../../utils/bindables/BindableBool";
 import { APIRequest } from "./api_request";
 import LoginRequest from "./LoginRequest";
 
 export default class APIAccess {
     public endpoint: string;
     public localUser: User = new GuestUser();
-    public isLoggedIn: boolean;
+    public isLoggedIn: BindableBool = new BindableBool();
     public accessToken: AccessToken;
-    public stateChanged: Signal = new Signal();
     private context: SceneContext;
     configManager: ConfigManager;
 
@@ -43,7 +43,7 @@ export default class APIAccess {
                 this.accessToken = ret.accessToken;
                 user.id = ret.userId;
                 this.localUser = user;
-                this.isLoggedIn = true;
+                this.isLoggedIn.value = true;
 
                 //messager.clear();
 
@@ -53,7 +53,6 @@ export default class APIAccess {
                     this.configManager.save();
                 }
 
-                this.stateChanged.dispatch();
                 resolve(ret);
             };
             loginRequest.failure = (ret) => {
@@ -69,9 +68,9 @@ export default class APIAccess {
     }
 
     public logout() {
-        this.isLoggedIn = false;
+        this.isLoggedIn.value = false;
+        this.accessToken = null;
         this.localUser = new GuestUser();
-        this.stateChanged.dispatch();
     }
 }
 

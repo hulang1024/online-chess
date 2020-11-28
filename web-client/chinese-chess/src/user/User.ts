@@ -5,6 +5,8 @@ export default class User {
     avatarUrl: string;
     password: string;
     isAdmin: boolean;
+    isOnline: boolean;
+    lastLoginTime: string;
 
     static SYSTEM: User;
 }

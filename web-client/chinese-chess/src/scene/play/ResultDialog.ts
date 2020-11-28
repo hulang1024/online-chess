@@ -45,7 +45,7 @@ export default class ResultDialog extends Overlay {
         group.addChild(btnOk);
     }
 
-    show(isWin: boolean) {
+    open(isWin: boolean) {
         this.parent.setChildIndex(this, 10000);
         this.visible = true;
         this.lblResult.text = isWin == null ? '平局' : isWin ? '你赢了!' : '你输了';

@@ -26,7 +26,7 @@ export default class TextOverlay extends Overlay {
         this.text = text;
     }
 
-    show(text: string, duration: number = 0) {
+    show(text?: string, duration: number = 0) {
         this.visible = false;
         this.parent.setChildIndex(this, 10000);
         this.text.text = text;

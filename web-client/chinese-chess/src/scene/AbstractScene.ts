@@ -9,7 +9,7 @@ export default abstract class AbstractScene extends eui.UILayer {
     constructor(context: SceneContext) {
         super();
         this.context = context;
-        this.sceneManager = SceneManager.of(context);
+        this.sceneManager = context.sceneManager;
 
         document.addEventListener('visibilitychange', this.onVisibilitychange = () => {
             this.onAppVisibilityChange(document.hidden);

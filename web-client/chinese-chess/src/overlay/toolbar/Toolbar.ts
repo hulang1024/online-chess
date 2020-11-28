@@ -4,11 +4,14 @@ import ChatOverlay from "../chat/ChatOverlay";
 import UserLoginOverlay from "../user/UserLoginOverlay";
 import SceneContext from "../../scene/SceneContext";
 import ToolbarUserButton from "./ToolbarUserButton";
+import SocialBrowser from "../social/SocialBrowser";
 
 export default class Toolbar extends Overlay {
     context: SceneContext;
     chatOverlay: ChatOverlay;
     userLoginOverlay: UserLoginOverlay;
+    socialBrowser: SocialBrowser;
+
     toolbarUserButton: ToolbarUserButton;
 
     constructor(context: SceneContext) {
@@ -42,9 +45,12 @@ export default class Toolbar extends Overlay {
         btnSocial.width = 100;
         btnSocial.label = "在线用户";
         btnSocial.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            messager.info('no content', this);
+            this.socialBrowser.toggle();
+            if (this.socialBrowser.visible) {
+                this.socialBrowser.loadTabConent(0);
+            }
         }, this);
-        //buttonGroup.addChild(btnSocial);
+        buttonGroup.addChild(btnSocial);
 
         this.toolbarUserButton = new ToolbarUserButton(context);
         this.toolbarUserButton.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
@@ -56,9 +62,12 @@ export default class Toolbar extends Overlay {
         }, this);
         buttonGroup.addChild(this.toolbarUserButton);
 
+        this.socialBrowser = new SocialBrowser(context);
+
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
             this.width = this.stage.stageWidth;
             buttonGroup.width = this.width;
+            this.stage.addChild(this.socialBrowser);
         }, this);
     }
 }

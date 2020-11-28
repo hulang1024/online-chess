@@ -24,7 +24,7 @@ export default class CheckmateOverlay extends Overlay {
         this.text = text;
     }
 
-    show(chessHost: ChessHost) {
+    show(chessHost?: ChessHost) {
         this.text.textColor = chessHost == ChessHost.RED ? 0x953217 : 0x2c2c2a;
         this.visible = true;
         setTimeout(() => {

@@ -11,10 +11,8 @@ export default class ToolbarUserButton extends eui.Button {
 
         this.api = context.api;
 
-        this.api.stateChanged.add(this.onAPIStateChange.bind(this));
-    }
-
-    private onAPIStateChange() {
-        this.label = this.api.isLoggedIn ? '已登录' : '登录';
+        this.api.isLoggedIn.changed.add((isLoggedIn: boolean) => {
+            this.label = isLoggedIn ? '已登录' : '登录';
+        });
     }
 }

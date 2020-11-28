@@ -1,11 +1,13 @@
 export default class Overlay extends eui.Group {
     protected background = new egret.Shape();
     private round: boolean;
+    private backgroundAlpha: number;
 
-    constructor(center: boolean = false, round: boolean = true) {
+    constructor(center: boolean = false, round: boolean = true, backgroundAlpha: number = 0.4) {
         super();
 
         this.round = round;
+        this.backgroundAlpha = backgroundAlpha;
 
         // 背景
         this.addChild(this.background);
@@ -24,7 +26,7 @@ export default class Overlay extends eui.Group {
 
         // 背景
         this.background.graphics.clear();
-        this.background.graphics.beginFill(0x000000, 0.4);
+        this.background.graphics.beginFill(0x000000, this.backgroundAlpha);
         if (this.round) {
             this.background.graphics.drawRoundRect(0, 0, this.width, this.height, 8, 8);
         } else {
@@ -32,7 +34,7 @@ export default class Overlay extends eui.Group {
         }
         this.background.filters = [
             new egret.DropShadowFilter(
-                2, 0, 0x000000, 0.3, 0, 4, 2,
+                2, 0, 0x000000, 0.2, 0, 4, 2,
                 egret.BitmapFilterQuality.LOW, false, false)
         ];
     }
@@ -40,5 +42,22 @@ export default class Overlay extends eui.Group {
     setCenter() {
         this.x = (this.parent.getBounds().x + this.parent.width - this.width) / 2;
         this.y = (this.parent.height - this.height) / 2;
+    }
+
+    toggle() {
+        if (!this.visible) {
+            this.show();
+        } else {
+            this.hide();
+        }
+    }
+    
+    show() {
+        this.parent.setChildIndex(this, 10000);
+        this.visible = true;
+    }
+
+    hide() {
+        this.visible = false;
     }
 }

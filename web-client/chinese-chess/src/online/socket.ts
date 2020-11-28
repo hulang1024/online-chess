@@ -17,8 +17,8 @@ export default class SocketClient extends egret.WebSocket {
         this.api = api;
         this.stage = stage;
 
-        api.stateChanged.add(() => {
-            if (api.isLoggedIn) {
+        api.isLoggedIn.changed.add((isLoggedIn: boolean) => {
+            if (isLoggedIn) {
                 this.queue((send: Function) => {
                     send('user.login', {userId: api.localUser.id});
                 });
@@ -34,6 +34,10 @@ export default class SocketClient extends egret.WebSocket {
         this.addEventListener(egret.IOErrorEvent.IO_ERROR, this.onIOError.bind(this), this);
 
         this.add('user.login', this.onLoginMessage.bind(this));
+
+        // 监听好友上下线
+        this.add('user.online', this.onFriendOnline.bind(this));
+        this.add('user.offline', this.onFriendOffline.bind(this));
     }
 
     queue(sendFunc: Function) {
@@ -68,9 +72,6 @@ export default class SocketClient extends egret.WebSocket {
 
     private onMessage(event: egret.Event) {
         const msg = this.readUTF();
-        if (!msg || msg == 'pong') {
-            return;
-        }
         const msgObject: any = JSON.parse(msg);
         console.log("<收到socket消息", msgObject);
         let signal = this.signals[msgObject.type];
@@ -97,10 +98,18 @@ export default class SocketClient extends egret.WebSocket {
             return;
         }
 
-        if (this.api.isLoggedIn) {
-            this.channelManager.getChannel(1).addNewMessages(
+        if (this.api.isLoggedIn.value) {
+            this.channelManager.currentChannel.value.addNewMessages(
                 new InfoMessage(this.api.localUser.nickname + ' 登录成功'));
         }
+    }
+
+    private onFriendOnline(msg: any) {
+        messager.info(`已上线：${msg.nickname}`, this.stage);
+    }
+
+    private onFriendOffline(msg: any) {
+        messager.info(`已下线：${msg.nickname}`, this.stage);
     }
 
     public doConnect() {
@@ -120,14 +129,12 @@ export default class SocketClient extends egret.WebSocket {
             msgSend(this.send.bind(this));
         }
 
-        this.runPingTimer();
-
         this.connectedTimes++;
         
         if (this.connectedTimes > 1) {
             this.reconnectedSignal.dispatch();
             this.send('user.login', {
-                userId: this.api.isLoggedIn ? this.api.localUser.id : -1
+                userId: this.api.isLoggedIn.value ? this.api.localUser.id : -1
             });    
         }
     }
@@ -150,11 +157,5 @@ export default class SocketClient extends egret.WebSocket {
         }
         messager.error('消息错误', this.stage);
         console.log(event);
-    }
-
-    private runPingTimer() {
-        setInterval(() => {
-            this.writeUTF('ping');
-        }, 1000 * 30);
     }
 }

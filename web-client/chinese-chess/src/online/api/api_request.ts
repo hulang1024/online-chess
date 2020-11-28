@@ -6,7 +6,7 @@ export abstract class APIRequest {
     protected httpRequest: egret.HttpRequest;
     protected path: string;
     protected method: HttpMethod;
-    private params: {} = null;
+    private params = null;
     
     public success: APISuccessHandler;
     public failure: APIFailureHandler;
@@ -17,16 +17,37 @@ export abstract class APIRequest {
 
     public perform(api: APIAccess) {
         this.api = api;
-        this.httpRequest = this.createJSONRequest();
+        this.httpRequest = this.createHttpRequest();
         if (this.api.accessToken) {
             this.httpRequest.setRequestHeader("Authorization", `Bearer ${this.api.accessToken.accessToken}`);
         }
-
+ 
         if (this.prepare) {
             this.prepare();
         }
 
-        this.httpRequest.open(`${api.endpoint}/api/${this.path}`, this.method);
+        let contentType: string;
+        let query: string;
+        switch(this.method) {
+            case HttpMethod.POST:
+            case HttpMethod.PUT:
+                contentType = 'application/json';
+                break;
+            default:
+                contentType = 'application/x-www-form-urlencoded';
+                if (this.params) {
+                    let eqs = [];
+        
+                    for (let key in this.params) {
+                        eqs.push(`${key}=${this.params[key]}`);
+                    }
+                    query = eqs.join('&');
+                }
+                break;
+        }
+        this.httpRequest.setRequestHeader('Content-Type', contentType);
+
+        this.httpRequest.open(`${api.endpoint}/api/${this.path}${query ? '?' + query : ''}`, this.method);
 
         this.httpRequest.addEventListener(egret.Event.COMPLETE, (event: egret.Event) => {
             let request = <egret.HttpRequest>event.currentTarget;
@@ -55,18 +76,12 @@ export abstract class APIRequest {
             this.api.handleHttpExceptionStatus(xhr.status);
         }, this);
 
-        this.httpRequest.send(this.params ? JSON.stringify(this.params) : void 0);
+        this.httpRequest.send(this.params && JSON.stringify(this.params));
     }
 
     protected createHttpRequest() {
-        // 默认JSON请求
-        return this.createJSONRequest();
-    }
-
-    protected createJSONRequest() {
         const req = new egret.HttpRequest();
         req.responseType = egret.HttpResponseType.TEXT;
-        req.setRequestHeader("Content-Type", "application/json");
         return req;
     }
 

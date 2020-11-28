@@ -1,7 +1,7 @@
 enum ChannelType {
-    PUBLIC,
-    ROOM,
-    PM
+    PUBLIC = 1,
+    ROOM = 2,
+    PM = 3
 }
 
 export default ChannelType;

@@ -5,6 +5,8 @@ import MessageInput from "./MessageInput";
 import ChannelManager from "../../online/chat/ChannelManager";
 import messager from "../../component/messager";
 import ChatLine from "./ChatLine";
+import Message from "../../online/chat/Message";
+import ChannelType from "../../online/chat/ChannelType";
 
 export default class ChatOverlay extends Overlay {
     private tabBar = new eui.TabBar();
@@ -16,7 +18,7 @@ export default class ChatOverlay extends Overlay {
     private popIned: boolean;
 
     constructor(manager: ChannelManager) {
-        super(false, false);
+        super(false, false, 0.5);
         this.manager = manager;
 
         this.visible = true;
@@ -42,7 +44,7 @@ export default class ChatOverlay extends Overlay {
 
     async onAddToStage() {
         this.width = this.stage.stageWidth;
-        this.height = this.stage.stageHeight / 2.3;
+        this.height = this.stage.stageHeight / 2 - 140;
         this.setSize(this.stage.stageWidth, this.height);
         this.minY = this.stage.stageHeight;
         this.maxY = this.stage.stageHeight - this.height;
@@ -67,31 +69,71 @@ export default class ChatOverlay extends Overlay {
         }
         this.addChild(messageInput);
 
-        this.manager.onJoinChannel = (channel: Channel) => {
-            let drawableChannel = new DrawableChannel(
-                channel,
-                this.height - this.messageInput.height - 80);
-            drawableChannel.name = channel.name;
-            this.viewStack.addChild(drawableChannel);
-            
-            this.viewStack.selectedIndex++;
-        };
+        this.manager.joinedChannels.added.add((channel: Channel) => {
+            channel.newMessagesArrived.add((messages: Message[]) => {
+                let last = messages[messages.length - 1];
+                if (last.sender.id > 0) {
+                    if (channel.type == ChannelType.PM) {
+                        if (!this.popIned) {
+                            this.popIn();
+                        }
+                        this.manager.openPrivateChannel(last.sender);
+                    }
+                    if (channel.type == ChannelType.ROOM) {
+                        if (!this.popIned) {
+                            this.popIn();
+                        }
+                        this.manager.openChannel(channel.id);
+                    }
+                }
+            });
+        });
 
-        this.manager.onLeaveChannel = (channel: Channel) => {
+        this.manager.joinedChannels.removed.add((channel: Channel) => {
+            this.removeChannel(channel);
+        });
+
+        this.manager.currentChannel.changed.add((channel: Channel) => {
+            let drawableChannel = <DrawableChannel>this.viewStack.getChildByName(channel.name);
+            if (drawableChannel == null) {
+                drawableChannel = this.addChannel(channel);
+            }
+
+            if (!this.popIned) {
+                this.popIn();
+            }
+
+            this.viewStack.selectedChild = drawableChannel;
+            drawableChannel.onOpen();
+        });
+
+        this.manager.onHideChannel = (channel: Channel) => {
             let drawableChannel = this.viewStack.getChildByName(channel.name);
             this.viewStack.removeChild(drawableChannel);
             // 暂时默认1
             this.manager.openChannel(1);
-        };
-
-        this.manager.onOpenChannel = (channel: Channel) => {
-            let drawableChannel = this.viewStack.getChildByName(channel.name);
-            this.viewStack.selectedChild = drawableChannel;
-        };
+        }
     }
 
     private onTabSelected(event: eui.ItemTapEvent) {
-        this.manager.openChannel(this.manager.joinedChannels[event.itemIndex].id);
+        let drawableChannel = <DrawableChannel>this.viewStack.getChildByName(event.item);
+        this.manager.openChannel(drawableChannel.channel.id);
+        drawableChannel.onOpen();
+    }
+
+    private addChannel(channel: Channel) {
+        let drawableChannel = new DrawableChannel(
+            channel,
+            this.height - this.messageInput.height - 80);
+        drawableChannel.name = channel.name;
+        this.viewStack.addChild(drawableChannel);
+
+        return drawableChannel;
+    }
+
+    private removeChannel(channel: Channel) {
+        let drawableChannel = this.viewStack.getChildByName(channel.name);
+        this.viewStack.removeChild(drawableChannel);
     }
 
     toggle() {
