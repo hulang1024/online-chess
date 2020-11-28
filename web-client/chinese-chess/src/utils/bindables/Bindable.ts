@@ -14,18 +14,19 @@ export default class Bindable<T> {
     }
 
     /**
-     * 加 changed 信号处理器，并且立即触发运行一次
+     * 设置 changed 信号处理器，并且立即触发运行一次
      */
-    public addAndRunOnce(changedHandler: Function, listenerContext: any = null) {
-        this.changed.add(changedHandler, listenerContext);
-        changedHandler.call(listenerContext, this._value);
+    public addAndRunOnce(changedHandler: Function, handlerContext: any = null) {
+        this.changed.add(changedHandler, handlerContext);
+        changedHandler.call(handlerContext, this._value);
     }
 
     /** 设置值 */
     public set value(newValue: T) {
-        if (this._value != newValue) {
+        const oldValue = this._value;
+        if (newValue != oldValue) {
             this._value = newValue;
-            this.changed.dispatch(newValue, this._value);
+            this.changed.dispatch(newValue, oldValue);
         }
     }
 
