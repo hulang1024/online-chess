@@ -13,11 +13,15 @@ public class UserStatsService {
 
     public void updateUser(User user, GameResult result) {
         String updateField = new String[]{"draw_count", "win_count", "lose_count"}[result.getCode()];
-        userStatsDao.update(null,
+        int rows = userStatsDao.update(null,
             new UpdateWrapper<UserStats>()
                 .setSql("play_count = play_count + 1")
                 .setSql(updateField + "=" + updateField + "+1")
                 .eq("user_id", user.getId()));
+        if (rows == 0) {
+            initializeUser(user);
+            updateUser(user, result);
+        }
     }
 
     public void initializeUser(User user) {

@@ -49,6 +49,10 @@ export default class Toolbar extends Overlay {
             if (this.socialBrowser.visible) {
                 this.context.socketClient.queue((send: Function) => send('activity.enter', {code: 2}));
                 this.socialBrowser.loadTabConent(0);
+
+                if (this.chatOverlay.visible) {
+                    this.chatOverlay.show();//解决之后无法获得焦点
+                }
             } else {
                 this.context.socketClient.queue((send: Function) => send('activity.exit', {code: 2}));
             }

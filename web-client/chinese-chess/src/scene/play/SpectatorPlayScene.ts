@@ -344,6 +344,9 @@ export default class SpectatorPlayScene extends AbstractScene {
                 who = '黑方';
                 this.blackOnline.value = false;
             }
+            if (!who) {
+                return;
+            }
             let text = `${who}已下线或掉线，可等待回来继续`;
             this.textOverlay.show(text);
         };
@@ -358,7 +361,9 @@ export default class SpectatorPlayScene extends AbstractScene {
                 who = '黑方';
                 this.blackOnline.value = true;
             }
-
+            if (!who) {
+                return;
+            }
             this.textOverlay.show(`${who}已上线`, 3000);
         };
 

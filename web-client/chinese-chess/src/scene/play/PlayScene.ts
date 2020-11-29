@@ -402,12 +402,19 @@ export default class PlayScene extends AbstractScene {
         };
 
         this.listeners['user.offline'] = (msg: any) => {
+            if (!(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
+                return;
+            }
             this.otherOnline.value = false;
             this.gameState.value = GameState.PAUSE;
             this.textOverlay.show('对手已下线/掉线，你可以等待对方回来继续');
         };
 
         this.listeners['user.online'] = (msg: any) => {
+            //判断是否原来就没加入过房间
+            if (!(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
+                return;
+            }
             this.otherOnline.value = true;
             this.textOverlay.show('对手已上线', 3000);
         };

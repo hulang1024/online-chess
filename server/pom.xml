@@ -151,15 +151,9 @@
             </properties>
         </profile>
         <profile>
-            <id>test</id>
+            <id>prod</id>
             <properties>
-                <profiles.active>test</profiles.active>
-            </properties>
-        </profile>
-        <profile>
-            <id>pro</id>
-            <properties>
-                <profiles.active>pro</profiles.active>
+                <profiles.active>prod</profiles.active>
             </properties>
         </profile>
     </profiles>

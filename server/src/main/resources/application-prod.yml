@@ -15,9 +15,9 @@ spring:
     password:
     database: 1
 
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
 websocket:
   port: 9097
+
+yao-xin:
+  endpoint: http://47.112.238.235:10018/open
+  app-id: yx4b11c08aa09d44ed

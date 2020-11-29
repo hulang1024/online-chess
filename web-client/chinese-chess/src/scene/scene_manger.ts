@@ -31,7 +31,6 @@ export default class SceneManager {
         if (this.currentScene) {
             this.currentScene.onSceneExit();
         }
-        this.sceneStack.pop();
         this.setCurrentScene(sceneBuilder);
     }
 

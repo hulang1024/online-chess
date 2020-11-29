@@ -25,6 +25,10 @@ public class FriendsManager {
 
     @Transactional(rollbackFor = Exception.class)
     public boolean addFriend(long userId, long friendUserId) {
+        if (userId == friendUserId) {
+            return false;
+        }
+
         FriendRelation reverse = friendRelationDao.selectOne(
             new QueryWrapper<FriendRelation>()
                 .eq("user_id", friendUserId)
@@ -49,6 +53,10 @@ public class FriendsManager {
 
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteFriend(long userId, long friendUserId) {
+        if (userId == friendUserId) {
+            return false;
+        }
+
         FriendRelation reverse = friendRelationDao.selectOne(
             new QueryWrapper<FriendRelation>()
                 .eq("user_id", friendUserId)

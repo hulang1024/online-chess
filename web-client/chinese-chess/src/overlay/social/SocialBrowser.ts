@@ -4,6 +4,7 @@ import AddAsFriendRequest from "../../online/friend/AddAsFriendRequest";
 import DeleteFriendRequest from "../../online/friend/DeleteFriendRequest";
 import SpectateUserRequest from "../../online/spectator/SpectateUserRequest";
 import GetUsersRequest from "../../online/user/GetUsersRequest";
+import PlayScene from "../../scene/play/PlayScene";
 import SpectatorPlayScene from "../../scene/play/SpectatorPlayScene";
 import SceneContext from "../../scene/SceneContext";
 import Bindable from "../../utils/bindables/Bindable";
@@ -24,7 +25,7 @@ export default class SocialBrowser extends Overlay {
     private onlineCount: Bindable<number> = new Bindable<number>();
 
     constructor(context: SceneContext) {
-        super(false, false);
+        super(false, false, 0.5);
         this.context = context;
         this.api = context.api;
 
@@ -114,18 +115,21 @@ export default class SocialBrowser extends Overlay {
             let req = new SpectateUserRequest(this.selectedUser);
             req.success = (res) => {
                 this.hide();
-                if (this.context.sceneManager.currentScene instanceof SpectatorPlayScene) {
+                let currentScene = this.context.sceneManager.currentScene;
+                if (currentScene instanceof SpectatorPlayScene || currentScene instanceof PlayScene) {
                     this.context.sceneManager.replaceScene(
                         (context) => new SpectatorPlayScene(context, res));
+                } else {
+                    this.context.sceneManager.pushScene(
+                        (context) => new SpectatorPlayScene(context, res));
                 }
-                this.context.sceneManager.pushScene(
-                    (context) => new SpectatorPlayScene(context, res));
             };
             req.failure = (res) => {
                 let cause = {
                     2: '该用户未在线',
-                    3: '该用户未加入游戏房间',
-                    4: '不满足观看条件'
+                    3: '该用户未加入游戏',
+                    4: '不满足观看条件',
+                    5: '你在游戏中不能观看其它游戏'
                 }[res.code] || '原因未知';
                 messager.info(`观看请求失败，${cause}`, this);
             };

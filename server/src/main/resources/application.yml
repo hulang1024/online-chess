@@ -8,6 +8,3 @@ servlet:
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: io.github.hulang1024.chinesechessserver.user
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-

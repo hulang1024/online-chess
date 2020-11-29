@@ -3,6 +3,7 @@ package io.github.hulang1024.chinesechess.room;
 import io.github.hulang1024.chinesechess.chat.Channel;
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.chat.ChannelType;
+import io.github.hulang1024.chinesechess.play.GameState;
 import io.github.hulang1024.chinesechess.room.ws.*;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.*;
@@ -130,19 +131,31 @@ public class RoomManager {
 
         User user = userManager.getLoggedInUser(userId);
 
-        Room joinedRoom = getJoinedRoom(user);
-        // 判断该用户是否早就已经加入了任何房间
-        if (joinedRoom != null) {
-            JoinRoomResult result = new JoinRoomResult();
-            result.setCode(joinedRoom.getId().equals(roomId) ? 4 : 5);
-            return result;
-        }
-
         return joinRoom(room, user, joinRoomParam);
     }
 
     public JoinRoomResult joinRoom(Room room, User user, JoinRoomParam joinRoomParam) {
         JoinRoomResult result = new JoinRoomResult();
+
+        Room joinedRoom = getJoinedRoom(user);
+        if (joinedRoom != null) {
+            // 早就在其它房间
+            GameState gameState = joinedRoom.getGame().getState();
+            if (gameState == GameState.READY) {
+                // 不在游戏中现在就退出
+                partRoom(joinedRoom, user);
+            } else {
+                result.setCode(joinedRoom.getId().equals(room.getId()) ? 4 : 5);
+                return result;
+            }
+        }
+
+        Room spectatingRoom = spectatorManager.getSpectatingRoom(user);
+        if (spectatingRoom != null) {
+            // 在观看其它房间，退出
+            spectatorManager.leaveRoom(user, spectatingRoom);
+        }
+
         result.setRoom(room);
 
         if (room.isFull()) {

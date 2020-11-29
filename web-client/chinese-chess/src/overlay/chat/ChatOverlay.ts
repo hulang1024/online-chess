@@ -15,7 +15,7 @@ export default class ChatOverlay extends Overlay {
     private messageInput;
     private maxY: number;
     private minY: number;
-    private popIned: boolean;
+    private popIned: boolean = false;
 
     constructor(manager: ChannelManager) {
         super(false, false, 0.6);
@@ -70,26 +70,23 @@ export default class ChatOverlay extends Overlay {
         this.addChild(messageInput);
 
         this.manager.joinedChannels.added.add((channel: Channel) => {
+            if (channel.type == ChannelType.PM || channel.id == 1) {
+                this.popIn();
+            }
+
             channel.newMessagesArrived.add((messages: Message[]) => {
                 let last = messages[messages.length - 1];
                 if (last.sender.id > 0) {
                     if (channel.type == ChannelType.PM) {
-                        if (!this.popIned) {
-                            this.popIn();
-                        }
+                        this.popIn();
                         this.manager.openPrivateChannel(last.sender);
                     }
                     if (channel.type == ChannelType.ROOM) {
-                        if (!this.popIned) {
-                            this.popIn();
-                        }
+                        this.popIn();
                         this.manager.openChannel(channel.id);
                     }
                 }
             });
-            if (!this.popIned) {
-                this.popIn();
-            }
         });
 
         this.manager.joinedChannels.removed.add((channel: Channel) => {
@@ -100,10 +97,6 @@ export default class ChatOverlay extends Overlay {
             let drawableChannel = <DrawableChannel>this.viewStack.getChildByName(channel.name);
             if (drawableChannel == null) {
                 drawableChannel = this.addChannel(channel);
-            }
-
-            if (!this.popIned) {
-                this.popIn();
             }
 
             this.viewStack.selectedChild = drawableChannel;
@@ -148,17 +141,21 @@ export default class ChatOverlay extends Overlay {
     }
 
     popIn() {
-        this.popIned = true;
+        if (this.popIned) return;
         const duration = 200;
         egret.Tween.get(this).to({alpha: 1}, duration, egret.Ease.quintOut);
-        egret.Tween.get(this).to({y: this.maxY}, duration, egret.Ease.quintOut);
+        egret.Tween.get(this).to({y: this.maxY}, duration, egret.Ease.quintOut).call(() => {
+            this.popIned = true;
+        });;
     }
 
     popOut() {
-        this.popIned = false;
+        if (!this.popIned) return;
         const duration = 200;
         this.parent.setChildIndex(this, 10000);
         egret.Tween.get(this).to({alpha: 0}, duration, egret.Ease.sineIn);
-        egret.Tween.get(this).to({y: this.minY}, duration, egret.Ease.sineIn);
+        egret.Tween.get(this).to({y: this.minY}, duration, egret.Ease.sineIn).call(() => {
+            this.popIned = false;
+        });
     }
 }

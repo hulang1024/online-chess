@@ -2,6 +2,7 @@ package io.github.hulang1024.chinesechess.spectator;
 
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.chat.InfoMessage;
+import io.github.hulang1024.chinesechess.play.GameState;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.spectator.ws.SpectatorJoinServerMsg;
@@ -62,10 +63,24 @@ public class SpectatorManager {
             return response;
         }
 
+        // 房间不存在或者目标用户是否不在任何游戏房间中
         Room room = targetUserId != null ? roomManager.getJoinedRoom(targetUserId) : roomManager.getRoom(roomId);
         if (room == null) {
             response.setCode(3);
             return response;
+        }
+
+        Room joinedRoom = roomManager.getJoinedRoom(spectator);
+        if (joinedRoom != null) {
+            // 早已经在其它房间
+            GameState gameState = joinedRoom.getGame().getState();
+            if (gameState == GameState.READY) {
+                // 不在游戏中现在就退出
+                roomManager.partRoom(joinedRoom, spectator);
+            } else {
+                response.setCode(5);
+                return response;
+            }
         }
 
         // 已观看其它房间，退出

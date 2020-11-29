@@ -3,7 +3,10 @@ export default class Overlay extends eui.Group {
     private round: boolean;
     private backgroundAlpha: number;
 
-    constructor(center: boolean = false, round: boolean = true, backgroundAlpha: number = 0.4) {
+    constructor(
+        center: boolean = false,
+        round: boolean = true,
+        backgroundAlpha: number = 0.4) {
         super();
 
         this.round = round;
@@ -11,7 +14,7 @@ export default class Overlay extends eui.Group {
 
         // 背景
         this.addChild(this.background);
-
+  
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
             if (center) {
                 this.setCenter();

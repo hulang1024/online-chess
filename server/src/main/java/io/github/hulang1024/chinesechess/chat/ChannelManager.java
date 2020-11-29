@@ -143,7 +143,7 @@ public class ChannelManager {
         ChannelCreateRet result = new ChannelCreateRet();
 
         User targetUser = userManager.getLoggedInUser(targetUserId);
-        if (targetUser == null) {
+        if (targetUser == null || targetUser.equals(UserUtils.get())) {
             result.setChannelId(0L);
             return result;
         }
@@ -163,7 +163,8 @@ public class ChannelManager {
     }
 
     public CreateNewPMRet createNewPrivateMessage(@NotNull CreateNewPMParam param) {
-        if (!userManager.isOnline(param.getTargetId())) {
+        if (!userManager.isOnline(param.getTargetId()) ||
+            param.getTargetId().equals(UserUtils.get().getId())) {
             return CreateNewPMRet.fail();
         }
 
