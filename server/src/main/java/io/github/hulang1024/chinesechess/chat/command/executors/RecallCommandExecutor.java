@@ -1,21 +1,17 @@
 package io.github.hulang1024.chinesechess.chat.command.executors;
 
 import io.github.hulang1024.chinesechess.chat.Channel;
-import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.chat.Message;
 import io.github.hulang1024.chinesechess.chat.command.CommandExecutor;
-import io.github.hulang1024.chinesechess.user.UserSessionManager;
-import io.github.hulang1024.chinesechess.ws.message.WSMessageUtils;
 import io.github.hulang1024.chinesechess.chat.ws.RecallMessageServerMsg;
+import io.github.hulang1024.chinesechess.ws.WSMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RecallCommandExecutor implements CommandExecutor {
     @Autowired
-    private ChannelManager channelManager;
-    @Autowired
-    private UserSessionManager userSessionManager;
+    private WSMessageService wsMessageService;
 
     @Override
     public void execute(String[] cmdParams, Message message, Channel channel) {
@@ -39,9 +35,7 @@ public class RecallCommandExecutor implements CommandExecutor {
         }
 
         channel.getUsers().forEach(user -> {
-            WSMessageUtils.send(
-                new RecallMessageServerMsg(channel.getId(), messageId),
-                userSessionManager.getSession(user));
+            wsMessageService.send(new RecallMessageServerMsg(channel.getId(), messageId), user);
         });
 
     }

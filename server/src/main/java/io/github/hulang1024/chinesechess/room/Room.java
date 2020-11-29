@@ -7,7 +7,7 @@ import io.github.hulang1024.chinesechess.play.Game;
 import io.github.hulang1024.chinesechess.play.GameState;
 import io.github.hulang1024.chinesechess.play.rule.ChessHost;
 import io.github.hulang1024.chinesechess.user.User;
-import io.github.hulang1024.chinesechess.user.UserSessionManager;
+import io.github.hulang1024.chinesechess.user.UserManager;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -59,7 +59,7 @@ public class Room {
     private ChannelManager channelManager;
 
     @JSONField(serialize = false)
-    private UserSessionManager userSessionManager;
+    private UserManager userManager;
 
     /**
      * 房间内所有用户都离线则记录房间离线时间，否则为null
@@ -69,10 +69,10 @@ public class Room {
 
     private int roundCount = 0;
 
-    public Room(ChannelManager channelManager, UserSessionManager userSessionManager) {
+    public Room(ChannelManager channelManager, UserManager userManager) {
         game = new Game(this);
         this.channelManager = channelManager;
-        this.userSessionManager = userSessionManager;
+        this.userManager = userManager;
     }
 
     public void joinUser(User user) {
@@ -150,10 +150,10 @@ public class Room {
     @JSONField(serialize = false)
     public int getOnlineUserCount() {
         int count = 0;
-        if (this.redChessUser != null && userSessionManager.isOnline(redChessUser)) {
+        if (this.redChessUser != null && userManager.isOnline(redChessUser)) {
             count++;
         }
-        if (this.blackChessUser != null && userSessionManager.isOnline(blackChessUser)) {
+        if (this.blackChessUser != null && userManager.isOnline(blackChessUser)) {
             count++;
         }
         return count;
@@ -207,14 +207,14 @@ public class Room {
 
     public boolean getRedOnline() {
         if (this.redChessUser != null) {
-            return userSessionManager.isOnline(redChessUser);
+            return userManager.isOnline(redChessUser);
         }
         return false;
     }
 
     public boolean getBlackOnline() {
         if (this.blackChessUser != null) {
-            return userSessionManager.isOnline(blackChessUser);
+            return userManager.isOnline(blackChessUser);
         }
         return false;
     }

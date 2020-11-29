@@ -4,13 +4,12 @@ import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.chat.InfoMessage;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
-import io.github.hulang1024.chinesechess.user.User;
-import io.github.hulang1024.chinesechess.user.UserManager;
-import io.github.hulang1024.chinesechess.user.UserSessionManager;
-import io.github.hulang1024.chinesechess.ws.message.WSMessageUtils;
-import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
 import io.github.hulang1024.chinesechess.spectator.ws.SpectatorJoinServerMsg;
 import io.github.hulang1024.chinesechess.spectator.ws.SpectatorLeftServerMsg;
+import io.github.hulang1024.chinesechess.user.User;
+import io.github.hulang1024.chinesechess.user.UserManager;
+import io.github.hulang1024.chinesechess.ws.ServerMessage;
+import io.github.hulang1024.chinesechess.ws.WSMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +28,7 @@ public class SpectatorManager {
     @Autowired
     private ChannelManager channelManager;
     @Autowired
-    private UserSessionManager userSessionManager;
+    private WSMessageService wsMessageService;
 
     public Room getSpectatingRoom(User user) {
         return spectatorRoomMap.get(user.getId());
@@ -124,7 +123,7 @@ public class SpectatorManager {
 
     public void broadcast(Room room, ServerMessage message) {
         room.getSpectators().forEach(user -> {
-            WSMessageUtils.send(message, userSessionManager.getSession(user));
+            wsMessageService.send(message, user);
         });
     }
 }

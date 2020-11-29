@@ -12,23 +12,15 @@ export default class BindableList<T> extends Bindable<T[]> {
         return this._value.length;
     }
 
-    public reduce(callback: any, initialValue: any) {
-        return this._value.reduce(callback, initialValue);
-    }
-    
-    public filter(pred: any) {
-        return this._value.filter(pred);
-    }
-
     public add(item: T) {
         this._value.push(item);
         this.added.dispatch(item);
         this.changed.dispatch(this._value);
     }
 
-    public removeIf(find: Function) {
+    public removeIf(pred: Function) {
         for (let i = 0; i < this._value.length; i++) {
-            if (find(this._value[i])) {
+            if (pred(this._value[i])) {
                 return this.removeAt(i);
             }
         }
@@ -41,7 +33,7 @@ export default class BindableList<T> extends Bindable<T[]> {
     }
 
     public removeAt(index: number): boolean {
-        if (index > 0) {
+        if (index > -1) {
             let item = this._value[index];
             this._value.splice(index, 1);
             this.removed.dispatch(item);
@@ -50,5 +42,13 @@ export default class BindableList<T> extends Bindable<T[]> {
         } else {
             return false;
         }
+    }
+
+    public reduce(callback: any, initialValue: any) {
+        return this._value.reduce(callback, initialValue);
+    }
+    
+    public filter(pred: any) {
+        return this._value.filter(pred);
     }
 }

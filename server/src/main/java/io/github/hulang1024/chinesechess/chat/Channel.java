@@ -7,7 +7,6 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.stream.Collectors;
 
 @Data
@@ -24,8 +23,7 @@ public class Channel {
     private List<User> users = new ArrayList<>();
 
     @JSONField(serialize = false)
-    private final ArrayBlockingQueue<Message> messages = new ArrayBlockingQueue<>(MAX_HISTORY);
-
+    private final List<Message> messages = new ArrayList<>(MAX_HISTORY);
 
     public boolean joinUser(User user) {
         if (!users.contains(user)) {
@@ -36,14 +34,14 @@ public class Channel {
     }
 
     public void addNewMessage(Message message) {
-        if (this.messages.remainingCapacity() == 0) {
-            this.messages.poll();
+        if (this.messages.size() == MAX_HISTORY) {
+            this.messages.remove(0);
         }
         this.messages.add(message);
     }
 
     public Long getLastMessageId() {
-        Message lastMessage = this.messages.peek();
+        Message lastMessage = this.messages.get(this.messages.size() - 1);
         return lastMessage == null ? null : lastMessage.getId();
     }
 

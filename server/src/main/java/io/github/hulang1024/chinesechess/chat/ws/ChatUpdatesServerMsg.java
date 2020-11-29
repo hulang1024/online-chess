@@ -3,7 +3,7 @@ package io.github.hulang1024.chinesechess.chat.ws;
 import io.github.hulang1024.chinesechess.chat.Channel;
 import io.github.hulang1024.chinesechess.chat.Message;
 import io.github.hulang1024.chinesechess.user.User;
-import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
+import io.github.hulang1024.chinesechess.ws.ServerMessage;
 import lombok.Data;
 
 import java.util.List;

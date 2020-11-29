@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess;
 
 
-import io.github.hulang1024.chinesechess.ws.message.AbstractMessageListener;
+import io.github.hulang1024.chinesechess.ws.AbstractMessageListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationListener;

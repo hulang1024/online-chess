@@ -6,7 +6,6 @@ import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.utils.TimeUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -36,15 +35,8 @@ public class AuthenticationUtils {
         return null;
     }
 
-    public static User verifyParseUserInfo(String authorization) {
-        if (StringUtils.isEmpty(authorization)) {
-            return null;
-        }
-        if (!authorization.startsWith("Bearer")) {
-            return null;
-        }
-
-        DecodedJWT decodedJWT = verifyTokenString(authorization.substring(7));
+    public static User verifyParseUserInfo(String token) {
+        DecodedJWT decodedJWT = verifyTokenString(token);
         if (decodedJWT == null) {
             return null;
         }

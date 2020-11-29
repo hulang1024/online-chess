@@ -1,4 +1,4 @@
-package io.github.hulang1024.chinesechess.ws.message;
+package io.github.hulang1024.chinesechess.ws;
 
 /**
  * 消息处理器

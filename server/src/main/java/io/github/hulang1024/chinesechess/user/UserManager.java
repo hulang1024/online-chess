@@ -41,6 +41,26 @@ public class UserManager {
     @Autowired
     private UserSessionManager userSessionManager;
 
+    public boolean isOnline(User user) {
+        return user != null && isOnline(user.getId());
+    }
+
+    public boolean isOnline(long userId) {
+        User user = loggedInUserMap.get(userId);
+        return user != null && userSessionManager.getSession(user) != null;
+    }
+
+    public User getLoggedInUser(long userId) {
+        return loggedInUserMap.get(userId);
+    }
+
+    public GuestUser getGuestUser(long userId) {
+        return guestUserMap.get(userId);
+    }
+
+    public User getDatabaseUser(long id) {
+        return userDao.selectById(id);
+    }
 
     public PageRet<SearchUserInfo> searchUsers(SearchUserParam searchUserParam, PageParam pageParam) {
         IPage<SearchUserInfo> userPage;
@@ -58,34 +78,11 @@ public class UserManager {
         }
 
         userPage.getRecords().forEach(user -> {
-            user.setIsOnline(userSessionManager.isOnline(user.getId()));
+            user.setIsOnline(isOnline(user.getId()));
         });
 
         return new PageRet<>(userPage);
     }
-
-    public User getLoggedInUser(long userId) {
-        return loggedInUserMap.get(userId);
-    }
-
-    public GuestUser getGuestUser(long userId) {
-        return guestUserMap.get(userId);
-    }
-
-    public User getLoggedInUser(Session session) {
-        Long userId = session.getAttribute(UserSessionManager.USER_ID_KEY);
-        return userId != null ? getLoggedInUser(userId) : null;
-    }
-
-    public GuestUser getGuestUser(Session session) {
-        Long userId = session.getAttribute(UserSessionManager.USER_ID_KEY);
-        return userId != null ? getGuestUser(userId) : null;
-    }
-
-    public User getDatabaseUser(long id) {
-        return userDao.selectById(id);
-    }
-
 
     public RegisterResult register(UserRegisterParam param) {
         long length = param.getNickname().length();
@@ -150,28 +147,27 @@ public class UserManager {
         if (spectatingRoom != null) {
             spectatorManager.leaveRoom(user, spectatingRoom);
         }
+        Session session = userSessionManager.getSession(user);
 
         userSessionManager.removeBinding(user);
 
         channelManager.leaveDefaultChannels(user);
 
-        Session session = userSessionManager.getSession(user);
-        if (session != null) {
-            guestLogin(session);
-        }
+        guestLogin(session);
 
         return true;
     }
 
-    public void guestLogin(Session session) {
+    public GuestUser guestLogin(Session session) {
         GuestUser guestUser = new GuestUser();
         userSessionManager.setBinding(guestUser, session);
         guestUserMap.put(guestUser.getId(), guestUser);
         channelManager.joinDefaultChannels(guestUser);
+        return guestUser;
     }
 
     public void guestLogout(Session session, GuestUser guestUser) {
-        userSessionManager.removeBinding(session);
+        userSessionManager.removeBinding(guestUser);
         guestUserMap.remove(guestUser.getId());
         channelManager.leaveDefaultChannels(guestUser);
     }

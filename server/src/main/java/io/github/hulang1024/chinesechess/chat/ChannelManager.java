@@ -6,12 +6,11 @@ import io.github.hulang1024.chinesechess.chat.ws.ChatMessageServerMsg;
 import io.github.hulang1024.chinesechess.chat.ws.ChatUpdatesServerMsg;
 import io.github.hulang1024.chinesechess.user.*;
 import io.github.hulang1024.chinesechess.utils.TimeUtils;
-import io.github.hulang1024.chinesechess.ws.message.WSMessageUtils;
+import io.github.hulang1024.chinesechess.ws.WSMessageService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.yeauty.pojo.Session;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,7 @@ public class ChannelManager {
     @Autowired
     private UserManager userManager;
     @Autowired
-    private UserSessionManager userSessionManager;
+    private WSMessageService wsMessageService;
     @Autowired
     private WordsNotAllowedCommandExecutor wordsNotAllowedCommandExecutor;
 
@@ -80,7 +79,7 @@ public class ChannelManager {
             }
         }
 
-        if (channel.getType() != ChannelType.PM && userSessionManager.getSession(user) == null) {
+        if (channel.getType() != ChannelType.PM && !userManager.isOnline(user)) {
             return false;
         }
 
@@ -164,7 +163,7 @@ public class ChannelManager {
     }
 
     public CreateNewPMRet createNewPrivateMessage(@NotNull CreateNewPMParam param) {
-        if (!userSessionManager.isOnline(param.getTargetId())) {
+        if (!userManager.isOnline(param.getTargetId())) {
             return CreateNewPMRet.fail();
         }
 
@@ -211,7 +210,7 @@ public class ChannelManager {
                 return false;
             }
             User targetUser = targetUserOpt.get();
-            if (!userSessionManager.isOnline(targetUser)) {
+            if (!userManager.isOnline(targetUser)) {
                 return false;
             }
 
@@ -228,7 +227,7 @@ public class ChannelManager {
                     .collect(Collectors.toList()));
                 //todo:暂时在这里标记已读
                 targetUserChannel.setLastReadId(message.getId());
-                WSMessageUtils.send(chatUpdatesServerMsg, userSessionManager.getSession(targetUser));
+                wsMessageService.send(chatUpdatesServerMsg, targetUser);
             }
         }
 
@@ -250,11 +249,7 @@ public class ChannelManager {
             if (user.equals(exclude)) {
                 return;
             }
-            Session session = userSessionManager.getSession(user);
-            if (session == null) { // TODO: 不应该出现此情况，查找原因
-                return;
-            }
-            WSMessageUtils.send(msgMsg, session);
+            wsMessageService.send(msgMsg, user);
         });
 
         return true;
@@ -279,9 +274,9 @@ public class ChannelManager {
             if (channel.getUsers().isEmpty()) {
                 removeChannel(channel);
             } else {
-                WSMessageUtils.send(
+                wsMessageService.send(
                     new ChannelUserLeftServerMsg(user, channel),
-                    userSessionManager.getSession(channel.getUsers().get(0)));
+                    channel.getUsers().get(0));
             }
         }
     }

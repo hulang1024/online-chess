@@ -5,16 +5,12 @@ import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.chat.ChannelType;
 import io.github.hulang1024.chinesechess.room.ws.*;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
-import io.github.hulang1024.chinesechess.user.User;
-import io.github.hulang1024.chinesechess.user.UserManager;
-import io.github.hulang1024.chinesechess.user.UserSessionManager;
-import io.github.hulang1024.chinesechess.user.UserUtils;
-import io.github.hulang1024.chinesechess.ws.message.WSMessageUtils;
-import io.github.hulang1024.chinesechess.ws.message.ServerMessage;
+import io.github.hulang1024.chinesechess.user.*;
+import io.github.hulang1024.chinesechess.ws.ServerMessage;
+import io.github.hulang1024.chinesechess.ws.WSMessageService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.yeauty.pojo.Session;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -39,11 +35,12 @@ public class RoomManager {
     @Autowired
     private UserManager userManager;
     @Autowired
-    public UserSessionManager userSessionManager;
-    @Autowired
     private SpectatorManager spectatorManager;
     @Autowired
-    private LobbyService lobbyService;
+    private UserActivityService userActivityService;
+
+    @Autowired
+    private WSMessageService wsMessageService;
 
     public List<Room> searchRooms() {
         return roomMap.values().stream()
@@ -85,7 +82,7 @@ public class RoomManager {
             return null;
         }
 
-        Room createdRoom = new Room(channelManager, userSessionManager);
+        Room createdRoom = new Room(channelManager, userManager);
         createdRoom.setId(nextRoomId());
         if (StringUtils.isNotBlank(room.getName())) {
             createdRoom.setName(room.getName());
@@ -107,7 +104,7 @@ public class RoomManager {
 
         roomMap.put(createdRoom.getId(), createdRoom);
 
-        lobbyService.broadcast(new LobbyRoomCreateServerMsg(createdRoom), creator);
+        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomCreateServerMsg(createdRoom), creator);
 
         // 创建者默认进入房间
         JoinRoomParam roomJoinParam = new JoinRoomParam();
@@ -170,7 +167,7 @@ public class RoomManager {
         joinMsg.setUser(user);
         broadcast(room, joinMsg, user);
 
-        lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);
+        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room), user);
 
         return result;
     }
@@ -201,7 +198,7 @@ public class RoomManager {
         if (room.getUserCount() == 1) {
             User otherUser = room.getOneUser();
             // 但是该用户是离线状态
-            if (!userSessionManager.isOnline(otherUser)) {
+            if (!userManager.isOnline(otherUser)) {
                 // 那么也将此离线用户移除房间
                 partRoom(room, otherUser);
                 // 导致解散房间
@@ -215,7 +212,7 @@ public class RoomManager {
             // 如果全部离开了，解散房间
             dismissRoom(room);
         } else {
-            lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room));
+            userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room));
         }
 
         // 如果有在线用户，发送离开消息
@@ -240,7 +237,7 @@ public class RoomManager {
             room.setPassword(param.getPassword());
         }
 
-        lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room));
+        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room));
         return true;
     }
 
@@ -248,7 +245,7 @@ public class RoomManager {
         room.setStatus(RoomStatus.DISMISSED);
         channelManager.removeChannel(room.getChannel());
         roomMap.remove(room.getId());
-        lobbyService.broadcast(new LobbyRoomRemoveServerMsg(room));
+        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomRemoveServerMsg(room));
     }
 
     public void broadcast(Room room, ServerMessage message) {
@@ -260,11 +257,7 @@ public class RoomManager {
             if (user.equals(exclude)) {
                 return;
             }
-            // 用户可能是离线状态，此时没有session，但是用户可能会重新连接回来
-            Session session = userSessionManager.getSession(user);
-            if (session != null) {
-                WSMessageUtils.send(message, session);
-            }
+            wsMessageService.send(message, user);
         });
         spectatorManager.broadcast(room, message);
     }

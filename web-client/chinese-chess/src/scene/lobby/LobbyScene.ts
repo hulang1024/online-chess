@@ -126,7 +126,9 @@ export default class LobbyScene extends AbstractScene {
 
             this.socketClient.reconnectedSignal.add(this.reconnectHandler = () => {
                 this.api.perform(getRoomsRequest);
-            });            
+            });
+
+            this.context.socketClient.queue((send: Function) => send('activity.enter', {code: 1}));
         })();
     }
 
@@ -138,6 +140,7 @@ export default class LobbyScene extends AbstractScene {
         }
         this.socketClient.reconnectedSignal.remove(this.reconnectHandler);
         this.context.chatOverlay.popOut();
+        this.context.socketClient.queue((send: Function) => send('activity.exit', {code: 1}));
     }
 
     onCreateRoomClick() {

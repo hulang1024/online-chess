@@ -1,30 +1,28 @@
 package io.github.hulang1024.chinesechess.play;
 
+import io.github.hulang1024.chinesechess.play.rule.ChessboardState;
 import io.github.hulang1024.chinesechess.play.rule.ConfirmRequestType;
 import io.github.hulang1024.chinesechess.play.rule.GameResult;
 import io.github.hulang1024.chinesechess.play.ws.*;
 import io.github.hulang1024.chinesechess.play.ws.servermsg.*;
-import io.github.hulang1024.chinesechess.play.rule.ChessboardState;
-import io.github.hulang1024.chinesechess.room.LobbyService;
+import io.github.hulang1024.chinesechess.user.UserActivity;
+import io.github.hulang1024.chinesechess.user.UserActivityService;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.room.RoomStatus;
-import io.github.hulang1024.chinesechess.user.User;
-import io.github.hulang1024.chinesechess.user.UserManager;
-import io.github.hulang1024.chinesechess.userstats.UserStatsService;
-import io.github.hulang1024.chinesechess.ws.message.AbstractMessageListener;
 import io.github.hulang1024.chinesechess.room.ws.LobbyRoomUpdateServerMsg;
+import io.github.hulang1024.chinesechess.user.User;
+import io.github.hulang1024.chinesechess.userstats.UserStatsService;
+import io.github.hulang1024.chinesechess.ws.AbstractMessageListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PlayMessageListener extends AbstractMessageListener {
     @Autowired
-    private LobbyService lobbyService;
+    private UserActivityService userActivityService;
     @Autowired
     private RoomManager roomManager;
-    @Autowired
-    private UserManager userManager;
     @Autowired
     private UserStatsService userStatsService;
 
@@ -40,7 +38,7 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void onReady(ReadyMsg readyMsg) {
-        User user = userManager.getLoggedInUser(readyMsg.getSession());
+        User user = readyMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
         if (room == null) {
@@ -58,7 +56,7 @@ public class PlayMessageListener extends AbstractMessageListener {
 
         roomManager.broadcast(room, readyServerMsg);
 
-        lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);
+        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room), user);
 
         // 如果全部准备好，开始游戏
         boolean isAllReadied = room.isFull() && room.getUsers().stream()
@@ -69,7 +67,7 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void onPickChess(ChessPickMsg chessPickMsg) {
-        User user = userManager.getLoggedInUser(chessPickMsg.getSession());
+        User user = chessPickMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
         if (room.getGame().getState() != GameState.PLAYING) {
@@ -85,7 +83,7 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void onMoveChess(ChessMoveMsg chessMoveMsg) {
-        User user = userManager.getLoggedInUser(chessMoveMsg.getSession());
+        User user = chessMoveMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
         if (room.getGame().getState() != GameState.PLAYING) {
@@ -110,7 +108,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         
         room.getGame().turnActiveChessHost();
 
-        ChessMoveResult result = new ChessMoveResult();
+        ChessMoveServerMsg result = new ChessMoveServerMsg();
         result.setChessHost(room.getChessHost(user).code());
         result.setMoveType(chessMoveMsg.getMoveType());
         result.setFromPos(chessMoveMsg.getFromPos());
@@ -120,7 +118,7 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void onConfirmRequest(ConfirmRequestMsg confirmRequestMsg) {
-        User user = userManager.getLoggedInUser(confirmRequestMsg.getSession());
+        User user = confirmRequestMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
         if (room.getGame().getState() != GameState.PLAYING) {
@@ -135,7 +133,7 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void onConfirmResponse(ConfirmResponseMsg confirmResponseMsg) {
-        User user = userManager.getLoggedInUser(confirmResponseMsg.getSession());
+        User user = confirmResponseMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
         if (room.getGame().getState() != GameState.PLAYING) {
@@ -195,7 +193,7 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void onGameContinue(GameContinueMsg clientMsg) {
-        User user = userManager.getLoggedInUser(clientMsg.getSession());
+        User user = clientMsg.getUser();
         Room joinedRoom = roomManager.getJoinedRoom(user);
         if (clientMsg.isOk()) {
             if (joinedRoom.getGame().getState() == GameState.PAUSE) {
@@ -224,13 +222,13 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void onGameOver(GameOverMsg msg) {
-        User user = userManager.getLoggedInUser(msg.getSession());
+        User user = msg.getUser();
         Room room = roomManager.getJoinedRoom(user);
         room.setStatus(RoomStatus.BEGINNING);
         room.updateUserReadyState(user, false);
 
         userStatsService.updateUser(user, GameResult.from(msg.getResult()));
 
-        lobbyService.broadcast(new LobbyRoomUpdateServerMsg(room), user);
+        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room), user);
     }
 }

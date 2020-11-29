@@ -1,17 +1,14 @@
-package io.github.hulang1024.chinesechess.ws.message;
+package io.github.hulang1024.chinesechess.ws;
 
 
 import io.github.hulang1024.chinesechess.user.User;
-import io.github.hulang1024.chinesechess.user.UserSessionManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.yeauty.pojo.Session;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
 public abstract class AbstractMessageListener {
     @Autowired
-    protected UserSessionManager userSessionManager;
+    protected WSMessageService wsMessageService;
 
     public AbstractMessageListener() {
         log.info("instantiate: {}", getClass().getSimpleName());
@@ -25,12 +22,8 @@ public abstract class AbstractMessageListener {
         ClientMessageDispatcher.emit(typeClass, message);
     }
 
-    public void send(ServerMessage message, Session session) {
-        WSMessageUtils.send(message, session);
-    }
-
     public void send(ServerMessage message, User user) {
-        send(message, userSessionManager.getSession(user));
+        wsMessageService.send(message, user);
     }
 
     public abstract void init();

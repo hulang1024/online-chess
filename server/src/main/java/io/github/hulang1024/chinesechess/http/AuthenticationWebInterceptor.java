@@ -3,6 +3,7 @@ package io.github.hulang1024.chinesechess.http;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
 import io.github.hulang1024.chinesechess.user.UserUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,11 @@ public class AuthenticationWebInterceptor implements HandlerInterceptor {
 
         boolean isGuestAPI = ((HandlerMethod) handler).hasMethodAnnotation(GuestAPI.class);
 
-        User user = AuthenticationUtils.verifyParseUserInfo(request.getHeader("Authorization"));
+        User user = null;
+        String authorization = request.getHeader("Authorization");
+        if (StringUtils.isNotEmpty(authorization) && authorization.startsWith("Bearer")) {
+            user = AuthenticationUtils.verifyParseUserInfo(authorization.substring(7));
+        }
         if (user == null && !isGuestAPI) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             return false;
@@ -46,7 +51,7 @@ public class AuthenticationWebInterceptor implements HandlerInterceptor {
         }
 
         return true;
-}
+    }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {

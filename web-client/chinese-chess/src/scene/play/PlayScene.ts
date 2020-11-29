@@ -437,6 +437,8 @@ export default class PlayScene extends AbstractScene {
         }
         this.channelManager.leaveChannel(this.room.channelId);
         this.socketClient.removeEventListener(egret.Event.CLOSE, this.connectionCloseHandler, this);
+
+        this.context.chatOverlay.popIn();
     }
 
     notReadyTimer: any;

@@ -11,20 +11,22 @@ export default class SocketClient extends egret.WebSocket {
     private api: APIAccess;
     private stage: egret.Stage;
     public channelManager: ChannelManager;
+    // 是否已成功游客或者正式登陆
+    private isLoggedIn: boolean = false;
 
     constructor(api: APIAccess, stage: egret.Stage) {
         super();
         this.api = api;
         this.stage = stage;
 
-        api.isLoggedIn.changed.add((isLoggedIn: boolean) => {
-            if (isLoggedIn) {
-                this.queue((send: Function) => {
-                    send('user.login', {userId: api.localUser.id});
-                });
+        api.isLoggedIn.changed.add((isAPILoggedIn: boolean) => {
+            if (isAPILoggedIn) {
+                this.isLoggedIn = false;
             }
             if (!this.connected) {
                 this.doConnect();
+            } else {
+                this.login();
             }
         });
 
@@ -40,7 +42,7 @@ export default class SocketClient extends egret.WebSocket {
         this.add('user.offline', this.onFriendOffline.bind(this));
     }
 
-    queue(sendFunc: Function) {
+    public queue(sendFunc: Function) {
         if (!this.connected) {
             this.msgSendQueue.push(sendFunc);
             return;
@@ -49,21 +51,43 @@ export default class SocketClient extends egret.WebSocket {
         sendFunc(this.send.bind(this));
     }
 
-    send(type: string, payload?: any) {
+    public send(type: string, payload?: any) {
         const msgObject = {type, ...payload};
         console.log(">发送socket消息", msgObject);
         const msg = JSON.stringify(msgObject);
         this.writeUTF(msg);
     }
 
-    add(type: string, listener: Function) {
+    public add(type: string, listener: Function) {
         this.initSignal(type);
         this.signals[type].add(listener);
     }
 
-    addOnce(type: string, listener: Function) {
+    public addOnce(type: string, listener: Function) {
         this.initSignal(type);
         this.signals[type].addOnce(listener);
+    }
+
+    public login() {
+        if (this.isLoggedIn) {
+            return;
+        }
+        const isAPILoggedIn = this.api.isLoggedIn.value;
+        this.queue((send: Function) => {
+            send('user.login',
+                {token: isAPILoggedIn ? this.api.accessToken.accessToken : 'guest'});
+        });
+    }
+
+    public doConnect() {
+        if (this.connected) {
+            return;
+        }
+        
+        super.connect(DEBUG ? location.hostname : "180.76.185.34", 9097);
+        if (this.connectedTimes > 0) {
+            messager.info({msg: '正在连接到服务器', duration: 2000}, this.stage);
+        }
     }
 
     private initSignal(type) {
@@ -102,6 +126,7 @@ export default class SocketClient extends egret.WebSocket {
             this.channelManager.currentChannel.value.addNewMessages(
                 new InfoMessage(this.api.localUser.nickname + ' 登录成功'));
         }
+        this.isLoggedIn = true;
     }
 
     private onFriendOnline(msg: any) {
@@ -112,34 +137,27 @@ export default class SocketClient extends egret.WebSocket {
         messager.info(`已下线：${msg.nickname}`, this.stage);
     }
 
-    public doConnect() {
-        super.connect(DEBUG ? location.hostname : "180.76.185.34", 9097);
-        if (this.connectedTimes > 0) {
-            messager.info({msg: '正在连接到服务器', duration: 2000}, this.stage);
-        }
-    }
-
     private onConnected(event: any) {
         if (this.connectedTimes > 0) {
             messager.info('成功连接到服务器', this.stage);
+        }
+
+        this.login(); 
+
+        this.connectedTimes++;
+        
+        if (this.connectedTimes > 1) {
+            this.reconnectedSignal.dispatch();
         }
 
         let msgSend: Function;
         while (msgSend = this.msgSendQueue.shift()) {
             msgSend(this.send.bind(this));
         }
-
-        this.connectedTimes++;
-        
-        if (this.connectedTimes > 1) {
-            this.reconnectedSignal.dispatch();
-            this.send('user.login', {
-                userId: this.api.isLoggedIn.value ? this.api.localUser.id : -1
-            });    
-        }
     }
 
     private onClosed(event: egret.Event) {
+        this.isLoggedIn = false;
         const tryTimeout = 3000;
         messager.error({
             msg: `未连接到服务器，${tryTimeout / 1000}秒钟后自动重试。`,

@@ -87,6 +87,9 @@ export default class ChatOverlay extends Overlay {
                     }
                 }
             });
+            if (!this.popIned) {
+                this.popIn();
+            }
         });
 
         this.manager.joinedChannels.removed.add((channel: Channel) => {
@@ -145,19 +148,17 @@ export default class ChatOverlay extends Overlay {
     }
 
     popIn() {
+        this.popIned = true;
         const duration = 200;
         egret.Tween.get(this).to({alpha: 1}, duration, egret.Ease.quintOut);
-        egret.Tween.get(this).to({y: this.maxY}, duration, egret.Ease.quintOut).call(() => {
-            this.popIned = true;
-        });
+        egret.Tween.get(this).to({y: this.maxY}, duration, egret.Ease.quintOut);
     }
 
     popOut() {
+        this.popIned = false;
         const duration = 200;
         this.parent.setChildIndex(this, 10000);
         egret.Tween.get(this).to({alpha: 0}, duration, egret.Ease.sineIn);
-        egret.Tween.get(this).to({y: this.minY}, duration, egret.Ease.sineIn).call(() => {
-            this.popIned = false;
-        });
+        egret.Tween.get(this).to({y: this.minY}, duration, egret.Ease.sineIn);
     }
 }

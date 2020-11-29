@@ -1,4 +1,4 @@
-package io.github.hulang1024.chinesechess.ws.message;
+package io.github.hulang1024.chinesechess.ws;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface ClientMsgType {
     String value();
+    boolean guest() default false;
 }
