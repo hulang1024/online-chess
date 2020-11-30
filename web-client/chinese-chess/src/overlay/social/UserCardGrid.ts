@@ -13,14 +13,15 @@ export default class UserCardGrid extends eui.UILayer {
         layout.horizontalGap = 8;
         layout.verticalGap = 8;
         layout.columnAlign = eui.ColumnAlign.JUSTIFY_USING_WIDTH;
-        //layout.rowAlign = eui.RowAlign.JUSTIFY_USING_HEIGHT;
-        layout.requestedColumnCount = 2;
+        //layout.rowAlign = eui.RowAlign.JUSTIFY_USING_GAP;
         this.container.layout = layout;
 
         let scroller = new eui.Scroller();
         scroller.viewport = this.container;
 
         this.addEventListener(egret.Event.ADDED_TO_STAGE, () => {
+            let column = Math.floor(this.stage.stageWidth / UserCard.WIDTH);
+            layout.requestedColumnCount = column;
             scroller.height = this.stage.stageHeight / 2 - 12;
             this.addChild(scroller);
         }, this);

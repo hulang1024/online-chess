@@ -402,7 +402,8 @@ export default class PlayScene extends AbstractScene {
         };
 
         this.listeners['user.offline'] = (msg: any) => {
-            if (!(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
+            if (this.gameState.value == GameState.READY ||
+                !(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
                 return;
             }
             this.otherOnline.value = false;
@@ -412,7 +413,8 @@ export default class PlayScene extends AbstractScene {
 
         this.listeners['user.online'] = (msg: any) => {
             //判断是否原来就没加入过房间
-            if (!(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
+            if (this.gameState.value == GameState.READY ||
+                !(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
                 return;
             }
             this.otherOnline.value = true;
