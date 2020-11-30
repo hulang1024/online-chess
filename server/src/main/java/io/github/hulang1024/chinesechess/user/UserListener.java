@@ -60,11 +60,11 @@ public class UserListener extends AbstractMessageListener {
         // 验证别处websocket登录过
         Session otherSession = userSessionManager.getSession(user);
         if (otherSession != null) {
+            send(new UserLoginServerMsg(2), user);
             // 让此session解除关联
             userSessionManager.removeBinding(user);
             // 此session游客登录
             userManager.guestLogin(otherSession);
-            send(new UserLoginServerMsg(2), user);
         }
 
         // 绑定新session

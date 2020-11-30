@@ -28,7 +28,8 @@ public class AuthenticationWebInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        boolean isGuestAPI = ((HandlerMethod) handler).hasMethodAnnotation(GuestAPI.class);
+        boolean isGuestAPI = ((HandlerMethod) handler).hasMethodAnnotation(GuestAPI.class)
+            || ((HandlerMethod) handler).getMethod().getDeclaringClass().getAnnotation(GuestAPI.class) != null;
 
         User user = null;
         String authorization = request.getHeader("Authorization");

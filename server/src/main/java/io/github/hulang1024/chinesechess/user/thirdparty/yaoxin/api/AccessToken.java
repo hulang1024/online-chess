@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class AccessToken {
     @JSONField(name="access_token")
-    private String accessToken;
+    private String value;
 
     @JSONField(name="expires_in")
     private long expiresIn;

@@ -15,7 +15,7 @@ public class AuthenticationUtils {
     private static final long EXPIRES_IN_SECONDS = 24 * 60;
     private static final String TOKEN_SECRET = "T2H0I2S2ISSECRET";
 
-    public static AccessToken generateAccessToken(User user) {
+    public static AccessToken generateAccessToken(Long userId) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(TOKEN_SECRET);
             Map<String, Object> header = new HashMap<>(16);
@@ -25,7 +25,7 @@ public class AuthenticationUtils {
             String token = JWT.create()
                 .withHeader(header)
                 .withAudience()
-                .withClaim("userId", user.getId())
+                .withClaim("userId", userId)
                 .withExpiresAt(TimeUtils.toDate(LocalDateTime.now().plusSeconds(EXPIRES_IN_SECONDS)))
                 .sign(algorithm);
             return new AccessToken(token, EXPIRES_IN_SECONDS);

@@ -21,3 +21,14 @@ websocket:
 yao-xin:
   endpoint: http://47.112.238.235:10018/open
   app-id: yx4b11c08aa09d44ed
+
+github:
+  client-id: 5176faf64742ae0bfe84
+  client-secret: 784d4715dd756c7ae87b69c24ad822bab9702c45
+
+app-url: http://180.76.185.34/
+
+
+avatar:
+  path: /avatar
+  dir: /home/chinese_chess/avatars

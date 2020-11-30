@@ -11,9 +11,8 @@ import io.github.hulang1024.chinesechess.http.results.PageRet;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
-import io.github.hulang1024.chinesechess.user.login.LoginResult;
-import io.github.hulang1024.chinesechess.user.login.UserLoginParam;
 import io.github.hulang1024.chinesechess.userstats.UserStatsService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.yeauty.pojo.Session;
@@ -85,19 +84,24 @@ public class UserManager {
     }
 
     public RegisterResult register(UserRegisterParam param) {
-        long length = param.getNickname().length();
+        long length = param.getNickname().trim().length();
         if (!(1 <= length && length <= 20)) {
             return RegisterResult.fail(3);
         }
-        if (param.getPassword().length() > 20) {
+        if (param.getSource() == 0 && param.getPassword().length() > 20) {
             return RegisterResult.fail(4);
         }
 
         User user = new User();
+        user.setSource(param.getSource());
+        user.setOpenId(param.getOpenId());
+        if (StringUtils.isNotEmpty(param.getPassword())) {
+            user.setPassword(PasswordUtils.cipherText(param.getPassword().trim()));
+        }
         user.setNickname(param.getNickname().trim());
-        user.setPassword(PasswordUtils.cipherText(param.getPassword().trim()));
+        user.setEmail(param.getEmail());
+        user.setAvatarUrl(param.getAvatarUrl());
         user.setRegisterTime(LocalDateTime.now());
-        user.setSource(0);
 
         try {
             boolean ok = userDao.insert(user) > 0;
@@ -110,26 +114,48 @@ public class UserManager {
 
         userStatsService.initializeUser(user);
 
-        return RegisterResult.ok();
+        RegisterResult result = RegisterResult.ok();
+        result.setUser(user);
+        return result;
     }
 
     public LoginResult login(UserLoginParam param) {
-        User user = userDao.selectOne(
-            new QueryWrapper<User>()
-                .eq("nickname", param.getUsername()));
-        if (user == null) {
-            return LoginResult.fail(1);
-        }
-        if (!PasswordUtils.isRight(param.getPassword(), user.getPassword())) {
-            return LoginResult.fail(2);
+        User user;
+        if (StringUtils.isNotEmpty(param.getToken())) {
+            user = AuthenticationUtils.verifyParseUserInfo(param.getToken());
+            if (user == null) {
+                return LoginResult.fail(3);
+            }
+            user = getDatabaseUser(user.getId());
+            if (user == null) {
+                return LoginResult.fail(1);
+            }
+        } else {
+            user = userDao.selectOne(
+                new QueryWrapper<User>()
+                    .eq("nickname", param.getUsername()));
+            if (user == null) {
+                return LoginResult.fail(1);
+            }
+            if (!PasswordUtils.isRight(param.getPassword(), user.getPassword())) {
+                return LoginResult.fail(2);
+            }
         }
 
+        return login(user);
+    }
+
+    /**
+     * @param user 已验证/存在的用户
+     * @return
+     */
+    public LoginResult login(User user) {
         user.setLastLoginTime(LocalDateTime.now());
         userDao.updateById(user);
 
         LoginResult result = LoginResult.ok();
-        result.setUserId(user.getId());
-        result.setAccessToken(AuthenticationUtils.generateAccessToken(user));
+        result.setUser(user);
+        result.setAccessToken(AuthenticationUtils.generateAccessToken(user.getId()));
         loggedInUserMap.put(user.getId(), user);
 
         return result;

@@ -19,14 +19,10 @@ public abstract class APIRequest<R> {
 
     private String action;
 
-    private String type = "2";
-
     private Map<String, Object> payload = new HashMap<>();
 
-    @JSONField(serialize = false)
     private String method = POST;
 
-    @JSONField(serialize = false)
     private APIAccess api;
 
     public Consumer<APIRet<R>> onResponse;
@@ -97,15 +93,17 @@ public abstract class APIRequest<R> {
     }
 
     protected Request createJSONRequest() {
+        payload.put("type", "2");
         JSONObject jsonObject = (JSONObject)JSONObject.toJSON(payload);
         if (api.accessToken != null) {
-            jsonObject.put("access_token", api.accessToken.getAccessToken());
+            jsonObject.put("access_token", api.accessToken.getValue());
         }
         RequestBody body = RequestBody
             .create(jsonObject.toJSONString(), MediaType.parse("application/json"));
         return new Request.Builder()
-            .url(api.ENDPOINT + "/" + action)
+            .url(api.config.getEndpoint() + "/" + action)
             .method(method, body)
+            .header("accept", "application/json")
             .build();
     }
 }

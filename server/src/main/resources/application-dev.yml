@@ -21,3 +21,13 @@ mybatis-plus:
 
 websocket:
   port: 9097
+
+app-url: http://192.168.1.101:9000
+
+github:
+  client-id: xxx
+  client-secret: yyy
+
+avatar:
+  path: /avatar
+  dir: /home/chess/avatars

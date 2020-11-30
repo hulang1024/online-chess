@@ -40,6 +40,7 @@ import PlayScene from "./scene/play/PlayScene";
 import SceneContext from "./scene/SceneContext";
 import SceneManager from "./scene/scene_manger";
 import User from "./user/User";
+import messager from "./component/messager";
 
 class Main extends eui.UILayer  {
     public constructor() {
@@ -93,7 +94,7 @@ class Main extends eui.UILayer  {
         if (window['yaochat']) {
             alert('yaochat');
             let yaochat = window['yaochat'];
-            yaochat.getCode('yx4b11c08aa09d44ed', 'http://180.76.185.34/api/oauth_callback/yao_xin/code', 'snsapi_userinfo', "ok");
+            yaochat.getCode('yx4b11c08aa09d44ed', 'http://180.76.185.34/api/oauth_callback/yao_xin', 'snsapi_userinfo', "ok");
             return;
         }
 
@@ -140,15 +141,30 @@ class Main extends eui.UILayer  {
         channelManager.initializeChannels();
         channelManager.openChannel(1);
 
-        if (configManager.get(ConfigItem.loginAuto)) {
+        if (location.hash) {
+            let matchRet = location.hash.match(/status=(\d)/);
+            let status = matchRet ? matchRet[1] : 1;
+            if (status == '0') {
+                // 第三方登录
+                matchRet = location.hash.match(/token=(.+)/)
+                let token = matchRet ? matchRet[1] : null;
+                if (token) {
+                    api.login(null, token);
+                }
+            } else {
+                messager.fail('登录失败', this.stage);
+            }
+            location.hash = '';
+        } else if (configManager.get(ConfigItem.loginAuto)) {
             let user = new User();
             user.nickname = configManager.get(ConfigItem.username);
             user.password = configManager.get(ConfigItem.password);
-            if (!(user.nickname && user.password)) {
+            let token = configManager.get(ConfigItem.token);
+            if ((user.nickname && user.password) || token) {
+                api.login(user, token);
+            } else {
                 socketClient.doConnect();
-                return;
             }
-            api.login(user);
         } else {
             socketClient.doConnect();
         }

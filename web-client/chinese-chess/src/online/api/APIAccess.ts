@@ -36,20 +36,23 @@ export default class APIAccess {
         }
     }
 
-    public login(user: User): Promise<void> {
-        let loginRequest = new LoginRequest(user);
+    public login(user: User, token?: string): Promise<void> {
+        let loginRequest = new LoginRequest(user, token);
         return new Promise((resolve, reject) => {
             loginRequest.success = (ret) => {
                 this.accessToken = ret.accessToken;
-                user.id = ret.userId;
-                this.localUser = user;
+                this.localUser = ret.user;
                 this.isLoggedIn.value = true;
 
-                //messager.clear();
-
                 if (this.configManager.get(ConfigItem.loginAuto)) {
-                    this.configManager.set(ConfigItem.username, user.nickname);
-                    this.configManager.set(ConfigItem.password, user.password);
+                    if (token) {
+                        this.configManager.set(ConfigItem.token, token);
+                        this.configManager.set(ConfigItem.password, '');
+                    } else {
+                        this.configManager.set(ConfigItem.username, user.nickname);
+                        this.configManager.set(ConfigItem.password, user.password);
+                        this.configManager.set(ConfigItem.token, '');
+                    }
                     this.configManager.save();
                 }
 
@@ -57,10 +60,11 @@ export default class APIAccess {
             };
             loginRequest.failure = (ret) => {
                 messager.fail(
-                    ret && ret.code != null ? {1: '用户不存在', 2: '密码错误'}[ret.code] : '登录失败',
+                    (ret && ret.code != null) ? {1: '用户不存在', 2: '密码错误', '3': '第三方用户登录失败'}[ret.code] : '登录失败',
                     this.context.stage);
                 if (ret && ret.code) {
                     this.configManager.set(ConfigItem.password, '');
+                    this.configManager.set(ConfigItem.token, '');
                     this.configManager.save();
                 }
                 reject();

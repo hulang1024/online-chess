@@ -226,6 +226,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         Room room = roomManager.getJoinedRoom(user);
         room.setStatus(RoomStatus.BEGINNING);
         room.updateUserReadyState(user, false);
+        room.getGame().setState(GameState.READY);
 
         userStatsService.updateUser(user, GameResult.from(msg.getResult()));
 

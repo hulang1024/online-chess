@@ -7,6 +7,7 @@ import LogoutRequest from "../../online/api/LogoutRequest";
 import ConfigManager, { ConfigItem } from "../../config/ConfigManager";
 import PasswordInput from "../../component/PasswordInput";
 import TextInput from "../../component/TextInput";
+import BindableBool from "../../utils/bindables/BindableBool";
 
 export default class UserLoginOverlay extends Overlay {
     private context: SceneContext;
@@ -16,7 +17,10 @@ export default class UserLoginOverlay extends Overlay {
     private passwordInput: PasswordInput;
     private createUserOverlay: CreateUserOverlay;
     private btnLogin = new eui.Button();
+    private btnGitHubLogin = new eui.Button();
     private staySignedInOptionGroup: eui.Group;
+    private isLogining: BindableBool = new BindableBool();
+    private isGitHubLogining: BindableBool = new BindableBool();
 
     constructor(context: SceneContext) {
         super(false, false);
@@ -24,7 +28,7 @@ export default class UserLoginOverlay extends Overlay {
         this.api = context.api;
         this.configManager = context.configManager;
 
-        this.height = 360;
+        this.height = 430;
 
         let layout = new eui.VerticalLayout();
         layout.paddingTop = 32;
@@ -57,9 +61,20 @@ export default class UserLoginOverlay extends Overlay {
         this.addChild(this.staySignedInOptionGroup = this.createStaySignedInOptionGroup());
 
         let { btnLogin } = this;
-        btnLogin.label = '登录';
         btnLogin.addEventListener(egret.TouchEvent.TOUCH_TAP, this.login, this);
         this.addChild(btnLogin);
+        this.isLogining.addAndRunOnce((isLogining: boolean) => {
+            this.btnLogin.label = isLogining ? '登录中...' : '登录';
+            this.btnLogin.enabled = !isLogining;
+        });
+
+        let { btnGitHubLogin } = this;
+        btnGitHubLogin.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onGitHubLoginClick, this);
+        this.addChild(btnGitHubLogin);
+        this.isGitHubLogining.addAndRunOnce((isLogining: boolean) => {
+            this.btnGitHubLogin.label = isLogining ? 'GitHub登录中...' : 'GitHub登录';
+            this.btnGitHubLogin.enabled = !isLogining;
+        });
 
         let btnRegister = new eui.Button();
         btnRegister.label = '注册';
@@ -82,12 +97,13 @@ export default class UserLoginOverlay extends Overlay {
                     this.usernameInput,
                     this.passwordInput,
                     this.staySignedInOptionGroup,
-                    btnLogin, btnRegister].forEach(c => {
+                    btnLogin, btnGitHubLogin, btnRegister].forEach(c => {
                     c.visible = !isLoggedIn;
                     c.includeInLayout = !isLoggedIn;
                 });
-                btnLogin.label = '登录';
-                btnLogin.enabled = !isLoggedIn;
+
+                this.isLogining.value = isLoggedIn;
+
                 btnLogout.visible = isLoggedIn;
                 btnLogout.includeInLayout = isLoggedIn;
             });
@@ -104,6 +120,7 @@ export default class UserLoginOverlay extends Overlay {
         logoutRequest.success = () => {
             this.api.logout();
             this.configManager.set(ConfigItem.password, '');
+            this.configManager.set(ConfigItem.token, '');
             this.configManager.save();
         };
         this.api.perform(logoutRequest);
@@ -117,15 +134,17 @@ export default class UserLoginOverlay extends Overlay {
             return;
         }
 
-        this.btnLogin.label = '登录中...';
-        this.btnLogin.enabled = false;
-
+        this.isLogining.value = true;
         this.api.login(user).then(() => {
             this.visible = false;
         }).catch(() =>  {
-            this.btnLogin.label = '登录';
-            this.btnLogin.enabled = true;
+            this.isLogining.value = false;
         });
+    }
+
+    private onGitHubLoginClick() {
+        this.isGitHubLogining.value = true;
+        location.href = 'https://github.com/login/oauth/authorize?client_id=5176faf64742ae0bfe84';
     }
 
     private onRegisterClick() {
@@ -136,7 +155,6 @@ export default class UserLoginOverlay extends Overlay {
         }
         this.createUserOverlay.show();
     }
-
 
     private createStaySignedInOptionGroup() {
         let layout = new eui.HorizontalLayout();

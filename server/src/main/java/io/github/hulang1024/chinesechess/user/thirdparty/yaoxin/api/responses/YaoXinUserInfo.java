@@ -4,7 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 @Data
-public class APIUserInfo {
+public class YaoXinUserInfo {
     @JSONField(name="open_id")
     private String openId;
     private String nickname;

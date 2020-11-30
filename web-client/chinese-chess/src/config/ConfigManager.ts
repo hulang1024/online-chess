@@ -2,6 +2,7 @@
 export enum ConfigItem {
     username = 'username',
     password = 'password',
+    token = 'token',
     loginAuto = 'loginAuto'
 }
 
@@ -18,7 +19,7 @@ export default class ConfigManager {
     public load() {
         if (this.loaded) return;
 
-        ['username', 'password', 'loginAuto'].forEach(key => {
+        ['username', 'password', 'token', 'loginAuto'].forEach(key => {
             let val = localStorage.getItem(key);
             if (val == null) {
                 return;
@@ -46,6 +47,7 @@ export default class ConfigManager {
     private initDefaults() {
         this.set(ConfigItem.username, '');
         this.set(ConfigItem.password, '');
+        this.set(ConfigItem.token, '');
         this.set(ConfigItem.loginAuto, true);
     }
 }

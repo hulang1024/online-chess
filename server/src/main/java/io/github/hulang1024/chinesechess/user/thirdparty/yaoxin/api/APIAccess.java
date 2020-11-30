@@ -1,20 +1,16 @@
 package io.github.hulang1024.chinesechess.user.thirdparty.yaoxin.api;
 
-import io.github.hulang1024.chinesechess.user.thirdparty.yaoxin.YaoXinConfig;
 import io.github.hulang1024.chinesechess.user.thirdparty.yaoxin.api.requests.GetAccessTokenRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("yaoxin-api-access")
 public class APIAccess {
-    private YaoXinConfig config;
-    public final String ENDPOINT;
+    @Autowired
+    @Qualifier("yaoxin-api-config")
+    public APIConfig config;
     public AccessToken accessToken;
-
-    public APIAccess(@Autowired YaoXinConfig config) {
-        this.config = config;
-        ENDPOINT = config.getEndpoint();
-    }
 
     public void perform(APIRequest request) {
         request.perform(this);
@@ -26,7 +22,7 @@ public class APIAccess {
         GetAccessTokenRequest req = new GetAccessTokenRequest(code);
         req.onSuccess = (AccessToken accessToken) -> {
             this.accessToken = accessToken;
-            System.out.printf("accessToken=%s", accessToken.getAccessToken());
+            System.out.printf("accessToken=%s", accessToken.getValue());
         };
         req.perform(this);
     }

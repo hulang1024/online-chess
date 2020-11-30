@@ -3,8 +3,6 @@ package io.github.hulang1024.chinesechess.user;
 import io.github.hulang1024.chinesechess.http.GuestAPI;
 import io.github.hulang1024.chinesechess.http.params.PageParam;
 import io.github.hulang1024.chinesechess.http.results.PageRet;
-import io.github.hulang1024.chinesechess.user.login.LoginResult;
-import io.github.hulang1024.chinesechess.user.login.UserLoginParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
