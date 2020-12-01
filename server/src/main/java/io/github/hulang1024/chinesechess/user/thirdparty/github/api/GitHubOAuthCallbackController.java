@@ -1,6 +1,5 @@
 package io.github.hulang1024.chinesechess.user.thirdparty.github.api;
 
-import io.github.hulang1024.chinesechess.http.AuthenticationUtils;
 import io.github.hulang1024.chinesechess.http.GuestAPI;
 import io.github.hulang1024.chinesechess.user.LoginResult;
 import io.github.hulang1024.chinesechess.user.thirdparty.ThirdpartyUserLoginService;
@@ -49,7 +48,7 @@ public class GitHubOAuthCallbackController {
                 LoginResult result = thirdpartyUserLoginService.login(githubUser);
                 try {
                     response.sendRedirect(appUrl
-                        + "#status=0&token=" + AuthenticationUtils.generateAccessToken(result.getUser().getId()).getAccessToken());
+                        + "#status=0&token=" + result.getAccessToken().getAccessToken());
                 } catch (Exception e) { e.printStackTrace(); }
             };
             req.onExceptionFailure = (IOException e) -> {

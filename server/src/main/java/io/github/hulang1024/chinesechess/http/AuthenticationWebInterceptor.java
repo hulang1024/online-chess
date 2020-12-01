@@ -34,7 +34,7 @@ public class AuthenticationWebInterceptor implements HandlerInterceptor {
         User user = null;
         String authorization = request.getHeader("Authorization");
         if (StringUtils.isNotEmpty(authorization) && authorization.startsWith("Bearer")) {
-            user = AuthenticationUtils.verifyParseUserInfo(authorization.substring(7));
+            user = TokenUtils.verifyParseUserInfo(authorization.substring(7));
         }
         if (user == null && !isGuestAPI) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());

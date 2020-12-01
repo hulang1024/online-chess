@@ -17,7 +17,7 @@ import org.yeauty.pojo.Session;
 import java.time.LocalDateTime;
 
 @Component
-public class UserListener extends AbstractMessageListener {
+public class UserMessageListener extends AbstractMessageListener {
     @Autowired
     private ChannelManager channelManager;
     @Autowired
@@ -88,10 +88,9 @@ public class UserListener extends AbstractMessageListener {
 
         send(new UserLoginServerMsg(0), user);
 
-        // TODO：修改登录时间，后面独立出一个字段，不使用API last_login_time
         userDao.update(null,
             new UpdateWrapper<User>()
-                .set("last_login_time", LocalDateTime.now())
+                .set("last_active_time", LocalDateTime.now())
                 .eq("id", user.getId()));
     }
 

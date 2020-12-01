@@ -3,12 +3,10 @@ package io.github.hulang1024.chinesechess.user.thirdparty;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.github.hulang1024.chinesechess.upload.AvatarService;
 import io.github.hulang1024.chinesechess.user.*;
-import io.github.hulang1024.chinesechess.user.LoginResult;
 import io.github.hulang1024.chinesechess.user.thirdparty.github.api.responses.GitHubUser;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class ThirdpartyUserLoginService {
@@ -18,8 +16,8 @@ public class ThirdpartyUserLoginService {
     private UserManager userManager;
     @Autowired
     private AvatarService avatarService;
-    @Autowired
-    private HttpServletRequest request;
+
+    private static final long TOKEN_EXPIRES_IN_SECONDS = 24 * 60 * 60 * 7;
 
     public LoginResult login(GitHubUser githubUser) {
         User user = userDao.selectOne(new QueryWrapper<User>()
@@ -28,10 +26,16 @@ public class ThirdpartyUserLoginService {
 
         LoginResult result;
         if (user != null) {
-            result = userManager.login(user);
-        } else {
-            githubUser.setAvatarUrl(avatarService.saveAvatarByUrl(githubUser.getAvatarUrl()));
+            // 更新属性
+            updateUser(user, githubUser);
 
+            // 登录
+            result = userManager.login(user, TOKEN_EXPIRES_IN_SECONDS);
+        } else {
+            // 新注册用户
+            if (StringUtils.isNotEmpty(githubUser.getAvatarUrl())) {
+                githubUser.setAvatarUrl(avatarService.saveAvatarByUrl(githubUser.getAvatarUrl()));
+            }
             UserRegisterParam registerParam = new UserRegisterParam();
             registerParam.setSource(1);
             registerParam.setOpenId(githubUser.getId().toString());
@@ -40,7 +44,8 @@ public class ThirdpartyUserLoginService {
             registerParam.setAvatarUrl(githubUser.getAvatarUrl());
             RegisterResult ret = userManager.register(registerParam);
             if (ret.getCode() == 0) {
-                return userManager.login(ret.getUser());
+                // 登录
+                result = userManager.login(ret.getUser(), TOKEN_EXPIRES_IN_SECONDS);
             } else {
                 result = LoginResult.fail(3);
             }
@@ -49,5 +54,11 @@ public class ThirdpartyUserLoginService {
         return result;
     }
 
+    private void updateUser(User user, GitHubUser githubUser) {
+        if (StringUtils.isNotEmpty(githubUser.getAvatarUrl())) {
+            user.setAvatarUrl(avatarService.saveAvatarByUrl(githubUser.getAvatarUrl()));
+            userDao.updateById(user);
+        }
+    }
 
 }

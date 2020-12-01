@@ -164,6 +164,12 @@ export default class SocialBrowser extends Overlay {
                 this.loadTabConent(tabBar.selectedIndex);
             }
         });
+
+        this.context.socketClient.reconnectedSignal.add(() => {
+            if (this.visible) {
+                this.context.socketClient.send('activity.enter', {code: 2});
+            }
+        });
     }
 
     private onTabSelected(event: eui.ItemTapEvent) {

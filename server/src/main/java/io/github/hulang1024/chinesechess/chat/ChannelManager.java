@@ -195,8 +195,9 @@ public class ChannelManager {
     }
 
     public boolean broadcast(Channel channel, Message message, User... excludes) {
-        if (wordsNotAllowedCommandExecutor.isWordsNotAllowedUser(message.getSender())) {
-            return false;
+        if (!wordsNotAllowedCommandExecutor.isCanWords(message.getSender(), channel)) {
+            sendSystemMessageToUser(new InfoMessage("你被禁言中，消息发送失败", channel), message.getSender());
+            return true;
         }
 
         message.setChannelId(channel.getId());
@@ -236,12 +237,8 @@ public class ChannelManager {
 
         ChatMessageServerMsg msgMsg = new ChatMessageServerMsg();
         msgMsg.setId(message.getId());
-        msgMsg.setChannelId(channel.getId());
-        ChatMessageServerMsg.Sender sender = new ChatMessageServerMsg.Sender();
-        sender.setId(message.getSender().getId());
-        sender.setAdmin(message.getSender().isAdmin());
-        sender.setNickname(message.getSender().getNickname());
-        msgMsg.setSender(sender);
+        msgMsg.setChannelId(message.getChannelId());
+        msgMsg.setSender(message.getSender());
         msgMsg.setContent(message.getContent());
         msgMsg.setTimestamp(message.getTimestamp());
 
@@ -254,6 +251,16 @@ public class ChannelManager {
         });
 
         return true;
+    }
+
+    public void sendSystemMessageToUser(SystemMessage message, User user) {
+        ChatMessageServerMsg msgMsg = new ChatMessageServerMsg();
+        msgMsg.setId(message.getId());
+        msgMsg.setChannelId(message.getChannelId());
+        msgMsg.setSender(message.getSender());
+        msgMsg.setContent(message.getContent());
+        msgMsg.setTimestamp(message.getTimestamp());
+        wsMessageService.send(msgMsg, user);
     }
 
     public void removeChannel(Channel channel) {

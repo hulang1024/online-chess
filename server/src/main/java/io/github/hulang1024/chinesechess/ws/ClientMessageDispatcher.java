@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.ws;
 
 import com.alibaba.fastjson.JSONObject;
-import io.github.hulang1024.chinesechess.http.AuthenticationUtils;
+import io.github.hulang1024.chinesechess.http.TokenUtils;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
 import io.github.hulang1024.chinesechess.user.UserSessionManager;
@@ -48,7 +48,7 @@ public class ClientMessageDispatcher {
             if ("guest".equals(clientLoginMsg.getToken())) {
                 clientLoginMsg.setUserId(-1);
             } else {
-                user = AuthenticationUtils.verifyParseUserInfo(clientLoginMsg.getToken());
+                user = TokenUtils.verifyParseUserInfo(clientLoginMsg.getToken());
                 if (user == null) {
                     wsMessageService.send(new ErrorMessage("token错误"), session);
                     return;

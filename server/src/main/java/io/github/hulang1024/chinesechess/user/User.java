@@ -39,6 +39,8 @@ public class User {
 
     private LocalDateTime lastLoginTime;
 
+    private LocalDateTime lastActiveTime;
+
     public static User SYSTEM_USER;
     static {
         User systemUser = new User();

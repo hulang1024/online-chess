@@ -7,5 +7,5 @@
 dump.rdb
 .DS_Store
 
-server/src/db
-server/src/main/resources/application-prod.yml
+/server/src/db
+/server/src/main/resources/application-prod.yml

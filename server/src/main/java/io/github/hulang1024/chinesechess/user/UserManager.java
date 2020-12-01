@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.database.DaoPageParam;
 import io.github.hulang1024.chinesechess.friend.FriendUserDao;
-import io.github.hulang1024.chinesechess.http.AuthenticationUtils;
+import io.github.hulang1024.chinesechess.http.TokenUtils;
 import io.github.hulang1024.chinesechess.http.params.PageParam;
 import io.github.hulang1024.chinesechess.http.results.PageRet;
 import io.github.hulang1024.chinesechess.room.Room;
@@ -67,13 +67,13 @@ public class UserManager {
             userPage = friendUserDao.searchFriends(new DaoPageParam(pageParam),
                 new QueryWrapper<User>()
                     .eq("friends.user_id", UserUtils.get().getId())
-                    .orderByDesc("win_count", "last_login_time"));
+                    .orderByDesc("win_count", "last_active_time"));
             userPage.getRecords().forEach(user -> {
                 user.setIsFriend(true);
             });
         } else {
             userPage = userDao.searchUsers(new DaoPageParam(pageParam),
-                new QueryWrapper<User>().orderByDesc("win_count", "last_login_time"));
+                new QueryWrapper<User>().orderByDesc("win_count", "last_active_time"));
         }
 
         userPage.getRecords().forEach(user -> {
@@ -122,7 +122,7 @@ public class UserManager {
     public LoginResult login(UserLoginParam param) {
         User user;
         if (StringUtils.isNotEmpty(param.getToken())) {
-            user = AuthenticationUtils.verifyParseUserInfo(param.getToken());
+            user = TokenUtils.verifyParseUserInfo(param.getToken());
             if (user == null) {
                 return LoginResult.fail(3);
             }
@@ -142,20 +142,21 @@ public class UserManager {
             }
         }
 
-        return login(user);
+        return login(user, 24 * 60 * 60);
     }
 
     /**
      * @param user 已验证/存在的用户
      * @return
      */
-    public LoginResult login(User user) {
+    public LoginResult login(User user, long expiresInSeconds) {
         user.setLastLoginTime(LocalDateTime.now());
+        user.setLastActiveTime(user.getLastLoginTime());
         userDao.updateById(user);
 
         LoginResult result = LoginResult.ok();
         result.setUser(user);
-        result.setAccessToken(AuthenticationUtils.generateAccessToken(user.getId()));
+        result.setAccessToken(TokenUtils.generateAccessToken(user.getId(), expiresInSeconds));
         loggedInUserMap.put(user.getId(), user);
 
         return result;
