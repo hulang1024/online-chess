@@ -15,7 +15,6 @@ import Channel from "../../online/chat/Channel";
 import ConfirmDialog from "./ConfirmDialog";
 import GameButtonsOverlay from "./GameButtonsOverlay";
 import ChannelManager from "../../online/chat/ChannelManager";
-import ChannelType from "../../online/chat/ChannelType";
 import notify, { allowNotify } from "../../component/notify";
 import APIAccess from "../../online/api/APIAccess";
 import PartRoomRequest from "../../online/room/PartRoomRequest";
@@ -27,6 +26,7 @@ import Bindable from "../../utils/bindables/Bindable";
 import ConfirmLeaveDialog from "./ConfirmLeaveDialog";
 import TextOverlay from "./TextOverlay";
 import ResultDialog from "./ResultDialog";
+import ChannelType from "../../online/chat/ChannelType";
 
 export default class PlayScene extends AbstractScene {
     // socket消息监听器
@@ -74,7 +74,8 @@ export default class PlayScene extends AbstractScene {
         this.channelManager = context.channelManager;
         this.socketClient = context.socketClient;
 
-        this.room = room || initialGameStates.room;
+        room = room || initialGameStates.room;
+        this.room = room;
         this.gameState.value = this.room.gameStatus;
         this.user = this.api.localUser;
         // 初始双方游戏状态和持棋方
@@ -103,17 +104,17 @@ export default class PlayScene extends AbstractScene {
             this.otherChessHost.value = ChessHost.reverse(chessHost);
         });
 
-        let channel = new Channel();
-        channel.id = this.room.channelId;
-        channel.name = '#当前棋桌';
-        channel.type = ChannelType.ROOM;
-        this.channelManager.joinChannel(channel);
-
         this.initListeners();
 
         this.load(initialGameStates);
  
         this.updateWaitInfo();
+
+        if (this.gameState.value != GameState.READY) {
+            let channel = new Channel();
+            channel.id = this.room.channelId;
+            this.channelManager.joinChannel(channel);
+        }
     }
 
     private load(initialGameStates: GameStates) {

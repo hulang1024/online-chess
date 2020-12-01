@@ -275,6 +275,11 @@ export default class ChannelManager {
                 channel.name = msg.sender.nickname;
                 this.joinChannel(channel, false);
                 this.openPrivateChannel(msg.sender);
+            } else if (channel.type == ChannelType.ROOM) {
+                this.joinChannel(channel, false);
+            }
+            if (msg.recentMessages) {
+                this.handleChannelMessages(msg.recentMessages.map(Message.from));
             }
         });
 

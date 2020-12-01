@@ -70,7 +70,7 @@ export default class ChatOverlay extends Overlay {
         this.addChild(messageInput);
 
         this.manager.joinedChannels.added.add((channel: Channel) => {
-            if (channel.type == ChannelType.PM || channel.id == 1) {
+            if (channel.id == 1) {
                 this.popIn();
             }
 

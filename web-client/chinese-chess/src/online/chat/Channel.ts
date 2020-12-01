@@ -36,6 +36,10 @@ export default class Channel {
         messages = messages.filter(newMsg =>
             this.messages.filter(m => m.equals(newMsg)).length == 0);
 
+        if (messages.length == 0) {
+            return;
+        }
+        
         this.messages = this.messages.concat(messages);
 
         this.newMessagesArrived.dispatch(messages);

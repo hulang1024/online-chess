@@ -78,12 +78,6 @@ export default class SpectatorPlayScene extends AbstractScene {
         }
         this.initListeners();
 
-        let channel = new Channel();
-        channel.id = this.room.channelId;
-        channel.name = '#当前棋桌';
-        channel.type = ChannelType.ROOM;
-        this.channelManager.joinChannel(channel);
-        
         this.load(spectateResponse);
     }
     
@@ -211,6 +205,7 @@ export default class SpectatorPlayScene extends AbstractScene {
         }
         this.socketClient.removeEventListener(egret.Event.CLOSE, this.connectionCloseHandler, this);
         this.channelManager.leaveChannel(this.room.channelId);
+        this.context.chatOverlay.popIn();
     }
 
     private initListeners() {
