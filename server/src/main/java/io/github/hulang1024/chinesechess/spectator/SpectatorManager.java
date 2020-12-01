@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.spectator;
 
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
-import io.github.hulang1024.chinesechess.chat.InfoMessage;
+import io.github.hulang1024.chinesechess.chat.ws.ChatUpdatesServerMsg;
 import io.github.hulang1024.chinesechess.play.GameState;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
@@ -92,6 +92,11 @@ public class SpectatorManager {
         room.getSpectators().add(spectator);
         channelManager.joinChannel(room.getChannel(), spectator);
 
+        ChatUpdatesServerMsg chatUpdatesServerMsg = new ChatUpdatesServerMsg();
+        chatUpdatesServerMsg.setChannel(room.getChannel());
+        chatUpdatesServerMsg.setRecentMessages(room.getChannel().getMessages());
+        wsMessageService.send(chatUpdatesServerMsg, spectator);
+
         spectatorRoomMap.put(spectator.getId(), room);
 
         response.setStates(room.getGame().buildGamePlayStatesResponse());
@@ -104,12 +109,6 @@ public class SpectatorManager {
         joinMsg.setUser(spectator);
         joinMsg.setSpectatorCount(room.getSpectators().size());
         roomManager.broadcast(room, joinMsg, spectator);
-
-        // 玩家可能都离线/掉线
-        if (room.getOnlineUserCount() > 0) {
-            channelManager.broadcast(room.getChannel(),
-                new InfoMessage(spectator.getNickname() + " 加入观看"), spectator);
-        }
 
         return response;
     }
@@ -131,9 +130,6 @@ public class SpectatorManager {
         leftMsg.setUid(spectator.getId());
         leftMsg.setSpectatorCount(room.getSpectators().size());
         roomManager.broadcast(room, leftMsg);
-
-        channelManager.broadcast(room.getChannel(),
-            new InfoMessage(spectator.getNickname() + " 离开观看"));
     }
 
     public void broadcast(Room room, ServerMessage message) {

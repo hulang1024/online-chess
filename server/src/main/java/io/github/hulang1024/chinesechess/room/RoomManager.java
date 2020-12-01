@@ -3,6 +3,7 @@ package io.github.hulang1024.chinesechess.room;
 import io.github.hulang1024.chinesechess.chat.Channel;
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.chat.ChannelType;
+import io.github.hulang1024.chinesechess.chat.ws.ChatUpdatesServerMsg;
 import io.github.hulang1024.chinesechess.play.GameState;
 import io.github.hulang1024.chinesechess.room.ws.*;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
@@ -97,7 +98,7 @@ public class RoomManager {
 
         // 为房间创建聊天频道
         Channel channel = new Channel();
-        channel.setName(createdRoom.getId().toString());
+        channel.setName("#当前房间");
         channel.setType(ChannelType.ROOM);
         channelManager.createChannel(channel);
 
@@ -181,6 +182,11 @@ public class RoomManager {
         broadcast(room, joinMsg, user);
 
         userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room), user);
+
+        ChatUpdatesServerMsg chatUpdatesServerMsg = new ChatUpdatesServerMsg();
+        chatUpdatesServerMsg.setChannel(room.getChannel());
+        chatUpdatesServerMsg.setRecentMessages(room.getChannel().getMessages());
+        wsMessageService.send(chatUpdatesServerMsg, user);
 
         return result;
     }

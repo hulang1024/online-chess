@@ -28,24 +28,38 @@ public class WordsNotAllowedCommandExecutor implements CommandExecutor {
         if (!message.getSender().isAdmin()) {
             return;
         }
-
-        if (!(cmdParams.length == 3
-            && cmdParams[0].matches("^\\d+$")
-            && cmdParams[1].matches("^on$|^off$")
-            && cmdParams[2].matches("^\\d+$"))) {
+        if (!(2 <= cmdParams.length && cmdParams.length <= 3)) {
             return;
         }
 
-        long userId = Long.parseLong(cmdParams[0]);
-        boolean notAllowed = "off".equals(cmdParams[1]);
-        int minutes = Integer.parseInt(cmdParams[2]);
+        Long userId = null;
+        Boolean isOff = null;
+        int minutes = 0;
+
+        if (cmdParams[0].matches("^\\d+$")) {
+            userId = Long.parseLong(cmdParams[0]);
+        }
+        if (cmdParams[1].matches("^on$|^off$")) {
+            isOff = "off".equals(cmdParams[1]);
+        }
+        if (userId == null || isOff == null) {
+            return;
+        }
+
+        if (isOff) {
+            if (cmdParams.length == 3 && cmdParams[2].matches("^\\d+$")) {
+                minutes = Integer.parseInt(cmdParams[2]);
+            } else {
+                return;
+            }
+        }
 
         User user = userManager.getLoggedInUser(userId);
         if (user == null || user.isAdmin() || minutes < 0) {
             return;
         }
 
-        if (notAllowed) {
+        if (isOff) {
             wordsNotAllowedUsers.put(userId, new WordsNotAllowedUser(user, LocalDateTime.now(), minutes));
             channelManager.broadcast(channel,
                 new InfoMessage(String.format("%s 已被禁言%s分钟!", user.getNickname(), minutes)));

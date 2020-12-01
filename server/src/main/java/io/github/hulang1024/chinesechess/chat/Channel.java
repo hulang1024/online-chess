@@ -41,7 +41,7 @@ public class Channel {
     }
 
     public Long getLastMessageId() {
-        Message lastMessage = this.messages.get(this.messages.size() - 1);
+        Message lastMessage = this.messages.isEmpty() ? null : this.messages.get(this.messages.size() - 1);
         return lastMessage == null ? null : lastMessage.getId();
     }
 
