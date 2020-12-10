@@ -14,7 +14,7 @@ export default class APIAccess {
 
     constructor(configManager: ConfigManager) {
         this.configManager = configManager;
-        this.endpoint = true ? `${location.protocol}//${location.host}` : 'http://180.76.185.34'
+        this.endpoint = false ? `${location.protocol}//${location.host}` : 'http://180.76.185.34'
     }
 
     public queue(request: APIRequest) {
