@@ -5,11 +5,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.database.DaoPageParam;
 import io.github.hulang1024.chinesechess.friend.FriendUserDao;
+import io.github.hulang1024.chinesechess.friend.FriendsManager;
 import io.github.hulang1024.chinesechess.http.TokenUtils;
 import io.github.hulang1024.chinesechess.http.params.PageParam;
 import io.github.hulang1024.chinesechess.http.results.PageRet;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
+import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.userstats.UserStatsService;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.yeauty.pojo.Session;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,6 +33,8 @@ public class UserManager {
     private UserDao userDao;
     @Autowired
     private UserStatsService userStatsService;
+    @Autowired
+    private FriendsManager friendsManager;
     @Autowired
     private FriendUserDao friendUserDao;
     @Autowired
@@ -62,22 +68,44 @@ public class UserManager {
     }
 
     public PageRet<SearchUserInfo> searchUsers(SearchUserParam searchUserParam, PageParam pageParam) {
+        User currentUser = UserUtils.get();
         IPage<SearchUserInfo> userPage;
         if (searchUserParam.getOnlyFriends()) {
             userPage = friendUserDao.searchFriends(new DaoPageParam(pageParam),
                 new QueryWrapper<User>()
-                    .eq("friends.user_id", UserUtils.get().getId())
+                    .eq("friends.user_id", currentUser.getId())
                     .orderByDesc("win_count", "last_active_time"));
-            userPage.getRecords().forEach(user -> {
-                user.setIsFriend(true);
-            });
         } else {
             userPage = userDao.searchUsers(new DaoPageParam(pageParam),
                 new QueryWrapper<User>().orderByDesc("win_count", "last_active_time"));
         }
 
+        final List<Long> friendUserIds = new ArrayList<>();
+        if (currentUser != null) {
+            friendUserIds.addAll( friendsManager.getFriendIds(currentUser) );
+        }
+
         userPage.getRecords().forEach(user -> {
+            if (currentUser != null) {
+                user.setIsFriend(friendUserIds.contains(user.getId()));
+            }
             user.setIsOnline(isOnline(user.getId()));
+
+            if (user.getIsOnline()) {
+                user.setStatus(UserStatus.ONLINE);
+                Room room = roomManager.getJoinedRoom(user);
+                if (room != null) {
+                    user.setStatus(room.getStatus() == RoomStatus.PLAYING
+                        ? UserStatus.PLAYING : UserStatus.IN_ROOM);
+                    return;
+                }
+                room = spectatorManager.getSpectatingRoom(user);
+                if (room != null) {
+                    user.setStatus(UserStatus.SPECTATING);
+                }
+            } else {
+                user.setStatus(UserStatus.OFFLINE);
+            }
         });
 
         return new PageRet<>(userPage);
@@ -180,7 +208,9 @@ public class UserManager {
 
         channelManager.leaveDefaultChannels(user);
 
-        guestLogin(session);
+        if (session != null) {
+            guestLogin(session);
+        }
 
         return true;
     }

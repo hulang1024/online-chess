@@ -8,5 +8,8 @@ import lombok.Data;
 @Data
 @ClientMsgType("play.game_over")
 public class GameOverMsg extends ClientMessage {
-    private int result;
+    /**
+     * 为空表示平局
+     */
+    private Long winUserId;
 }

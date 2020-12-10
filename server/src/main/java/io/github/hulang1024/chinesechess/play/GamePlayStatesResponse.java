@@ -17,7 +17,7 @@ public class GamePlayStatesResponse {
     public static class Chess {
         private int row;
         private int col;
-        private int host;
+        private int chessHost;
         private char type;
     }
 }

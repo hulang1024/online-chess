@@ -59,7 +59,7 @@ public class Game {
                 Chess chess = chessboardState.chessAt(r, c);
                 if (chess != null) {
                     GamePlayStatesResponse.Chess sChess = new GamePlayStatesResponse.Chess();
-                    sChess.setHost(chess.chessHost == ChessHost.RED ? 1 : 2);
+                    sChess.setChessHost(chess.chessHost == ChessHost.RED ? 1 : 2);
                     sChess.setType(chess.type.name().charAt(0));
                     sChess.setRow(r);
                     sChess.setCol(c);

@@ -25,8 +25,8 @@ public class RoomController {
      */
     @GuestAPI
     @GetMapping
-    public ResponseEntity<Collection<Room>> getRooms() {
-        return ResponseEntity.ok(roomManager.searchRooms());
+    public ResponseEntity<Collection<Room>> getRooms(SearchRoomParam param) {
+        return ResponseEntity.ok(roomManager.searchRooms(param));
     }
 
     /**
@@ -40,8 +40,8 @@ public class RoomController {
     }
 
     @PostMapping
-    public ResponseEntity<Room> create(@Validated @RequestBody Room room) {
-        Room createdRoom = roomManager.createRoom(room);
+    public ResponseEntity<Room> create(@Validated @RequestBody CreateRoomParam createRoomParam) {
+        Room createdRoom = roomManager.createRoom(createRoomParam);
         if (createdRoom == null) {
             return new ResponseEntity(HttpStatus.EXPECTATION_FAILED);
         }
@@ -52,7 +52,7 @@ public class RoomController {
     @PutMapping("/{room_id}")
     public ResponseEntity<Void> update(
         @NotNull @PathVariable("room_id") Long roomId,
-        @Validated @RequestBody RoomUpdateParam param) {
+        @Validated @RequestBody UpdateRoomParam param) {
         boolean ok = roomManager.updateRoomInfo(roomId, param);
         return new ResponseEntity(ok ? HttpStatus.OK : HttpStatus.EXPECTATION_FAILED);
     }

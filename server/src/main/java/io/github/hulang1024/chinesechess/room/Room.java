@@ -67,7 +67,9 @@ public class Room {
     @JSONField(serialize = false)
     private LocalDateTime offlineAt;
 
-    private int roundCount = 0;
+    private int gameCount = 0;
+
+    private RoomSettings roomSettings;
 
     public Room(ChannelManager channelManager, UserManager userManager) {
         game = new Game(this);
@@ -84,10 +86,7 @@ public class Room {
             blackReadied = true;
         }
 
-        // 第二个加进来的默认未准备
-        if (getUserCount() == 2) {
-            updateUserReadyState(user, false);
-        }
+        updateUserReadyState(user, user.equals(owner));
 
         channelManager.joinChannel(channel, user);
 
@@ -110,7 +109,6 @@ public class Room {
         }
 
         game.setState(GameState.READY);
-        roundCount = 0;
     }
 
     public void setChannel(Channel channel) {
@@ -174,6 +172,7 @@ public class Room {
         return count;
     }
 
+    @JSONField(serialize = false)
     public User getOneUser() {
         if (this.redChessUser != null) {
             return this.redChessUser;
@@ -184,6 +183,7 @@ public class Room {
         return null;
     }
 
+    @JSONField(serialize = false)
     public User getOtherUser(User user) {
         if (user.equals(redChessUser)) {
             return blackChessUser;
@@ -194,6 +194,7 @@ public class Room {
         return null;
     }
 
+    @JSONField(serialize = false)
     public List<User> getUsers() {
         List<User> users = new ArrayList<>();
         if (redChessUser != null) {

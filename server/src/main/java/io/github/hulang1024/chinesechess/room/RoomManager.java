@@ -8,6 +8,7 @@ import io.github.hulang1024.chinesechess.play.GameState;
 import io.github.hulang1024.chinesechess.room.ws.*;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.*;
+import io.github.hulang1024.chinesechess.user.ws.UserStatusChangedServerMsg;
 import io.github.hulang1024.chinesechess.ws.ServerMessage;
 import io.github.hulang1024.chinesechess.ws.WSMessageService;
 import org.apache.commons.lang3.StringUtils;
@@ -44,8 +45,25 @@ public class RoomManager {
     @Autowired
     private WSMessageService wsMessageService;
 
-    public List<Room> searchRooms() {
-        return roomMap.values().stream()
+    public List<Room> searchRooms(SearchRoomParam searchRoomParam) {
+        List<Room> rooms;
+        if (searchRoomParam != null) {
+            rooms = roomMap.values().stream()
+                .filter(room -> {
+                    boolean ret = true;
+                    if (searchRoomParam.getStatus() != null) {
+                        ret = ret && room.getStatus().code == searchRoomParam.getStatus();
+                    }
+                    if (searchRoomParam.getRequirePassword() != null) {
+                        ret = ret && ((room.getPassword() != null) == searchRoomParam.getRequirePassword());
+                    }
+                    return ret;
+                })
+                .collect(Collectors.toList());
+        } else {
+            rooms = roomMap.values().stream().collect(Collectors.toList());
+        }
+        rooms = rooms.stream()
             .sorted((a, b) -> {
                 int ret = a.getUserCount() - b.getUserCount();
                 if (ret == 0) {
@@ -54,6 +72,8 @@ public class RoomManager {
                 return ret;
             })
             .collect(Collectors.toList());
+
+        return rooms;
     }
 
     public Collection<Room> getRooms() {
@@ -74,10 +94,10 @@ public class RoomManager {
 
     /**
      * 创建房间
-     * @param room
+     * @param createRoomParam
      * @return 创建的房间
      */
-    public Room createRoom(Room room) {
+    public Room createRoom(CreateRoomParam createRoomParam) {
         User creator = UserUtils.get();
 
         if (getJoinedRoom(creator) != null) {
@@ -86,12 +106,15 @@ public class RoomManager {
 
         Room createdRoom = new Room(channelManager, userManager);
         createdRoom.setId(nextRoomId());
-        if (StringUtils.isNotBlank(room.getName())) {
-            createdRoom.setName(room.getName());
+        if (StringUtils.isNotBlank(createRoomParam.getName())) {
+            createdRoom.setName(createRoomParam.getName());
         } else {
             createdRoom.setName(createdRoom.getId().toString());
         }
-        createdRoom.setPassword(room.getPassword());
+
+        createdRoom.setRoomSettings(createRoomParam.getRoomSettings());
+
+        createdRoom.setPassword(createRoomParam.getPassword());
         createdRoom.setCreateBy(creator.getId());
         createdRoom.setCreateAt(LocalDateTime.now());
         createdRoom.setOwner(creator);
@@ -106,12 +129,12 @@ public class RoomManager {
 
         roomMap.put(createdRoom.getId(), createdRoom);
 
-        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomCreateServerMsg(createdRoom), creator);
-
         // 创建者默认进入房间
         JoinRoomParam roomJoinParam = new JoinRoomParam();
-        roomJoinParam.setPassword(room.getPassword());
+        roomJoinParam.setPassword(createRoomParam.getPassword());
         joinRoom(createdRoom, creator, roomJoinParam);
+
+        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomCreateServerMsg(createdRoom));
 
         return createdRoom;
     }
@@ -181,7 +204,11 @@ public class RoomManager {
         joinMsg.setUser(user);
         broadcast(room, joinMsg, user);
 
-        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room), user);
+        if (!room.getOwner().equals(user)) {
+            userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room), user);
+        }
+        userActivityService.broadcast(
+            UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.IN_ROOM));
 
         ChatUpdatesServerMsg chatUpdatesServerMsg = new ChatUpdatesServerMsg();
         chatUpdatesServerMsg.setChannel(room.getChannel());
@@ -213,6 +240,10 @@ public class RoomManager {
         room.partUser(user);
         userJoinedRoomMap.remove(user.getId());
 
+        userActivityService.broadcast(
+            UserActivity.ONLINE_USER,
+            new UserStatusChangedServerMsg(user, userManager.isOnline(user) ? UserStatus.ONLINE : UserStatus.OFFLINE));
+
         // 离开之后，房间内还有用户
         if (room.getUserCount() == 1) {
             User otherUser = room.getOneUser();
@@ -224,6 +255,14 @@ public class RoomManager {
                 if (room.getStatus() == RoomStatus.DISMISSED) {
                     return 0;
                 }
+            } else {
+                // 如果是房主离开，转移房主引用
+                if (room.getOwner().equals(user)) {
+                    room.setOwner(otherUser);
+                    room.updateUserReadyState(room.getOwner(), true);
+                }
+                userActivityService.broadcast(
+                    UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(otherUser, UserStatus.IN_ROOM));
             }
         }
 
@@ -247,7 +286,7 @@ public class RoomManager {
         return 0;
     }
 
-    public boolean updateRoomInfo(Long roomId, RoomUpdateParam param) {
+    public boolean updateRoomInfo(Long roomId, UpdateRoomParam param) {
         Room room = getRoom(roomId);
         if (StringUtils.isNotBlank(param.getName())) {
             room.setName(param.getName());

@@ -12,10 +12,14 @@ import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.room.ws.LobbyRoomUpdateServerMsg;
 import io.github.hulang1024.chinesechess.user.User;
+import io.github.hulang1024.chinesechess.user.UserStatus;
+import io.github.hulang1024.chinesechess.user.ws.UserStatusChangedServerMsg;
 import io.github.hulang1024.chinesechess.userstats.UserStatsService;
 import io.github.hulang1024.chinesechess.ws.AbstractMessageListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class PlayMessageListener extends AbstractMessageListener {
@@ -33,6 +37,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         addMessageHandler(ChessMoveMsg.class, this::onMoveChess);
         addMessageHandler(ConfirmRequestMsg.class, this::onConfirmRequest);
         addMessageHandler(ConfirmResponseMsg.class, this::onConfirmResponse);
+        addMessageHandler(StartGameMsg.class, this::onStartGame);
         addMessageHandler(GameOverMsg.class, this::onGameOver);
         addMessageHandler(GameContinueMsg.class, this::onGameContinue);
     }
@@ -57,10 +62,13 @@ public class PlayMessageListener extends AbstractMessageListener {
         roomManager.broadcast(room, readyServerMsg);
 
         userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room), user);
+    }
 
-        // 如果全部准备好，开始游戏
-        boolean isAllReadied = room.isFull() && room.getUsers().stream()
-            .allMatch(u -> room.getUserReadied(u));
+    private void onStartGame(StartGameMsg msg) {
+        Room room = roomManager.getJoinedRoom(msg.getUser());
+
+        boolean isAllReadied = room.getStatus() == RoomStatus.BEGINNING
+            && room.getUsers().stream().allMatch(u -> room.getUserReadied(u));
         if (isAllReadied) {
             startGame(room);
         }
@@ -175,9 +183,9 @@ public class PlayMessageListener extends AbstractMessageListener {
         Game round = new Game(room);
         room.setGame(round);
 
-        room.setRoundCount(room.getRoundCount() + 1);
+        room.setGameCount(room.getGameCount() + 1);
 
-        if (room.getRoundCount() > 1) {
+        if (room.getGameCount() > 1) {
             // 第n个对局，交换棋方
             User redChessUser = room.getRedChessUser();
             User blackChessUser = room.getBlackChessUser();
@@ -190,6 +198,10 @@ public class PlayMessageListener extends AbstractMessageListener {
         room.setStatus(RoomStatus.PLAYING);
 
         roomManager.broadcast(room, new GameStartServerMsg(room.getRedChessUser(), room.getBlackChessUser()));
+        room.getUsers().forEach(user -> {
+            userActivityService.broadcast(
+                UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.PLAYING));
+        });
     }
 
     private void onGameContinue(GameContinueMsg clientMsg) {
@@ -206,6 +218,9 @@ public class PlayMessageListener extends AbstractMessageListener {
             GamePlayStatesServerMsg gamePlayStatesServerMsg = new GamePlayStatesServerMsg();
             gamePlayStatesServerMsg.setStates(joinedRoom.getGame().buildGamePlayStatesResponse());
             send(gamePlayStatesServerMsg, user);
+
+            userActivityService.broadcast(
+                UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.PLAYING));
         } else {
             // 如果不想继续，离开房间
             roomManager.partRoom(joinedRoom, user);
@@ -222,14 +237,34 @@ public class PlayMessageListener extends AbstractMessageListener {
     }
 
     private void onGameOver(GameOverMsg msg) {
-        User user = msg.getUser();
-        Room room = roomManager.getJoinedRoom(user);
+        Room room = roomManager.getJoinedRoom(msg.getUser());
+        if (room == null) {
+            return;
+        }
+
         room.setStatus(RoomStatus.BEGINNING);
-        room.updateUserReadyState(user, false);
         room.getGame().setState(GameState.READY);
 
-        userStatsService.updateUser(user, GameResult.from(msg.getResult()));
+        room.updateUserReadyState(room.getOtherUser(room.getOwner()), false);
 
-        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room), user);
+        if (msg.getWinUserId() != null) {
+            Optional<User> winUserOpt = room.getUsers().stream()
+                .filter(user -> user.getId().equals(msg.getWinUserId()))
+                .findAny();
+            User winUser = winUserOpt.get();
+            User loseUser = room.getOtherUser(winUser);
+            userStatsService.updateUser(winUser, GameResult.WIN);
+            userStatsService.updateUser(loseUser, GameResult.LOSE);
+        } else {
+            room.getUsers().forEach(user -> {
+                userStatsService.updateUser(user, GameResult.DRAW);
+            });
+        }
+
+        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room));
+        room.getUsers().forEach(user -> {
+            userActivityService.broadcast(
+                UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.IN_ROOM));
+        });
     }
 }

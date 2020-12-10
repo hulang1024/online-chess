@@ -1,0 +1,49 @@
+<template>
+  <q-card
+    v-show="visible"
+    transition-show="fade"
+    transition-hide="fade"
+    class="q-py-sm full-width"
+  >
+    <span class="text-subtitle1">{{_text}}</span>
+  </q-card>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref } from '@vue/composition-api'
+
+export default defineComponent({
+  setup(props, {emit}) {
+    const visible = ref<boolean>(false);
+    const _text = ref<string>('');
+    
+    const show = (text: string, duration: number = 0) => {
+      _text.value = text;
+      visible.value = true;
+      if (duration > 0) {
+        setTimeout(() => {
+          visible.value = false;
+        }, duration);
+      }
+    };
+
+    const hide = (act: string) => {
+      visible.value = false;
+    };
+
+    return {
+      visible,
+      _text,
+      show,
+      hide
+    }
+  }
+})
+</script>
+
+<style lang="sass" scoped>
+.q-card
+  background: rgba(0,0,0,0.5)
+  color: white
+  text-align: center
+</style>

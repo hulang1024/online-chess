@@ -4,6 +4,7 @@ import io.github.hulang1024.chinesechess.friend.FriendsManager;
 import io.github.hulang1024.chinesechess.user.ws.OnlineStatServerMsg;
 import io.github.hulang1024.chinesechess.user.ws.UserOfflineServerMsg;
 import io.github.hulang1024.chinesechess.user.ws.UserOnlineServerMsg;
+import io.github.hulang1024.chinesechess.user.ws.UserStatusChangedServerMsg;
 import io.github.hulang1024.chinesechess.ws.WSMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,8 @@ public class OnlineListener {
                 wsMessageService.send(new UserOnlineServerMsg(user), userManager.getLoggedInUser(userId));
             }
         });
-
+        userActivityService.broadcast(
+            UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.ONLINE));
         sendOnlineStat();
     }
 
@@ -37,7 +39,8 @@ public class OnlineListener {
                 wsMessageService.send(new UserOfflineServerMsg(user), userManager.getLoggedInUser(userId));
             }
         });
-
+        userActivityService.broadcast(
+            UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.OFFLINE));
         sendOnlineStat();
     }
 

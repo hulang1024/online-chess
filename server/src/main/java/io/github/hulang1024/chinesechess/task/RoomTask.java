@@ -22,7 +22,7 @@ public class RoomTask {
         final int TIMEOUT_HOURS = 3;
 
         LocalDateTime now = LocalDateTime.now();
-        roomManager.searchRooms().stream()
+        roomManager.searchRooms(null).stream()
             .filter(room -> {
                 if (room.getOfflineAt() == null) {
                     return false;

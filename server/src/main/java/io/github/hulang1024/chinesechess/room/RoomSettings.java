@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class RoomSettings {
     /**
-     * 局时（分钟）
+     * 局时（秒）
      */
     private int gameDuration;
     /**

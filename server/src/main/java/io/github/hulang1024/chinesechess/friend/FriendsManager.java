@@ -23,6 +23,15 @@ public class FriendsManager {
             .collect(Collectors.toList());
     }
 
+    public List<Long> getFriendIds(User user) {
+        return friendRelationDao.selectList(
+            new QueryWrapper<FriendRelation>()
+                .select("friend_user_id")
+                .eq("user_id", user.getId())).stream()
+            .map(FriendRelation::getFriendUserId)
+            .collect(Collectors.toList());
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public boolean addFriend(long userId, long friendUserId) {
         if (userId == friendUserId) {

@@ -7,8 +7,8 @@ import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.spectator.ws.SpectatorJoinServerMsg;
 import io.github.hulang1024.chinesechess.spectator.ws.SpectatorLeftServerMsg;
-import io.github.hulang1024.chinesechess.user.User;
-import io.github.hulang1024.chinesechess.user.UserManager;
+import io.github.hulang1024.chinesechess.user.*;
+import io.github.hulang1024.chinesechess.user.ws.UserStatusChangedServerMsg;
 import io.github.hulang1024.chinesechess.ws.ServerMessage;
 import io.github.hulang1024.chinesechess.ws.WSMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +30,8 @@ public class SpectatorManager {
     private ChannelManager channelManager;
     @Autowired
     private WSMessageService wsMessageService;
+    @Autowired
+    private UserActivityService userActivityService;
 
     public Room getSpectatingRoom(User user) {
         return spectatorRoomMap.get(user.getId());
@@ -110,9 +112,10 @@ public class SpectatorManager {
         joinMsg.setSpectatorCount(room.getSpectators().size());
         roomManager.broadcast(room, joinMsg, spectator);
 
+        userActivityService.broadcast(
+            UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(spectator, UserStatus.SPECTATING));
         return response;
     }
-
 
 
     public void leaveRoom(long roomId, long userId) {
@@ -130,6 +133,8 @@ public class SpectatorManager {
         leftMsg.setUid(spectator.getId());
         leftMsg.setSpectatorCount(room.getSpectators().size());
         roomManager.broadcast(room, leftMsg);
+        userActivityService.broadcast(
+            UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(spectator, UserStatus.ONLINE));
     }
 
     public void broadcast(Room room, ServerMessage message) {
