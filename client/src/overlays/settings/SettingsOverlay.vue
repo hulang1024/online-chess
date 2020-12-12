@@ -58,6 +58,10 @@ export default defineComponent({
       isOpen.value = !isOpen.value;
     };
 
+    const show = () => {
+      isOpen.value = true;
+    };
+
     const hide = () => {
       isOpen.value = false;
     };
@@ -111,6 +115,7 @@ export default defineComponent({
     return {
       isOpen,
       toggle,
+      show,
       hide,
       activeTab,
       configState,

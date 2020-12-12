@@ -176,22 +176,30 @@ export default defineComponent({
       api.queue(req);
     };
 
-    const toggle = () => {
-      isOpen.value = !isOpen.value;
-
-      if (isOpen.value) {
-        users.value = [];
-        setTimeout(() => {
-          queryUsers();
-        }, 300);
-      }
+    const show = () => {
+      isOpen.value = true;
+      users.value = [];
+      setTimeout(() => {
+        queryUsers();
+      }, 300);
       socketService.queue((send) => {
-        send(`activity.${isOpen.value ? 'enter' : 'exit'}`, { code: 2 });
+        send('activity.enter', { code: 2 });
       });
     };
 
     const hide = () => {
       isOpen.value = false;
+      socketService.queue((send) => {
+        send('activity.exit', { code: 2 });
+      });
+    };
+
+    const toggle = () => {
+      if (isOpen.value) {
+        show();
+      } else {
+        hide();
+      }
     };
 
     const isLoggedIn = ref<boolean>(api.isLoggedIn.value); // todo:全局加入响应式
@@ -302,6 +310,7 @@ export default defineComponent({
     return {
       isOpen,
       toggle,
+      show,
       hide,
 
       activeTab,

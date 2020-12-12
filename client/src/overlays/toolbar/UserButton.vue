@@ -42,7 +42,7 @@ import LoginOverlay from '../user/LoginOverlay.vue';
 
 export default defineComponent({
   components: { UserAvatar, LoginOverlay, LoggedInUserOverlay },
-  setup() {
+  setup(props, { emit }) {
     const { $refs, $q } = getCurrentInstance() as Vue;
     const user = reactive(api.localUser);
 
@@ -51,6 +51,7 @@ export default defineComponent({
     });
 
     const onUserButtonClick = () => {
+      emit('click', props);
       if (api.isLoggedIn.value) {
         return;
       }

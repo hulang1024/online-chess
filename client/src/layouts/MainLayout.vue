@@ -8,6 +8,7 @@
           icon="settings"
           aria-label="Settings"
           class="toolbar-button q-px-sm"
+          :class="{active: isActive('settings')}"
           @click="onSettingButtonClick"
         >
           <q-tooltip content-class="bg-black">
@@ -22,6 +23,7 @@
           dense
           icon="chat"
           class="toolbar-button q-px-sm"
+          :class="{active: isActive('chat')}"
           @click="onChatButtonClick"
         >
           <q-tooltip content-class="bg-black">聊天</q-tooltip>
@@ -32,6 +34,7 @@
           dense
           icon="view_list"
           class="toolbar-button q-px-sm"
+          :class="{active: isActive('ranking')}"
           @click="onRankingButtonClick"
         >
           <q-tooltip content-class="bg-black">
@@ -44,6 +47,7 @@
           dense
           icon="people"
           class="toolbar-button q-px-sm"
+          :class="{active: isActive('socialBrowser')}"
           @click="onOnlineUsersButtonClick"
         >
           <q-tooltip content-class="bg-black">
@@ -51,7 +55,7 @@
           </q-tooltip>
         </q-btn>
 
-        <user-button />
+        <user-button @click="onUserButtonClick" />
       </q-toolbar>
     </q-header>
 
@@ -67,7 +71,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance } from '@vue/composition-api';
+import { defineComponent, getCurrentInstance, ref } from '@vue/composition-api';
 import SocialBrowserOverlay from 'src/overlays/social/SocialBrowserOverlay.vue';
 import RankingOverlay from 'src/overlays/ranking/RankingOverlay.vue';
 import SettingsOverlay from '../overlays/settings/SettingsOverlay.vue';
@@ -81,40 +85,70 @@ export default defineComponent({
   },
   setup() {
     const { $refs } = getCurrentInstance() as Vue;
+    const actives = ref<string[]>([]);
+
+    const isActive = (name: string) => actives.value.includes(name);
+
+    const toggleActive = (name: string, active?: boolean) => {
+      active = (active === undefined ? !isActive(name) : active);
+      if (active) {
+        actives.value.push(name);
+      } else {
+        actives.value = actives.value.filter((a) => a != name);
+      }
+
+      // eslint-disable-next-line
+      (<any>$refs[`${name}Overlay`] as any)[active ? 'show' : 'hide']();
+    };
+
+    const excludeToggle = (name: string, exclude?: string) => {
+      if (!isActive(name)) {
+        actives.value.forEach((s) => {
+          if (s != name && s != exclude) {
+            toggleActive(s, false);
+          }
+        });
+      }
+      toggleActive(name);
+    };
 
     const onPageClick = () => {
-      // eslint-disable-next-line
-      (<any>$refs.settingsOverlay).hide();
-      // eslint-disable-next-line
-      (<any>$refs.chatOverlay).hide();
+      actives.value.forEach((name) => {
+        toggleActive(name, false);
+      });
     };
 
     const onSettingButtonClick = () => {
-      // eslint-disable-next-line
-      (<any>$refs.settingsOverlay).toggle();
+      excludeToggle('settings', 'chat');
     };
 
     const onChatButtonClick = () => {
-      // eslint-disable-next-line
-      (<any>$refs.chatOverlay).toggle();
+      excludeToggle('chat');
     };
 
     const onOnlineUsersButtonClick = () => {
-      // eslint-disable-next-line
-      (<any>$refs.socialBrowserOverlay).toggle();
+      excludeToggle('socialBrowser');
     };
 
     const onRankingButtonClick = () => {
-      // eslint-disable-next-line
-      (<any>$refs.rankingOverlay).toggle();
+      excludeToggle('ranking');
+    };
+
+    const onUserButtonClick = () => {
+      actives.value.forEach((name) => {
+        toggleActive(name, false);
+      });
     };
 
     return {
+      isActive,
+
       onPageClick,
       onSettingButtonClick,
       onChatButtonClick,
       onOnlineUsersButtonClick,
       onRankingButtonClick,
+      onUserButtonClick,
     };
   },
 });
@@ -130,5 +164,9 @@ export default defineComponent({
 
 .toolbar-button {
   height: 100%;
+
+  &.active {
+    background: #517bda;
+  }
 }
 </style>

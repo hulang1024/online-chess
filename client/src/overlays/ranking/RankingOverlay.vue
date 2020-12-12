@@ -64,7 +64,7 @@
             >
               {{ props.row.nickname }}
             </q-td>
-            <q-td key="winRate" :props="props" class="count">
+            <q-td key="winRate" :props="props" class="count win-rate">
               {{ props.row.winRate }}%
             </q-td>
             <q-td key="playCount" :props="props" class="count">
@@ -144,19 +144,24 @@ export default defineComponent({
       api.queue(req);
     };
 
-    const toggle = () => {
-      isOpen.value = !isOpen.value;
-
-      if (isOpen.value) {
-        users.value = [];
-        setTimeout(() => {
-          queryRankingUsers();
-        }, 300);
-      }
+    const show = () => {
+      users.value = [];
+      setTimeout(() => {
+        queryRankingUsers();
+      }, 300);
+      isOpen.value = true;
     };
 
     const hide = () => {
       isOpen.value = false;
+    };
+
+    const toggle = () => {
+      isOpen.value = !isOpen.value;
+
+      if (isOpen.value) {
+        show();
+      }
     };
 
     watch(activeTab, () => {
@@ -166,6 +171,7 @@ export default defineComponent({
     return {
       isOpen,
       toggle,
+      show,
       hide,
 
       activeTab,
@@ -224,6 +230,10 @@ export default defineComponent({
         .count {
           width: 40px;
           color: $grey-5;
+        }
+
+        .win-rate {
+          padding: 0;
         }
       }
     }
