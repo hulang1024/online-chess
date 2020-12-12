@@ -48,12 +48,12 @@ public class GitHubOAuthCallbackController {
                 LoginResult result = thirdpartyUserLoginService.login(githubUser);
                 try {
                     response.sendRedirect(appUrl
-                        + "#status=0&token=" + result.getAccessToken().getAccessToken());
+                        + "#/?status=0&token=" + result.getAccessToken().getAccessToken());
                 } catch (Exception e) { e.printStackTrace(); }
             };
             req.onExceptionFailure = (IOException e) -> {
                 try {
-                    response.sendRedirect(appUrl + "#status=1");
+                    response.sendRedirect(appUrl + "#/?status=1");
                 } catch (Exception e1) { e1.printStackTrace(); }
             };
             api.performAsync(req);

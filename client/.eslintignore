@@ -1,7 +1,10 @@
 /dist
+/public
 /src-bex/www
 /src-capacitor
 /src-cordova
 /.quasar
 /node_modules
 /src-ssr
+/src/utils/signals
+/src

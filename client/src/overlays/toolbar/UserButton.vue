@@ -1,13 +1,20 @@
 <template>
   <q-btn
-    flat dense no-caps
+    flat
+    dense
+    no-caps
     class="toolbar-button q-px-sm"
     :class="[user.id <= 0 && 'bg-black']"
     @click="onUserButtonClick"
   >
-    <span>{{user.nickname}}</span>
+    <span>{{ user.nickname }}</span>
     <span v-show="user.id <= 0">登录</span>
-    <user-avatar v-show="user.id > 0" :user="user" size="28px" class="q-ml-xs"/>
+    <user-avatar
+      v-show="user.id > 0"
+      :user="user"
+      size="28px"
+      class="q-ml-xs"
+    />
 
     <logged-in-user-overlay
       v-if="user.id > 0"
@@ -16,28 +23,30 @@
     />
 
     <login-overlay ref="loginOverlay" />
-
   </q-btn>
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance, reactive, onMounted, Ref } from '@vue/composition-api'
+import {
+  defineComponent, getCurrentInstance, reactive, Ref,
+} from '@vue/composition-api';
 import { ConfigItem } from 'src/config/ConfigManager';
 import LogoutRequest from 'src/online/api/LogoutRequest';
 import RegisterRequest from 'src/online/api/RegisterRequest';
 import User from 'src/online/user/User';
+import UserAvatar from "src/components/UserAvatar.vue";
+import { APIResult } from 'src/online/api/api_request';
+import { api, configManager } from 'src/boot/main';
 import LoggedInUserOverlay from '../user/LoggedInUserOverlay.vue';
 import LoginOverlay from '../user/LoginOverlay.vue';
-import UserAvatar from "src/components/UserAvatar.vue";
 
 export default defineComponent({
   components: { UserAvatar, LoginOverlay, LoggedInUserOverlay },
   setup() {
-    const ctx = getCurrentInstance();
-    let { api, configManager, $refs, $q } = <any>ctx;
-    let user = reactive(api.localUser);
+    const { $refs, $q } = getCurrentInstance() as Vue;
+    const user = reactive(api.localUser);
 
-    api.isLoggedIn.changed.add((isLoggedIn: boolean) => {
+    api.isLoggedIn.changed.add(() => {
       Object.assign(user, api.localUser);
     });
 
@@ -46,39 +55,41 @@ export default defineComponent({
         return;
       }
 
-      $refs.loginOverlay.show({
-        action: (user: User, isLogging: Ref<boolean>) => {
+      // eslint-disable-next-line
+      (<any>$refs.loginOverlay).show({
+        action: (loginUser: User, isLogging: Ref<boolean>) => {
           isLogging.value = true;
-          api.login(user).then(() => {
+          api.login(loginUser).then(() => {
             isLogging.value = false;
-            $refs.loginOverlay.hide();
-          }).catch(() =>  {
+            // eslint-disable-next-line
+            (<any>$refs.loginOverlay).hide();
+          }).catch(() => {
             isLogging.value = false;
           });
         },
-        registerAction: (user: User, loading: Ref<boolean>, isOpen: Ref<boolean>) => {
-          let req = new RegisterRequest(user);
+        registerAction: (newUser: User, loading: Ref<boolean>, isOpen: Ref<boolean>) => {
+          const req = new RegisterRequest(newUser);
           req.loading = loading;
           req.success = () => {
-            $q.notify({type: 'positive', message: '注册成功'});
+            $q.notify({ type: 'positive', message: '注册成功' });
             isOpen.value = false;
           };
-          req.failure = (ret) => {
-            let codeMsgMap: any = {
-              1: '注册失败', 
+          req.failure = (ret: APIResult) => {
+            const codeMsgMap: {[code: number]: string} = {
+              1: '注册失败',
               2: '用户名已被使用',
               3: '用户名格式错误（允许1到20个字符）',
-              4: '密码格式错误（允许至多20位）'};
-            let message = ret ? codeMsgMap[ret.code] : '注册失败';
-            $q.notify({type: 'warning', message });
-          }
+              4: '密码格式错误（允许至多20位）',
+            };
+            $q.notify({ type: 'warning', message: ret ? codeMsgMap[ret.code] : '注册失败' });
+          };
           api.perform(req);
-        }
+        },
       });
     };
 
     const onLogout = () => {
-      let req = new LogoutRequest();
+      const req = new LogoutRequest();
       req.success = () => {
         configManager.set(ConfigItem.password, '');
         configManager.set(ConfigItem.token, '');
@@ -91,9 +102,9 @@ export default defineComponent({
     return {
       user,
       onUserButtonClick,
-      onLogout
-    }
-  }
+      onLogout,
+    };
+  },
 });
 </script>
 

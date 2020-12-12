@@ -1,37 +1,49 @@
 import Chess from "src/rule/Chess";
-import Chessboard, { CHESSBOARD_COL_NUM, CHESSBOARD_ROW_NUM } from "src/rule/chessboard";
+import Chessboard from "src/rule/Chessboard";
 import ChessPos from "src/rule/ChessPos";
 import Signal from "src/utils/signals/Signal";
 import DrawableChess from "./DrawableChess";
 
 export default class DrawableChessboard implements Chessboard {
   private _el: HTMLDivElement;
+
   public get el() { return this._el; }
 
   private _bounds: ChessboardBounds;
-  public get bounds() { return this._bounds };
 
-  public enabled: boolean = false;
+  public get bounds() { return this._bounds; }
+
+  public enabled = false;
+
   public readonly chessPickupOrDrop: Signal = new Signal();
-  public readonly clicked: Signal = new Signal();
-  public readonly chessMoved: Signal = new Signal();
-  private canvas: HTMLCanvasElement;
-  private readonly padding = 4;
-  private chessArray: Array<Array<DrawableChess | null>> = new Array(CHESSBOARD_ROW_NUM);
 
-  constructor(stageWidth: number, screen: any, theme: string) {
-    for (let row = 0; row < CHESSBOARD_ROW_NUM; row++) {
-      this.chessArray[row] = new Array(CHESSBOARD_COL_NUM);
-      for (let col = 0; col < CHESSBOARD_COL_NUM; col++) {
-          this.chessArray[row][col] = null;
+  public readonly clicked: Signal = new Signal();
+
+  public readonly chessMoved: Signal = new Signal();
+
+  private canvas: HTMLCanvasElement;
+
+  private readonly padding = 4;
+
+  private chessArray: Array<Array<DrawableChess | null>>;
+
+  constructor(stageWidth: number, screen: any) {
+    // eslint-disable-next-line
+    this.chessArray = new Array(10);
+    for (let row = 0; row < 10; row++) {
+      // eslint-disable-next-line
+      this.chessArray[row] = new Array(9);
+      for (let col = 0; col < 9; col++) {
+        // eslint-disable-next-line
+        this.chessArray[row][col] = null;
       }
     }
 
-    this.load(stageWidth, screen, theme);
+    this.load(stageWidth, screen);
   }
 
-  private load(stageWidth: number, screen: any, theme: string) {
-    let el = document.createElement('div');
+  private load(stageWidth: number, screen: any) {
+    const el = document.createElement('div');
     this._el = el;
     el.className = 'chessboard';
     el.style.position = 'relative';
@@ -42,7 +54,7 @@ export default class DrawableChessboard implements Chessboard {
 
     this.setupDragable();
 
-    let canvas = document.createElement('canvas');
+    const canvas = document.createElement('canvas');
     this.canvas = canvas;
     el.appendChild(canvas);
 
@@ -52,10 +64,10 @@ export default class DrawableChessboard implements Chessboard {
   public resizeAndDraw(stageWidth: number, screen: any) {
     this.calcBounds(stageWidth, screen);
 
-    let el = this._el;
+    const el = this._el;
     const { width, height } = this.bounds.canvas;
-    el.style.width = width + this.padding * 2 + 'px';
-    el.style.height = height + this.padding * 2 + 'px';
+    el.style.width = `${width + this.padding * 2}px`;
+    el.style.height = `${height + this.padding * 2}px`;
 
     this.draw(this.canvas, screen);
 
@@ -141,36 +153,38 @@ export default class DrawableChessboard implements Chessboard {
   }
 
   private draw(canvas: HTMLCanvasElement, screen: any) {
-    const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d');
-    if (ctx == null) return;
+    const context: CanvasRenderingContext2D | null = canvas.getContext('2d');
+    if (context == null) return;
 
     const { grid } = this.bounds;
-    const pixelRatio = ((ctx: any) => {
-      var backingStore = ctx.backingStorePixelRatio ||
+
+    const pixelRatio = (() => {
+      const ctx: any = context;
+      const backingStore = ctx.backingStorePixelRatio ||
       ctx.webkitBackingStorePixelRatio ||
       ctx.mozBackingStorePixelRatio ||
       ctx.msBackingStorePixelRatio ||
       ctx.oBackingStorePixelRatio ||
       ctx.backingStorePixelRatio || 1;
       return (window.devicePixelRatio || 1) / backingStore;
-    })(ctx);
+    })();
 
     const canvasBounds = this.bounds.canvas;
-    canvas.style.width = canvasBounds.width + 'px';
-    canvas.style.height = canvasBounds.height + 'px';
+    canvas.style.width = `${canvasBounds.width}px`;
+    canvas.style.height = `${canvasBounds.height}px`;
     canvas.width = canvasBounds.width * pixelRatio;
     canvas.height = canvasBounds.height * pixelRatio;
-    ctx.scale(pixelRatio, pixelRatio);
+    context.scale(pixelRatio, pixelRatio);
 
     /// 画棋盘网格
     const strokeLine = (x1: number, y1: number, x2: number, y2: number, color?: string) => {
-      ctx.beginPath();
-      ctx.lineWidth = screen.xs ? 1 : 2;
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.closePath();
-      ctx.strokeStyle = color || '#946830';
-      ctx.stroke();
+      context.beginPath();
+      context.lineWidth = screen.xs ? 1 : 2;
+      context.moveTo(x1, y1);
+      context.lineTo(x2, y2);
+      context.closePath();
+      context.strokeStyle = color || '#946830';
+      context.stroke();
     };
   
     // 画内部格子
@@ -259,8 +273,8 @@ export default class DrawableChessboard implements Chessboard {
 
   public getChessList(): Array<DrawableChess> {
     let ret: Array<DrawableChess> = [];
-    for (let row = 0; row < CHESSBOARD_ROW_NUM; row++) {
-      for (let col = 0; col < CHESSBOARD_COL_NUM; col++) {
+    for (let row = 0; row < 10; row++) {
+      for (let col = 0; col < 9; col++) {
         if (!this.isEmpty(row, col)) {
           ret.push(this.chessArray[row][col] as DrawableChess);
         }

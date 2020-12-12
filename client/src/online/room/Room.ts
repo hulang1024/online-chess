@@ -1,29 +1,41 @@
 import GameState from "../play/GameState";
 import User from "../user/User";
+import { RoomSettings } from "./RoomSettings";
 
 export default class Room {
-    id: number;
-    name: string;
-    roomSettings: RoomSettings;
-    locked?: boolean;
-    password?: string;
-    status: number;
-    channelId: number;
-    owner: User;
-    userCount: number;
-    gameStatus: GameState;
-    gameCount: number;
-    redChessUser: User;
-    blackChessUser: User;
-    redReadied: boolean;
-    blackReadied: boolean;
-    redOnline: boolean;
-    blackOnline: boolean;
-    spectatorCount: number;
-}
+  id: number;
 
-class RoomSettings {
-  gameDuration: number;
-  stepDuration: number;
-  secondsCountdown: number;
+  name: string;
+
+  roomSettings: RoomSettings;
+
+  locked?: boolean;
+
+  password?: string;
+
+  status: number;
+
+  channelId: number;
+
+  owner: User;
+
+  userCount: number;
+
+  gameStatus: GameState;
+
+  gameCount: number;
+
+  redChessUser: User;
+
+  blackChessUser: User;
+
+  redReadied: boolean;
+
+  blackReadied: boolean;
+
+  redOnline: boolean;
+
+  blackOnline: boolean;
+
+  spectatorCount: number;
 }

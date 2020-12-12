@@ -7,33 +7,32 @@ import Game from "../Game";
  * 抽象的棋子
  */
 export default abstract class AbstractChess implements Chess {
-    /** 当前位置 */
-    protected pos: ChessPos;
-    /** 所属棋方 */
-    protected host: ChessHost;
+  /** 当前位置 */
+  protected pos: ChessPos;
 
-    constructor(pos: ChessPos, host: ChessHost) {
-        this.pos = pos;
-        this.host = host;
-    }
+  /** 所属棋方 */
+  protected host: ChessHost;
 
-    canGoTo(destPos: ChessPos, game: Game) {
-        return false;
-    }
+  constructor(pos: ChessPos, host: ChessHost) {
+    this.pos = pos;
+    this.host = host;
+  }
 
-    setPos(pos: ChessPos) {
-        this.pos = pos;
-    }
+  abstract canGoTo(destPos: ChessPos, game: Game): boolean;
 
-    getPos() {
-        return this.pos;
-    }
+  setPos(pos: ChessPos) {
+    this.pos = pos;
+  }
 
-    getHost() {
-        return this.host;
-    }
+  getPos() {
+    return this.pos;
+  }
 
-    is(chessClass: Function) {
-        return this instanceof chessClass;
-    }
+  getHost() {
+    return this.host;
+  }
+
+  is(chessClass: any) {
+    return this instanceof chessClass;
+  }
 }

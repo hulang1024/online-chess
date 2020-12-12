@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class UserManager {
@@ -69,15 +70,23 @@ public class UserManager {
 
     public PageRet<SearchUserInfo> searchUsers(SearchUserParam searchUserParam, PageParam pageParam) {
         User currentUser = UserUtils.get();
-        IPage<SearchUserInfo> userPage;
+        IPage<SearchUserInfo> pageData;
         if (searchUserParam.getOnlyFriends()) {
-            userPage = friendUserDao.searchFriends(new DaoPageParam(pageParam),
+            pageData = friendUserDao.searchFriends(new DaoPageParam(pageParam),
                 new QueryWrapper<User>()
                     .eq("friends.user_id", currentUser.getId())
-                    .orderByDesc("win_count", "last_active_time"));
+                    .orderByDesc("last_active_time"));
         } else {
-            userPage = userDao.searchUsers(new DaoPageParam(pageParam),
-                new QueryWrapper<User>().orderByDesc("win_count", "last_active_time"));
+            QueryWrapper query = new QueryWrapper<User>();
+            query.orderByDesc("last_active_time");
+            IPage<User> userPage = userDao.selectPage(new DaoPageParam(pageParam), query);
+            pageData = userPage.convert(u -> {
+                SearchUserInfo userInfo = new SearchUserInfo();
+                userInfo.setId(u.getId());
+                userInfo.setNickname(u.getNickname());
+                userInfo.setAvatarUrl(u.getAvatarUrl());
+                return userInfo;
+            });
         }
 
         final List<Long> friendUserIds = new ArrayList<>();
@@ -85,7 +94,7 @@ public class UserManager {
             friendUserIds.addAll( friendsManager.getFriendIds(currentUser) );
         }
 
-        userPage.getRecords().forEach(user -> {
+        pageData.getRecords().forEach(user -> {
             if (currentUser != null) {
                 user.setIsFriend(friendUserIds.contains(user.getId()));
             }
@@ -107,8 +116,16 @@ public class UserManager {
                 user.setStatus(UserStatus.OFFLINE);
             }
         });
+        pageData.setRecords(
+            pageData.getRecords().stream().filter(user -> {
+                boolean ret = true;
+                if (searchUserParam.getStatus() != null) {
+                    ret = ret && user.getStatus().code == searchUserParam.getStatus();
+                }
+                return ret;
+            }).collect(Collectors.toList()));
 
-        return new PageRet<>(userPage);
+        return new PageRet<>(pageData);
     }
 
     public RegisterResult register(UserRegisterParam param) {
@@ -139,8 +156,6 @@ public class UserManager {
         } catch (Exception e) {
             return RegisterResult.fail(2);
         }
-
-        userStatsService.initializeUser(user);
 
         RegisterResult result = RegisterResult.ok();
         result.setUser(user);

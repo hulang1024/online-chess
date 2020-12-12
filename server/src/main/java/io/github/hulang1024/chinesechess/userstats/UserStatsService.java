@@ -1,7 +1,13 @@
 package io.github.hulang1024.chinesechess.userstats;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import io.github.hulang1024.chinesechess.database.DaoPageParam;
+import io.github.hulang1024.chinesechess.http.params.PageParam;
+import io.github.hulang1024.chinesechess.http.results.PageRet;
 import io.github.hulang1024.chinesechess.play.rule.GameResult;
+import io.github.hulang1024.chinesechess.user.SearchUserInfo;
 import io.github.hulang1024.chinesechess.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +30,19 @@ public class UserStatsService {
         }
     }
 
-    public void initializeUser(User user) {
+    public PageRet<SearchUserInfo> searchRanking(SearchRankingParam searchRankingParam, PageParam pageParam) {
+        QueryWrapper query = new QueryWrapper<User>();
+        if (searchRankingParam.getRankingBy() == 1) {
+            query.orderByDesc("user_stats.win_count");
+        } else if (searchRankingParam.getRankingBy() == 2) {
+            query.orderByDesc("user_stats.play_count");
+        }
+
+        IPage<SearchUserInfo> userPage = userStatsDao.searchRankingUsers(new DaoPageParam(pageParam), query);
+        return new PageRet<>(userPage);
+    }
+
+    private void initializeUser(User user) {
         UserStats userStats = new UserStats();
         userStats.setUserId(user.getId());
         userStatsDao.insert(userStats);

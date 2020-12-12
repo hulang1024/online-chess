@@ -5,19 +5,19 @@
     transition-hide="fade"
     class="q-py-sm full-width"
   >
-    <span class="text-subtitle1">{{_text}}</span>
+    <span class="text-subtitle1">{{ _text }}</span>
   </q-card>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api'
+import { defineComponent, ref } from '@vue/composition-api';
 
 export default defineComponent({
-  setup(props, {emit}) {
+  setup() {
     const visible = ref<boolean>(false);
     const _text = ref<string>('');
-    
-    const show = (text: string, duration: number = 0) => {
+
+    const show = (text: string, duration = 0) => {
       _text.value = text;
       visible.value = true;
       if (duration > 0) {
@@ -27,7 +27,7 @@ export default defineComponent({
       }
     };
 
-    const hide = (act: string) => {
+    const hide = () => {
       visible.value = false;
     };
 
@@ -35,10 +35,10 @@ export default defineComponent({
       visible,
       _text,
       show,
-      hide
-    }
-  }
-})
+      hide,
+    };
+  },
+});
 </script>
 
 <style lang="sass" scoped>

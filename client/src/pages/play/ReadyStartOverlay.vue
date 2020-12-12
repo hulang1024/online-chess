@@ -1,11 +1,21 @@
 <template>
-  <q-card v-show="visible" class="row text-white justify-evenly q-py-lg" style="width: 300px">
-    <q-btn :label="label" @click="onReadyStart" :color="color" />
+  <q-card
+    v-show="visible"
+    class="row text-white justify-evenly q-py-lg"
+    style="width: 300px"
+  >
+    <q-btn
+      :label="label"
+      @click="onReadyStart"
+      :color="color"
+    />
   </q-card>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, watch } from '@vue/composition-api'
+import {
+  defineComponent, PropType, ref, watch,
+} from '@vue/composition-api';
 import GameState from 'src/online/play/GameState';
 
 export default defineComponent({
@@ -13,16 +23,18 @@ export default defineComponent({
     readied: Boolean,
     otherReadied: Boolean,
     isRoomOwner: Boolean,
-    gameState: Number as PropType<GameState>
+    gameState: Number as PropType<GameState>,
   },
-  setup(props, {emit}) {
-    let visible = ref<boolean>(false);
-    let label = ref<string>('');
-    let color = ref<string>('');
+  setup(props, { emit }) {
+    const visible = ref<boolean>(false);
+    const label = ref<string>('');
+    const color = ref<string>('');
 
     let onPropsChange;
     watch(props, onPropsChange = () => {
-      const { readied, otherReadied, isRoomOwner, gameState } = props;
+      const {
+        readied, otherReadied, isRoomOwner, gameState,
+      } = props;
       if (gameState == GameState.READY) {
         if (isRoomOwner) {
           if (otherReadied) {
@@ -50,8 +62,8 @@ export default defineComponent({
       color,
       onReadyStart: () => {
         emit('ready-start');
-      }
-    }
-  }
-})
+      },
+    };
+  },
+});
 </script>

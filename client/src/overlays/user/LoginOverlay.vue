@@ -2,7 +2,10 @@
   <q-dialog
     v-model="isOpen"
   >
-    <q-card class="q-px-lg q-py-lg" style="width: 400px">
+    <q-card
+      class="q-px-lg q-py-lg"
+      style="width: 400px"
+    >
       <q-form
         ref="form"
         class="q-gutter-md"
@@ -25,7 +28,10 @@
           lazy-rules
           :rules="[ val => val.length || '' ]"
         />
-        <q-toggle v-model="staySignedIn" label="保持登录" />
+        <q-toggle
+          v-model="staySignedIn"
+          label="保持登录"
+        />
 
         <div class="q-gutter-y-md">
           <q-btn
@@ -45,6 +51,7 @@
             outline
             label="GitHub登录"
             class="full-width"
+            :loading="isGitHubLogging"
             @click="onGitHubLoginClick"
           />
         </div>
@@ -56,37 +63,44 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance, reactive, Ref, ref, toRefs, watch, watchEffect } from '@vue/composition-api';
+import {
+  defineComponent, getCurrentInstance, reactive, Ref, ref, toRefs, watch,
+} from '@vue/composition-api';
+import { configManager } from 'src/boot/main';
 import { ConfigItem } from 'src/config/ConfigManager';
 import User from 'src/online/user/User';
 import CreateUserOverlay from './CreateUserOverlay.vue';
 
 export default defineComponent({
   components: { CreateUserOverlay },
-  setup(props) {
-    const ctx = getCurrentInstance();
-    const { $refs, configManager } = <any>ctx;
-    
-    const user = reactive({
-      username: configManager.get(ConfigItem.username),
-      password: configManager.get(ConfigItem.password),
-      staySignedIn: configManager.get(ConfigItem.loginAuto),
+  setup() {
+    const { $refs } = getCurrentInstance() as Vue;
+
+    const form = reactive({
+      username: configManager.get(ConfigItem.username) as string,
+      password: configManager.get(ConfigItem.password) as string,
+      staySignedIn: configManager.get(ConfigItem.loginAuto) as boolean,
     });
 
-    watch(user, () => {
-      configManager.set(ConfigItem.loginAuto, user.staySignedIn);
+    watch(form, () => {
+      configManager.set(ConfigItem.loginAuto, form.staySignedIn);
       configManager.save();
     });
 
     const isOpen = ref(false);
     const isLogging = ref(false);
+    const isGitHubLogging = ref(false);
 
-    let action: Function;
-    let registerAction: Function;
-    const show = (options: any) => {
+    let action: (user: User, isLogging: Ref<boolean>) => void;
+    let registerAction: (user: User, loading: Ref<boolean>, isOpen: Ref<boolean>) => void;
+    const show = (options: {
+      action: (user: User, isLogging: Ref<boolean>) => void,
+      registerAction: (user: User, loading: Ref<boolean>, isOpen: Ref<boolean>) => void,
+    }) => {
       action = options.action;
       registerAction = options.registerAction;
       isLogging.value = false;
+      isGitHubLogging.value = false;
       isOpen.value = true;
     };
 
@@ -95,17 +109,22 @@ export default defineComponent({
     };
 
     const onSubmit = () => {
-      $refs.form.validate().then((valid: boolean) => {
+      // eslint-disable-next-line
+      (<any>$refs.form).validate().then((valid: boolean) => {
         if (!valid) return;
+        const user = new User();
+        user.username = form.username;
+        user.password = form.password;
         action(user, isLogging);
       });
     };
 
     const onRegisterClick = () => {
-      $refs.createUserOverlay.show({
-        action: (user: User, loading: Ref<boolean>, isOpen: Ref<boolean>) => {
-          registerAction(user, loading, isOpen);
-        }
+      // eslint-disable-next-line
+      (<any>$refs.createUserOverlay).show({
+        action: (user: User, loading: Ref<boolean>, open: Ref<boolean>) => {
+          registerAction(user, loading, open);
+        },
       });
     };
 
@@ -113,14 +132,16 @@ export default defineComponent({
       isOpen,
       show,
       hide,
-      ...toRefs(user),
+      ...toRefs(form),
       isLogging,
+      isGitHubLogging,
       onSubmit,
       onRegisterClick,
       onGitHubLoginClick: () => {
+        isGitHubLogging.value = true;
         window.location.href = 'https://github.com/login/oauth/authorize?client_id=5176faf64742ae0bfe84';
-      }
+      },
     };
-  }
+  },
 });
 </script>

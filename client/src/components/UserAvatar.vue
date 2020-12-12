@@ -1,12 +1,21 @@
 <template>
-  <q-avatar rounded v-bind="$attrs" class="user-avatar">
-    <img v-if="avatarUrl" :src="avatarUrl">
-    <span v-else>{{nickname ? nickname.substring(0,1) : ''}}</span>
+  <q-avatar
+    rounded
+    v-bind="$attrs"
+    class="user-avatar"
+  >
+    <img
+      v-if="avatarUrl"
+      :src="avatarUrl"
+    >
+    <span v-else>{{ nickname ? nickname.substring(0,1) : '' }}</span>
   </q-avatar>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, reactive, toRef, toRefs, watch } from "@vue/composition-api";
+import {
+  defineComponent, PropType, reactive, toRefs, watch,
+} from "@vue/composition-api";
 import User from "src/online/user/User";
 
 export default defineComponent({
@@ -22,16 +31,16 @@ export default defineComponent({
 
     const user = reactive({
       ...NULL_USER,
-      ...props.user
+      ...props.user,
     });
 
-    watch(props,  () => {
+    watch(props, () => {
       Object.assign(user, props.user || NULL_USER);
     });
 
     return {
-      ...toRefs(user)
+      ...toRefs(user),
     };
-  }
+  },
 });
 </script>

@@ -4,10 +4,25 @@ import User from "src/online/user/User";
 import Signal from "src/utils/signals/Signal";
 import ServerMsg from "../ServerMsg";
 
-export let message = new Signal();
-export let presence = new Signal();
-export let channelUserLeft = new Signal();
-export let messageRecalled = new Signal();
+export const message = new Signal();
+export const presence = new Signal();
+export const channelUserLeft = new Signal();
+export const messageRecalled = new Signal();
+
+export interface ChatMessageMsg extends ServerMsg {
+  id: number;
+
+  channelId: number;
+
+  timestamp: number;
+
+  sender: User;
+
+  content: string;
+
+  isAction: boolean;
+}
+
 
 export interface ChatPresenceMsg extends ServerMsg {
   channel: Channel;

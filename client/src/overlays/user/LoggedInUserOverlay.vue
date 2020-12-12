@@ -2,9 +2,14 @@
   <q-menu>
     <div class="row no-wrap q-pa-md">
       <div class="column items-center">
-        <user-avatar :user="user" size="72px" />
+        <user-avatar
+          :user="user"
+          size="72px"
+        />
 
-        <div class="text-subtitle1 q-mt-md q-mb-xs">{{user.nickname}}</div>
+        <div class="text-subtitle1 q-mt-md q-mb-xs">
+          {{ user.nickname }}
+        </div>
 
         <q-btn
           color="negative"
@@ -20,21 +25,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api'
+import { defineComponent } from '@vue/composition-api';
 import UserAvatar from "src/components/UserAvatar.vue";
 
 export default defineComponent({
   components: { UserAvatar },
   props: {
-    user: null
+    user: null,
   },
-  setup(props, {emit}) {
+  setup(props, { emit }) {
     const onLogoutClick = () => {
       emit('logout-action');
     };
 
     return {
-      onLogoutClick
+      onLogoutClick,
     };
   },
 });

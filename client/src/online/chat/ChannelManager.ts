@@ -14,18 +14,23 @@ import LocalEchoMessage from "./LocalEchoMessage";
 import Message from "./Message";
 import PostMessageRequest from "./PostMessageRequest";
 import SocketService from "../ws/SocketService";
-import * as chat_server_events from '../ws/events/chat';
+import * as ChatEvents from '../ws/events/chat';
+import APICreatedChannel from "./APICreatedChannel";
 
 export default class ChannelManager {
   public readonly currentChannel: Bindable<Channel> = new Bindable<Channel>();
 
   public readonly availableChannels: BindableList<Channel> = new BindableList<Channel>();
+
   public readonly joinedChannels: BindableList<Channel> = new BindableList<Channel>();
+
   private api: APIAccess;
+
   private socketService: SocketService;
+
   private channelsInitialised: boolean;
 
-  public onHideChannel: Function;
+  public onHideChannel: (channel: Channel) => void;
 
   constructor(api: APIAccess, socketService: SocketService) {
     this.api = api;
@@ -38,6 +43,7 @@ export default class ChannelManager {
   }
 
   private readonly closeTipMessage = new InfoMessage('使用命令/close关闭当前频道');
+
   public openPrivateChannel(user: User) {
     if (user.id == this.api.localUser.id) {
       return;
@@ -55,7 +61,7 @@ export default class ChannelManager {
     }
   }
 
-  public joinChannel(channel: Channel, fetchInitalMessages: boolean = true): Channel {
+  public joinChannel(channel: Channel, fetchInitalMessages = true): Channel {
     channel = this.getChannel(channel, false, true);
 
     if (!channel.joined.value) {
@@ -64,19 +70,22 @@ export default class ChannelManager {
         case ChannelType.ROOM:
           // 进入房间后已经加入
           break;
-        case ChannelType.PM:
-          let request = new CreateChannelRequest(channel);
-          request.success = (resChannel) => {
+        case ChannelType.PM: {
+          const request = new CreateChannelRequest(channel);
+          request.success = (resChannel: APICreatedChannel) => {
             if (resChannel.channelId) {
               channel.id = resChannel.channelId;
             }
             if (resChannel.recentMessages) {
-              this.handleChannelMessages(resChannel.recentMessages.map(Message.from));
+              this.handleChannelMessages(resChannel.recentMessages.map((m) => Message.from(m)));
             }
           };
           this.api.queue(request);
+        }
           break;
         case ChannelType.PUBLIC:
+          break;
+        default:
           break;
       }
     }
@@ -90,22 +99,24 @@ export default class ChannelManager {
     return channel;
   }
 
-  private getChannel(channelId: number | Channel, addToAvailable: boolean = false, addToJoined: boolean = false): Channel {
+  private getChannel(
+    channelId: number | Channel, addToAvailable = false, addToJoined = false,
+  ) : Channel {
     let lookup: Channel;
     if (typeof channelId == 'number') {
       lookup = new Channel();
-      lookup.id = <number>channelId;
+      lookup.id = channelId;
     } else {
-      lookup = <Channel>channelId;
+      lookup = channelId;
     }
 
     let found: Channel | null = null;
 
-    let available = this.availableChannels.filter((c: Channel) => c.id == lookup.id)[0];
+    const available = this.availableChannels.filter((c: Channel) => c.id == lookup.id)[0];
     if (available) {
       found = available;
     }
-    let joined = this.joinedChannels.filter((c: Channel) => c.id == lookup.id)[0];
+    const joined = this.joinedChannels.filter((c: Channel) => c.id == lookup.id)[0];
     if (found == null && joined != null) {
       found = joined;
     }
@@ -126,11 +137,11 @@ export default class ChannelManager {
   }
 
   public leaveChannel(channelId: number) {
-    let channel: Channel = this.getChannel(channelId);
+    const channel: Channel = this.getChannel(channelId);
     if (channel.joined.value) {
-       // 房间聊天频道离开已隐式（服务端）随着对局结束
+      // 房间聊天频道离开已隐式（服务端）随着对局结束
       if (channel.type !== ChannelType.ROOM) {
-        //todo: leave
+        // todo: leave
       }
       channel.joined.value = false;
     }
@@ -138,13 +149,13 @@ export default class ChannelManager {
     this.joinedChannels.removeIf((ch: Channel) => ch.id == channelId);
 
     if (this.currentChannel.value == channel) {
-      //TODO: 默认一个
+      // TODO: 默认一个
       this.currentChannel.value = this.getChannel(1);
     }
   }
 
-  public postMessage(text: string, isAction: boolean = false) {
-    let target = this.currentChannel.value;
+  public postMessage(text: string, isAction = false) {
+    const target = this.currentChannel.value;
 
     if (!this.api.isLoggedIn.value) {
       target.addNewMessages(new ErrorMessage('请先登录以参与聊天'));
@@ -155,18 +166,18 @@ export default class ChannelManager {
       return;
     }
 
-    let message = new LocalEchoMessage();
+    const message = new LocalEchoMessage();
     message.channelId = target.id;
     message.timestamp = new Date().getTime();
     message.sender = this.api.localUser;
     message.content = text;
     message.isAction = isAction;
 
-    //this.currentChannel.addLocalEcho(message);
+    // this.currentChannel.addLocalEcho(message);
 
     // 如果这是一个私聊频道并且是第一条消息，需要一个特殊请求创建频道
-    if (target.type == ChannelType.PM/* && target.id == 0*//*todo:暂时全部临时消息 */) {
-      let request = new CreateNewPrivateMessageRequest(target.users[0], message);
+    if (target.type == ChannelType.PM) {
+      const request = new CreateNewPrivateMessageRequest(target.users[0], message);
       request.success = (res) => {
         target.id = res.channelId;
       };
@@ -177,24 +188,20 @@ export default class ChannelManager {
       return;
     }
 
-    let postMessagesRequest = new PostMessageRequest(message);
-    postMessagesRequest.success = (msgs) => {
-      
-    }
-    postMessagesRequest.failure = (msgs) => {
+    const postMessagesRequest = new PostMessageRequest(message);
+    postMessagesRequest.failure = () => {
       let errorText = '消息发送失败';
       if (target.type == ChannelType.PM) {
         errorText += '，对方可能不在线';
         target.id = 0;
       }
       target.addNewMessages(new ErrorMessage(errorText));
-    }
-
+    };
     this.api.queue(postMessagesRequest);
   }
 
   public postCommand(text: string) {
-    let target = this.currentChannel.value;
+    const target = this.currentChannel.value;
 
     if (target == null) {
       return;
@@ -209,10 +216,11 @@ export default class ChannelManager {
       case 'roll':
         this.postMessage(text, true);
         break;
-      case 'help':
-        let helpText = '可用命令：摇骰子：/roll [最大点]'
+      case 'help': {
+        const helpText = '可用命令：摇骰子：/roll [最大点]';
         target.addNewMessages(new InfoMessage(helpText));
         break;
+      }
       case 'close':
         if (target.type == ChannelType.PM) {
           this.onHideChannel(target);
@@ -230,25 +238,23 @@ export default class ChannelManager {
 
     this.channelsInitialised = true;
 
-    [[1,'#象棋']].forEach(([id, name]) => {
-      let channel = new Channel();
+    [[1, '#象棋']].forEach(([id, name]) => {
+      const channel = new Channel();
       channel.id = <number>id;
       channel.type = ChannelType.PUBLIC;
       channel.name = <string>name;
       this.joinChannel(channel);
     });
 
-    let listChannels = () => {
-      let req = new ListChannelsRequest();
+    const listChannels = () => {
+      const req = new ListChannelsRequest();
       req.success = (channels) => {
-        channels.forEach((ch: any) => {
-          let channel = Channel.from(ch);
-
-          this.getChannel(channel, true);
+        channels.forEach((ch) => {
+          this.getChannel(Channel.from(ch), true);
         });
       };
       this.api.queue(req);
-    }
+    };
 
     this.api.isLoggedIn.changed.add((isLoggedIn: boolean) => {
       if (!isLoggedIn) {
@@ -263,16 +269,18 @@ export default class ChannelManager {
     }
   }
 
-  private async initSocketListeners() {
-    chat_server_events.message.add((msg: any) => {
-      let channel = this.getChannel(msg.channelId);
+  private initSocketListeners() {
+    ChatEvents.message.add((msg: ChatEvents.ChatMessageMsg) => {
+      const channel = this.getChannel(msg.channelId);
       channel.addNewMessages(Message.from(msg));
     });
 
-    chat_server_events.presence.add((msg: chat_server_events.ChatPresenceMsg) => {
-      let channel = Channel.from(msg.channel);
-      channel.joined.value = true; // 从服务器接收到的频道应该都是已经加入的
-      if (channel.type == ChannelType.PM) {          
+    ChatEvents.presence.add((msg: ChatEvents.ChatPresenceMsg) => {
+      const channel = Channel.from(msg.channel);
+      // 从服务器接收到的频道应该都是已经加入的
+      channel.joined.value = true;
+
+      if (channel.type == ChannelType.PM) {
         channel.name = msg.sender.nickname;
         this.joinChannel(channel, false);
         this.openPrivateChannel(msg.sender);
@@ -284,16 +292,16 @@ export default class ChannelManager {
       }
     });
 
-    chat_server_events.channelUserLeft.add((msg: chat_server_events.ChatChannelUserLeftMsg) => {
-      let channel = this.getChannel(msg.channelId);
+    ChatEvents.channelUserLeft.add((msg: ChatEvents.ChatChannelUserLeftMsg) => {
+      const channel = this.getChannel(msg.channelId);
       if (channel.type == ChannelType.PM) {
         // 该私聊频道中的对话用户已经离开
         channel.addNewMessages(new InfoMessage('对方已下线'));
       }
     });
 
-    chat_server_events.messageRecalled.add((msg: chat_server_events.ChatRecallMessageMsg) => {
-      let channel = this.getChannel(msg.channelId);
+    ChatEvents.messageRecalled.add((msg: ChatEvents.ChatRecallMessageMsg) => {
+      const channel = this.getChannel(msg.channelId);
       channel.removeMessage(msg.messageId);
     });
 
@@ -307,18 +315,18 @@ export default class ChannelManager {
 
   private fetchInitalMessages(channel: Channel) {
     if (channel.messagesLoaded) return;
-    let getMessagesRequest = new GetMessagesRequest(channel);
-    getMessagesRequest.success = (msgs) => {
+    const req = new GetMessagesRequest(channel);
+    req.success = (msgs) => {
       this.handleChannelMessages(msgs.map(Message.from));
       channel.messagesLoaded = true;
-    }
-    this.api.queue(getMessagesRequest);
+    };
+    this.api.queue(req);
   }
 
   private handleChannelMessages(messages: Message[]) {
-    let channels = this.joinedChannels;
-    let channelMap: any = channels.reduce((map: any, c: Channel) => (map[c.id] = c, map), {});
-    messages.forEach(msg => {
+    const channels = this.joinedChannels;
+    const channelMap: any = channels.reduce((map: any, c: Channel) => (map[c.id] = c, map), {});
+    messages.forEach((msg) => {
       channelMap[msg.channelId].addNewMessages(msg);
     });
   }

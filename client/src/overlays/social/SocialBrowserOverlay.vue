@@ -6,10 +6,13 @@
     maximized
     seamless
     flat
-    content-class="social-browser-overlay"
+    content-class="social-browser-overlay z-top"
   >
-    <q-card flat class="content-card q-px-sm">
-      <span class="text-white text-subtitle1">在线人数: {{onlineCount}}</span>
+    <q-card
+      flat
+      class="content-card q-px-sm"
+    >
+      <span class="text-white text-subtitle1">在线人数: {{ onlineCount }}</span>
       <q-tabs
         v-model="activeTab"
         align="left"
@@ -29,182 +32,270 @@
           name="all"
           label="全部"
         />
+        <q-tab
+          key="in_room"
+          name="in_room"
+          label="准备游戏"
+        />
+        <q-tab
+          key="playing"
+          name="playing"
+          label="正在游戏"
+        />
       </q-tabs>
       <div
-        class="row items-start q-pt-sm q-gutter-sm scroll"
-        style="max-height: calc(100% - 84px)">
-        <list-user-card
-          v-for="user in users"
-          :key="user.id"
-          :user="user"
-        >
-          <q-menu v-if="isLoggedIn && !isMe(user)" content-class="bg-primary text-white" touch-position>
-            <q-list>
-              <q-item
-                key="chat"
-                v-close-popup
-                clickable
-                @click="onChatClick(user)"
+        class="flex items-start justify-center content-start q-pt-sm q-gutter-sm scroll users"
+      >
+        <q-inner-loading
+          :showing="loading"
+          color="orange"
+          class="bg-transparent"
+          size="3em"
+        />
+        <template v-if="users.length > 0">
+          <template
+            v-for="user in users"
+          >
+            <user-grid-panel
+              v-if="isShowInTab(user)"
+              :key="user.id"
+              :user="user"
+            >
+              <q-menu
+                v-if="isLoggedIn && !isMe(user)"
+                content-class="bg-primary text-white z-top"
+                touch-position
               >
-                <q-item-section>聊天</q-item-section>
-              </q-item>
-              <q-separator />
-              <q-item
-                key="spectate"
-                v-close-popup
-                clickable
-                @click="onSpectateClick(user)"
-              >
-                <q-item-section>观看游戏</q-item-section>
-              </q-item>
-              <template v-if="!user.isFriend">
-                <q-separator />
-                <q-item
-                  key="addFriend"
-                  v-close-popup
-                  clickable
-                  @click="onAddFriendClick(user)"
-                >
-                  <q-item-section>加为好友</q-item-section>
-                </q-item>
-              </template>
-              <template v-if="user.isFriend">
-                <q-separator />
-                <q-item
-                  key="deleteFriend"
-                  v-close-popup
-                  clickable
-                  @click="onDeleteFriendClick(user)"
-                >
-                  <q-item-section>删除好友</q-item-section>
-                </q-item>
-              </template>
-            </q-list>
-          </q-menu>
-        </list-user-card>
+                <q-list>
+                  <q-item
+                    key="details"
+                    v-close-popup
+                    clickable
+                    @click="onUserDetailsClick(user)"
+                  >
+                    <q-item-section>查看详情</q-item-section>
+                  </q-item>
+                  <q-item
+                    key="chat"
+                    v-close-popup
+                    clickable
+                    @click="onChatClick(user)"
+                  >
+                    <q-item-section>聊天</q-item-section>
+                  </q-item>
+                  <q-separator />
+                  <q-item
+                    key="spectate"
+                    v-close-popup
+                    clickable
+                    @click="onSpectateClick(user)"
+                  >
+                    <q-item-section>观看游戏</q-item-section>
+                  </q-item>
+                  <template v-if="!user.isFriend">
+                    <q-separator />
+                    <q-item
+                      key="addFriend"
+                      v-close-popup
+                      clickable
+                      @click="onAddFriendClick(user)"
+                    >
+                      <q-item-section>加为好友</q-item-section>
+                    </q-item>
+                  </template>
+                  <template v-if="user.isFriend">
+                    <q-separator />
+                    <q-item
+                      key="deleteFriend"
+                      v-close-popup
+                      clickable
+                      @click="onDeleteFriendClick(user)"
+                    >
+                      <q-item-section>删除好友</q-item-section>
+                    </q-item>
+                  </template>
+                </q-list>
+              </q-menu>
+            </user-grid-panel>
+          </template>
+        </template>
+        <span
+          v-else-if="!loading"
+          class="text-white absolute-center"
+        >未查询到用户:(</span>
       </div>
     </q-card>
+
+    <user-details-overlay ref="userDetailsOverlay" />
   </q-dialog>
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance, reactive, ref, watch } from '@vue/composition-api'
-import APIAccess from 'src/online/api/APIAccess';
-import ChannelManager from 'src/online/chat/ChannelManager';
+import {
+  defineComponent, getCurrentInstance, ref, watch,
+} from '@vue/composition-api';
 import AddAsFriendRequest from 'src/online/friend/AddAsFriendRequest';
 import DeleteFriendRequest from 'src/online/friend/DeleteFriendRequest';
 import SpectateUserRequest from 'src/online/spectator/SpectateUserRequest';
 import GetUsersRequest from 'src/online/user/GetUsersRequest';
-import User from 'src/online/user/User';
-import ListUserCard from './ListUserCard.vue';
 import SearchUserInfo from 'src/online/user/SearchUserInfo';
-import * as user_events from "src/online/ws/events/user";
-import * as stat_events from "src/online/ws/events/stat";
-import SocketService from 'src/online/ws/SocketService';
+import * as UserEvents from "src/online/ws/events/user";
+import * as StatEvents from "src/online/ws/events/stat";
+import { api, channelManager, socketService } from 'src/boot/main';
+import SearchUserParams from 'src/online/user/SearchUserParams';
 import UserStatus from 'src/online/user/UserStatus';
+import APIPageResponse from 'src/online/api/APIPageResponse';
+import UserDetailsOverlay from '../user/UserDetailsOverlay.vue';
+import UserGridPanel from '../user/UserGridPanel.vue';
 
 export default defineComponent({
-  components: { ListUserCard },
+  components: { UserGridPanel, UserDetailsOverlay },
   setup() {
-    const ctx = getCurrentInstance();
-    const api: APIAccess = (<any>ctx).api;
-    const socketService: SocketService = (<any>ctx).socketService;
-    const notify = (<any>ctx).$q.notify;
+    const { $refs, $q } = getCurrentInstance() as Vue;
 
     const isOpen = ref(false);
     const activeTab = ref('all');
+    const loading = ref(true);
     const users = ref<SearchUserInfo[]>([]);
     const onlineCount = ref<number>(0);
 
-    const toggle = () => { 
-      isOpen.value = !isOpen.value;
-
-      if (isOpen.value) {
-        queryUsers();
-      }
-      socketService.queue((send: Function) => {
-        send(`activity.${isOpen.value ? 'enter' : 'exit'}`, {code: 2})
-      });
-    };
-
-    const hide = () => { 
-      isOpen.value = false;
-    };
-
-    const isLoggedIn = ref<boolean>(api.isLoggedIn.value);//todo:全局加入响应式
-    api.isLoggedIn.changed.add((state: boolean) => {
-      isLoggedIn.value = state;
-    });
-
-    user_events.statusChanged.add((msg: user_events.UserStatusChangedMsg) => {
-      let i = users.value.findIndex(u => u.id == msg.uid);
-      if (i > -1) {
-        users.value[i].status = msg.status;
-      }
-    });
-
-    stat_events.online.add((msg: stat_events.StatOnlineCountMsg) => {
-      onlineCount.value = msg.online;
-    });
-
     const queryUsers = () => {
-      let searchParams = {page: 1, size: 100, onlyFriends: false};
+      users.value = [];
+      const searchParams = new SearchUserParams();
       searchParams.onlyFriends = activeTab.value == 'friends';
-      let req = new GetUsersRequest(searchParams);
-      req.success = (userPage: any) => {
+      if (activeTab.value == 'playing') {
+        searchParams.status = UserStatus.PLAYING;
+      } else if (activeTab.value == 'in_room') {
+        searchParams.status = UserStatus.IN_ROOM;
+      }
+      const req = new GetUsersRequest(searchParams);
+      req.loading = loading;
+      req.success = (userPage: APIPageResponse<SearchUserInfo>) => {
         users.value = userPage.records;
       };
       api.queue(req);
     };
 
-    queryUsers();
+    const toggle = () => {
+      isOpen.value = !isOpen.value;
+
+      if (isOpen.value) {
+        users.value = [];
+        setTimeout(() => {
+          queryUsers();
+        }, 300);
+      }
+      socketService.queue((send) => {
+        send(`activity.${isOpen.value ? 'enter' : 'exit'}`, { code: 2 });
+      });
+    };
+
+    const hide = () => {
+      isOpen.value = false;
+    };
+
+    const isLoggedIn = ref<boolean>(api.isLoggedIn.value); // todo:全局加入响应式
+    api.isLoggedIn.changed.add((state: boolean) => {
+      isLoggedIn.value = state;
+    });
+
+    UserEvents.statusChanged.add((msg: UserEvents.UserStatusChangedMsg) => {
+      const found = users.value.find((u) => u.id == msg.uid);
+      let isToAdd = false;
+      switch (activeTab.value) {
+        case 'all':
+          if (found) {
+            found.status = msg.status;
+          } else {
+            isToAdd = true;
+          }
+          break;
+        case 'in_room':
+        case 'playing': {
+          if (found) {
+            if (found.status != msg.status) {
+              users.value = users.value.filter((u) => u.id != msg.uid);
+            }
+          } else if ((msg.status == UserStatus.IN_ROOM || msg.status == UserStatus.PLAYING)) {
+            isToAdd = true;
+          }
+          break;
+        }
+        default:
+          break;
+      }
+
+      if (isToAdd) {
+        users.value = users.value.concat([msg.user]);
+      }
+    });
+
+    StatEvents.online.add((msg: StatEvents.StatOnlineCountMsg) => {
+      onlineCount.value = msg.online;
+    });
 
     watch(activeTab, () => {
       queryUsers();
     });
 
+    const isShowInTab = (user: SearchUserInfo) => {
+      if (activeTab.value == 'friends') {
+        return user.isFriend;
+      }
+      if (activeTab.value == 'in_room') {
+        return user.status == UserStatus.IN_ROOM;
+      }
+      if (activeTab.value == 'playing') {
+        return user.status == UserStatus.PLAYING;
+      }
+      return true;
+    };
+
+    const onUserDetailsClick = (user: SearchUserInfo) => {
+      // eslint-disable-next-line
+      (<any>$refs.userDetailsOverlay).show(user);
+    };
+
     const onChatClick = (user: SearchUserInfo) => {
-      let channelManager = (<any>ctx).channelManager as ChannelManager;
       channelManager.openPrivateChannel(user);
     };
 
     const onSpectateClick = (user: SearchUserInfo) => {
-      let req = new SpectateUserRequest(user);
-      req.success = (res) => {
+      const req = new SpectateUserRequest(user);
+      req.success = () => {
         hide();
-        
-        alert('todo');
-        //todo
+        // todo
       };
       req.failure = (res) => {
-        let codeMsgMap: any = {
+        const codeMsgMap: {[code: number]: string} = {
           2: '该用户未在线',
           3: '该用户未加入游戏',
           4: '不满足观看条件',
-          5: '你在游戏中不能观看其它游戏'
+          5: '你在游戏中不能观看其它游戏',
         };
-        notify({
+        $q.notify({
           type: 'warning',
-          message: `观看请求失败，${codeMsgMap[res.code] || '原因未知'}`
+          message: `观看请求失败，${codeMsgMap[res.code] || '原因未知'}`,
         });
       };
       api.perform(req);
     };
 
     const onAddFriendClick = (user: SearchUserInfo) => {
-        let req = new AddAsFriendRequest(user);
-        req.success = () => {
-          notify({type: 'positive', message: `已将${user.nickname}加为好友`});
-        };
-        api.perform(req);
+      const req = new AddAsFriendRequest(user);
+      req.success = () => {
+        user.isFriend = true;
+        $q.notify({ type: 'positive', message: `已将${user.nickname}加为好友` });
+      };
+      api.perform(req);
     };
 
     const onDeleteFriendClick = (user: SearchUserInfo) => {
-      let req = new DeleteFriendRequest(user);
+      const req = new DeleteFriendRequest(user);
       req.success = () => {
-        notify({type: 'positive', message: `已删除好友${user.nickname}`});
-        users.value = users.value.filter(u => u.id != user.id);
-      }
+        user.isFriend = false;
+        $q.notify({ type: 'positive', message: `已删除好友${user.nickname}` });
+      };
       api.perform(req);
     };
 
@@ -214,16 +305,21 @@ export default defineComponent({
       hide,
 
       activeTab,
+      loading,
+
+      isShowInTab,
       users,
       onlineCount,
       isLoggedIn,
       isMe: (user: SearchUserInfo) => user.id == api.localUser.id,
+
+      onUserDetailsClick,
       onChatClick,
       onSpectateClick,
       onAddFriendClick,
-      onDeleteFriendClick
+      onDeleteFriendClick,
     };
-  }
+  },
 });
 </script>
 
@@ -245,6 +341,12 @@ export default defineComponent({
       .q-tab-panel {
         padding: 4px 4px;
       }
+    }
+
+    .users {
+      position: relative;
+      min-height: calc(100% - 112px);
+      padding-bottom: 50px;
     }
   }
 }

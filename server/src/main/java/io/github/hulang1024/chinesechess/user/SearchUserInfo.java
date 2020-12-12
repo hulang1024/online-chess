@@ -15,6 +15,6 @@ public class SearchUserInfo extends User {
 
     @JSONField(name = "status")
     public int getStatusCode() {
-        return status.getCode();
+        return status == null ? -1 : status.getCode();
     }
 }

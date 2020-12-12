@@ -1,7 +1,6 @@
 <template>
   <q-scroll-area
     ref="scrollArea"
-    visible
     :delay="200"
     :thumb-style="{
       right: '0px',
@@ -20,48 +19,55 @@
   </q-scroll-area>
 </template>
 <script lang="ts">
-import { defineComponent, getCurrentInstance, PropType, ref } from '@vue/composition-api'
+import {
+  defineComponent, getCurrentInstance, onMounted, PropType, ref,
+} from '@vue/composition-api';
 import Channel from 'src/online/chat/Channel';
 import Message from 'src/online/chat/Message';
+import { scroll } from 'quasar';
 import ChatLine from './ChatLine.vue';
-import { scroll } from 'quasar'
 
 export default defineComponent({
   components: { ChatLine },
   props: {
     channel: {
       type: Object as PropType<Channel>,
-      require: true
-    }
+      require: true,
+    },
   },
   setup(props) {
-    const ctx = getCurrentInstance();
-    const { channel } = props;
-    const messages = ref<Message[] | undefined>(channel?.messages);
+    const ctx = getCurrentInstance() as Vue;
+    const channel = props.channel as Channel;
+    const messages = ref<Message[]>(channel?.messages || []);
 
     const updateScroll = () => {
-      ctx?.$nextTick(() => {
-        let scrollArea = ctx?.$refs.scrollArea;
-        let pos = scroll.getScrollHeight(scrollArea.$el.firstChild.firstChild);
-        scrollArea.setScrollPosition(pos, 100);
+      // eslint-disable-next-line
+      (ctx.$refs.scrollArea as Vue)?.$nextTick(() => {
+        // eslint-disable-next-line
+        const el = ((ctx.$refs.scrollArea as Vue).$el as Element).firstChild?.firstChild;
+        const pos = scroll.getScrollHeight(el as Element);
+        // eslint-disable-next-line
+        (ctx.$refs.scrollArea as any).setScrollPosition(pos, 100);
       });
     };
 
-    channel?.newMessagesArrived.add((newMsgs: Message[]) => {
+    channel.newMessagesArrived.add((newMsgs: Message[]) => {
       messages.value = messages.value?.concat(newMsgs);
       updateScroll();
-    }, this);
+    });
 
-    channel?.messageRemoved.add((msgId: number) => {
-      messages.value = messages.value?.filter(m => m.id != msgId);
+    channel.messageRemoved.add((msgId: number) => {
+      messages.value = messages.value?.filter((m) => m.id != msgId);
       updateScroll();
-    }, this);
+    });
 
-    updateScroll();
+    onMounted(() => {
+      updateScroll();
+    });
 
     return {
-      messages
+      messages,
     };
-  }
+  },
 });
 </script>

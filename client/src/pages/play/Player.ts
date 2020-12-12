@@ -1,88 +1,50 @@
-<template>
-  <div class="player column items-center relative-position" ref="chessboardContainer">
-    <slot></slot>
-  </div>
-</template>
-<style lang="sass" scoped>
-.player
-  flex-grow: 1
-</style>
-<script lang="ts">
-import { defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, reactive, ref } from '@vue/composition-api'
-import ChessHost from 'src/rule/chess_host';
-import DrawableChess from './DrawableChess';
-import DrawableChessboard from './DrawableChessboard';
-import ChessTargetDrawer from './ChessTargetDrawer';
-import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList } from 'src/rule/chess_map';
-import ConfigManager, { ConfigItem } from 'src/config/ConfigManager';
-import ChessPos from 'src/rule/ChessPos';
-import Game from 'src/rule/Game';
-import Bindable from 'src/utils/bindables/Bindable';
-import Checkmate from 'src/rule/Checkmate';
-import ChessAction from 'src/rule/ChessAction';
-import Chess from 'src/rule/Chess';
-import ChessK from 'src/rule/chess/ChessK';
-import TWEEN, { Tween } from 'tween.ts';
-import SOUND from 'src/audio/sound';
-import Signal from 'src/utils/signals/Signal';
-import ResponseGameStates, { ResponseGameStateChess, ResponseGameStateChessAction } from 'src/online/ws/events/play';
+import { onBeforeUnmount } from "@vue/composition-api";
+import SOUND from "src/audio/sound";
+import { configManager } from "src/boot/main";
+import ConfigManager, { ConfigItem } from "src/config/ConfigManager";
+import ResponseGameStates, { ResponseGameStateChess, ResponseGameStateChessAction } from "src/online/play/game_states_response";
+import Checkmate from "src/rule/Checkmate";
+import Chess from "src/rule/Chess";
+import ChessK from "src/rule/chess/ChessK";
+import ChessAction from "src/rule/ChessAction";
+import ChessPos from "src/rule/ChessPos";
+import ChessHost from "src/rule/chess_host";
+import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList } from "src/rule/chess_map";
+import Game from "src/rule/Game";
+import Bindable from "src/utils/bindables/Bindable";
+import Signal from "src/utils/signals/Signal";
+import TWEEN from "tween.ts";
+import ChessTargetDrawer from "./ChessTargetDrawer";
+import DrawableChess from "./DrawableChess";
+import DrawableChessboard from "./DrawableChessboard";
 
-export default defineComponent({
-  setup() {
-    const ctx = getCurrentInstance();
-    const { configManager } = <any>ctx;
+export default class Player implements Game {
+  public loaded: Signal = new Signal();
 
-    let player = new Player(configManager, ctx.$q.screen);
-
-    let onReisze: () => void;
-    
-    onMounted(() => {
-      let parent = (<any>ctx).$el.parentElement;
-      let chessboard: DrawableChessboard = new DrawableChessboard(
-        parent.offsetWidth, ctx.$q.screen, configManager.get(ConfigItem.theme));
-
-      ctx?.$refs.chessboardContainer.appendChild(chessboard.el);
-      player.chessboard = chessboard;
-
-      window.addEventListener('resize', onReisze = () => {
-        player.resize(parent.offsetWidth);
-      });
-    });
-
-    onBeforeUnmount(() => {
-      window.removeEventListener('resize', onReisze);
-    });
-
-    return {
-      controller: ref(player),
-      startGame: player.startGame.bind(player),
-      pickChess: player.pickChess.bind(player),
-      moveChess: player.moveChess.bind(player)
-    };
-  }
-});
-
-class Player implements Game {
   public chessboard: DrawableChessboard;
+
   public gameOver: Signal = new Signal();
+
   public activeChessHost: Bindable<ChessHost> = new Bindable<ChessHost>();
 
+  public screen: any;
+
   private configManager: ConfigManager;
-  // 视角棋方
+
   private viewChessHost: ChessHost;
+
   private lastViewChessHost: ChessHost;
 
   private checkmate: Checkmate;
-  private chessEatOverlayVisible = ref(false);
-  private checkmateShowChessHost = ref(0);
-  private chessActionStack: Array<ChessAction>;
-  private fromPosTargetDrawer: ChessTargetDrawer;
-  private animationId: any;
-  private screen: any;
 
-  constructor(configManager: ConfigManager, screen: any) {
+  private chessActionStack: Array<ChessAction>;
+
+  private fromPosTargetDrawer: ChessTargetDrawer;
+
+  private animationId: number;
+
+  constructor() {
     this.configManager = configManager;
-    this.screen = screen;
 
     onBeforeUnmount(() => {
       cancelAnimationFrame(this.animationId);
@@ -91,12 +53,10 @@ class Player implements Game {
     this.startTween();
   }
 
-  //Override
   public getChessboard() {
     return this.chessboard;
   }
 
-  //Override
   public isHostAtChessboardTop(chessHost: ChessHost) {
     // 视角棋方总是在底部
     return chessHost != this.viewChessHost;
@@ -106,7 +66,7 @@ class Player implements Game {
     this.lastViewChessHost = this.viewChessHost;
     this.viewChessHost = viewChessHost;
     if (this.lastViewChessHost == null) {
-        this.lastViewChessHost = viewChessHost;
+      this.lastViewChessHost = viewChessHost;
     }
 
     if (!this.fromPosTargetDrawer) {
@@ -123,6 +83,7 @@ class Player implements Game {
         if (this.viewChessHost == ChessHost.BLACK) {
           pos = pos.reverseView();
         }
+        /* eslint-disable */
         let chess: Chess = new (CHESS_CLASS_KEY_MAP[stateChess.type] as any)(pos, stateChess.chessHost);
         this.chessboard.addChess(this.createDrawableChess(chess));
       });
@@ -146,7 +107,7 @@ class Player implements Game {
     this.activeChessHost.value = (gameStates && gameStates.activeChessHost) || ChessHost.RED;
   }
 
-  public pickChess(picked: boolean, pos: ChessPos, chessHost: ChessHost) {
+  public pickChess(picked: boolean, pos: ChessPos, chessHost: ChessHost) {    
     this.chessboard.getChessList().forEach((chess: DrawableChess) => {
       if (chess.selected && chess.getHost() == chessHost) {
         chess.selected = false;
@@ -397,4 +358,3 @@ class Player implements Game {
     this.animationId = requestAnimationFrame(animate);
   }
 }
-</script>

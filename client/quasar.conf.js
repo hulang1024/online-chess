@@ -135,9 +135,9 @@ module.exports = configure((ctx) => ({
     workboxPluginMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
     workboxOptions: {}, // only for GenerateSW
     manifest: {
-      name: 'chess',
-      short_name: 'chess',
-      description: 'chess',
+      name: '在线中国象棋',
+      short_name: '在线中国象棋',
+      description: '在线中国象棋',
       display: 'standalone',
       orientation: 'portrait',
       background_color: '#ffffff',

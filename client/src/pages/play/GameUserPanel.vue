@@ -1,23 +1,43 @@
 <template>
-  <q-card flat :class="[
-    'game-user-panel',
-    `q-py-${$q.screen.name}`
-  ]">
+  <q-card
+    flat
+    :class="[
+      'game-user-panel',
+      `q-py-${$q.screen.name}`
+    ]"
+  >
     <div class="row items-start">
-      <div class="user-avatar-frame"
-        :style="{borderColor: (user == null || active) ? chessHostColor : 'transparent'}">
-        <user-avatar :class="{offline: !online}" :user="user" size="60px" />
+      <div
+        class="user-avatar-frame"
+        :style="{borderColor: (user == null || active) ? chessHostColor : 'transparent'}"
+      >
+        <user-avatar
+          :user="user"
+          :class="{offline: !online}"
+          size="60px"
+        />
       </div>
-      <div v-show="user" class="q-ml-xs">
-        <div class="nickname ellipsis">{{user && user.nickname}}</div>
+      <div
+        v-show="user"
+        class="q-ml-xs"
+      >
+        <div class="nickname ellipsis">
+          {{ user && user.nickname }}
+        </div>
         <div class="time-panel">
           <div class="item">
             <span class="label">步时</span>
-            <slot name="step-timer" class="time"></slot>
+            <slot
+              name="step-timer"
+              class="time"
+            />
           </div>
           <div class="item">
             <span class="label">局时</span>
-            <slot name="game-timer" class="time"></slot>
+            <slot
+              name="game-timer"
+              class="time"
+            />
           </div>
         </div>
       </div>
@@ -26,7 +46,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, getCurrentInstance, PropType, reactive, ref, toRefs, watch } from "@vue/composition-api";
+import { computed, defineComponent, PropType } from "@vue/composition-api";
 import UserAvatar from "src/components/UserAvatar.vue";
 import User from "src/online/user/User";
 import ChessHost from "src/rule/chess_host";
@@ -38,13 +58,13 @@ export default defineComponent({
     user: Object as PropType<User>,
     online: Boolean,
     chessHost: Number as PropType<ChessHost | undefined>,
-    active: Boolean
+    active: Boolean,
   },
   setup(props) {
     return {
-      chessHostColor: computed(() => props.chessHost == ChessHost.RED ? 'red' : 'black')
+      chessHostColor: computed(() => (props.chessHost == ChessHost.RED ? 'red' : 'black')),
     };
-  }
+  },
 });
 </script>
 
@@ -52,7 +72,6 @@ export default defineComponent({
 .game-user-panel
   width: 192px
   background: transparent
-
 
 .nickname
   width: 124px
@@ -78,7 +97,6 @@ export default defineComponent({
     padding-right: 16px
     .label
       padding-right: 4px
-      color: #444
       font-size: 0.9em
       &::after
         content: ':'

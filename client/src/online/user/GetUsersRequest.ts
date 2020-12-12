@@ -1,13 +1,17 @@
+import APIPageResponse from "../api/APIPageResponse";
 import { APIRequest, HttpMethod } from "../api/api_request";
+import SearchUserInfo from "./SearchUserInfo";
+import SearchUserParams from "./SearchUserParams";
 
-export default class GetUsersRequest extends APIRequest {
-    constructor(params: any) {
-        super();
-        this.method = HttpMethod.GET;
-        this.path = 'users';
+export default class GetUsersRequest extends APIRequest<APIPageResponse<SearchUserInfo>> {
+  constructor(params: SearchUserParams) {
+    super();
+    this.method = HttpMethod.GET;
+    this.path = 'users';
 
-        for (let key in params) {
-            this.addParam(key, params[key]);
-        }
-    }
+    this.addParam('page', params.page);
+    this.addParam('size', params.size);
+    this.addParam('onlyFriends', params.onlyFriends);
+    this.addParam('status', params.status);
+  }
 }

@@ -2,7 +2,10 @@
   <q-dialog
     v-model="isOpen"
   >
-    <q-card class="q-px-lg q-py-lg" style="width: 400px">
+    <q-card
+      class="q-px-lg q-py-lg"
+      style="width: 400px"
+    >
       <q-form
         ref="form"
         class="q-gutter-md"
@@ -47,21 +50,25 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance, reactive, ref, toRefs } from '@vue/composition-api';
+import {
+  defineComponent, getCurrentInstance, reactive, Ref, ref, toRefs,
+} from '@vue/composition-api';
+import User from 'src/online/user/User';
 
 export default defineComponent({
-  setup(props) {
-    const ctx = getCurrentInstance();
-    
-    const user = reactive({
+  setup() {
+    const ctx = getCurrentInstance() as Vue;
+
+    const form = reactive({
       username: '',
       password: '',
     });
     const isOpen = ref(false);
     const loading = ref(false);
 
-    let action: Function;
+    let action: (user: User, loading: Ref<boolean>, isOpen: Ref<boolean>) => void;
     const show = (options: any) => {
+      // eslint-disable-next-line
       action = options.action;
       loading.value = false;
       isOpen.value = true;
@@ -72,8 +79,12 @@ export default defineComponent({
     };
 
     const onSubmit = () => {
-      ctx?.$refs.form.validate().then((valid: boolean) => {
+      // eslint-disable-next-line
+      (<any>ctx?.$refs.form).validate().then((valid: boolean) => {
         if (!valid) return;
+        const user = new User();
+        user.username = form.username;
+        user.password = form.password;
         action(user, loading, isOpen);
       });
     };
@@ -82,13 +93,13 @@ export default defineComponent({
       isOpen,
       show,
       hide,
-      ...toRefs(user),
+      ...toRefs(form),
       loading,
       onSubmit,
       onGitHubLoginClick: () => {
         window.location.href = 'https://github.com/login/oauth/authorize?client_id=5176faf64742ae0bfe84';
-      }
+      },
     };
-  }
+  },
 });
 </script>

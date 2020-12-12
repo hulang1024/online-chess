@@ -5,9 +5,9 @@
         <game-user-panel
           :user="otherUser"
           :online="otherOnline"
-          :chessHost="otherChessHost"
+          :chess-host="otherChessHost"
           :active="activeChessHost == otherChessHost"
-          class="q-my-sm q-ml-sm"
+          class="q-py-sm q-ml-xs"
         >
           <template #game-timer>
             <timer ref="otherGameTimer" />
@@ -16,19 +16,22 @@
             <timer ref="otherStepTimer" />
           </template>
         </game-user-panel>
-        <player ref="player">
+        <player-container ref="playerContainer">
           <ready-start-overlay
             :readied="readied"
-            :otherReadied="otherReadied"
+            :other-readied="otherReadied"
             :is-room-owner="isRoomOwner"
-            :gameState="gameState"
+            :game-state="gameState"
             @ready-start="onReadyStartClick"
             class="absolute-center z-top"
           />
           <confirm-dialog ref="confirmDialog" />
-          <text-overlay ref="textOverlay" class="absolute-center" style="z-index:1" />
+          <text-overlay
+            ref="textOverlay"
+            class="absolute-center"
+          />
           <result-dialog ref="resultDialog" />
-        </player>
+        </player-container>
         <q-btn
           color="orange"
           label="菜单"
@@ -42,7 +45,8 @@
           >
             <q-list style="min-width: 100px">
               <q-item
-                clickable v-close-popup
+                clickable
+                v-close-popup
                 :disable="!(isPlaying && canWithdraw)"
                 @click="onWithdrawClick"
               >
@@ -50,7 +54,8 @@
               </q-item>
               <q-separator />
               <q-item
-                clickable v-close-popup
+                clickable
+                v-close-popup
                 :disable="!isPlaying"
                 @click="onChessDrawClick"
               >
@@ -58,13 +63,19 @@
               </q-item>
               <q-separator />
               <q-item
-                clickable v-close-popup 
-                :disable="!isPlaying" @click="onWhiteFlagClick"
+                clickable
+                v-close-popup
+                :disable="!isPlaying"
+                @click="onWhiteFlagClick"
               >
                 <q-item-section>认输</q-item-section>
               </q-item>
               <q-separator />
-              <q-item clickable v-close-popup @click="onQuitClick">
+              <q-item
+                clickable
+                v-close-popup
+                @click="onQuitClick"
+              >
                 <q-item-section>离开</q-item-section>
               </q-item>
             </q-list>
@@ -73,7 +84,7 @@
         <game-user-panel
           :user="user"
           :online="online"
-          :chessHost="chessHost"
+          :chess-host="chessHost"
           :active="activeChessHost == chessHost"
           class="fixed-bottom-right"
         >
@@ -87,24 +98,30 @@
       </div>
     </template>
     <template v-else>
-      <player ref="player">
+      <player-container ref="playerContainer">
         <ready-start-overlay
           :readied="readied"
-          :otherReadied="otherReadied"
+          :other-readied="otherReadied"
           :is-room-owner="isRoomOwner"
-          :gameState="gameState"
+          :game-state="gameState"
           @ready-start="onReadyStartClick"
-          class="absolute-center z-top"
+          class="absolute-center"
         />
         <confirm-dialog ref="confirmDialog" />
-        <text-overlay ref="textOverlay" class="absolute-center" style="z-index:1" />
+        <text-overlay
+          ref="textOverlay"
+          class="absolute-center"
+        />
         <result-dialog ref="resultDialog" />
-      </player>
-      <q-card flat class="controls q-px-sm q-py-sm">
+      </player-container>
+      <q-card
+        flat
+        class="controls q-px-sm q-py-sm"
+      >
         <game-user-panel
           :user="otherUser"
           :online="otherOnline"
-          :chessHost="otherChessHost"
+          :chess-host="otherChessHost"
           :active="activeChessHost == otherChessHost"
         >
           <template #game-timer>
@@ -118,9 +135,9 @@
         <game-user-panel
           :user="user"
           :online="online"
-          :chessHost="chessHost"
+          :chess-host="chessHost"
           :active="activeChessHost == chessHost"
-        >          
+        >
           <template #game-timer>
             <timer ref="gameTimer" />
           </template>
@@ -160,45 +177,49 @@
         />
       </q-card>
     </template>
-
   </q-page>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, Ref, ref, watch } from '@vue/composition-api'
-import Player from './Player.vue';
+import {
+  computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, Ref, ref,
+} from '@vue/composition-api';
+import GameState from 'src/online/play/GameState';
+import ChessHost from 'src/rule/chess_host';
+import User from 'src/online/user/User';
+import { createBoundRef } from 'src/utils/vue/vue_ref_utils';
+import { api } from 'src/boot/main';
+import Room from 'src/online/room/Room';
+import ResponseGameStates from 'src/online/play/game_states_response';
+import DrawableChessboard from './DrawableChessboard';
+import PlayerContainer from './PlayerContainer.vue';
 import GameUserPanel from './GameUserPanel.vue';
 import ReadyStartOverlay from './ReadyStartOverlay.vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import ResultDialog from './ResultDialog.vue';
 import TextOverlay from './TextOverlay.vue';
 import Timer from './Timer.vue';
-import GameState from 'src/online/play/GameState';
-import APIAccess from 'src/online/api/APIAccess';
 import GamePlay from './Play';
-import ChessHost from 'src/rule/chess_host';
-import User from 'src/online/user/User';
-import { createBoundRef } from 'src/utils/vue/vue_ref_utils';
-import Game from 'src/rule/Game';
 
 export default defineComponent({
   components: {
-    Player,
+    PlayerContainer,
     GameUserPanel,
     ReadyStartOverlay,
     ConfirmDialog,
     ResultDialog,
     TextOverlay,
-    Timer
+    Timer,
   },
   setup() {
-    const ctx = getCurrentInstance();
-    const { $refs, $route } = <any>ctx;
-    const api: APIAccess = (<any>ctx).api;
+    const ctx = getCurrentInstance() as Vue;
+    const { $route } = ctx;
 
     const { room, initialGameStates } = $route.params;
 
-    const gamePlay = new GamePlay(ctx, room, initialGameStates);
+    const gamePlay = new GamePlay(ctx,
+      room as unknown as Room,
+      initialGameStates as unknown as ResponseGameStates);
     const gameState: Ref<GameState> = createBoundRef(gamePlay.gameState);
     const activeChessHost: Ref<ChessHost> = createBoundRef(gamePlay.activeChessHost);
     const canWithdraw: Ref<boolean> = createBoundRef(gamePlay.canWithdraw);
@@ -212,6 +233,25 @@ export default defineComponent({
     const otherReadied: Ref<boolean> = createBoundRef(gamePlay.otherReadied);
     const otherChessHost: Ref<ChessHost> = createBoundRef(gamePlay.otherChessHost);
     const isPlaying = computed(() => gameState.value == GameState.PLAYING);
+
+    let onReisze: () => void;
+    onMounted(() => {
+      const parent = ctx.$el as HTMLElement;
+      const chessboard = new DrawableChessboard(parent?.offsetWidth || 0, ctx.$q.screen);
+      // eslint-disable-next-line
+      const container = (ctx.$refs.playerContainer as Vue).$el as Element;
+      container.insertBefore(chessboard.el, container.firstChild);
+      gamePlay.player.chessboard = chessboard;
+      gamePlay.player.screen = ctx.$q.screen;
+      gamePlay.player.loaded.dispatch();
+
+      window.addEventListener('resize', onReisze = () => {
+        gamePlay.player.resize(parent?.offsetWidth || 0);
+      });
+    });
+    onBeforeUnmount(() => {
+      window.removeEventListener('resize', onReisze);
+    });
 
     return {
       gameState,
@@ -234,9 +274,9 @@ export default defineComponent({
       onQuitClick: gamePlay.onQuitClick.bind(gamePlay),
       onWithdrawClick: gamePlay.onWithdrawClick.bind(gamePlay),
       onChessDrawClick: gamePlay.onChessDrawClick.bind(gamePlay),
-      onWhiteFlagClick: gamePlay.onWhiteFlagClick.bind(gamePlay)
+      onWhiteFlagClick: gamePlay.onWhiteFlagClick.bind(gamePlay),
     };
-  }
+  },
 });
 </script>
 

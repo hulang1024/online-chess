@@ -10,7 +10,9 @@
           class="toolbar-button q-px-sm"
           @click="onSettingButtonClick"
         >
-          <q-tooltip content-class="bg-black">设置</q-tooltip>
+          <q-tooltip content-class="bg-black">
+            设置
+          </q-tooltip>
         </q-btn>
 
         <q-toolbar-title></q-toolbar-title>
@@ -28,65 +30,91 @@
         <q-btn
           flat
           dense
+          icon="view_list"
+          class="toolbar-button q-px-sm"
+          @click="onRankingButtonClick"
+        >
+          <q-tooltip content-class="bg-black">
+            排名
+          </q-tooltip>
+        </q-btn>
+
+        <q-btn
+          flat
+          dense
           icon="people"
           class="toolbar-button q-px-sm"
           @click="onOnlineUsersButtonClick"
         >
-          <q-tooltip content-class="bg-black">在线用户</q-tooltip>
+          <q-tooltip content-class="bg-black">
+            在线用户
+          </q-tooltip>
         </q-btn>
 
         <user-button />
-
       </q-toolbar>
     </q-header>
 
     <settings-overlay ref="settingsOverlay" />
     <social-browser-overlay ref="socialBrowserOverlay" />
+    <ranking-overlay ref="rankingOverlay" />
     <chat-overlay ref="chatOverlay" />
 
-    <q-page-container @click="onPageClick" >
-      <router-view/>
+    <q-page-container @click="onPageClick">
+      <router-view />
     </q-page-container>
   </q-layout>
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance, onMounted, reactive, ref } from '@vue/composition-api';
-import User from 'src/online/user/User';
+import { defineComponent, getCurrentInstance } from '@vue/composition-api';
+import SocialBrowserOverlay from 'src/overlays/social/SocialBrowserOverlay.vue';
+import RankingOverlay from 'src/overlays/ranking/RankingOverlay.vue';
 import SettingsOverlay from '../overlays/settings/SettingsOverlay.vue';
 import ChatOverlay from '../overlays/chat/ChatOverlay.vue';
 import UserButton from '../overlays/toolbar/UserButton.vue';
-import SocialBrowserOverlay from 'src/overlays/social/SocialBrowserOverlay.vue';
 
 export default defineComponent({
   name: 'MainLayout',
-  components: { SettingsOverlay, ChatOverlay, UserButton, SocialBrowserOverlay },
+  components: {
+    SettingsOverlay, ChatOverlay, UserButton, SocialBrowserOverlay, RankingOverlay,
+  },
   setup() {
-    const ctx = getCurrentInstance();
-    const { $refs } = <any>ctx;
+    const { $refs } = getCurrentInstance() as Vue;
 
     const onPageClick = () => {
-      $refs.settingsOverlay.hide();
-      $refs.chatOverlay.hide();
+      // eslint-disable-next-line
+      (<any>$refs.settingsOverlay).hide();
+      // eslint-disable-next-line
+      (<any>$refs.chatOverlay).hide();
     };
-        
+
     const onSettingButtonClick = () => {
-      $refs.settingsOverlay.toggle();
+      // eslint-disable-next-line
+      (<any>$refs.settingsOverlay).toggle();
     };
 
     const onChatButtonClick = () => {
-      $refs.chatOverlay.toggle();
+      // eslint-disable-next-line
+      (<any>$refs.chatOverlay).toggle();
     };
 
     const onOnlineUsersButtonClick = () => {
-      $refs.socialBrowserOverlay.toggle();
+      // eslint-disable-next-line
+      (<any>$refs.socialBrowserOverlay).toggle();
+    };
+
+    const onRankingButtonClick = () => {
+      // eslint-disable-next-line
+      (<any>$refs.rankingOverlay).toggle();
     };
 
     return {
       onPageClick,
       onSettingButtonClick,
       onChatButtonClick,
-      onOnlineUsersButtonClick
+      onOnlineUsersButtonClick,
+      onRankingButtonClick,
     };
   },
 });

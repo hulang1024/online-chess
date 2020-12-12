@@ -4,58 +4,59 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent, getCurrentInstance } from '@vue/composition-api';
 import { Notify } from 'quasar';
 import Vue from 'vue';
-import ConfigManager, { ConfigItem } from './config/ConfigManager';
-import APIAccess from './online/api/APIAccess';
-import ChannelManager from './online/chat/ChannelManager';
+import VueRouter from 'vue-router';
+import { configManager, api, socketService } from './boot/main';
+import { ConfigItem } from './config/ConfigManager';
 import User from './online/user/User';
-import SocketService from './online/ws/SocketService';
 
-function start(
-  configManager: ConfigManager,
-  channelManager: ChannelManager,
-  api: APIAccess,
-  socketService: SocketService) {
-  if (location.hash.substring('#/'.length)) {
-    let matchRet = location.hash.match(/status=(\d)/);
-    let status = matchRet ? matchRet[1] : 1;
+function start(router: VueRouter) {
+  if (window.location.hash.substring('#/?'.length)) {
+    let matchRet = new RegExp('status=(\\d)').exec(window.location.hash);
+    const status = matchRet ? matchRet[1] : 1;
     if (status == '0') {
       // 第三方登录
-      matchRet = location.hash.match(/token=(.+)/)
-      let token = matchRet ? matchRet[1] : null;
+      matchRet = new RegExp('token=(.+)').exec(window.location.hash);
+      const token = matchRet ? matchRet[1] : null;
       if (token) {
+        // eslint-disable-next-line
         api.login(null, token);
-        location.hash = '';
+        // eslint-disable-next-line
+        router.push('/');
         return;
       }
     } else if (matchRet) {
-      location.hash = '';
-      Notify.create({type: 'warning', message: '登录失败'});
+      // eslint-disable-next-line
+      router.push('/');
+      Notify.create({ type: 'warning', message: '登录失败' });
     }
   }
   if (configManager.get(ConfigItem.loginAuto)) {
-    let user = new User();
-    user.username = configManager.get(ConfigItem.username);
-    user.password = configManager.get(ConfigItem.password);
-    let token = configManager.get(ConfigItem.token);
+    const user = new User();
+    user.username = configManager.get(ConfigItem.username) as string;
+    user.password = configManager.get(ConfigItem.password) as string;
+    const token = configManager.get(ConfigItem.token) as string;
     if ((user.username && user.password) || token) {
-        api.login(user, token);
+      // eslint-disable-next-line
+      api.login(user, token);
     } else {
       socketService.doConnect();
     }
   } else {
     socketService.doConnect();
   }
-} 
+}
 
 export default defineComponent({
   name: 'App',
   setup() {
-    let { configManager, channelManager, api, socketService } = Vue.prototype;
-    start(configManager, channelManager, api, socketService);
-  }
+    const context = getCurrentInstance() as Vue;
+
+    context.$q.dark.set(configManager.get(ConfigItem.theme) == 'dark');
+    start(context.$router);
+  },
 });
 </script>
 <style scoped>

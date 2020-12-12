@@ -1,35 +1,41 @@
 import { ref } from "@vue/composition-api";
+import { api, socketService } from "src/boot/main";
 import APIAccess from "../api/APIAccess";
 import SocketService from '../../online/ws/SocketService';
 import CreateRoomRequest from "./CreateRoomRequest";
 import GetRoomsRequest from "./GetRoomsRequest";
 import Room from "./Room";
-import { roomCreated, RoomCreatedMsg, roomRemoved, RoomRemovedMsg, roomUpdated, RoomUpdatedMsg } from "../ws/events/lobby";
+import {
+  roomCreated, RoomCreatedMsg, roomRemoved, RoomRemovedMsg, roomUpdated, RoomUpdatedMsg,
+} from "../ws/events/lobby";
+import SearchRoomParams from "./SearchRoomParams";
 
 export default class RoomManager {
   // 搜索到的房间
   public rooms = ref<Room[]>([]);
+
   // 是否正在搜索房间
   public roomsLoading = ref(true);
 
   private api: APIAccess;
+
   private socketService: SocketService;
 
-  private lastSearchParams: any;
+  private lastSearchParams: SearchRoomParams | undefined;
 
-  constructor(api: APIAccess, socketService: SocketService) {
+  constructor() {
     this.api = api;
     this.socketService = socketService;
 
     this.initSocketListeners();
   }
 
-  public searchRooms(searchParams?: any): void {
-    let req = new GetRoomsRequest(searchParams || this.lastSearchParams);
+  public searchRooms(searchParams?: SearchRoomParams): void {
+    const req = new GetRoomsRequest(searchParams || this.lastSearchParams);
     req.loading = this.roomsLoading;
     req.success = (resRooms) => {
       this.rooms.value = [];
-      resRooms.forEach((resRoom: Room) => {
+      (resRooms as unknown as Room[]).forEach((resRoom: Room) => {
         this.rooms.value.push(resRoom);
       });
     };
@@ -38,7 +44,7 @@ export default class RoomManager {
   }
 
   public createRoom(room: Room): CreateRoomRequest {
-    let req = new CreateRoomRequest(room);
+    const req = new CreateRoomRequest(room);
     this.api.queue(req);
     return req;
   }
@@ -57,7 +63,7 @@ export default class RoomManager {
 
     roomRemoved.add((msg: RoomRemovedMsg) => {
       if (msg.code != 0) {
-          return;
+        return;
       }
       this.rooms.value = this.rooms.value.filter((room: Room) => room.id != msg.roomId);
     });
@@ -70,5 +76,4 @@ export default class RoomManager {
   private getRoom(id: number): Room {
     return this.rooms.value.filter((room: Room) => room.id == id)[0];
   }
-  
 }

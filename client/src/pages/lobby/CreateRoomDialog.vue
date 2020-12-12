@@ -2,7 +2,10 @@
   <q-dialog
     v-model="isOpen"
   >
-    <q-card class="q-px-lg q-py-lg" style="width: 400px">
+    <q-card
+      class="q-px-lg q-py-lg"
+      style="width: 400px"
+    >
       <q-form
         ref="form"
         class="q-gutter-md"
@@ -22,7 +25,7 @@
           dense
           label="局时"
           suffix="分钟"
-          hit="棋局可用总时间"
+          hint="棋局可用总时间"
           lazy-rules
           :rules="[ val => val || '' ]"
         />
@@ -33,7 +36,7 @@
           dense
           label="步时"
           suffix="分钟"
-          hint="局时内每步时间"
+          hint="局时内每步可用时间"
           lazy-rules
           :rules="[ val => val || '' ]"
         />
@@ -44,12 +47,15 @@
           dense
           label="读秒"
           suffix="秒"
-          hint="局时用完后每步时间"
+          hint="局时用完后每步可用时间"
           lazy-rules
           :rules="[ val => val || '' ]"
         />
-        
-        <q-toggle v-model="requirePassword" label="需要密码" />
+
+        <q-toggle
+          v-model="requirePassword"
+          label="需要密码"
+        />
 
         <q-input
           v-show="requirePassword"
@@ -80,47 +86,57 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance, reactive, ref, toRefs } from '@vue/composition-api';
-import { boot } from 'quasar/wrappers';
+import {
+  defineComponent, getCurrentInstance, reactive, ref, toRefs,
+} from '@vue/composition-api';
+import Room from 'src/online/room/Room';
+import { RoomSettings } from 'src/online/room/RoomSettings';
 
 export default defineComponent({
   setup() {
-    const ctx = getCurrentInstance();
-    let { $refs } = <any>ctx;
+    const ctx = getCurrentInstance() as Vue;
+    const { $refs } = ctx;
 
     const INIT_VALUES = {
       name: '',
-      gameDuration: 10,
-      stepDuration: 1,
-      secondsCountdown: 10,
       requirePassword: false,
-      password: ''
+      password: '',
+      ...new RoomSettings(),
     };
-    let room = reactive({...INIT_VALUES});
+
+    const form = reactive({ ...INIT_VALUES });
 
     const isOpen = ref(false);
-  
+
     const createLoading = ref(false);
 
-    let action: Function;
-    const show = (options: any) => {
+    let action: (room: Room, success: (success: boolean) => void) => void;
+    const show = (options: {
+      action: (room: Room, success: (success: boolean) => void) => void
+    }) => {
       action = options.action;
-      Object.assign(room, INIT_VALUES);
+      Object.assign(form, INIT_VALUES);
       createLoading.value = false;
       isOpen.value = true;
     };
 
     const onSubmit = () => {
-      $refs.form.validate().then((valid: boolean) => {
+      // eslint-disable-next-line
+      (<any>$refs.form).validate().then((valid: boolean) => {
         if (!valid) return;
-        if (!room.requirePassword) {
-          room.password = '';
+        if (!form.requirePassword) {
+          form.password = '';
         }
         createLoading.value = true;
-        room.roomSettings = {};
-        room.roomSettings.gameDuration = room.gameDuration;
-        room.roomSettings.stepDuration = room.stepDuration;
-        room.roomSettings.secondsCountdown = room.secondsCountdown;
+
+        const room = new Room();
+        room.name = form.name;
+        room.password = form.password;
+        const roomSettings = new RoomSettings();
+        roomSettings.gameDuration = form.gameDuration;
+        roomSettings.stepDuration = form.stepDuration;
+        roomSettings.secondsCountdown = form.secondsCountdown;
+        room.roomSettings = roomSettings;
         action(room, (success: boolean) => {
           createLoading.value = false;
           if (success) {
@@ -134,10 +150,10 @@ export default defineComponent({
       isOpen,
       show,
 
-      ...toRefs(room),
+      ...toRefs(form),
       createLoading,
-      onSubmit
+      onSubmit,
     };
-  }
+  },
 });
 </script>

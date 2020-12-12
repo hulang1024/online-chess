@@ -8,4 +8,6 @@ import javax.validation.constraints.NotNull;
 public class SearchUserParam {
     @NotNull
     private Boolean onlyFriends;
+
+    private Integer status;
 }

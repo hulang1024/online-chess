@@ -2,8 +2,8 @@ import User from "src/online/user/User";
 import Signal from "src/utils/signals/Signal";
 import ServerMsg from "../ServerMsg";
 
-export let userJoined = new Signal();
-export let userLeft = new Signal();
+export const userJoined = new Signal();
+export const userLeft = new Signal();
 
 export interface RoomUserJoinedMsg extends ServerMsg {
   user: User;

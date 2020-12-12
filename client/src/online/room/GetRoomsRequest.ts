@@ -1,12 +1,12 @@
 import { APIRequest, HttpMethod } from "../api/api_request";
-import Room from "./Room";
+import SearchRoomParams from "./SearchRoomParams";
 
-export default class GetRoomsRequest extends APIRequest {
-    constructor(searchParams: any) {
-        super();
-        this.method = HttpMethod.GET;
-        this.path = 'rooms';
+export default class GetRoomsRequest extends APIRequest<any> {
+  constructor(searchParams?: SearchRoomParams) {
+    super();
+    this.method = HttpMethod.GET;
+    this.path = 'rooms';
 
-        this.addParam('status', searchParams.status);
-    }
+    this.addParam('status', searchParams?.status);
+  }
 }

@@ -1,47 +1,29 @@
 <template>
   <div class="row">
-    <div class="time">{{timeText}}</div>
+    <div class="time">
+      {{ timeText }}
+    </div>
     <div
       class="nickname ellipsis"
-      :style="{color: nicknameColor}">{{nickname}}</div>
-    <div class="colon" :style="{color: nicknameColor}">:</div>
-    <div class="content">{{content}}</div>
+      :style="{color: nicknameColor}"
+    >
+      {{ nickname }}
+    </div>
+    <div
+      class="colon"
+      :style="{color: nicknameColor}"
+    >
+      <span>:</span>
+    </div>
+    <div class="content">
+      <span>{{ content }}</span>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from "@vue/composition-api";
+import { defineComponent, PropType } from "@vue/composition-api";
 import Message from "src/online/chat/Message";
-
-export default defineComponent({
-  props: {
-    message: {
-      type: Object as PropType<Message>,
-      require: true
-    }
-  },
-  setup(props) {
-    const { message } = props;
-    const { sender } = message;
-
-    const timeText = ((timestamp: number) => {
-      let time = new Date(timestamp);
-      const pad = (n: number) => n > 9 ? n : '0' + n;
-      return `${pad(time.getHours())}:${pad(time.getMinutes())}:${pad(time.getSeconds())}`;
-    })(message?.timestamp as number);
-
-    const nicknameColor = '#' + (message.id > 0
-      ? USERNAME_COLORS[sender.id % USERNAME_COLORS.length]
-      : 0xdddddd).toString(16);
-
-    return {
-      timeText,
-      nickname: sender.nickname,
-      nicknameColor,
-      content: message.content
-    };
-  }
-});
 
 const USERNAME_COLORS = [
   0x588c7e,
@@ -78,8 +60,39 @@ const USERNAME_COLORS = [
   0x1f5d91,
   0x4335a5,
   0x812a96,
-  0x992861
+  0x992861,
 ];
+
+export default defineComponent({
+  props: {
+    message: {
+      type: Object as PropType<Message>,
+      require: true,
+    },
+  },
+  setup(props) {
+    const message = props.message as Message;
+    const sender = message?.sender;
+
+    const timeText = ((timestamp: number) => {
+      const time = new Date(timestamp);
+      const pad = (n: number) => (n > 9 ? n : `0${n}`);
+      return `${pad(time.getHours())}:${pad(time.getMinutes())}:${pad(time.getSeconds())}`;
+    })(message?.timestamp);
+
+    const color = message.id > 0
+      ? USERNAME_COLORS[sender.id % USERNAME_COLORS.length]
+      : 0xdddddd;
+    const nicknameColor = `#${(color).toString(16)}`;
+
+    return {
+      timeText,
+      nickname: sender.nickname,
+      nicknameColor,
+      content: message.content,
+    };
+  },
+});
 </script>
 
 <style lang="scss" scoped>

@@ -51,8 +51,10 @@ export default class DrawableChess implements Chess {
     el.style.color = '#f6f6f6';
     el.style.outlineOffset = '4px';
     el.style.fontWeight = 'bolder';
+    el.style.textAlign = 'center';
+    el.style.lineHeight = this.radius * 2 + 'px';
     el.innerText = chessClassToKey(this.chess);
-    
+
     el.onmouseenter = () => {
       if (!this.enabled || this.lit || this.selected) return;
       el.style.outline = '1px solid #fff';

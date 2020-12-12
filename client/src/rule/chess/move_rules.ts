@@ -13,10 +13,10 @@ export const MAX_DISTANCE = 10;
  * @return
  */
 export function isStraightLineMove(rowOffset: number, colOffset: number, maxDistance: number) {
-    rowOffset = Math.abs(rowOffset);
-    colOffset = Math.abs(colOffset);
-    return (rowOffset <= maxDistance && colOffset == 0)
-        || (rowOffset == 0 && colOffset <= maxDistance);
+  rowOffset = Math.abs(rowOffset);
+  colOffset = Math.abs(colOffset);
+  return (rowOffset <= maxDistance && colOffset == 0)
+  || (rowOffset == 0 && colOffset <= maxDistance);
 }
 
 /**
@@ -27,7 +27,7 @@ export function isStraightLineMove(rowOffset: number, colOffset: number, maxDist
  * @return
  */
 export function isInBoundary(game: Game, host: ChessHost, destPos: ChessPos) {
-    return game.isHostAtChessboardTop(host) ? destPos.row < 5 : destPos.row > 4;
+  return game.isHostAtChessboardTop(host) ? destPos.row < 5 : destPos.row > 4;
 }
 
 /**
@@ -37,10 +37,12 @@ export function isInBoundary(game: Game, host: ChessHost, destPos: ChessPos) {
  * @return
  */
 export function isInKingHome(chess: Chess, destPos: ChessPos, game: Game) {
-    return (3 <= destPos.col && destPos.col <= 5)
-    && (game.isHostAtChessboardTop(chess.getHost())
-        ? (0 <= destPos.row && destPos.row <= 2)
-        : (7 <= destPos.row && destPos.row <= 9));
+  return (destPos.col >= 3 && destPos.col <= 5)
+  && (game.isHostAtChessboardTop(chess.getHost())
+    ? (destPos.row >= 0 && destPos.row <= 2)
+    : (destPos.row >= 0 && destPos.row <= 9));
 }
 
-export function sign(n: number) { return n == 0 ? 0 : (n > 0 ? +1 : -1); }
+export function sign(n: number) {
+  return n == 0 ? 0 : (n > 0 ? +1 : -1);
+}
