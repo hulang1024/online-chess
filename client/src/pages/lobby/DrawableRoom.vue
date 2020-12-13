@@ -1,9 +1,10 @@
 <template>
   <q-card
     v-ripple
-    style="
-      border-left: 5px solid #8bc34a;
-      cursor:pointer;"
+    :style="{
+      borderLeft: `5px solid ${color}`,
+      cursor: 'pointer',
+    }"
     @click="onClick"
   >
     <q-card-section class="q-py-xs">
@@ -29,13 +30,14 @@
 
 <script lang="ts">
 import {
-  defineComponent, PropType, getCurrentInstance,
+  defineComponent, PropType, getCurrentInstance, watch, reactive, toRefs, computed,
 } from '@vue/composition-api';
 import JoinRoomRequest from 'src/online/room/JoinRoomRequest';
 import SpectateRoomRequest from 'src/online/spectator/SpectateRoomRequest';
 import { api } from 'src/boot/main';
 import DrawableRoomUser from './DrawableRoomUser.vue';
 import Room from '../../online/room/Room';
+import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 
 export default defineComponent({
   components: { DrawableRoomUser },
@@ -47,8 +49,25 @@ export default defineComponent({
   },
   setup(props) {
     const { $q, $router } = getCurrentInstance() as Vue;
-
     const { room } = props;
+
+    const roomStates = reactive({
+      name: room.name,
+      status: room.status,
+      redChessUser: room.redChessUser,
+      blackChessUser: room.blackChessUser,
+    });
+
+    const STATUS_COLOR_MAP: { [i: number]: string } = {1: '#22dd00', 2: '#af52c6', 3: '#ff9800'};
+    const color = computed(() => STATUS_COLOR_MAP[roomStates.status]);
+
+    watch(props, () => {
+      roomStates.name = props.room.name;
+      roomStates.status = props.room.status;
+      roomStates.redChessUser = props.room.redChessUser;
+      roomStates.blackChessUser = props.room.blackChessUser;
+    });
+
     const onClick = () => {
       if (!api.isLoggedIn.value) {
         $q.notify({ type: 'warning', message: '你现在是游客，请先登录' });
@@ -90,10 +109,8 @@ export default defineComponent({
         api.perform(req);
       } else {
         const req = new SpectateRoomRequest(room);
-        req.success = (states) => {
-          // todo:
-          // eslint-disable-next-line
-          $router.push({name: 'spectator', params: { states }});
+        req.success = (spectateResponse: SpectateResponse) => {
+          $router.push({name: 'spectate', params: { spectateResponse }});
         };
         req.failure = () => {
           $q.notify({ type: 'error', message: '观看请求失败' });
@@ -103,7 +120,8 @@ export default defineComponent({
     };
 
     return {
-      ...props.room,
+      ...toRefs(roomStates),
+      color,
       onClick,
     };
   },

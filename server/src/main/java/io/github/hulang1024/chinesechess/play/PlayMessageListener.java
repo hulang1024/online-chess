@@ -5,13 +5,14 @@ import io.github.hulang1024.chinesechess.play.rule.ConfirmRequestType;
 import io.github.hulang1024.chinesechess.play.rule.GameResult;
 import io.github.hulang1024.chinesechess.play.ws.*;
 import io.github.hulang1024.chinesechess.play.ws.servermsg.*;
-import io.github.hulang1024.chinesechess.user.UserActivity;
-import io.github.hulang1024.chinesechess.user.UserActivityService;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.room.ws.LobbyRoomUpdateServerMsg;
+import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.User;
+import io.github.hulang1024.chinesechess.user.UserActivity;
+import io.github.hulang1024.chinesechess.user.UserActivityService;
 import io.github.hulang1024.chinesechess.user.UserStatus;
 import io.github.hulang1024.chinesechess.user.ws.UserStatusChangedServerMsg;
 import io.github.hulang1024.chinesechess.userstats.UserStatsService;
@@ -27,6 +28,8 @@ public class PlayMessageListener extends AbstractMessageListener {
     private UserActivityService userActivityService;
     @Autowired
     private RoomManager roomManager;
+    @Autowired
+    private SpectatorManager spectatorManager;
     @Autowired
     private UserStatsService userStatsService;
 
@@ -121,7 +124,6 @@ public class PlayMessageListener extends AbstractMessageListener {
         result.setMoveType(chessMoveMsg.getMoveType());
         result.setFromPos(chessMoveMsg.getFromPos());
         result.setToPos(chessMoveMsg.getToPos());
-
         roomManager.broadcast(room, result);
     }
 
@@ -193,11 +195,10 @@ public class PlayMessageListener extends AbstractMessageListener {
             room.setRedChessUser(blackChessUser);
         }
 
-        room.getGame().setState(GameState.PLAYING);
-
         room.setStatus(RoomStatus.PLAYING);
 
         roomManager.broadcast(room, new GameStartServerMsg(room.getRedChessUser(), room.getBlackChessUser()));
+        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room));
         room.getUsers().forEach(user -> {
             userActivityService.broadcast(
                 UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.PLAYING));
@@ -208,15 +209,20 @@ public class PlayMessageListener extends AbstractMessageListener {
         User user = clientMsg.getUser();
         Room joinedRoom = roomManager.getJoinedRoom(user);
         if (clientMsg.isOk()) {
+            GamePlayStatesServerMsg gamePlayStatesServerMsg = new GamePlayStatesServerMsg();
+            gamePlayStatesServerMsg.setStates(joinedRoom.getGame().buildGameStatesResponse());
+
             if (joinedRoom.getGame().getState() == GameState.PAUSE) {
                 // 如果之前房间内用户一直在线并且没离开房间，现在继续游戏
                 if (joinedRoom.getOnlineUserCount() == 2) {
                     joinedRoom.getGame().setState(GameState.PLAYING);
+                    GameTimer gameTimer = user.equals(joinedRoom.getRedChessUser())
+                        ? joinedRoom.getGame().getRedTimer()
+                        : joinedRoom.getGame().getBlackTimer();
+                    gameTimer.start(false);
                 }
             }
 
-            GamePlayStatesServerMsg gamePlayStatesServerMsg = new GamePlayStatesServerMsg();
-            gamePlayStatesServerMsg.setStates(joinedRoom.getGame().buildGamePlayStatesResponse());
             send(gamePlayStatesServerMsg, user);
 
             userActivityService.broadcast(
@@ -243,7 +249,9 @@ public class PlayMessageListener extends AbstractMessageListener {
         }
 
         room.setStatus(RoomStatus.BEGINNING);
-        room.getGame().setState(GameState.READY);
+        room.getGame().setState(GameState.END);
+        room.getGame().getRedTimer().stop();
+        room.getGame().getBlackTimer().stop();
 
         room.updateUserReadyState(room.getOtherUser(room.getOwner()), false);
 
@@ -260,7 +268,7 @@ public class PlayMessageListener extends AbstractMessageListener {
                 userStatsService.updateUser(user, GameResult.DRAW);
             });
         }
-
+        spectatorManager.broadcast(room, new GameOverServerMsg(msg.getWinUserId()));
         userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room));
         room.getUsers().forEach(user -> {
             userActivityService.broadcast(

@@ -12,6 +12,8 @@ public class GamePlayStatesResponse {
     private List<Chess> chesses;
     private Integer activeChessHost;
     private Stack<ChessAction> actionStack;
+    private GameTimer redTimer;
+    private GameTimer blackTimer;
     
     @Data
     public static class Chess {

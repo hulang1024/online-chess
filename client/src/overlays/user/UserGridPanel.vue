@@ -6,7 +6,7 @@
     <div class="row">
       <user-avatar
         :user="user"
-        size="60px"
+        :size="$q.screen.xs ? '50px': '60px'"
       />
       <q-icon
         v-if="isFriend"
@@ -52,7 +52,7 @@ export default defineComponent({
     const isFriend = ref(props.user?.isFriend);
 
     const USER_STATUS_COLOR_MAP = {
-      [UserStatus.OFFLINE]: '#000',
+      [UserStatus.OFFLINE]: '#1f1f1f',
       [UserStatus.ONLINE]: '#8bc34a',
       [UserStatus.IN_ROOM]: '#af52c6',
       [UserStatus.PLAYING]: '#ff9800',
@@ -76,6 +76,7 @@ export default defineComponent({
     return {
       ...props.user,
       isFriend,
+      userStatus,
       userStatusText,
       backgroundColor,
     };

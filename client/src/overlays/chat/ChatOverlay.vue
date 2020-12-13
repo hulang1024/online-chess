@@ -47,7 +47,7 @@
           standout
           dense
           shadow-text
-          bg-color="black"
+          :dark="$q.dark.isActive"
           placeholder="键入你的消息"
           class="message-input"
           @keydown.enter="onSend"

@@ -14,7 +14,9 @@ public enum GameState {
     /**
      * 暂停中，其中一方离线会是此状态
      */
-    PAUSE(3);
+    PAUSE(3),
+
+    END(4);
 
     int code;
 

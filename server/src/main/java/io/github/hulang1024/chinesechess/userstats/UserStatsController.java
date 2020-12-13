@@ -1,5 +1,6 @@
 package io.github.hulang1024.chinesechess.userstats;
 
+import io.github.hulang1024.chinesechess.http.GuestAPI;
 import io.github.hulang1024.chinesechess.http.params.PageParam;
 import io.github.hulang1024.chinesechess.http.results.PageRet;
 import io.github.hulang1024.chinesechess.user.SearchUserInfo;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/stats")
+@GuestAPI
 public class UserStatsController {
     @Autowired
     private UserStatsService userStatsService;

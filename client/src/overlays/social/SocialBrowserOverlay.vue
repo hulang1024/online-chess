@@ -147,11 +147,12 @@ import UserStatus from 'src/online/user/UserStatus';
 import APIPageResponse from 'src/online/api/APIPageResponse';
 import UserDetailsOverlay from '../user/UserDetailsOverlay.vue';
 import UserGridPanel from '../user/UserGridPanel.vue';
+import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 
 export default defineComponent({
   components: { UserGridPanel, UserDetailsOverlay },
   setup() {
-    const { $refs, $q } = getCurrentInstance() as Vue;
+    const { $refs, $router, $q } = getCurrentInstance() as Vue;
 
     const isOpen = ref(false);
     const activeTab = ref('all');
@@ -270,9 +271,9 @@ export default defineComponent({
 
     const onSpectateClick = (user: SearchUserInfo) => {
       const req = new SpectateUserRequest(user);
-      req.success = () => {
-        hide();
-        // todo
+      req.success = (spectateResponse: SpectateResponse) => {
+        isOpen.value = false;
+        $router.push({name: 'spectate', params: { spectateResponse }});
       };
       req.failure = (res) => {
         const codeMsgMap: {[code: number]: string} = {

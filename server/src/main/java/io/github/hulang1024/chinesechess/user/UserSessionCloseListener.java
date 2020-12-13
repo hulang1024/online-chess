@@ -39,10 +39,11 @@ public class UserSessionCloseListener {
             // 如果加入了房间
             Room joinedRoom = roomManager.getJoinedRoom(user);
             if (joinedRoom != null) {
-                switch (joinedRoom.getGame().getState()) {
+                switch (joinedRoom.getGame() == null
+                    ? GameState.READY : joinedRoom.getGame().getState()) {
                     case PLAYING:
                         // 暂停游戏
-                        joinedRoom.getGame().setState(GameState.PAUSE);
+                        joinedRoom.getGame().pause();
                         // break;
                     case PAUSE:
                         // 如果游戏已经是暂停状态，是因为上个用户离线导致的
@@ -56,6 +57,7 @@ public class UserSessionCloseListener {
                             spectatorManager.broadcast(joinedRoom, userOfflineMsg);
                         }
                         break;
+                    case END:
                     case READY:
                         // 游戏未进行，安全退出
                         roomManager.partRoom(joinedRoom, user);

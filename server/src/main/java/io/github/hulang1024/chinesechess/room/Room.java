@@ -33,6 +33,9 @@ public class Room {
     @JSONField(serialize = false)
     private LocalDateTime updateAt;
 
+    /**
+     * 最近棋局
+     */
     @JSONField(serialize = false)
     private Game game;
 
@@ -72,7 +75,6 @@ public class Room {
     private RoomSettings roomSettings;
 
     public Room(ChannelManager channelManager, UserManager userManager) {
-        game = new Game(this);
         this.channelManager = channelManager;
         this.userManager = userManager;
     }
@@ -91,7 +93,6 @@ public class Room {
         channelManager.joinChannel(channel, user);
 
         status = getUserCount() < 2 ? RoomStatus.OPEN : RoomStatus.BEGINNING;
-        game.setState(GameState.READY);
         offlineAt = null;
     }
 
@@ -108,7 +109,10 @@ public class Room {
             blackReadied = false;
         }
 
-        game.setState(GameState.READY);
+        if (game != null) {
+            game.setState(GameState.END);
+            game = null;
+        }
     }
 
     public void setChannel(Channel channel) {
@@ -235,6 +239,6 @@ public class Room {
 
     @JSONField(name = "gameStatus")
     public int getGameStateCode() {
-        return game.getState() == null ? 0 : game.getState().getCode();
+        return game == null ? 0 : game.getState().getCode();
     }
 }

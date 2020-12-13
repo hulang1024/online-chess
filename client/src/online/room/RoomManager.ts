@@ -58,7 +58,9 @@ export default class RoomManager {
       if (msg.code != 0) {
         return;
       }
-      Object.assign(this.getRoom(msg.room.id), msg.room);
+
+      const i = this.rooms.value.findIndex((room: Room) => room.id == msg.room.id);
+      Object.assign(this.rooms.value[i], msg.room);
     });
 
     roomRemoved.add((msg: RoomRemovedMsg) => {
@@ -71,9 +73,5 @@ export default class RoomManager {
     this.socketService.reconnected.add(() => {
       this.searchRooms();
     });
-  }
-
-  private getRoom(id: number): Room {
-    return this.rooms.value.filter((room: Room) => room.id == id)[0];
   }
 }

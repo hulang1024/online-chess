@@ -164,8 +164,7 @@ public class RoomManager {
         Room joinedRoom = getJoinedRoom(user);
         if (joinedRoom != null) {
             // 早就在其它房间
-            GameState gameState = joinedRoom.getGame().getState();
-            if (gameState == GameState.READY) {
+            if (joinedRoom.getGame() == null || joinedRoom.getGame().getState() == GameState.READY) {
                 // 不在游戏中现在就退出
                 partRoom(joinedRoom, user);
             } else {
@@ -199,10 +198,7 @@ public class RoomManager {
 
         room.joinUser(user);
 
-        RoomUserJoinServerMsg joinMsg = new RoomUserJoinServerMsg();
-        joinMsg.setRoom(room);
-        joinMsg.setUser(user);
-        broadcast(room, joinMsg, user);
+        broadcast(room, new RoomUserJoinServerMsg(user), user);
 
         if (!room.getOwner().equals(user)) {
             userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room), user);

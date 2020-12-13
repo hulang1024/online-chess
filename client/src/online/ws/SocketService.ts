@@ -63,11 +63,11 @@ export default class SocketService {
 
     UserEvents.loggedIn.add(this.onLoginMessage, this);
     UserEvents.online.add((msg: UserEvents.UserOnlineMsg) => {
-      Notify.create(`已下线：${msg.nickname}`);
+      Notify.create(`已上线：${msg.nickname}`);
     });
 
     UserEvents.offline.add((msg: UserEvents.UserOfflineMsg) => {
-      Notify.create(`已上线：${msg.nickname}`);
+      Notify.create(`已下线：${msg.nickname}`);
     });
   }
 

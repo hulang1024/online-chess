@@ -29,6 +29,7 @@ export function setupEvents(socketService: SocketService) {
 
     ['play.ready', play.readied],
     ['play.game_start', play.gameStarted],
+    ['play.game_over', play.gameOver],
     ['play.chess_pick', play.chessPickup],
     ['play.chess_move', play.chessMoved],
     ['play.confirm_request', play.confirmRequest],

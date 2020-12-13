@@ -2,7 +2,7 @@
   "name": "chess",
   "version": "0.0.1",
   "description": "chess",
-  "productName": "chess",
+  "productName": "在线中国象棋",
   "author": "hulang1024 <1013644379@qq.com>",
   "private": true,
   "scripts": {

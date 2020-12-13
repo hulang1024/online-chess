@@ -27,6 +27,12 @@ public class Game {
     private ChessHost activeChessHost;
 
     @Getter
+    private GameTimer redTimer;
+
+    @Getter
+    private GameTimer blackTimer;
+
+    @Getter
     private Stack<ChessAction> actionStack = new Stack<>();
 
     @Getter
@@ -35,21 +41,45 @@ public class Game {
     public Game(Room room) {
         this.room = room;
         this.activeChessHost = ChessHost.RED;
+        state = GameState.PLAYING;
+        redTimer = new GameTimer(room.getRoomSettings());
+        blackTimer = new GameTimer(room.getRoomSettings());
+        redTimer.start();
     }
 
     public void turnActiveChessHost() {
-        this.activeChessHost = this.activeChessHost.reverse();
+        activeChessHost = activeChessHost.reverse();
+        if (activeChessHost == ChessHost.RED) {
+            redTimer.start();
+            blackTimer.stop();
+        } else {
+            blackTimer.start();
+            redTimer.stop();
+        }
     }
 
-    public GamePlayStatesResponse buildGamePlayStatesResponse() {
-        GamePlayStatesResponse gamePlayStates = new GamePlayStatesResponse();
+    public void pause() {
+        state = GameState.PAUSE;
+        blackTimer.stop();
+        redTimer.stop();
+    }
+
+    public GamePlayStatesResponse buildGameStatesResponse() {
+        GamePlayStatesResponse gameStates = new GamePlayStatesResponse();
         if (getActiveChessHost() != null) {
-            gamePlayStates.setActiveChessHost(getActiveChessHost().code());
+            gameStates.setActiveChessHost(getActiveChessHost().code());
         }
-        gamePlayStates.setChesses(toStateChesses());
-        gamePlayStates.setActionStack(getActionStack());
-        gamePlayStates.setRoom(room);
-        return gamePlayStates;
+        gameStates.setChesses(toStateChesses());
+        gameStates.setActionStack(getActionStack());
+        gameStates.setRoom(room);
+
+        if (state == GameState.PLAYING) {
+            GameTimer gameTimer = (activeChessHost == ChessHost.RED ? redTimer : blackTimer);
+            gameTimer.useTime();
+        }
+        gameStates.setRedTimer(redTimer);
+        gameStates.setBlackTimer(blackTimer);
+        return gameStates;
     }
 
     public List<GamePlayStatesResponse.Chess> toStateChesses() {

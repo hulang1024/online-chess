@@ -9,7 +9,7 @@ import * as UserEvents from 'src/online/ws/events/user';
 import * as GameEvents from 'src/online/ws/events/play';
 import * as SpectatorEvents from 'src/online/ws/events/spectator';
 import * as RoomEvents from 'src/online/ws/events/room';
-import ResponseGameStates from 'src/online/play/game_states_response';
+import ResponseGameStates, { ResponseGameStateTimer } from 'src/online/play/game_states_response';
 import SocketService from 'src/online/ws/SocketService';
 import ChessHost from 'src/rule/chess_host';
 import Bindable from 'src/utils/bindables/Bindable';
@@ -19,6 +19,7 @@ import ChessPos from 'src/rule/ChessPos';
 import InfoMessage from 'src/online/chat/InfoMessage';
 import { api, channelManager, socketService } from 'src/boot/main';
 import ConfirmRequest from 'src/rule/confirm_request';
+import Signal from 'src/utils/signals/Signal';
 import Timer from './Timer';
 import DrawableChess from './DrawableChess';
 import DrawableChessboard from './DrawableChessboard';
@@ -52,6 +53,8 @@ export default class GamePlay {
   public isWaitingForOther = new Bindable<number>();
 
   public player: Player;
+
+  public playerLoaded = new Signal();
 
   private gameTimer: Timer;
 
@@ -97,13 +100,12 @@ export default class GamePlay {
 
     if (!(room || initialGameStates?.room)) {
       // 并不是进入房间，而是刷新网页时
-      this.exitSreen();
+      this.exitScreen();
       return;
     }
 
     this.user = this.api.localUser;
     this.room = room || initialGameStates?.room as Room;
-    this.loadRoomState();
 
     if (this.gameState.value != GameState.READY) {
       const channel = new Channel();
@@ -117,10 +119,9 @@ export default class GamePlay {
 
     this.initListeners();
 
-    this.player = new Player();
-    this.player.gameOver.add(this.onGameOver.bind(this), this);
-    this.player.activeChessHost.changed.add(this.onTurnActiveChessHost.bind(this), this);
-    this.player.loaded.add(() => {
+    this.playerLoaded.add(() => {
+      this.player.gameOver.add(this.onGameOver.bind(this), this);
+      this.player.activeChessHost.changed.add(this.onTurnActiveChessHost.bind(this), this);
       this.chessboard = this.player.chessboard as unknown as DrawableChessboard;
       this.chessboard.chessPickupOrDrop.add(this.onChessPickupOrDrop.bind(this), this);
       this.chessboard.clicked.add(this.onChessboardClick.bind(this), this);
@@ -150,10 +151,12 @@ export default class GamePlay {
       this.otherStepTimer.setOnEnd(() => this.onTimerEnd(false, false));
 
       const { roomSettings } = this.room;
-      this.gameTimer.ready(roomSettings.gameDuration);
-      this.otherGameTimer.ready(roomSettings.gameDuration);
-      this.stepTimer.ready(roomSettings.stepDuration);
-      this.otherStepTimer.ready(roomSettings.stepDuration);
+      this.gameTimer.setTotalSeconds(roomSettings.gameDuration);
+      this.stepTimer.setTotalSeconds(roomSettings.stepDuration);
+      this.otherGameTimer.setTotalSeconds(roomSettings.gameDuration);
+      this.otherStepTimer.setTotalSeconds(roomSettings.stepDuration);
+
+      this.loadState(initialGameStates);
 
       this.isWaitingForOther.changed.add((value: number) => {
         if (value == 0) {
@@ -165,7 +168,7 @@ export default class GamePlay {
         this.showText(textMap[value]);
       });
 
-      if (this.isRoomOwner.value) {
+      if (this.gameState.value == GameState.READY && this.isRoomOwner.value) {
         this.isWaitingForOther.value = this.otherUser.value ? (this.otherReadied ? 1 : 0) : 2;
       }
     });
@@ -175,8 +178,8 @@ export default class GamePlay {
     });
   }
 
-  private loadRoomState() {
-    this.gameState.value = this.room.gameStatus;
+  private loadState(initialGameStates?: ResponseGameStates | undefined) {
+    this.gameState.value = this.room.gameStatus || GameState.READY;
     this.isRoomOwner.value = this.room.owner.id == this.user.id;
 
     // 初始双方游戏状态和持棋方
@@ -185,6 +188,14 @@ export default class GamePlay {
       redReadied, blackReadied,
       redOnline, blackOnline,
     } = this.room;
+
+    let redTimer: ResponseGameStateTimer | null = null;
+    let blackTimer: ResponseGameStateTimer | null = null;
+    if (initialGameStates) {
+      redTimer = initialGameStates.redTimer;
+      blackTimer = initialGameStates.blackTimer;
+    }
+
     if (redChessUser && this.user.id == redChessUser.id) {
       this.online.value = redOnline;
       this.readied.value = redReadied;
@@ -192,6 +203,10 @@ export default class GamePlay {
       this.otherUser.value = blackChessUser;
       this.otherOnline.value = blackOnline;
       this.otherReadied.value = blackReadied;
+      this.gameTimer.ready(redTimer?.gameTime);
+      this.stepTimer.ready(redTimer?.stepTime);
+      this.otherGameTimer.ready(blackTimer?.gameTime);
+      this.otherStepTimer.ready(blackTimer?.stepTime);
     }
     if (blackChessUser && this.user.id == blackChessUser.id) {
       this.online.value = blackOnline;
@@ -200,6 +215,10 @@ export default class GamePlay {
       this.otherUser.value = redChessUser;
       this.otherOnline.value = redOnline;
       this.otherReadied.value = redReadied;
+      this.gameTimer.ready(blackTimer?.gameTime);
+      this.stepTimer.ready(blackTimer?.stepTime);
+      this.otherGameTimer.ready(redTimer?.gameTime);
+      this.otherStepTimer.ready(redTimer?.stepTime);
     }
   }
 
@@ -241,9 +260,7 @@ export default class GamePlay {
       this.otherUser.value = null;
       this.otherReadied.value = false;
       this.otherOnline.value = false;
-      if (this.gameState.value != GameState.END) {
-        this.gameState.value = GameState.READY;
-      }
+      this.gameState.value = GameState.READY;
       this.isWaitingForOther.value = 2;
       this.context.$q.notify('对手已离开棋桌');
       if (!this.isRoomOwner.value) {
@@ -277,11 +294,10 @@ export default class GamePlay {
 
       this.gameState.value = GameState.PLAYING;
 
-      const { roomSettings } = this.room;
-      this.gameTimer.ready(roomSettings.gameDuration);
-      this.otherGameTimer.ready(roomSettings.gameDuration);
-      this.stepTimer.ready(roomSettings.stepDuration);
-      this.otherStepTimer.ready(roomSettings.stepDuration);
+      this.gameTimer.ready();
+      this.stepTimer.ready();
+      this.otherGameTimer.ready();
+      this.otherStepTimer.ready();
       this.player.startGame(this.chessHost.value);
       // 因为activeChessHost一般一直是红方，值相同将不能触发，这里手动触发一次
       this.onTurnActiveChessHost(this.activeChessHost.value);
@@ -377,7 +393,7 @@ export default class GamePlay {
 
     this.socketService.disconnect.add(this.disconnectHandler = () => {
       if ([GameState.READY, GameState.END].includes(this.gameState.value)) {
-        this.exitSreen();
+        this.exitScreen();
         return;
       }
 
@@ -416,21 +432,15 @@ export default class GamePlay {
     // eslint-disable-next-line
     GameEvents.gameStates.add((gameStatesMsg: GameEvents.GameStatesMsg) => {
       // todo:重连之后同步状态，可能与服务器不一致
-      // 之前离线暂停，现在重新激活
-      this.onTurnActiveChessHost(this.activeChessHost.value);
     });
 
     GameEvents.gameContinueResponse.add((msg: GameEvents.GameContinueResponseMsg) => {
       this.otherOnline.value = true;
       if (msg.ok) {
         this.gameState.value = GameState.PLAYING;
-        if (this.activeChessHost.value == this.chessHost.value) {
-          // 如果新旧值相同将不能触发，这里手动触发一次
-          this.onTurnActiveChessHost(this.activeChessHost.value);
-        }
         this.showText('对手已回来', 3000);
       } else {
-        this.gameState.value = GameState.END;
+        this.gameState.value = GameState.READY;
         this.otherUser.value = null;
         this.showText('对手已选择不继续对局', 2000);
         setTimeout(() => {
@@ -440,8 +450,18 @@ export default class GamePlay {
     });
   }
 
-  private onGameStateChanged(gameState: GameState) {
+  private onGameStateChanged(gameState: GameState, prevGameState: GameState) {
     if (gameState == GameState.PLAYING) {
+      if (prevGameState == GameState.PAUSE) {
+        // 之前离线暂停，现在恢复
+        if (this.activeChessHost.value == this.chessHost.value) {
+          this.gameTimer.resume();
+          this.stepTimer.resume();
+        } else {
+          this.otherGameTimer.resume();
+          this.otherStepTimer.resume();
+        }
+      }
       return;
     }
     // 禁用棋盘
@@ -484,7 +504,9 @@ export default class GamePlay {
       action: (option: string) => {
         if (option == 'again') {
           if (this.isRoomOwner.value) {
-            this.isWaitingForOther.value = 1;
+            if (!this.otherReadied.value) {
+              this.isWaitingForOther.value = 1;
+            }
           } else {
             this.socketService.send('play.ready', { readied: true });
           }
@@ -512,19 +534,19 @@ export default class GamePlay {
     }
   }
 
-  public onTurnActiveChessHost(activeChessHost: ChessHost) {
+  private onTurnActiveChessHost(activeChessHost: ChessHost) {
     this.activeChessHost.value = activeChessHost;
 
     if (activeChessHost == this.chessHost.value) {
       this.gameTimer.resume();
-      this.stepTimer.restart();
+      this.stepTimer.start();
       this.otherGameTimer.pause();
       this.otherStepTimer.pause();
     } else {
       this.gameTimer.pause();
       this.stepTimer.pause();
       this.otherGameTimer.resume();
-      this.otherStepTimer.restart();
+      this.otherStepTimer.start();
     }
 
     this.chessboard.enabled = this.activeChessHost.value == this.chessHost.value;
@@ -691,20 +713,20 @@ export default class GamePlay {
 
   public partRoom() {
     if (!this.room) {
-      this.exitSreen();
+      this.exitScreen();
       return;
     }
     const req = new PartRoomRequest(this.room);
     req.success = () => {
-      this.exitSreen();
+      this.exitScreen();
     };
     req.failure = () => {
-      this.exitSreen();
+      this.exitScreen();
     };
     this.api.queue(req);
   }
 
-  private exitSreen() {
+  private exitScreen() {
     // eslint-disable-next-line
     this.context.$router.push('/');
   }

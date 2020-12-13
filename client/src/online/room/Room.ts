@@ -25,9 +25,9 @@ export default class Room {
 
   gameCount: number;
 
-  redChessUser: User;
+  redChessUser: User | null;
 
-  blackChessUser: User;
+  blackChessUser: User | null;
 
   redReadied: boolean;
 

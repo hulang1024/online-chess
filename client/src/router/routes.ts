@@ -9,11 +9,17 @@ const routes: RouteConfig[] = [
     ],
   },
   {
-    name: 'play',
     path: '/play',
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', name: 'play', component: () => import('pages/play/Play.vue') },
+    ],
+  },
+  {
+    path: '/spectate',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', name: 'spectate', component: () => import('pages/play/Spectate.vue') },
     ],
   },
   // Always leave this as last one,

@@ -17,20 +17,10 @@
           </template>
         </game-user-panel>
         <player-container ref="playerContainer">
-          <ready-start-overlay
-            :readied="readied"
-            :other-readied="otherReadied"
-            :is-room-owner="isRoomOwner"
-            :game-state="gameState"
-            @ready-start="onReadyStartClick"
-            class="absolute-center z-top"
-          />
-          <confirm-dialog ref="confirmDialog" />
           <text-overlay
             ref="textOverlay"
             class="absolute-center"
           />
-          <result-dialog ref="resultDialog" />
         </player-container>
         <q-btn
           color="orange"
@@ -47,28 +37,9 @@
               <q-item
                 clickable
                 v-close-popup
-                :disable="!(isPlaying && canWithdraw)"
-                @click="onWithdrawClick"
+                @click="onToggleViewClick"
               >
-                <q-item-section>悔棋</q-item-section>
-              </q-item>
-              <q-separator />
-              <q-item
-                clickable
-                v-close-popup
-                :disable="!isPlaying"
-                @click="onChessDrawClick"
-              >
-                <q-item-section>求和</q-item-section>
-              </q-item>
-              <q-separator />
-              <q-item
-                clickable
-                v-close-popup
-                :disable="!isPlaying"
-                @click="onWhiteFlagClick"
-              >
-                <q-item-section>认输</q-item-section>
+                <q-item-section>切换</q-item-section>
               </q-item>
               <q-separator />
               <q-item
@@ -82,37 +53,27 @@
           </q-menu>
         </q-btn>
         <game-user-panel
-          :user="user"
-          :online="online"
-          :chess-host="chessHost"
-          :active="activeChessHost == chessHost"
+          :user="viewUser"
+          :online="viewOnline"
+          :chess-host="viewChessHost"
+          :active="activeChessHost == viewChessHost"
           class="fixed-bottom-right"
         >
           <template #game-timer>
-            <timer ref="gameTimer" />
+            <timer ref="viewGameTimer" />
           </template>
           <template #step-timer>
-            <timer ref="stepTimer" />
+            <timer ref="viewStepTimer" />
           </template>
         </game-user-panel>
       </div>
     </template>
     <template v-else>
       <player-container ref="playerContainer">
-        <ready-start-overlay
-          :readied="readied"
-          :other-readied="otherReadied"
-          :is-room-owner="isRoomOwner"
-          :game-state="gameState"
-          @ready-start="onReadyStartClick"
-          class="absolute-center"
-        />
-        <confirm-dialog ref="confirmDialog" />
         <text-overlay
           ref="textOverlay"
           class="absolute-center"
         />
-        <result-dialog ref="resultDialog" />
       </player-container>
       <q-card
         flat
@@ -133,48 +94,33 @@
         </game-user-panel>
         <q-separator />
         <game-user-panel
-          :user="user"
-          :online="online"
-          :chess-host="chessHost"
-          :active="activeChessHost == chessHost"
+          :user="viewUser"
+          :online="viewOnline"
+          :chess-host="viewChessHost"
+          :active="activeChessHost == viewChessHost"
         >
           <template #game-timer>
-            <timer ref="gameTimer" />
+            <timer ref="viewGameTimer" />
           </template>
           <template #step-timer>
-            <timer ref="stepTimer" />
+            <timer ref="viewStepTimer" />
           </template>
         </game-user-panel>
         <q-separator />
         <div class="row q-gutter-x-sm q-mt-sm">
           <q-btn
-            label="悔棋"
-            color="warning"
+            label="离开"
+            color="negative"
             class="q-mt-sm"
-            :disable="!(isPlaying && canWithdraw)"
-            @click="onWithdrawClick"
+            @click="onQuitClick"
           />
           <q-btn
-            label="求和"
+            label="切换"
             color="warning"
             class="q-mt-sm"
-            :disable="!isPlaying"
-            @click="onChessDrawClick"
-          />
-          <q-btn
-            label="认输"
-            color="warning"
-            class="q-mt-sm"
-            :disable="!isPlaying"
-            @click="onWhiteFlagClick"
+            @click="onToggleViewClick"
           />
         </div>
-        <q-btn
-          label="离开"
-          color="negative"
-          class="q-mt-sm"
-          @click="onQuitClick"
-        />
       </q-card>
     </template>
   </q-page>
@@ -187,27 +133,23 @@ import {
 import GameState from 'src/online/play/GameState';
 import ChessHost from 'src/rule/chess_host';
 import User from 'src/online/user/User';
-import { createBoundRef } from 'src/utils/vue/vue_ref_utils';
+import { binableBindToRef, createBoundRef } from 'src/utils/vue/vue_ref_utils';
 import { api } from 'src/boot/main';
 import Room from 'src/online/room/Room';
-import ResponseGameStates from 'src/online/play/game_states_response';
 import DrawableChessboard from './DrawableChessboard';
 import PlayerContainer from './PlayerContainer.vue';
 import GameUserPanel from './GameUserPanel.vue';
-import ReadyStartOverlay from './ReadyStartOverlay.vue';
-import ConfirmDialog from './ConfirmDialog.vue';
 import ResultDialog from './ResultDialog.vue';
 import TextOverlay from './TextOverlay.vue';
 import Timer from './Timer.vue';
-import GamePlay from './Play';
+import Spectate from './Spectate';
+import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import Player from './Player';
 
 export default defineComponent({
   components: {
     PlayerContainer,
     GameUserPanel,
-    ReadyStartOverlay,
-    ConfirmDialog,
     ResultDialog,
     TextOverlay,
     Timer,
@@ -215,25 +157,46 @@ export default defineComponent({
   setup() {
     const ctx = getCurrentInstance() as Vue;
     const { $route } = ctx;
+    const { spectateResponse } = $route.params;
 
-    const { room, initialGameStates } = $route.params;
-
-    const gamePlay = new GamePlay(ctx,
-      room as unknown as Room,
-      initialGameStates as unknown as ResponseGameStates);
-    const gameState: Ref<GameState> = createBoundRef(gamePlay.gameState);
+    const spectate = new Spectate(ctx, spectateResponse as unknown as SpectateResponse);
+    const gameState: Ref<GameState> = createBoundRef(spectate.gameState);
     const isPlaying = computed(() => gameState.value == GameState.PLAYING);
-    const activeChessHost: Ref<ChessHost> = createBoundRef(gamePlay.activeChessHost);
-    const canWithdraw: Ref<boolean> = createBoundRef(gamePlay.canWithdraw);
-    const user: Ref<User> = ref<User>(api.localUser);
-    const online: Ref<boolean> = createBoundRef(gamePlay.online);
-    const readied: Ref<boolean> = createBoundRef(gamePlay.readied);
-    const chessHost: Ref<ChessHost> = createBoundRef(gamePlay.chessHost);
-    const isRoomOwner: Ref<boolean> = createBoundRef(gamePlay.isRoomOwner);
-    const otherUser: Ref<User | null> = createBoundRef(gamePlay.otherUser);
-    const otherOnline: Ref<boolean> = createBoundRef(gamePlay.otherOnline);
-    const otherReadied: Ref<boolean> = createBoundRef(gamePlay.otherReadied);
-    const otherChessHost: Ref<ChessHost> = createBoundRef(gamePlay.otherChessHost);
+    const activeChessHost: Ref<ChessHost | null> = createBoundRef(spectate.activeChessHost);
+    const viewChessHost: Ref<ChessHost> = createBoundRef(spectate.viewChessHost);
+
+    const otherChessHost: Ref<ChessHost | null> = ref(null);
+    const viewUser: Ref<User | null> = ref(null);
+    const viewOnline: Ref<boolean> = ref(false);
+    const viewReadied: Ref<boolean> = ref(false);
+    const otherUser: Ref<User | null> = ref(null);
+    const otherOnline: Ref<boolean> = ref(false);
+    const otherReadied: Ref<boolean> = ref(false);
+
+    spectate.viewChessHost.addAndRunOnce((viewChessHost: ChessHost) => {
+      otherChessHost.value = ChessHost.reverse(viewChessHost);
+      [
+        spectate.blackUser, spectate.blackOnline, spectate.blackReadied,
+        spectate.redUser, spectate.redOnline, spectate.redReadied
+      ].forEach((bindable) => {
+        bindable.changed.removeAll(); // todo: 这里假设只有这里增加了绑定
+      });
+      if (viewChessHost == ChessHost.BLACK) {
+        binableBindToRef(spectate.blackUser, viewUser);
+        binableBindToRef(spectate.blackOnline, viewOnline);
+        binableBindToRef(spectate.blackReadied, viewReadied);
+        binableBindToRef(spectate.redUser, otherUser);
+        binableBindToRef(spectate.redOnline, otherOnline);
+        binableBindToRef(spectate.redReadied, otherReadied);
+      } else {
+        binableBindToRef(spectate.blackUser, otherUser);
+        binableBindToRef(spectate.blackOnline, otherOnline);
+        binableBindToRef(spectate.blackReadied, otherReadied);
+        binableBindToRef(spectate.redUser, viewUser);
+        binableBindToRef(spectate.redOnline, viewOnline);
+        binableBindToRef(spectate.redReadied, viewReadied);
+      }
+    });
 
     let onReisze: () => void;
     onMounted(() => {
@@ -242,13 +205,13 @@ export default defineComponent({
       // eslint-disable-next-line
       const container = (ctx.$refs.playerContainer as Vue).$el as Element;
       container.insertBefore(chessboard.el, container.firstChild);
-      gamePlay.player = new Player();
-      gamePlay.player.chessboard = chessboard;
-      gamePlay.player.screen = ctx.$q.screen;
-      gamePlay.playerLoaded.dispatch();
+      spectate.player = new Player();
+      spectate.player.chessboard = chessboard;
+      spectate.player.screen = ctx.$q.screen;
+      spectate.playerLoaded.dispatch();
 
       window.addEventListener('resize', onReisze = () => {
-        gamePlay.player.resize(parent?.offsetWidth || 0);
+        spectate.player.resize(parent?.offsetWidth || 0);
       });
     });
     onBeforeUnmount(() => {
@@ -259,24 +222,19 @@ export default defineComponent({
       gameState,
       isPlaying,
       activeChessHost,
-      canWithdraw,
 
-      user,
-      online,
-      readied,
-      chessHost,
-      isRoomOwner,
+      viewUser,
+      viewOnline,
+      viewReadied,
+      viewChessHost,
 
       otherUser,
       otherOnline,
       otherReadied,
       otherChessHost,
 
-      onReadyStartClick: gamePlay.onReadyStartClick.bind(gamePlay),
-      onQuitClick: gamePlay.onQuitClick.bind(gamePlay),
-      onWithdrawClick: gamePlay.onWithdrawClick.bind(gamePlay),
-      onChessDrawClick: gamePlay.onChessDrawClick.bind(gamePlay),
-      onWhiteFlagClick: gamePlay.onWhiteFlagClick.bind(gamePlay),
+      onQuitClick: spectate.onQuitClick.bind(spectate),
+      onToggleViewClick: spectate.onToggleViewClick.bind(spectate),
     };
   },
 });

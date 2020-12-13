@@ -75,8 +75,7 @@ public class SpectatorManager {
         Room joinedRoom = roomManager.getJoinedRoom(spectator);
         if (joinedRoom != null) {
             // 早已经在其它房间
-            GameState gameState = joinedRoom.getGame().getState();
-            if (gameState == GameState.READY) {
+            if (joinedRoom.getGame() == null || joinedRoom.getGame().getState() == GameState.READY) {
                 // 不在游戏中现在就退出
                 roomManager.partRoom(joinedRoom, spectator);
             } else {
@@ -101,7 +100,11 @@ public class SpectatorManager {
 
         spectatorRoomMap.put(spectator.getId(), room);
 
-        response.setStates(room.getGame().buildGamePlayStatesResponse());
+        if (room.getGame() != null) {
+            response.setStates(room.getGame().buildGameStatesResponse());
+            response.getStates().setRoom(null);
+        }
+        response.setRoom(room);
         if (targetUserId != null) {
             response.setTargetUserId(targetUserId.getId());
         }

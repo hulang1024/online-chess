@@ -32,7 +32,7 @@
         <q-btn
           flat
           dense
-          icon="view_list"
+          icon="fas fa-chart-bar"
           class="toolbar-button q-px-sm"
           :class="{active: isActive('ranking')}"
           @click="onRankingButtonClick"
@@ -45,7 +45,7 @@
         <q-btn
           flat
           dense
-          icon="people"
+          icon="fas fa-users"
           class="toolbar-button q-px-sm"
           :class="{active: isActive('socialBrowser')}"
           @click="onOnlineUsersButtonClick"
@@ -116,6 +116,8 @@ export default defineComponent({
       actives.value.forEach((name) => {
         toggleActive(name, false);
       });
+      
+      toggleActive('chat', false); // chat会在其它地方打开，但可能没在actives中
     };
 
     const onSettingButtonClick = () => {
@@ -165,6 +167,9 @@ export default defineComponent({
 .toolbar-button {
   height: 100%;
 
+  .fas {
+    font-size: 20px;
+  }
   &.active {
     background: #517bda;
   }

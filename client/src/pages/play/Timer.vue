@@ -48,6 +48,7 @@ export default defineComponent({
     let onEndAction: () => void;
     let timerState: TimerState | null = null;
     let timer: NodeJS.Timeout;
+    let starts = 0; // 启动次数
 
     // 设置计时时间
     const setTotalSeconds = (seconds: number | null) => {
@@ -58,7 +59,6 @@ export default defineComponent({
       onEndAction = callback;
     };
 
-    // 开始(继续)计时
     const _tick = () => {
       clearInterval(timer);
       timerState = TimerState.TICKING;
@@ -74,20 +74,35 @@ export default defineComponent({
       }, 1000);
     };
 
-    // 准备开始，显示总计时
-    const ready = (seconds?: number) => {
+    // 准备开始，显示总计时，并重置启动次数
+    const ready = (current?: number) => {
       timerState = null;
-      setTotalSeconds(seconds || null);
-      _seconds.value = totalSeconds.value;
+      starts = 0;
+      _seconds.value = current || totalSeconds.value;
     };
 
-    // 重新计时
+    // 重置为总时，重新计时
     const restart = () => {
       _seconds.value = totalSeconds.value;
+      starts++;
       _tick();
     };
 
-    const start = restart;
+    // 重新计时或是从当前计时
+    const start = () => {
+      // 第一次之后才重新计时
+      if (starts > 0) {
+        restart();
+      } else {
+        starts++;
+        // 使用当前值计时
+        _tick();
+      }
+    };
+
+    const getCurrent = () => _seconds.value;
+
+    const setCurrent = (time: number) => _seconds.value = time; 
 
     // 暂停计时
     const pause = () => {
@@ -129,6 +144,8 @@ export default defineComponent({
       pause,
       stop,
       resume,
+      getCurrent,
+      setCurrent,
     };
   },
 });

@@ -4,10 +4,9 @@
     dense
     no-caps
     class="toolbar-button q-px-sm"
-    :class="[user.id <= 0 && 'bg-black']"
     @click="onUserButtonClick"
   >
-    <span>{{ user.nickname }}</span>
+    <span v-show="user.id > 0">{{ user.nickname }}</span>
     <span v-show="user.id <= 0">登录</span>
     <user-avatar
       v-show="user.id > 0"

@@ -1,10 +1,12 @@
 import Room from "../room/Room";
 
 export default interface ResponseGameStates {
-  room: Room;
+  room: Room | null;
   chesses: Array<ResponseGameStateChess>;
   activeChessHost: number;
   actionStack: Array<ResponseGameStateChessAction>;
+  redTimer: ResponseGameStateTimer;
+  blackTimer: ResponseGameStateTimer;
 }
 
 export interface ResponseGameStateChess {
@@ -26,4 +28,9 @@ export interface ResponseGameStateChessAction {
 export interface ResponseChessPos {
   row: number;
   col: number;
+}
+
+export interface ResponseGameStateTimer {
+  gameTime: number;
+  stepTime: number;
 }

@@ -2,41 +2,77 @@ package io.github.hulang1024.chinesechess.play;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import io.github.hulang1024.chinesechess.room.RoomSettings;
+import io.github.hulang1024.chinesechess.utils.TimeUtils;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
-public class GameTiming {
+public class GameTimer {
     /**
-     * 局时（秒）
+     * 剩余局时（秒）
      */
-    private int game;
-    /**
-     * 步时（秒）
-     */
-    private int step;
+    private int gameTime;
 
-    /** 步时开始计时时间 */
+    /**
+     * 最近剩余步时（秒）
+     */
+    private int stepTime;
+
+    /** 最近步时开始计时时间 */
     @JSONField(serialize = false)
-    private LocalDateTime beginTime;
+    private long startTime;
 
-    public void resume() {
-        beginTime = LocalDateTime.now();
+    @JSONField(serialize = false)
+    private RoomSettings roomSettings;
+
+    public GameTimer(RoomSettings roomSettings) {
+        this.roomSettings = roomSettings;
+        gameTime = roomSettings.getGameDuration();
+        stepTime = roomSettings.getStepDuration();
     }
 
-    public void pause() {
-
+    /**
+     * 设置开始计时点
+     */
+    public void start(boolean resetStep) {
+        startTime = TimeUtils.nowTimestamp();
+        if (resetStep) {
+            resetStepTime();
+        }
     }
 
-    public void minus(int time) {
-        game -= time;
+    public void start() {
+        start(true);
     }
 
-    public static GameTiming from(RoomSettings roomSettings) {
-        GameTiming times = new GameTiming();
-        times.game = roomSettings.getGameDuration();
-        times.step = roomSettings.getStepDuration();
-        return times;
+    /**
+     * 计算并减去用时
+     */
+    public void stop() {
+        // start必须调用过
+        if (startTime == 0) {
+            return;
+        }
+        useTime();
+        startTime = 0;
+    }
+
+    /**
+     * 计算并减最近步时使用的时间
+     */
+    public void useTime() {
+        assert startTime != 0;
+        long useTime = (TimeUtils.nowTimestamp() - startTime) / 1000;
+        stepTime = (int)Math.max(stepTime - useTime, 0);
+        gameTime = (int)Math.max(gameTime - useTime, 0);
+        // 该方法可以重复调用，要设置开始计时点
+        startTime = TimeUtils.nowTimestamp();
+    }
+
+    private void resetStepTime() {
+        if (gameTime > 0) {
+            stepTime = roomSettings.getStepDuration();
+        } else {
+            stepTime = roomSettings.getSecondsCountdown();
+        }
     }
 }

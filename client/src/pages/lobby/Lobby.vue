@@ -73,7 +73,7 @@ export default defineComponent({
 
     socketService.queue((send) => send('activity.enter', { code: 1 }));
 
-    GameEvents.gameContinue.addOnce(() => {
+    GameEvents.gameContinue.add(() => {
       // eslint-disable-next-line
       (<any>$refs.confirmDialog).open({
         yesText: '继续游戏',

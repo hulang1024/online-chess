@@ -284,7 +284,10 @@ export default class Player implements Game {
     this.activeChessHost.value = ChessHost.reverse(this.activeChessHost.value);
   }
   
-  private reverseChessLayoutView() {
+  public reverseChessLayoutView() {
+    if (this.viewChessHost == null) {
+      return;
+    }
     // 保存下棋子引用
     let chesses: DrawableChess[] = [];
     this.chessboard.getChessList().forEach(chess => {
@@ -339,7 +342,7 @@ export default class Player implements Game {
   private createDrawableChess(chess: Chess) {
     return new DrawableChess(chess,
       this.chessboard.bounds.chessRadius,
-      this.configManager.get(ConfigItem.theme));
+      this.configManager.get(ConfigItem.theme) as string);
   }
 
   public resize(stageWidth: number) {
