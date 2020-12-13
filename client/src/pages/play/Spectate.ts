@@ -129,12 +129,6 @@ export default class Spectate {
       this.blackGameTimer.setOnEnd(() => this.onTimerEnd(true, ChessHost.BLACK));
       this.blackStepTimer.setOnEnd(() => this.onTimerEnd(false, ChessHost.BLACK));
 
-      const { roomSettings } = this.room;
-      this.redGameTimer.setTotalSeconds(roomSettings.gameDuration);
-      this.redStepTimer.setTotalSeconds(roomSettings.stepDuration);
-      this.blackGameTimer.setTotalSeconds(roomSettings.gameDuration);
-      this.blackStepTimer.setTotalSeconds(roomSettings.stepDuration);
-
       this.loadState(spectateResponse);
     });
 
@@ -156,8 +150,15 @@ export default class Spectate {
     this.blackOnline.value = room.blackOnline;
     this.blackReadied.value = room.blackReadied;
 
+    const { roomSettings } = room;
+    this.redGameTimer.setTotalSeconds(roomSettings.gameDuration);
+    this.redStepTimer.setTotalSeconds(roomSettings.stepDuration);
+    this.blackGameTimer.setTotalSeconds(roomSettings.gameDuration);
+    this.blackStepTimer.setTotalSeconds(roomSettings.stepDuration);
+
     if (spectateResponse.targetUserId != null) {
       // 如果是观看用户
+      this.targetUserId = spectateResponse.targetUserId;
       if (this.room.redChessUser && this.room.redChessUser.id == spectateResponse.targetUserId) {
         this.viewChessHost.value = ChessHost.RED;
       } else {
