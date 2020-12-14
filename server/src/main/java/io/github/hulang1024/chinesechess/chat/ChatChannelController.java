@@ -28,7 +28,7 @@ public class ChatChannelController {
     public ResponseEntity<CreateNewPMRet> createNewPrivateMessage(
         @Validated @RequestBody CreateNewPMParam param) {
         CreateNewPMRet ret = channelManager.createNewPrivateMessage(param);
-        return ResponseEntity.ok(ret);
+        return new ResponseEntity(ret, ret.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/channels")

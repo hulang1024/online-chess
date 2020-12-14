@@ -20,8 +20,8 @@
       >
         <q-tab
           v-for="channel in channels"
-          :key="channel.id"
-          :name="channel.id"
+          :key="channel.name"
+          :name="getChannelTabName(channel)"
           :label="channel.name"
           no-caps
         />
@@ -34,8 +34,8 @@
       >
         <q-tab-panel
           v-for="channel in channels"
-          :key="channel.id"
-          :name="channel.id"
+          :key="channel.name"
+          :name="getChannelTabName(channel)"
         >
           <drawable-channel :channel="channel" />
         </q-tab-panel>
@@ -69,27 +69,42 @@
 import {
   defineComponent, getCurrentInstance, ref, watch,
 } from '@vue/composition-api';
-import { channelManager } from 'src/boot/main';
+import { api, channelManager } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
 import ChannelType from 'src/online/chat/ChannelType';
 import InfoMessage from 'src/online/chat/InfoMessage';
 import Message from 'src/online/chat/Message';
+import User from 'src/online/user/User';
 import DrawableChannel from './DrawableChannel.vue';
 
 export default defineComponent({
   components: { DrawableChannel },
-  setup() {
+  setup(props, { emit }) {
     const ctx = getCurrentInstance() as Vue;
     // eslint-disable-next-line
     const notify = ctx.$q.notify;
 
     const isOpen = ref(false);
-    const activeChannelTab = ref(1);
+    const activeChannelTab = ref('#象棋');
     const channels = ref<Channel[]>([]);
     const messageText = ref('');
 
+    const getChannelTabName = (channel: Channel) => {
+      return channel.type == ChannelType.PM
+        ? `pm_${channel.users[0].id}`
+        : channel.id + '';
+    };
+
+    watch(isOpen, () => {
+      emit('active', isOpen.value, props);
+    });
+
     watch(activeChannelTab, () => {
-      channelManager.openChannel(activeChannelTab.value);
+      if (activeChannelTab.value.startsWith('pm_')) {
+        channelManager.openPrivateChannel(new User(+activeChannelTab.value.substring(3)));
+      } else {
+        channelManager.openChannel(+activeChannelTab.value);
+      }
     });
 
     channelManager.joinedChannels.added.add((channel: Channel) => {
@@ -101,8 +116,11 @@ export default defineComponent({
         const last = messages[messages.length - 1];
         if (last.sender.id > 0) {
           if (channel.type == ChannelType.PM) {
-            isOpen.value = true;
-            channelManager.openPrivateChannel(last.sender);
+            // todo: 暂时不支持回显，而是绕一圈，这里判断不是自己
+            if (last.sender != api.localUser.id) {
+              isOpen.value = true;
+              channelManager.openPrivateChannel(last.sender);
+            }
           } else if (channel.type == ChannelType.ROOM) {
             isOpen.value = true;
             channelManager.openChannel(channel.id);
@@ -116,12 +134,14 @@ export default defineComponent({
     });
 
     channelManager.currentChannel.changed.add((channel: Channel) => {
-      setTimeout(() => {
-        activeChannelTab.value = channel.id;
-        if (channel.type == ChannelType.PM && !isOpen.value) {
-          isOpen.value = true;
-        }
-      }, 100);
+      if (channel.type == ChannelType.PM && !isOpen.value) {
+        isOpen.value = true;
+      }
+      ctx.$nextTick(() => {
+        setTimeout(() => {
+          activeChannelTab.value = getChannelTabName(channel);
+        }, 100);
+      });
     });
 
     channelManager.onHideChannel = (channel: Channel) => {
@@ -171,6 +191,7 @@ export default defineComponent({
       show,
       hide,
       activeChannelTab,
+      getChannelTabName,
       channels,
       messageText,
       onSend,

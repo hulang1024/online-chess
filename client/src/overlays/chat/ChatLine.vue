@@ -16,13 +16,14 @@
       <span>:</span>
     </div>
     <div class="content">
-      <span>{{ content }}</span>
+      <span :style="{color}">{{ content }}</span>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType } from "@vue/composition-api";
+import ErrorMessage from "src/online/chat/ErrorMessage";
 import Message from "src/online/chat/Message";
 
 const USERNAME_COLORS = [
@@ -80,16 +81,21 @@ export default defineComponent({
       return `${pad(time.getHours())}:${pad(time.getMinutes())}:${pad(time.getSeconds())}`;
     })(message?.timestamp);
 
-    const color = message.id > 0
+    let nicknameColor = message.id > 0
       ? USERNAME_COLORS[sender.id % USERNAME_COLORS.length]
       : 0xdddddd;
-    const nicknameColor = `#${(color).toString(16)}`;
+
+    let color: string;
+    if (message instanceof ErrorMessage) {
+      color = 'pink';
+    }
 
     return {
       timeText,
       nickname: sender.nickname,
-      nicknameColor,
+      nicknameColor: `#${(nicknameColor).toString(16)}`,
       content: message.content,
+      color,
     };
   },
 });

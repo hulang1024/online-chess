@@ -56,7 +56,7 @@ export default class ChannelManager {
       || this.joinChannel(new Channel(user), false);
 
     if (this.currentChannel.value.messages
-      .filter(m => m.id == this.closeTipMessage.id).length == 0) {
+      .filter((m) => m.id == this.closeTipMessage.id).length == 0) {
       this.currentChannel.value.addNewMessages(this.closeTipMessage);
     }
   }
@@ -116,14 +116,16 @@ export default class ChannelManager {
     if (available) {
       found = available;
     }
-    const joined = this.joinedChannels.filter((c: Channel) => c.id == lookup.id)[0];
+    const joined = (lookup.type == ChannelType.PM && lookup.id == 0)
+      ? null
+      : this.joinedChannels.filter((c: Channel) => c.id == lookup.id)[0];
     if (found == null && joined != null) {
       found = joined;
     }
     if (found == null) {
       found = lookup;
 
-      found.users = found.users.filter(u => u.id != this.api.localUser.id);
+      found.users = found.users.filter((u) => u.id != this.api.localUser.id);
     }
 
     if (joined == null && addToJoined) {
@@ -248,7 +250,7 @@ export default class ChannelManager {
 
     const listChannels = () => {
       const req = new ListChannelsRequest();
-      req.success = (channels) => {
+      req.success = (channels: Channel[]) => {
         channels.forEach((ch) => {
           this.getChannel(Channel.from(ch), true);
         });
@@ -288,7 +290,7 @@ export default class ChannelManager {
         this.joinChannel(channel, false);
       }
       if (msg.recentMessages) {
-        this.handleChannelMessages(msg.recentMessages.map(Message.from));
+        this.handleChannelMessages(msg.recentMessages.map((m) => Message.from(m)));
       }
     });
 

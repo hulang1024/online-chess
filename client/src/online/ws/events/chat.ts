@@ -23,7 +23,6 @@ export interface ChatMessageMsg extends ServerMsg {
   isAction: boolean;
 }
 
-
 export interface ChatPresenceMsg extends ServerMsg {
   channel: Channel;
   recentMessages: Message[];

@@ -18,10 +18,15 @@ export default class User {
   lastLoginTime: string;
 
   static SYSTEM: User;
+
+  constructor(id?: number) {
+    if (typeof id != 'undefined') {
+      this.id = id;
+    }
+  }
 }
 
-const user = new User();
-user.id = 0;
+const user = new User(0);
 user.nickname = '系统';
 
 User.SYSTEM = user;
