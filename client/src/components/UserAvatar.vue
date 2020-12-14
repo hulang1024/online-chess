@@ -1,6 +1,5 @@
 <template>
   <q-avatar
-    rounded
     v-bind="$attrs"
     class="user-avatar"
   >

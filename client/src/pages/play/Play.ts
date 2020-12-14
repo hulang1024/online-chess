@@ -245,139 +245,18 @@ export default class GamePlay {
   }
 
   private initListeners() {
-    RoomEvents.userJoined.add((msg: RoomEvents.RoomUserJoinedMsg) => {
-      window.focus();
-      this.otherUser.value = msg.user;
-      this.otherOnline.value = true;
-      this.otherReadied.value = false;
-      this.isWaitingForOther.value = 1;
-      this.context.$q.notify(`玩家[${this.otherUser.value.nickname}]已加入棋桌`);
-    }, this);
-
-    RoomEvents.userLeft.add((msg: RoomEvents.RoomUserLeftMsg) => {
-      if (msg.uid == this.user.id) return;
-
-      this.otherUser.value = null;
-      this.otherReadied.value = false;
-      this.otherOnline.value = false;
-      this.gameState.value = GameState.READY;
-      this.isWaitingForOther.value = 2;
-      this.context.$q.notify('对手已离开棋桌');
-      if (!this.isRoomOwner.value) {
-        this.isRoomOwner.value = true;
-        this.context.$q.notify('你成为了房主');
-      }
-    }, this);
-
-    GameEvents.readied.add((msg: GameEvents.GameReadyMsg) => {
-      if (msg.uid == this.user.id) {
-        this.readied.value = msg.readied;
-      } else {
-        this.otherReadied.value = msg.readied;
-      }
-
-      if (this.isRoomOwner.value) {
-        if (this.otherUser.value && !this.otherReadied.value) {
-          this.isWaitingForOther.value = 1;
-        } else {
-          this.isWaitingForOther.value = 0;
-        }
-      }
-    }, this);
-
-    GameEvents.gameStarted.add((msg: GameEvents.GameStartedMsg) => {
-      this.chessHost.value = msg.redChessUid == this.user.id
-        ? ChessHost.RED
-        : ChessHost.BLACK;
-
-      this.lastSelected = null;
-
-      this.gameState.value = GameState.PLAYING;
-
-      this.gameTimer.ready();
-      this.stepTimer.ready();
-      this.otherGameTimer.ready();
-      this.otherStepTimer.ready();
-      this.player.startGame(this.chessHost.value);
-      // 因为activeChessHost一般一直是红方，值相同将不能触发，这里手动触发一次
-      this.onTurnActiveChessHost(this.activeChessHost.value);
-      this.showText(`开始对局`, 1000);
-    }, this);
-
-    GameEvents.chessPickup.add((msg: GameEvents.ChessPickUpMsg) => {
-      if (msg.chessHost == this.chessHost.value) {
-        return;
-      }
-      window.focus();
-
-      this.player.pickChess(msg.pickup, ChessPos.make(msg.pos), msg.chessHost);
-    }, this);
-
-    GameEvents.chessMoved.add((msg: GameEvents.ChessMoveMsg) => {
-      if (msg.chessHost != this.chessHost.value) {
-        window.focus();
-      }
-
-      this.canWithdraw.value = true;
-
-      this.player.moveChess(
-        ChessPos.make(msg.fromPos),
-        ChessPos.make(msg.toPos),
-        msg.chessHost, msg.moveType == 2,
-      );
-    }, this);
-
-    GameEvents.confirmRequest.add((msg: GameEvents.ConfirmRequestMsg) => {
-      // 如果是自己发送的请求
-      if (msg.chessHost == this.chessHost.value) {
-        return;
-      }
-
-      // 对方发送的请求
-      // 显示确认对话框
-      // eslint-disable-next-line
-      this.confirmDialog.open({
-        yesText: '同意',
-        noText: '不同意',
-        text: `对方想要${ConfirmRequest.toReadableText(msg.reqType)}`,
-        action: (isOk: boolean) => {
-          // 发送回应到服务器
-          this.socketService.send('play.confirm_response', { reqType: msg.reqType, ok: isOk });
-        },
-      });
-    }, this);
-
-    GameEvents.confirmResponse.add((msg: GameEvents.ConfirmResponseMsg) => {
-      // 如果同意
-      if (!msg.ok) {
-        // 对方发送的回应
-        if (msg.chessHost != this.chessHost.value) {
-          this.showText(`对方不同意${ConfirmRequest.toReadableText(msg.reqType)}`, 1000);
-        }
-        return;
-      }
-
-      // 如果不同意
-      if (msg.chessHost != this.chessHost.value) {
-        this.showText(`对方同意${ConfirmRequest.toReadableText(msg.reqType)}`, 1000);
-      }
-
-      switch (msg.reqType) {
-        case ConfirmRequest.Type.WHITE_FLAG:
-          this.onGameOver(msg.chessHost);
-          break;
-        case ConfirmRequest.Type.DRAW:
-          this.onGameOver(null);
-          break;
-        case ConfirmRequest.Type.WITHDRAW: {
-          const canWithdraw = this.player.withdraw();
-          this.canWithdraw.value = canWithdraw;
-          break;
-        }
-        default:
-          break;
-      }
-    }, this);
+    RoomEvents.userJoined.add(this.onRoomUserJoinedEvent.bind(this), this);
+    RoomEvents.userLeft.add(this.onRoomUserLeftEvent.bind(this), this);
+    GameEvents.readied.add(this.onGameReadyEvent.bind(this), this);
+    GameEvents.gameStarted.add(this.onGameStartedEvent.bind(this), this);
+    GameEvents.chessPickup.add(this.onGameChessPickupEvent.bind(this), this);
+    GameEvents.chessMoved.add(this.onGameChessMovedEvent.bind(this), this);
+    GameEvents.confirmRequest.add(this.onGameConfirmRequestEvent.bind(this), this);
+    GameEvents.confirmResponse.add(this.onGameConfirmResponseEvent.bind(this), this);
+    UserEvents.offline.add(this.onUserOfflineEvent.bind(this), this);
+    UserEvents.online.add(this.onUserOnlineEvent.bind(this), this);
+    GameEvents.gameContinue.add(this.onGameContinueEvent.bind(this), this);
+    GameEvents.gameContinueResponse.add(this.onGameContinueResponseEvent.bind(this), this);
 
     SpectatorEvents.joined.add((msg: SpectatorEvents.SpectatorJoinedMsg) => {
       this.channelManager.openChannel(this.room.channelId);
@@ -400,82 +279,220 @@ export default class GamePlay {
       this.gameState.value = GameState.PAUSE;
       this.online.value = false;
     }, this);
+  }
 
-    UserEvents.offline.add((msg: UserEvents.UserOfflineMsg) => {
-      if (this.gameState.value == GameState.READY
-        || !(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
-        return;
-      }
-      this.otherOnline.value = false;
-      this.gameState.value = GameState.PAUSE;
-      this.showText('对手已下线/掉线，你可以等待对方回来继续');
-    });
+  private onGameReadyEvent(msg: GameEvents.GameReadyMsg) {
+    if (msg.uid == this.user.id) {
+      this.readied.value = msg.readied;
+    } else {
+      this.otherReadied.value = msg.readied;
+    }
 
-    UserEvents.online.add((msg: UserEvents.UserOnlineMsg) => {
-      // 判断是否原来就没加入过房间
-      if (this.gameState.value == GameState.READY
-        || !(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
-        return;
-      }
-      this.otherOnline.value = true;
-      this.showText('对手已上线', 3000);
-    });
-
-    GameEvents.gameContinue.add(() => {
-      this.online.value = true;
-      if (this.online.value && this.otherOnline.value) {
-        this.gameState.value = GameState.PLAYING;
-      }
-      this.socketService.send('play.game_continue', { ok: true });
-    });
-
-    // eslint-disable-next-line
-    GameEvents.gameStates.add((gameStatesMsg: GameEvents.GameStatesMsg) => {
-      // todo:重连之后同步状态，可能与服务器不一致
-    });
-
-    GameEvents.gameContinueResponse.add((msg: GameEvents.GameContinueResponseMsg) => {
-      this.otherOnline.value = true;
-      if (msg.ok) {
-        this.gameState.value = GameState.PLAYING;
-        this.showText('对手已回来', 3000);
+    if (this.isRoomOwner.value) {
+      if (this.otherUser.value && !this.otherReadied.value) {
+        this.isWaitingForOther.value = 1;
       } else {
-        this.gameState.value = GameState.READY;
-        this.otherUser.value = null;
-        this.showText('对手已选择不继续对局', 2000);
-        setTimeout(() => {
-          this.isWaitingForOther.value = 1;
-        }, 2000);
+        this.isWaitingForOther.value = 0;
       }
+    }
+  }
+
+  private onGameStartedEvent(msg: GameEvents.GameStartedMsg) {
+    this.chessHost.value = msg.redChessUid == this.user.id
+      ? ChessHost.RED
+      : ChessHost.BLACK;
+
+    this.lastSelected = null;
+
+    this.gameState.value = GameState.PLAYING;
+
+    this.gameTimer.ready();
+    this.stepTimer.ready();
+    this.otherGameTimer.ready();
+    this.otherStepTimer.ready();
+    this.player.startGame(this.chessHost.value);
+    // 因为activeChessHost一般一直是红方，值相同将不能触发，这里手动触发一次
+    this.onTurnActiveChessHost(this.activeChessHost.value);
+    this.showText(`开始对局`, 1000);
+  }
+
+  private onGameChessPickupEvent(msg: GameEvents.ChessPickUpMsg) {
+    if (msg.chessHost == this.chessHost.value) {
+      return;
+    }
+    window.focus();
+
+    this.player.pickChess(msg.pickup, ChessPos.make(msg.pos), msg.chessHost);
+  }
+
+  private onGameChessMovedEvent(msg: GameEvents.ChessMoveMsg) {
+    if (msg.chessHost != this.chessHost.value) {
+      window.focus();
+    }
+
+    this.canWithdraw.value = true;
+
+    this.player.moveChess(
+      ChessPos.make(msg.fromPos),
+      ChessPos.make(msg.toPos),
+      msg.chessHost, msg.moveType == 2,
+    );
+  }
+
+  private onGameConfirmRequestEvent(msg: GameEvents.ConfirmRequestMsg) {
+    // 如果是自己发送的请求
+    if (msg.chessHost == this.chessHost.value) {
+      return;
+    }
+
+    // 对方发送的请求
+    // 显示确认对话框
+    // eslint-disable-next-line
+    this.confirmDialog.open({
+      yesText: '同意',
+      noText: '不同意',
+      text: `对方想要${ConfirmRequest.toReadableText(msg.reqType)}`,
+      action: (isOk: boolean) => {
+        // 发送回应到服务器
+        this.socketService.send('play.confirm_response', { reqType: msg.reqType, ok: isOk });
+      },
     });
   }
 
-  private onGameStateChanged(gameState: GameState, prevGameState: GameState) {
-    if (gameState == GameState.PLAYING) {
-      if (prevGameState == GameState.PAUSE) {
-        // 之前离线暂停，现在恢复
-        if (this.activeChessHost.value == this.chessHost.value) {
-          this.gameTimer.resume();
-          this.stepTimer.resume();
-        } else {
-          this.otherGameTimer.resume();
-          this.otherStepTimer.resume();
-        }
+  private onGameConfirmResponseEvent(msg: GameEvents.ConfirmResponseMsg) {
+    // 如果同意
+    if (!msg.ok) {
+      // 对方发送的回应
+      if (msg.chessHost != this.chessHost.value) {
+        this.showText(`对方不同意${ConfirmRequest.toReadableText(msg.reqType)}`, 1000);
       }
       return;
     }
-    // 禁用棋盘
-    this.chessboard.enabled = false;
-    this.chessboard.getChessList().forEach((chess: DrawableChess) => {
-      chess.enabled = false;
-    });
-    // 当游戏暂停或结束，暂停计时器
-    [
-      this.gameTimer, this.stepTimer,
-      this.otherGameTimer, this.otherStepTimer,
-    ].forEach((timer) => {
-      timer.pause();
-    });
+
+    // 如果不同意
+    if (msg.chessHost != this.chessHost.value) {
+      this.showText(`对方同意${ConfirmRequest.toReadableText(msg.reqType)}`, 1000);
+    }
+
+    switch (msg.reqType) {
+      case ConfirmRequest.Type.WHITE_FLAG:
+        this.onGameOver(msg.chessHost);
+        break;
+      case ConfirmRequest.Type.DRAW:
+        this.onGameOver(null);
+        break;
+      case ConfirmRequest.Type.WITHDRAW: {
+        const canWithdraw = this.player.withdraw();
+        this.canWithdraw.value = canWithdraw;
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  private onGameContinueEvent() {
+    this.online.value = true;
+    if (this.online.value && this.otherOnline.value) {
+      this.gameState.value = GameState.PLAYING;
+    }
+    this.socketService.send('play.game_continue', { ok: true });
+  }
+
+  private onGameContinueResponseEvent(msg: GameEvents.GameContinueResponseMsg) {
+    this.otherOnline.value = true;
+    if (msg.ok) {
+      this.gameState.value = GameState.PLAYING;
+      this.showText('对手已回来', 3000);
+    } else {
+      this.gameState.value = GameState.READY;
+      this.otherUser.value = null;
+      this.showText('对手已选择不继续对局', 2000);
+      setTimeout(() => {
+        this.isWaitingForOther.value = 1;
+      }, 2000);
+    }
+  }
+
+  private onRoomUserJoinedEvent(msg: RoomEvents.RoomUserJoinedMsg) {
+    window.focus();
+    this.otherUser.value = msg.user;
+    this.otherOnline.value = true;
+    this.otherReadied.value = false;
+    this.isWaitingForOther.value = 1;
+    this.context.$q.notify(`玩家[${this.otherUser.value.nickname}]已加入棋桌`);
+  }
+
+  private onRoomUserLeftEvent(msg: RoomEvents.RoomUserLeftMsg) {
+    if (msg.uid == this.user.id) return;
+
+    this.otherUser.value = null;
+    this.otherReadied.value = false;
+    this.otherOnline.value = false;
+    this.gameState.value = GameState.READY;
+    this.isWaitingForOther.value = 2;
+    this.context.$q.notify('对手已离开棋桌');
+    if (!this.isRoomOwner.value) {
+      this.isRoomOwner.value = true;
+      this.context.$q.notify('你成为了房主');
+    }
+  }
+
+  private onUserOfflineEvent(msg: UserEvents.UserOfflineMsg) {
+    if (this.gameState.value == GameState.READY
+      || !(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
+      return;
+    }
+    this.otherOnline.value = false;
+    this.gameState.value = GameState.PAUSE;
+    this.showText('对手已下线/掉线，你可以等待对方回来继续');
+  }
+
+  private onUserOnlineEvent(msg: UserEvents.UserOnlineMsg) {
+    // 判断是否原来就没加入过房间
+    if (this.gameState.value == GameState.READY
+      || !(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
+      return;
+    }
+    this.otherOnline.value = true;
+    this.showText('对手已上线', 3000);
+  }
+
+  private onGameStateChanged(gameState: GameState, prevGameState: GameState) {
+    switch (gameState) {
+      case GameState.PLAYING: {
+        if (prevGameState == GameState.PAUSE) {
+          // 之前离线暂停，现在恢复
+          if (this.activeChessHost.value == this.chessHost.value) {
+            this.gameTimer.resume();
+            this.stepTimer.resume();
+          } else {
+            this.otherGameTimer.resume();
+            this.otherStepTimer.resume();
+          }
+        }
+        break;
+      }
+      case GameState.READY:
+      case GameState.PAUSE:
+      case GameState.END: {
+        // 禁用棋盘
+        this.chessboard.enabled = false;
+        this.chessboard.getChessList().forEach((chess: DrawableChess) => {
+          chess.enabled = false;
+        });
+        // 当游戏暂停或结束，暂停计时器
+        [
+          this.gameTimer, this.stepTimer,
+          this.otherGameTimer, this.otherStepTimer,
+        ].forEach((timer) => {
+          timer.pause();
+        });
+        break;
+      }
+      default:
+        break;
+    }
   }
 
   private onGameOver(winChessHost: ChessHost | null, isTimeout?: boolean) {

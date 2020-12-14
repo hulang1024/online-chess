@@ -35,9 +35,9 @@ import {
 import JoinRoomRequest from 'src/online/room/JoinRoomRequest';
 import SpectateRoomRequest from 'src/online/spectator/SpectateRoomRequest';
 import { api } from 'src/boot/main';
+import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import DrawableRoomUser from './DrawableRoomUser.vue';
 import Room from '../../online/room/Room';
-import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 
 export default defineComponent({
   components: { DrawableRoomUser },
@@ -58,7 +58,7 @@ export default defineComponent({
       blackChessUser: room.blackChessUser,
     });
 
-    const STATUS_COLOR_MAP: { [i: number]: string } = {1: '#22dd00', 2: '#af52c6', 3: '#ff9800'};
+    const STATUS_COLOR_MAP: { [i: number]: string } = { 1: '#22dd00', 2: '#af52c6', 3: '#ff9800' };
     const color = computed(() => STATUS_COLOR_MAP[roomStates.status]);
 
     watch(props, () => {

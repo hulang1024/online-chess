@@ -116,7 +116,7 @@ export default defineComponent({
       actives.value.forEach((name) => {
         toggleActive(name, false);
       });
-      
+
       toggleActive('chat', false); // chat会在其它地方打开，但可能没在actives中
     };
 

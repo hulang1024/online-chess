@@ -134,8 +134,7 @@ import GameState from 'src/online/play/GameState';
 import ChessHost from 'src/rule/chess_host';
 import User from 'src/online/user/User';
 import { binableBindToRef, createBoundRef } from 'src/utils/vue/vue_ref_utils';
-import { api } from 'src/boot/main';
-import Room from 'src/online/room/Room';
+import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import DrawableChessboard from './DrawableChessboard';
 import PlayerContainer from './PlayerContainer.vue';
 import GameUserPanel from './GameUserPanel.vue';
@@ -143,7 +142,6 @@ import ResultDialog from './ResultDialog.vue';
 import TextOverlay from './TextOverlay.vue';
 import Timer from './Timer.vue';
 import Spectate from './Spectate';
-import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import Player from './Player';
 
 export default defineComponent({
@@ -173,15 +171,15 @@ export default defineComponent({
     const otherOnline: Ref<boolean> = ref(false);
     const otherReadied: Ref<boolean> = ref(false);
 
-    spectate.viewChessHost.addAndRunOnce((viewChessHost: ChessHost) => {
-      otherChessHost.value = ChessHost.reverse(viewChessHost);
+    spectate.viewChessHost.addAndRunOnce((chessHost: ChessHost) => {
+      otherChessHost.value = ChessHost.reverse(chessHost);
       [
         spectate.blackUser, spectate.blackOnline, spectate.blackReadied,
-        spectate.redUser, spectate.redOnline, spectate.redReadied
+        spectate.redUser, spectate.redOnline, spectate.redReadied,
       ].forEach((bindable) => {
         bindable.changed.removeAll(); // todo: 这里假设只有这里增加了绑定
       });
-      if (viewChessHost == ChessHost.BLACK) {
+      if (chessHost == ChessHost.BLACK) {
         binableBindToRef(spectate.blackUser, viewUser);
         binableBindToRef(spectate.blackOnline, viewOnline);
         binableBindToRef(spectate.blackReadied, viewReadied);

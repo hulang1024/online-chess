@@ -1,10 +1,10 @@
 import Signal from "src/utils/signals/Signal";
 import SocketService from "../SocketService";
-import { roomCreated, roomRemoved, roomUpdated } from "./lobby";
+import * as lobby from "./lobby";
 import * as user from "./user";
 import * as chat from './chat';
 import * as spectator from './spectator';
-import * as RoomEvents from "./room";
+import * as room from "./room";
 import * as stat from "./stat";
 import * as play from "./play";
 
@@ -15,17 +15,17 @@ export function setupEvents(socketService: SocketService) {
     ['user.offline', user.offline],
     ['user.status_changed', user.statusChanged],
 
-    ['lobby.room_create', roomCreated],
-    ['lobby.room_update', roomUpdated],
-    ['lobby.room_remove', roomRemoved],
+    ['lobby.room_create', lobby.roomCreated],
+    ['lobby.room_update', lobby.roomUpdated],
+    ['lobby.room_remove', lobby.roomRemoved],
 
     ['chat.message', chat.message],
     ['chat.presence', chat.presence],
     ['chat.user_left', chat.channelUserLeft],
     ['chat.recall_message', chat.messageRecalled],
 
-    ['room.user_join', RoomEvents.userJoined],
-    ['room.user_left', RoomEvents.userLeft],
+    ['room.user_join', room.userJoined],
+    ['room.user_left', room.userLeft],
 
     ['play.ready', play.readied],
     ['play.game_start', play.gameStarted],

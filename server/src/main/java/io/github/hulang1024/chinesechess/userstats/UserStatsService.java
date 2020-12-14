@@ -33,7 +33,7 @@ public class UserStatsService {
     public PageRet<SearchUserInfo> searchRanking(SearchRankingParam searchRankingParam, PageParam pageParam) {
         QueryWrapper query = new QueryWrapper<User>();
         if (searchRankingParam.getRankingBy() == 1) {
-            query.orderByDesc("user_stats.win_count");
+            query.orderByDesc("user_stats.win_count", "win_count - lose_count");
         } else if (searchRankingParam.getRankingBy() == 2) {
             query.orderByDesc("user_stats.play_count");
         }

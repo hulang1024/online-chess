@@ -6,6 +6,7 @@
     <div class="row">
       <user-avatar
         :user="user"
+        rounded
         :size="$q.screen.xs ? '50px': '60px'"
       />
       <q-icon

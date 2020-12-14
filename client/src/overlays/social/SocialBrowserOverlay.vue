@@ -145,9 +145,9 @@ import { api, channelManager, socketService } from 'src/boot/main';
 import SearchUserParams from 'src/online/user/SearchUserParams';
 import UserStatus from 'src/online/user/UserStatus';
 import APIPageResponse from 'src/online/api/APIPageResponse';
+import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import UserDetailsOverlay from '../user/UserDetailsOverlay.vue';
 import UserGridPanel from '../user/UserGridPanel.vue';
-import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 
 export default defineComponent({
   components: { UserGridPanel, UserDetailsOverlay },

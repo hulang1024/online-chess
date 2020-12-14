@@ -86,7 +86,7 @@ export default defineComponent({
 
 .user-avatar-frame
   border: 2px solid transparent
-  border-radius: 6px
+  border-radius: 100%
   transition: all 0.1s ease-out
 
   .user-avatar.offline

@@ -102,7 +102,9 @@ export default defineComponent({
 
     const getCurrent = () => _seconds.value;
 
-    const setCurrent = (time: number) => _seconds.value = time; 
+    const setCurrent = (time: number) => {
+      _seconds.value = time;
+    };
 
     // 暂停计时
     const pause = () => {

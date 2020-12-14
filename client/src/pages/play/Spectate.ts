@@ -356,11 +356,11 @@ export default class Spectate {
       let who: string | null = null;
       if (this.redUser.value && msg.uid == this.redUser.value.id) {
         who = '红方';
-        this.redOnline.value = false;
+        this.redOnline.value = true;
       }
       if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
         who = '黑方';
-        this.blackOnline.value = false;
+        this.blackOnline.value = true;
       }
       if (!who) {
         return;
@@ -372,11 +372,15 @@ export default class Spectate {
       let who = '玩家';
       if (this.redUser.value && msg.uid == this.redUser.value.id) {
         who = '红方';
-        this.redOnline.value = false;
+        if (msg.ok) {
+          this.redOnline.value = true;
+        }
       }
       if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
         who = '黑方';
-        this.blackOnline.value = false;
+        if (msg.ok) {
+          this.blackOnline.value = true;
+        }
       }
       if (msg.ok) {
         this.showText(`${who}已回来`, 2000);
@@ -389,8 +393,18 @@ export default class Spectate {
     });
   }
 
-  private onGameStateChanged(gameState: GameState) {
+  private onGameStateChanged(gameState: GameState, prevGameState: GameState) {
     if (gameState == GameState.PLAYING) {
+      if (prevGameState == GameState.PAUSE) {
+        // 之前离线暂停，现在恢复
+        if (this.activeChessHost.value == ChessHost.RED) {
+          this.redGameTimer.resume();
+          this.redStepTimer.resume();
+        } else {
+          this.blackGameTimer.resume();
+          this.blackStepTimer.resume();
+        }
+      }
       return;
     }
     // 当游戏暂停或结束，暂停计时器
