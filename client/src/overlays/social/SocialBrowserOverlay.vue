@@ -151,7 +151,7 @@ import UserGridPanel from '../user/UserGridPanel.vue';
 
 export default defineComponent({
   components: { UserGridPanel, UserDetailsOverlay },
-  setup() {
+  setup(props, { emit }) {
     const { $refs, $router, $q } = getCurrentInstance() as Vue;
 
     const isOpen = ref(false);
@@ -159,6 +159,10 @@ export default defineComponent({
     const loading = ref(true);
     const users = ref<SearchUserInfo[]>([]);
     const onlineCount = ref<number>(0);
+
+    watch(isOpen, () => {
+      emit('active', isOpen.value, props);
+    });
 
     const queryUsers = () => {
       users.value = [];
@@ -266,6 +270,7 @@ export default defineComponent({
     };
 
     const onChatClick = (user: SearchUserInfo) => {
+      isOpen.value = false;
       channelManager.openPrivateChannel(user);
     };
 
