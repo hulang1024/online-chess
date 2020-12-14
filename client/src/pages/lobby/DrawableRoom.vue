@@ -109,8 +109,8 @@ export default defineComponent({
         api.perform(req);
       } else {
         const req = new SpectateRoomRequest(room);
-        req.success = (spectateResponse: SpectateResponse) => {
-          $router.push({name: 'spectate', params: { spectateResponse }});
+        req.success = async (spectateResponse: SpectateResponse) => {
+          await $router.push({ name: 'spectate', params: { spectateResponse } });
         };
         req.failure = () => {
           $q.notify({ type: 'error', message: '观看请求失败' });

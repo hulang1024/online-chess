@@ -271,9 +271,9 @@ export default defineComponent({
 
     const onSpectateClick = (user: SearchUserInfo) => {
       const req = new SpectateUserRequest(user);
-      req.success = (spectateResponse: SpectateResponse) => {
+      req.success = async (spectateResponse: SpectateResponse) => {
         isOpen.value = false;
-        $router.push({name: 'spectate', params: { spectateResponse }});
+        await $router.push({ name: 'spectate', params: { spectateResponse } });
       };
       req.failure = (res) => {
         const codeMsgMap: {[code: number]: string} = {
