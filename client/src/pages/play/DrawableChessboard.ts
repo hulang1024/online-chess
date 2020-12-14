@@ -73,53 +73,44 @@ export default class DrawableChessboard implements Chessboard {
 
     this.getChessList().forEach((chess: DrawableChess) => {
       chess.resizeAndDraw(this.bounds.chessRadius);
-      const {x, y} = this.calcChessDisplayPos(chess.getPos());
+      const { x, y } = this.calcChessDisplayPos(chess.getPos());
       chess.x = x;
       chess.y = y;
     });
   }
 
   private setupDragable() {
-    let el = this._el;
+    const el = this._el;
 
     // 接收拖拽
     el.ondragover = (event) => {
-      let allowed = true;
-      if (allowed) {
-        event.preventDefault();
-      }
+      event.preventDefault();
     };
     // 放置
     el.ondrop = (event) => {
-      let data: any = event.dataTransfer?.getData('chess-pos').split(',');
-      let fromPos = new ChessPos(+data[0], +data[1]);
+      const data: string[] = event.dataTransfer?.getData('chess-pos').split(',') as string[];
+      const fromPos = new ChessPos(+data[0], +data[1]);
       let toPos: ChessPos;
-      let targetEl = event.target as HTMLElement;
-      if (targetEl.classList.contains('chess')) {
-        let target = this.getChessList().find(
-          (chess: DrawableChess) => chess.el == event.target);
+      if ((event.target as HTMLElement).classList.contains('chess')) {
+        const target = this.getChessList().find((chess: DrawableChess) => chess.el == event.target);
         toPos = target?.getPos() as ChessPos;
-      } else if (targetEl.classList.contains('chess-target')) {
-        let data: any = targetEl.getAttribute('chess-pos')?.split(',');
-        toPos = new ChessPos(+data[0], +data[1]);
       } else {
-        // 当放置目标是棋盘时, 事件offsetX/Y才准确
-        toPos =  this.chessPosFromInputEvent(event);
+        toPos = this.chessPosFromInputEvent(event);
       }
       this.chessMoved.dispatch({
         chess: this.chessAt(fromPos),
-        toPos
+        toPos,
       });
     };
   }
 
-  onClick(event: any) {
+  onClick(event: MouseEvent) {
     if (!this.enabled) {
       return;
     }
-    let pos = this.chessPosFromInputEvent(event);
+    const pos = this.chessPosFromInputEvent(event);
 
-    let clickedArgs: any = {pos, chess: this.chessAt(pos)};
+    const clickedArgs = { pos, chess: this.chessAt(pos) };
 
     if (clickedArgs.chess != null) {
       if (!clickedArgs.chess.enabled) {
@@ -130,9 +121,16 @@ export default class DrawableChessboard implements Chessboard {
     this.clicked.dispatch(clickedArgs);
   }
 
-  private chessPosFromInputEvent(event: any) {
-    let { offsetX, offsetY } = event;
-    let bounds = this.bounds;
+  private chessPosFromInputEvent(event: DragEvent | MouseEvent) {
+    const targetEl = event.target as HTMLElement;
+    if (targetEl.classList.contains('chess-target')) {
+      const data: string[] = targetEl.getAttribute('chess-pos')?.split(',') as string[];
+      return new ChessPos(+data[0], +data[1]);
+    }
+
+    // 当放置目标是棋盘时, 事件offsetX/Y才准确
+    const { offsetX, offsetY } = event;
+    const { bounds } = this;
     let row: number;
     let col: number;
     if (offsetY < bounds.grid.y) {
@@ -160,11 +158,17 @@ export default class DrawableChessboard implements Chessboard {
 
     const pixelRatio = (() => {
       const ctx: any = context;
+      // eslint-disable-next-line
       const backingStore = ctx.backingStorePixelRatio ||
+      // eslint-disable-next-line
       ctx.webkitBackingStorePixelRatio ||
+      // eslint-disable-next-line
       ctx.mozBackingStorePixelRatio ||
+      // eslint-disable-next-line
       ctx.msBackingStorePixelRatio ||
+      // eslint-disable-next-line
       ctx.oBackingStorePixelRatio ||
+      // eslint-disable-next-line
       ctx.backingStorePixelRatio || 1;
       return (window.devicePixelRatio || 1) / backingStore;
     })();
@@ -179,6 +183,7 @@ export default class DrawableChessboard implements Chessboard {
     /// 画棋盘网格
     const strokeLine = (x1: number, y1: number, x2: number, y2: number, color?: string) => {
       context.beginPath();
+      // eslint-disable-next-line
       context.lineWidth = screen.xs ? 1 : 2;
       context.moveTo(x1, y1);
       context.lineTo(x2, y2);
@@ -186,34 +191,33 @@ export default class DrawableChessboard implements Chessboard {
       context.strokeStyle = color || '#946830';
       context.stroke();
     };
-  
+
     // 画内部格子
     for (let p = 0; p < 2; p++) {
       // 画横线
       for (let row = 0; row <= 5; row++) {
-        let y = p * grid.height + grid.y + row * grid.gap;
+        const y = p * grid.height + grid.y + row * grid.gap;
         strokeLine(grid.x, y, grid.x + grid.width, y);
       }
-  
+
       // 画竖线
       for (let col = 0; col < 9; col++) {
-        let x = grid.x + col * grid.gap;
-        let baseY = p * grid.height + p * grid.gap;
+        const x = grid.x + col * grid.gap;
+        const baseY = p * grid.height + p * grid.gap;
         strokeLine(x, baseY + grid.y, x, baseY + grid.y + grid.height);
       }
-  
+
       // 画中间九宫的斜线
-      let x1 = grid.x + 3 * grid.gap;
-      let x2 = grid.x + 5 * grid.gap;
-      let baseY = p * grid.height + p * 3 * grid.gap;
+      const x1 = grid.x + 3 * grid.gap;
+      const x2 = grid.x + 5 * grid.gap;
+      const baseY = p * grid.height + p * 3 * grid.gap;
       strokeLine(x1, baseY + grid.y, x2, baseY + grid.y + 2 * grid.gap);
       strokeLine(x1, baseY + grid.y + 2 * grid.gap, x2, baseY + grid.y);
-
     }
     // 画竖线
     for (let s = 0; s < 2; s++) {
-      let x = grid.x + s * grid.gap * 8;
-      let baseY = grid.y + grid.height;
+      const x = grid.x + s * grid.gap * 8;
+      const baseY = grid.y + grid.height;
       strokeLine(x, baseY, x, baseY + grid.gap);
     }
   }
@@ -221,7 +225,7 @@ export default class DrawableChessboard implements Chessboard {
   private calcBounds(stageWidth: number, screen: any) {
     const MIN_WIDTH = 240;
     const MAX_WIDTH = 540;
-  
+
     // 计算匹配屏幕的画布的宽度
     let width = stageWidth - this.padding * 2;
     if (width > MAX_WIDTH) {
@@ -232,10 +236,11 @@ export default class DrawableChessboard implements Chessboard {
     }
 
     const canvasWidth = width;
-  
+
     // 根据网格宽度计算交叉点之间的距离
     const gap = canvasWidth / 9;
     // 棋子宽度稍小于交叉点距离
+    // eslint-disable-next-line
     const chessSize = gap - (screen.xs ? 4 : 12);
 
     const gridMargin = Math.round(gap / 2);// 最侧边的棋子需要占据半个位置
@@ -253,7 +258,7 @@ export default class DrawableChessboard implements Chessboard {
         y: gridMargin,
         width: Math.round(gap * 8),
         height: Math.round(gap * (5 - 1)),
-        gap: Math.round(gap)
+        gap: Math.round(gap),
       },
       chessRadius: Math.round(chessSize / 2),
     };
@@ -272,7 +277,7 @@ export default class DrawableChessboard implements Chessboard {
   }
 
   public getChessList(): Array<DrawableChess> {
-    let ret: Array<DrawableChess> = [];
+    const ret: Array<DrawableChess> = [];
     for (let row = 0; row < 10; row++) {
       for (let col = 0; col < 9; col++) {
         if (!this.isEmpty(row, col)) {
@@ -290,30 +295,30 @@ export default class DrawableChessboard implements Chessboard {
 
   public addChess(chess: DrawableChess) {
     this.chessArray[chess.getPos().row][chess.getPos().col] = chess;
-    const {x, y} = this.calcChessDisplayPos(chess.getPos());
+    const { x, y } = this.calcChessDisplayPos(chess.getPos());
     chess.x = x;
     chess.y = y;
     // 可能重复加，删除之前绑定的处理器
-    chess.clicked.remove(this.onChessClick, this);
-    chess.clicked.add(this.onChessClick, this);
+    chess.clicked.remove(this.onChessClick.bind(this), this);
+    chess.clicked.add(this.onChessClick.bind(this), this);
     chess.pickup.add(() => {
-      this.chessPickupOrDrop.dispatch({chess, isPickup: true});
+      this.chessPickupOrDrop.dispatch({ chess, isPickup: true });
     });
     chess.drop.add(() => {
-      this.chessPickupOrDrop.dispatch({chess, isPickup: false});
+      this.chessPickupOrDrop.dispatch({ chess, isPickup: false });
     });
     this._el.appendChild(chess.el);
   }
 
   private onChessClick(chess: Chess) {
-    this.clicked.dispatch({chess, pos: chess.getPos()});
+    this.clicked.dispatch({ chess, pos: chess.getPos() });
   }
 
   public calcChessDisplayPos(pos: ChessPos) {
     const { grid } = this.bounds;
     const x = grid.x + this.padding + pos.col * grid.gap;
     const y = grid.y + this.padding + pos.row * grid.gap;
-    return {x, y};
+    return { x, y };
   }
 }
 
@@ -330,4 +335,4 @@ interface ChessboardBounds {
     gap: number
   },
   chessRadius: number,
-};
+}
