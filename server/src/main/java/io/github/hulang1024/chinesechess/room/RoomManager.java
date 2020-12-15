@@ -55,7 +55,8 @@ public class RoomManager {
                         ret = ret && room.getStatus().code == searchRoomParam.getStatus();
                     }
                     if (searchRoomParam.getRequirePassword() != null) {
-                        ret = ret && ((room.getPassword() != null) == searchRoomParam.getRequirePassword());
+                        ret = ret &&
+                            (StringUtils.isNotEmpty(room.getPassword()) == searchRoomParam.getRequirePassword());
                     }
                     return ret;
                 })

@@ -13,7 +13,6 @@ import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
-import io.github.hulang1024.chinesechess.userstats.UserStatsService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,8 +31,6 @@ public class UserManager {
     private static Map<Long, User> loggedInUserMap = new ConcurrentHashMap<>();
     @Autowired
     private UserDao userDao;
-    @Autowired
-    private UserStatsService userStatsService;
     @Autowired
     private FriendsManager friendsManager;
     @Autowired

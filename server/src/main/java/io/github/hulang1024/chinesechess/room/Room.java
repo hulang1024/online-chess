@@ -9,6 +9,7 @@ import io.github.hulang1024.chinesechess.play.rule.ChessHost;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -229,7 +230,7 @@ public class Room {
     }
 
     public boolean isLocked() {
-        return password != null;
+        return StringUtils.isNotBlank(password);
     }
 
     @JSONField(name = "status")
