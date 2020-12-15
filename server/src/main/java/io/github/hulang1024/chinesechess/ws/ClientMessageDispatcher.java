@@ -58,16 +58,15 @@ public class ClientMessageDispatcher {
         } else {
             // 获得登录正式/游客用户
             Long userId = userSessionManager.getBoundUserId(session);
-            if (userId != null) {
-                user = userId > 0 ? userManager.getLoggedInUser(userId) : userManager.getGuestUser(userId);
-                if (user == null || user.getId() == null) {
-                    wsMessageService.send(new ErrorMessage("用户未登录"), session);
-                    return;
-                }
-                message.setUser(user);
-            } else {
-                throw new RuntimeException("获取不到用户");
+            if (userId == null) {
+                return;
             }
+            user = userId > 0 ? userManager.getLoggedInUser(userId) : userManager.getGuestUser(userId);
+            if (user == null || user.getId() == null) {
+                wsMessageService.send(new ErrorMessage("用户未登录"), session);
+                return;
+            }
+            message.setUser(user);
         }
 
         emit(message.getClass(), message);
