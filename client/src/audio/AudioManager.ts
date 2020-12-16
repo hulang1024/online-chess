@@ -10,7 +10,7 @@ export default class AudioManager {
 
   constructor() {
     this._samples = new SampleStore();
-    this.volume.addAndRunOnce((value) => {
+    this.volume.changed.add((value: number) => {
       this._samples.adjustVolumne(value);
     });
   }
