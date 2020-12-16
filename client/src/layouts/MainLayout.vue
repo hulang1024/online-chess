@@ -21,7 +21,6 @@ import SocialBrowserOverlay from 'src/overlays/social/SocialBrowserOverlay.vue';
 import RankingOverlay from 'src/overlays/ranking/RankingOverlay.vue';
 import SettingsOverlay from '../overlays/settings/SettingsOverlay.vue';
 import ChatOverlay from '../overlays/chat/ChatOverlay.vue';
-import UserButton from '../overlays/toolbar/UserButton.vue';
 import Toolbar from '../overlays/toolbar/Toolbar.vue';
 
 export default defineComponent({
@@ -37,7 +36,8 @@ export default defineComponent({
     const { $refs } = getCurrentInstance() as Vue;
 
     const onPageClick = () => {
-      $refs.toolbar.exitActive();
+      // eslint-disable-next-line
+      (<any>$refs.toolbar).exitActive();
     };
 
     return {

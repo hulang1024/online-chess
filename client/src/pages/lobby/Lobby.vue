@@ -85,7 +85,7 @@ export default defineComponent({
           });
           GameEvents.gameStates.addOnce((msg: GameEvents.GameStatesMsg) => {
             // eslint-disable-next-line
-            $router.push({ name: 'play', params: { initialGameStates: msg.states } });
+            $router.push({ name: 'play', params: { initialGameStates: msg.states as unknown as string } });
           });
         },
       });
@@ -110,7 +110,7 @@ export default defineComponent({
       const req = new QuickStartRequest();
       req.success = (room) => {
         // eslint-disable-next-line
-        $router.push({name: 'play', params: {room}});
+        $router.push({name: 'play', params: { room: room as unknown as string }});
       };
       req.failure = () => {
         const room = new Room();
@@ -119,7 +119,7 @@ export default defineComponent({
         const createReq = new CreateRoomRequest(room);
         createReq.success = (createdRoom) => {
           // eslint-disable-next-line
-          $router.push({name: 'play', params: {room: createdRoom}});
+          $router.push({name: 'play', params: { room: createdRoom as unknown as string }});
         };
         createReq.failure = () => {
           $q.notify({ type: 'warning', message: '快速加入失败' });
@@ -140,7 +140,7 @@ export default defineComponent({
           req.success = (createdRoom) => {
             done(true);
             // eslint-disable-next-line
-            $router.push({ name: 'play', params: {room: createdRoom} });
+            $router.push({ name: 'play', params: { room: createdRoom as unknown as string } });
           };
           req.failure = () => done(false);
         },

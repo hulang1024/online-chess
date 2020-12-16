@@ -28,7 +28,7 @@ export default class Checkmate {
 
   /**
    * 检查指定棋方此刻是否被将军
-   * @param chessHost 
+   * @param chessHost
    */
   check(checkHost: ChessHost): boolean {
     const checkKPos = (checkHost == ChessHost.RED ? this.redK : this.blackK).getPos();

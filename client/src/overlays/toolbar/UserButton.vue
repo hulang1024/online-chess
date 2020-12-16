@@ -34,7 +34,6 @@ import LogoutRequest from 'src/online/api/LogoutRequest';
 import RegisterRequest from 'src/online/api/RegisterRequest';
 import User from 'src/online/user/User';
 import UserAvatar from "src/components/UserAvatar.vue";
-import { APIResult } from 'src/online/api/api_request';
 import { api, configManager } from 'src/boot/main';
 import LoggedInUserOverlay from '../user/LoggedInUserOverlay.vue';
 import LoginOverlay from '../user/LoginOverlay.vue';
@@ -74,7 +73,7 @@ export default defineComponent({
             $q.notify({ type: 'positive', message: '注册成功' });
             isOpen.value = false;
           };
-          req.failure = (ret: APIResult) => {
+          req.failure = (ret) => {
             const codeMsgMap: {[code: number]: string} = {
               1: '注册失败',
               2: '用户名已被使用',

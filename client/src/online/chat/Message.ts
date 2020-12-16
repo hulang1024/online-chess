@@ -13,8 +13,10 @@ export default class Message {
 
   isAction: boolean;
 
-  constructor(id: number) {
-    this.id = id;
+  constructor(id?: number) {
+    if (id) {
+      this.id = id;
+    }
   }
 
   public equals(other: Message): boolean {
@@ -25,12 +27,14 @@ export default class Message {
   }
 
   public static from(msg: any) {
+    /* eslint-disable */
     const message = new Message(msg.id);
     message.channelId = msg.channelId;
     message.timestamp = msg.timestamp;
     message.sender = msg.sender;
     message.content = msg.content;
     message.isAction = msg.isAction;
+    /* eslint-disable */
     return message;
   }
 }

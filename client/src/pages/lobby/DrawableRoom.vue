@@ -83,7 +83,7 @@ export default defineComponent({
         const req = new JoinRoomRequest(room);
         req.success = (result) => {
           // eslint-disable-next-line
-          $router.push({name: 'play', params: { room: result.room }});
+          $router.push({name: 'play', params: { room: result.room as unknown as string }});
         };
         req.failure = (result) => {
           switch (result.code) {
@@ -110,7 +110,10 @@ export default defineComponent({
       } else {
         const req = new SpectateRoomRequest(room);
         req.success = async (spectateResponse: SpectateResponse) => {
-          await $router.push({ name: 'spectate', params: { spectateResponse } });
+          await $router.push({
+            name: 'spectate',
+            params: { spectateResponse: spectateResponse as unknown as string },
+          });
         };
         req.failure = () => {
           $q.notify({ type: 'error', message: '观看请求失败' });

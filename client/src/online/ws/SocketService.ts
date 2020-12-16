@@ -6,8 +6,6 @@ import { setupEvents } from './events/setup';
 import * as UserEvents from "./events/user";
 import ServerMsg from "./ServerMsg";
 
-/* eslint-disable no-console */
-
 interface ServerMsgQueueElement {
   signal: Signal;
   message: ServerMsg
@@ -60,8 +58,7 @@ export default class SocketService {
       }
     });
 
-
-    UserEvents.loggedIn.add(this.onLoginMessage, this);
+    UserEvents.loggedIn.add(this.onLoginMessage.bind(this), this);
     UserEvents.online.add((msg: UserEvents.UserOnlineMsg) => {
       Notify.create(`已上线：${msg.nickname}`);
     });

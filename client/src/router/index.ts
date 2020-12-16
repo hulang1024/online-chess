@@ -1,5 +1,5 @@
 import { route } from 'quasar/wrappers';
-import VueRouter from 'vue-router';
+import VueRouter, { Route } from 'vue-router';
 import routes from './routes';
 
 /*
@@ -23,3 +23,10 @@ export default route(({ Vue }) => {
 
   return Router;
 });
+
+declare module 'vue/types/vue' {
+  interface Vue {
+    $router: VueRouter
+    $route: Route
+  }
+}

@@ -2,9 +2,11 @@ export enum ConfigItem {
   username = 'username',
   password = 'password',
   token = 'token',
-  loginAuto = 'loginAuto',
+  loginAuto = 'login_auto',
   theme = 'theme',
-  desktopNotifyEnabled = 'desktopNotifyEnabled'
+  audioVolume = 'audio_volume',
+  audioGameEnabled = 'audio_game_enabled',
+  desktopNotifyEnabled = 'desktop_notify_enabled'
 }
 
 export default class ConfigManager {
@@ -22,8 +24,9 @@ export default class ConfigManager {
     if (this.loaded) return;
 
     [
-      'username', 'password', 'token', 'loginAuto',
-      'theme', 'desktopNotifyEnabled',
+      'username', 'password', 'token', 'login_auto',
+      'theme', 'audio_volume', 'desktop_notify_enabled',
+      'audio_game_enabled',
     ].forEach((key) => {
       let val = localStorage.getItem(key);
       if (val == null) {
@@ -59,7 +62,8 @@ export default class ConfigManager {
     this.set(ConfigItem.password, '');
     this.set(ConfigItem.token, '');
     this.set(ConfigItem.loginAuto, true);
-
+    this.set(ConfigItem.audioVolume, 0.6);
+    this.set(ConfigItem.audioGameEnabled, false);
     this.set(ConfigItem.theme, 'default');
   }
 }

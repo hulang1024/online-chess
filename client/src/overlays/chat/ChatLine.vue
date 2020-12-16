@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from "@vue/composition-api";
+import { defineComponent, PropType, ref } from "@vue/composition-api";
 import ErrorMessage from "src/online/chat/ErrorMessage";
 import Message from "src/online/chat/Message";
 
@@ -81,13 +81,13 @@ export default defineComponent({
       return `${pad(time.getHours())}:${pad(time.getMinutes())}:${pad(time.getSeconds())}`;
     })(message?.timestamp);
 
-    let nicknameColor = message.id > 0
+    const nicknameColor = message.id > 0
       ? USERNAME_COLORS[sender.id % USERNAME_COLORS.length]
       : 0xdddddd;
 
-    let color: string;
+    const color = ref<string>('');
     if (message instanceof ErrorMessage) {
-      color = 'pink';
+      color.value = 'pink';
     }
 
     return {

@@ -72,7 +72,7 @@ export default class Signal {
     * @param {Any} listener
     * @param {Any} fnName
     */
-    public validateListener(listener, fnName) {
+    public validateListener(listener: any, fnName: any) {
 
         if (typeof listener !== 'function')
         {
@@ -89,7 +89,7 @@ export default class Signal {
     * @return {SignalBinding}
     * @private
     */
-    private _registerListener(listener, isOnce: boolean, listenerContext, priority: number): SignalBinding {
+    private _registerListener(listener: any, isOnce: boolean, listenerContext: any, priority: number): SignalBinding {
 
         var prevIndex: number = this._indexOfListener(listener, listenerContext);
         var binding: SignalBinding;
@@ -112,7 +112,7 @@ export default class Signal {
 
         if (this.memorize && this._prevParams)
         {
-            binding.execute(this._prevParams);
+            binding.execute(this._prevParams as unknown as any[]);
         }
 
         return binding;
@@ -142,7 +142,7 @@ export default class Signal {
     * @return {number}
     * @private
     */
-    private _indexOfListener(listener, context): number {
+    private _indexOfListener(listener: any, context: any): number {
 
         var n: number = this._bindings.length;
         var cur: SignalBinding;
@@ -167,7 +167,7 @@ export default class Signal {
     * @param {Object} [context]
     * @return {boolean} if Signal has the specified listener.
     */
-    public has(listener, context: any = null): boolean {
+    public has(listener: any, context: any = null): boolean {
 
         return this._indexOfListener(listener, context) !== -1;
 
@@ -180,7 +180,7 @@ export default class Signal {
     * @param {Number} [priority] The priority level of the event listener. Listeners with higher priority will be executed before listeners with lower priority. Listeners with same priority level will be executed at the same order as they were added. (default = 0)
     * @return {SignalBinding} An Object representing the binding between the Signal and listener.
     */
-    public add(listener, listenerContext: any = null, priority: number = 0): SignalBinding {
+    public add(listener: any, listenerContext: any = null, priority: number = 0): SignalBinding {
 
         this.validateListener(listener, 'add');
 
@@ -195,7 +195,7 @@ export default class Signal {
     * @param {Number} [priority] The priority level of the event listener. Listeners with higher priority will be executed before listeners with lower priority. Listeners with same priority level will be executed at the same order as they were added. (default = 0)
     * @return {SignalBinding} An Object representing the binding between the Signal and listener.
     */
-    public addOnce(listener, listenerContext: any = null, priority: number = 0): SignalBinding {
+    public addOnce(listener: any, listenerContext: any = null, priority: number = 0): SignalBinding {
 
         this.validateListener(listener, 'addOnce');
 
@@ -209,7 +209,7 @@ export default class Signal {
     * @param {Object} [context] Execution context (since you can add the same handler multiple times if executing in a different context).
     * @return {Function} Listener handler function.
     */
-    public remove(listener, context: any = null) {
+    public remove(listener: any, context: any = null) {
 
         this.validateListener(listener, 'remove');
 
@@ -277,7 +277,7 @@ export default class Signal {
 
         if (this.memorize)
         {
-            this._prevParams = paramsArr;
+            this._prevParams = paramsArr as any;
         }
 
         if (!n)
@@ -313,8 +313,9 @@ export default class Signal {
     public dispose() {
 
         this.removeAll();
-
+        // @ts-ignore
         delete this._bindings;
+        // @ts-ignore
         delete this._prevParams;
 
     }

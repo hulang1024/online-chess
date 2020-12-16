@@ -247,16 +247,18 @@ export default class GamePlay {
   private initListeners() {
     RoomEvents.userJoined.add(this.onRoomUserJoinedEvent.bind(this), this);
     RoomEvents.userLeft.add(this.onRoomUserLeftEvent.bind(this), this);
+
     GameEvents.readied.add(this.onGameReadyEvent.bind(this), this);
     GameEvents.gameStarted.add(this.onGameStartedEvent.bind(this), this);
     GameEvents.chessPickup.add(this.onGameChessPickupEvent.bind(this), this);
     GameEvents.chessMoved.add(this.onGameChessMovedEvent.bind(this), this);
     GameEvents.confirmRequest.add(this.onGameConfirmRequestEvent.bind(this), this);
     GameEvents.confirmResponse.add(this.onGameConfirmResponseEvent.bind(this), this);
-    UserEvents.offline.add(this.onUserOfflineEvent.bind(this), this);
-    UserEvents.online.add(this.onUserOnlineEvent.bind(this), this);
     GameEvents.gameContinue.add(this.onGameContinueEvent.bind(this), this);
     GameEvents.gameContinueResponse.add(this.onGameContinueResponseEvent.bind(this), this);
+
+    UserEvents.offline.add(this.onUserOfflineEvent.bind(this), this);
+    UserEvents.online.add(this.onUserOnlineEvent.bind(this), this);
 
     SpectatorEvents.joined.add((msg: SpectatorEvents.SpectatorJoinedMsg) => {
       this.channelManager.openChannel(this.room.channelId);
@@ -690,17 +692,17 @@ export default class GamePlay {
   }
 
   public onWhiteFlagClick() {
-    this.socketService.send('play.confirm_request', {reqType: ConfirmRequest.Type.WHITE_FLAG});
+    this.socketService.send('play.confirm_request', { reqType: ConfirmRequest.Type.WHITE_FLAG });
     this.showText('已发送认输请求，等待对方回应', 1000);
   }
 
   public onChessDrawClick() {
-    this.socketService.send('play.confirm_request', {reqType: ConfirmRequest.Type.DRAW});
+    this.socketService.send('play.confirm_request', { reqType: ConfirmRequest.Type.DRAW });
     this.showText('已发送和棋请求，等待对方回应', 1000);
   }
 
   public onWithdrawClick() {
-    this.socketService.send('play.confirm_request', {reqType: ConfirmRequest.Type.WITHDRAW});
+    this.socketService.send('play.confirm_request', { reqType: ConfirmRequest.Type.WITHDRAW });
     this.showText('已发送悔棋请求，等待对方回应', 1000);
   }
 

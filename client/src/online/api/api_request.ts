@@ -2,6 +2,7 @@ import { Ref } from '@vue/composition-api';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import User from '../user/User';
 import APIAccess from './APIAccess';
+import APIResult from './APIResult';
 
 interface APIFailureHandler<T> {
   (e: T | APIResult): void;
@@ -9,10 +10,6 @@ interface APIFailureHandler<T> {
 
 interface APISuccessHandler<T> {
   (content: T): void;
-}
-
-export interface APIResult {
-  code: number;
 }
 
 export enum HttpMethod {
@@ -81,10 +78,8 @@ export abstract class APIRequest<T> {
     return req;
   }
 
-  /* eslint-disbale */
-  protected prepare() {
-    return;
-  }
+  // eslint-disable-next-line
+  protected prepare(): void {}
 
   protected addParam(key: string, value: unknown) {
     this.params = this.params || {};

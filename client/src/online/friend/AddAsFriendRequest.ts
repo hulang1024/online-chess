@@ -1,5 +1,6 @@
 import User from "../user/User";
-import { APIRequest, APIResult, HttpMethod } from "../api/api_request";
+import { APIRequest, HttpMethod } from "../api/api_request";
+import APIResult from "../api/APIResult";
 
 export default class AddAsFriendRequest extends APIRequest<APIResult> {
   private friend: User;

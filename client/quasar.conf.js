@@ -27,8 +27,7 @@ module.exports = configure((ctx) => ({
   // https://quasar.dev/quasar-cli/boot-files
   boot: [
     'composition-api',
-    'axios',
-    'main'
+    'main',
   ],
 
   // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
@@ -98,8 +97,8 @@ module.exports = configure((ctx) => ({
     config: {
       cssAddon: true,
       notify: {
-        position: 'bottom-right'
-      }
+        position: 'bottom-right',
+      },
     },
 
     // Possible values for "importStrategy":
@@ -117,7 +116,7 @@ module.exports = configure((ctx) => ({
     // Quasar plugins
     plugins: [
       'AppFullscreen',
-      'Notify'
+      'Notify',
     ],
   },
 

@@ -112,13 +112,13 @@ export default class ChannelManager {
 
     let found: Channel | null = null;
 
-    const available = this.availableChannels.filter((c: Channel) => c.id == lookup.id)[0];
+    const available = this.availableChannels.filter((c) => c.id == lookup.id)[0];
     if (available) {
       found = available;
     }
     const joined = (lookup.type == ChannelType.PM && lookup.id == 0)
       ? null
-      : this.joinedChannels.filter((c: Channel) => c.id == lookup.id)[0];
+      : this.joinedChannels.filter((c) => c.id == lookup.id)[0];
     if (found == null && joined != null) {
       found = joined;
     }
@@ -319,15 +319,19 @@ export default class ChannelManager {
     if (channel.messagesLoaded) return;
     const req = new GetMessagesRequest(channel);
     req.success = (msgs) => {
-      this.handleChannelMessages(msgs.map(Message.from));
+      this.handleChannelMessages(msgs.map((mg) => Message.from(mg)));
       channel.messagesLoaded = true;
     };
     this.api.queue(req);
   }
 
   private handleChannelMessages(messages: Message[]) {
-    const channels = this.joinedChannels;
-    const channelMap: any = channels.reduce((map: any, c: Channel) => (map[c.id] = c, map), {});
+    const channelMap: { [channelId: string]: Channel } = this.joinedChannels.value.reduce(
+      (map: { [channelId: string]: Channel }, c) => {
+        map[c.id.toString()] = c;
+        return map;
+      }, {},
+    );
     messages.forEach((msg) => {
       channelMap[msg.channelId].addNewMessages(msg);
     });

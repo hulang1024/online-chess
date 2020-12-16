@@ -2,7 +2,7 @@ import { Notify } from 'quasar';
 import ConfigManager, { ConfigItem } from '../../config/ConfigManager';
 import User from '../user/User';
 import BindableBool from '../../utils/bindables/BindableBool';
-import { APIRequest, APIResult } from './api_request';
+import { APIRequest } from './api_request';
 import LoginRequest from './LoginRequest';
 import AccessToken from './AccessToken';
 import GuestUser from '../user/GuestUser';
@@ -64,7 +64,7 @@ export default class APIAccess {
 
         resolve(ret);
       };
-      req.failure = (ret: APIResult) => {
+      req.failure = (ret) => {
         const causeMap: {[n: number]: string} = { 1: '用户不存在', 2: '密码错误', 3: '第三方用户登录失败' };
         Notify.create({
           type: 'warning',

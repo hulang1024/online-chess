@@ -14,6 +14,8 @@
 *
 */
 
+import Signal from "./Signal";
+
 export default class SignalBinding {
 
     /**
@@ -30,7 +32,7 @@ export default class SignalBinding {
     * @param {Object} [listenerContext] Context on which listener will be executed (object that should represent the `this` variable inside listener function).
     * @param {Number} [priority] The priority level of the event listener. (default = 0).
     */
-    constructor(signal: Signal, listener, isOnce: boolean, listenerContext, priority: number = 0) {
+    constructor(signal: Signal, listener: any, isOnce: boolean, listenerContext: any, priority: number = 0) {
 
         this._listener = listener;
         this._isOnce = isOnce;
@@ -45,7 +47,7 @@ export default class SignalBinding {
     * @type Function
     * @private
     */
-    private _listener;
+    private _listener: any;
 
     /**
     * If binding should be executed just once.
@@ -60,7 +62,7 @@ export default class SignalBinding {
     * @name context
     * @type Object|undefined|null
     */
-    public context;
+    public context: any;
 
     /**
     * Reference to Signal object that listener is currently bound to.
@@ -100,7 +102,7 @@ export default class SignalBinding {
 
         if (this.active && !!this._listener)
         {
-            params = this.params ? this.params.concat(paramsArr) : paramsArr;
+            params = this.params ? (this.params as unknown as any[]).concat(paramsArr) : paramsArr;
 
             handlerReturn = this._listener.apply(this.context, params);
 
@@ -166,7 +168,7 @@ export default class SignalBinding {
     * @private
     */
     public _destroy() {
-
+        // @ts-ignore
         delete this._signal;
         delete this._listener;
         delete this.context;

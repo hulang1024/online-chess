@@ -11,35 +11,53 @@ import ChessHost from 'src/rule/chess_host';
 import Game from 'src/rule/Game';
 import Signal from 'src/utils/signals/Signal';
 
+function chessClassToKey(chess: Chess) {
+  let text: string[] = [];
+  if (chess instanceof ChessC) text = ['炮', '炮'];
+  if (chess instanceof ChessG) text = ['士', '士'];
+  if (chess instanceof ChessK) text = ['帅', '将'];
+  if (chess instanceof ChessM) text = ['相', '象'];
+  if (chess instanceof ChessN) text = ['馬', '馬'];
+  if (chess instanceof ChessR) text = ['車', '車'];
+  if (chess instanceof ChessS) text = ['兵', '卒'];
+  return text[chess.getHost() - 1];
+}
+
 export default class DrawableChess implements Chess {
   private _el: HTMLDivElement;
+
   public get el() { return this._el; }
 
-  private _enabled: boolean = false;
-  public get enabled() { return this._enabled; }
+  private _enabled = false;
 
-  private _selected: boolean = false;
-  public get selected() { return this._selected; }
+  private _selected = false;
 
-  private _lit: boolean = false;
+  private _lit = false;
+
   public get lit() { return this._lit; }
 
-  public readonly drop: Signal = new Signal();
-  public readonly pickup: Signal = new Signal();
-  public readonly clicked: Signal = new Signal();
+  public readonly drop = new Signal();
+
+  public readonly pickup = new Signal();
+
+  public readonly clicked = new Signal();
 
   public readonly chess: Chess;
 
   private radius: number;
-  
+
   constructor(chess: Chess, radius: number, theme: string) {
     this.chess = chess;
     this.radius = radius;
-    this.load(theme);
+    this.load();
+
+    if (theme != 'default') {
+      throw Error('no implement');
+    }
   }
 
-  private load(theme: string) {
-    let el = document.createElement('div');
+  private load() {
+    const el = document.createElement('div');
     this._el = el;
     el.className = 'chess shadow-3';
     el.style.position = 'absolute';
@@ -52,7 +70,7 @@ export default class DrawableChess implements Chess {
     el.style.outlineOffset = '4px';
     el.style.fontWeight = 'bolder';
     el.style.textAlign = 'center';
-    el.style.lineHeight = this.radius * 2 + 'px';
+    el.style.lineHeight = `${this.radius * 2}px`;
     el.innerText = chessClassToKey(this.chess);
 
     el.onmouseenter = () => {
@@ -65,29 +83,29 @@ export default class DrawableChess implements Chess {
     };
 
     this.setupDragable();
-    
+
     el.onclick = (event) => {
       if (!this._enabled) {
         return;
       }
       event.stopPropagation();
       this.clicked.dispatch(this);
-      return false;
     };
 
     this.resizeAndDraw(this.radius);
   }
 
   private setupDragable() {
-    let el = this._el;
-    el.ondragstart = (event) => {
+    const el = this._el;
+    el.ondragstart = (event: DragEvent) => {
       this.selected = true;
       this.pickup.dispatch();
       const { row, col } = this.getPos();
       // 此处传递是哪个棋子被拖拽，但是传递值只能是字符串因此传递位置
+      // eslint-disable-next-line
       event.dataTransfer?.setData('chess-pos', `${row},${col}`);
     };
-    el.ondragend = (event) => {
+    el.ondragend = () => {
       el.style.outline = '';
       this.selected = false;
       this.drop.dispatch();
@@ -95,24 +113,25 @@ export default class DrawableChess implements Chess {
   }
 
   public resizeAndDraw(radius: number) {
-    let el = this._el;
+    const el = this._el;
     el.style.width = `${radius * 2}px`;
     el.style.height = `${radius * 2}px`;
-    el.style.borderRadius = radius + 'px';
-    el.style.fontSize = radius + 3 + 'px';
+    el.style.borderRadius = `${radius}px`;
+    el.style.fontSize = `${radius + 3}px`;
     this.radius = radius;
   }
 
-  public get x() { return this._el.offsetLeft + this.radius; }
-  public get y() { return this._el.offsetTop + this.radius; }
-
   public set x(val: number) {
-    this._el.style.left = val - this.radius + 'px';
+    this._el.style.left = `${val - this.radius}px`;
   }
-  
+
+  public get x() { return this._el.offsetLeft + this.radius; }
+
   public set y(val: number) {
-    this._el.style.top = val - this.radius + 'px';
+    this._el.style.top = `${val - this.radius}px`;
   }
+
+  public get y() { return this._el.offsetTop + this.radius; }
 
   public set enabled(val: boolean) {
     this._enabled = val;
@@ -120,11 +139,15 @@ export default class DrawableChess implements Chess {
     this._el.style.cursor = this._enabled ? 'pointer' : 'default';
   }
 
+  public get enabled() { return this._enabled; }
+
   public set selected(value: boolean) {
     if (this._selected == value) return;
     this._selected = value;
-    this._el.style.opacity = (this._selected ? 0.5 : 1) + '';
+    this._el.style.opacity = (this._selected ? 0.5 : 1).toString();
   }
+
+  public get selected() { return this._selected; }
 
   public setLit(lit: boolean) {
     if (this._lit == lit) return;
@@ -148,19 +171,7 @@ export default class DrawableChess implements Chess {
     return this.chess.getHost();
   }
 
-  public is(chessClass: Function) {
+  public is(chessClass: unknown) {
     return this.chess.is(chessClass);
   }
-}
-
-function chessClassToKey(chess: Chess) {
-  let text: string[] = [];
-  if (chess instanceof ChessC) text = ['炮', '炮'];
-  if (chess instanceof ChessG) text = ['士', '士'];
-  if (chess instanceof ChessK) text = ['帅', '将'];
-  if (chess instanceof ChessM) text = ['相', '象'];
-  if (chess instanceof ChessN) text = ['馬', '馬'];
-  if (chess instanceof ChessR) text = ['車', '車'];
-  if (chess instanceof ChessS) text = ['兵', '卒'];
-  return text[chess.getHost() - 1];
 }

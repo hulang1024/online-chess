@@ -1,10 +1,9 @@
-/// <reference path="../signals/Signal.ts" />
-
 import Signal from "../signals/Signal";
 import Bindable from "./Bindable";
 
 export default class BindableList<T> extends Bindable<T[]> {
   public readonly added: Signal = new Signal();
+
   public readonly removed: Signal = new Signal();
 
   constructor(defaultValue: T[] = []) {
@@ -21,7 +20,7 @@ export default class BindableList<T> extends Bindable<T[]> {
     this.changed.dispatch(this._value);
   }
 
-  public removeIf(pred: Function) {
+  public removeIf(pred: (e: T) => boolean) {
     for (let i = 0; i < this._value.length; i++) {
       if (pred(this._value[i])) {
         return this.removeAt(i);
@@ -31,27 +30,21 @@ export default class BindableList<T> extends Bindable<T[]> {
   }
 
   public remove(item: T): boolean {
-    let index = this._value.indexOf(item);
-    return this.removeAt(index);
+    return this.removeAt(this._value.indexOf(item));
   }
 
   public removeAt(index: number): boolean {
     if (index > -1) {
-      let item = this._value[index];
+      const item = this._value[index];
       this._value.splice(index, 1);
       this.removed.dispatch(item);
       this.changed.dispatch(this._value);
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 
-  public reduce(callback: any, initialValue: any) {
-    return this._value.reduce(callback, initialValue);
-  }
-  
-  public filter(pred: any) {
+  public filter(pred: (value: T, index: number, array: T[]) => boolean) {
     return this._value.filter(pred);
   }
 }

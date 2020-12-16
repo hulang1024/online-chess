@@ -22,7 +22,7 @@ export default class ChessPos {
     this.col = col;
   }
 
-  static make({row, col}: IChessPos) {
+  static make({ row, col }: IChessPos) {
     return new ChessPos(row, col);
   }
 

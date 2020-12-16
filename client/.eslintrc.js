@@ -83,10 +83,10 @@ module.exports = {
     'eqeqeq': 'off',
     'no-nested-ternary': 'off',
     'no-underscore-dangle': 'off',
+    'semi': 'warn',
 
     // TypeScript
     quotes: ['off', 'single', { avoidEscape: true }],
-    //"semi": [2, "always"],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
 

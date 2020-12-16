@@ -1,5 +1,5 @@
 <template>
-  <q-toolbar @click.capture="onClick">
+  <q-toolbar>
     <q-btn
       flat
       dense
@@ -57,7 +57,9 @@
   </q-toolbar>
 </template>
 <script lang="ts">
-import { defineComponent, getCurrentInstance, onMounted, ref } from '@vue/composition-api';
+import {
+  defineComponent, getCurrentInstance, onMounted, ref,
+} from '@vue/composition-api';
 import UserButton from './UserButton.vue';
 
 export default defineComponent({
@@ -81,18 +83,22 @@ export default defineComponent({
 
     onMounted(() => {
       ['settings', 'chat', 'ranking', 'socialBrowser'].forEach((name) => {
-        // eslint-disable-next-line
-        (<any>overlayRefs[`${name}Overlay`] as Vue).$on('active', (active: boolean) => {
-          onActiveChange(name, active);
-        });
+        if (overlayRefs) {
+          // eslint-disable-next-line
+          (<any>overlayRefs[`${name}Overlay`] as Vue).$on('active', (active: boolean) => {
+            onActiveChange(name, active);
+          });
+        }
       });
     });
 
     const toggleActive = (name: string, active?: boolean) => {
       active = (active === undefined ? !isActive(name) : active);
       onActiveChange(name, active);
-      // eslint-disable-next-line
-      (<any>overlayRefs[`${name}Overlay`] as any)[active ? 'show' : 'hide']();
+      if (overlayRefs) {
+        // eslint-disable-next-line
+        (<any>overlayRefs[`${name}Overlay`] as any)[active ? 'show' : 'hide']();
+      }
     };
 
     const excludeToggle = (name: string) => {
@@ -136,16 +142,10 @@ export default defineComponent({
       });
     };
 
-    const onClick = () => {
-      exitActive();
-    };
-
     return {
       isActive,
 
       exitActive,
-      
-      onClick,
 
       onActiveChange,
       onSettingButtonClick,

@@ -1,8 +1,7 @@
 import Bindable from "./Bindable";
 
 export default class BindableBool extends Bindable<boolean> {
-
-  constructor(defaultValue: boolean = false) {
+  constructor(defaultValue = false) {
     super(defaultValue);
   }
 

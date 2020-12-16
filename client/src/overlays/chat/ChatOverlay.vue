@@ -89,11 +89,10 @@ export default defineComponent({
     const channels = ref<Channel[]>([]);
     const messageText = ref('');
 
-    const getChannelTabName = (channel: Channel) => {
-      return channel.type == ChannelType.PM
+    const getChannelTabName = (channel: Channel) => (
+      channel.type == ChannelType.PM
         ? `pm_${channel.users[0].id}`
-        : channel.id + '';
-    };
+        : channel.id.toString());
 
     watch(isOpen, () => {
       emit('active', isOpen.value, props);
@@ -117,7 +116,7 @@ export default defineComponent({
         if (last.sender.id > 0) {
           if (channel.type == ChannelType.PM) {
             // todo: 暂时不支持回显，而是绕一圈，这里判断不是自己
-            if (last.sender != api.localUser.id) {
+            if (last.sender.id != api.localUser.id) {
               isOpen.value = true;
               channelManager.openPrivateChannel(last.sender);
             }

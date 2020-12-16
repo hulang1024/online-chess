@@ -3,4 +3,3 @@ export default interface ServerMsg {
   msg: string;
   type: string;
 }
-

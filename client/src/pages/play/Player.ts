@@ -1,5 +1,4 @@
 import { onBeforeUnmount } from "@vue/composition-api";
-import SOUND from "src/audio/sound";
 import { configManager } from "src/boot/main";
 import ConfigManager, { ConfigItem } from "src/config/ConfigManager";
 import ResponseGameStates, { ResponseGameStateChess, ResponseGameStateChessAction } from "src/online/play/game_states_response";
@@ -17,6 +16,7 @@ import TWEEN from "tween.ts";
 import ChessTargetDrawer from "./ChessTargetDrawer";
 import DrawableChess from "./DrawableChess";
 import DrawableChessboard from "./DrawableChessboard";
+import GameAudio from "./GameAudio";
 
 export default class Player implements Game {
   public loaded: Signal = new Signal();
@@ -188,7 +188,7 @@ export default class Player implements Game {
         // 画移动源位置标记
         this.fromPosTargetDrawer.draw(this.convertViewPos(fromPos, chessHost));
         // 音效
-        SOUND.get('click').play();
+        GameAudio.play('click');
 
         // 设置棋盘状态
         this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = null;

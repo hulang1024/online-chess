@@ -24,7 +24,7 @@ import User from 'src/online/user/User';
 
 export default defineComponent({
   setup() {
-    const _user = ref(null);
+    const _user = ref<User>();
     const isOpen = ref(false);
 
     const hide = () => {

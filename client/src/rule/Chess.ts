@@ -15,5 +15,5 @@ export default interface Chess {
   getHost: () => ChessHost;
 
   // instanceof有问题，代替
-  is: (chessClass: any) => boolean;
+  is: (chessClass: any) => boolean
 }

@@ -1,5 +1,6 @@
 import User from "../user/User";
-import { APIRequest, APIResult, HttpMethod } from "./api_request";
+import APIResult from "./APIResult";
+import { APIRequest, HttpMethod } from "./api_request";
 
 export default class RegisterRequest extends APIRequest<APIResult> {
   constructor(user: User) {

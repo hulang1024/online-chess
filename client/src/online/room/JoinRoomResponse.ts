@@ -1,6 +1,7 @@
 import Room from "./Room";
 
-export default interface JoinRoomResponse {
+export default class JoinRoomResponse {
   code: number;
+
   room: Room;
 }
