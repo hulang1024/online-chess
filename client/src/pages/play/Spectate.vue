@@ -1,6 +1,6 @@
 <template>
-  <q-page :class="[!$q.screen.xs && 'row items-center q-px-sm q-py-sm']">
-    <template v-if="$q.screen.xs">
+  <q-page :class="[!isXSScreen && 'row items-center q-px-sm q-py-sm']">
+    <template v-if="isXSScreen">
       <div>
         <game-user-panel
           :user="otherUser"
@@ -16,7 +16,10 @@
             <timer ref="otherStepTimer" />
           </template>
         </game-user-panel>
-        <player-container ref="playerContainer">
+        <player-container
+          ref="playerContainer"
+          class="absolute-center"
+        >
           <text-overlay
             ref="textOverlay"
             class="absolute-center"
@@ -196,12 +199,19 @@ export default defineComponent({
       }
     });
 
+    // 有些元素随窗口尺寸变化无法实现，因此在初始时就确定屏幕大小
+    const isXSScreen = ctx.$q.screen.xs;
+
     let onReisze: () => void;
     onMounted(() => {
-      const parent = ctx.$el as HTMLElement;
-      const chessboard = new DrawableChessboard(parent?.offsetWidth || 0, ctx.$q.screen);
-      // eslint-disable-next-line
-      const container = (ctx.$refs.playerContainer as Vue).$el as Element;
+      const pageEl = ctx.$el as HTMLElement;
+      const container = (ctx.$refs.playerContainer as Vue).$el as HTMLDivElement;
+      const recalcChessboardSize = () => {
+        const CONTROLS_WIDTH = 212 + 8;
+        const width = (pageEl?.offsetWidth || 0);
+        return isXSScreen ? width : width - CONTROLS_WIDTH;
+      };
+      const chessboard = new DrawableChessboard(recalcChessboardSize(), ctx.$q.screen);
       container.insertBefore(chessboard.el, container.firstChild);
       spectate.player = new Player();
       spectate.player.chessboard = chessboard;
@@ -209,7 +219,7 @@ export default defineComponent({
       spectate.playerLoaded.dispatch();
 
       window.addEventListener('resize', onReisze = () => {
-        spectate.player.resize(parent?.offsetWidth || 0);
+        spectate.player.resize(recalcChessboardSize());
       });
     });
     onBeforeUnmount(() => {
@@ -217,6 +227,8 @@ export default defineComponent({
     });
 
     return {
+      isXSScreen,
+
       gameState,
       isPlaying,
       activeChessHost,
