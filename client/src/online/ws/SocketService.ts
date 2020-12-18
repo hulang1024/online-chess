@@ -121,10 +121,6 @@ export default class SocketService {
     this.socket.onmessage = (event: {data: string}) => {
       this.onMessage(event.data);
     };
-
-    if (this.connectedTimes > 0) {
-      console.log('正在连接到服务器');
-    }
   }
 
   private onMessage(message: string) {
@@ -164,7 +160,7 @@ export default class SocketService {
 
   private onConnected() {
     if (this.connectedTimes > 0) {
-      console.log('成功连接到服务器');
+      this.showConnectionNotify('', true);
     }
 
     this.login();
@@ -193,8 +189,10 @@ export default class SocketService {
     this.disconnect.dispatch();
     this.isLoggedIn = false;
     this.serverMsgQueue = [];
+
     const tryTimeout = 3000;
-    console.log(`未连接到服务器，${tryTimeout / 1000}秒钟后自动重试。`);
+
+    this.showConnectionNotify('正在连接到服务器');
 
     setTimeout(() => {
       this.doConnect();
@@ -229,5 +227,36 @@ export default class SocketService {
         this.isQueueLooping = false;
       }
     }, 1000);
+  }
+
+  private lastNotify: ((opts: any) => any) | null = null;
+
+  private showConnectionNotify(message: string, done = false) {
+    if (this.lastNotify == null) {
+      this.lastNotify = Notify.create({
+        group: false,
+        spinner: true,
+        timeout: 0,
+        position: 'bottom',
+        caption: '',
+        message,
+      }) as VoidFunction;
+    } else {
+      const opts = {
+        message,
+      };
+      if (done) {
+        Object.assign(opts, {
+          icon: 'done',
+          spinner: false,
+          timeout: 1000,
+          message: '连接成功',
+        });
+      }
+      this.lastNotify(opts);
+      if (done) {
+        this.lastNotify = null;
+      }
+    }
   }
 }
