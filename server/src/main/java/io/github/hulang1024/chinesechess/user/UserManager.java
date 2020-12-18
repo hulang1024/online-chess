@@ -11,8 +11,8 @@ import io.github.hulang1024.chinesechess.http.params.PageParam;
 import io.github.hulang1024.chinesechess.http.results.PageRet;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
-import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
+import io.github.hulang1024.chinesechess.user.activity.UserActivityService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +43,8 @@ public class UserManager {
     private SpectatorManager spectatorManager;
     @Autowired
     private UserSessionManager userSessionManager;
+    @Autowired
+    private UserActivityService userActivityService;
 
     public boolean isOnline(User user) {
         return user != null && isOnline(user.getId());
@@ -95,19 +97,13 @@ public class UserManager {
             if (currentUser != null) {
                 user.setIsFriend(friendUserIds.contains(user.getId()));
             }
+
             user.setIsOnline(isOnline(user.getId()));
 
             if (user.getIsOnline()) {
-                user.setStatus(UserStatus.ONLINE);
-                Room room = roomManager.getJoinedRoom(user);
-                if (room != null) {
-                    user.setStatus(room.getStatus() == RoomStatus.PLAYING
-                        ? UserStatus.PLAYING : UserStatus.IN_ROOM);
-                    return;
-                }
-                room = spectatorManager.getSpectatingRoom(user);
-                if (room != null) {
-                    user.setStatus(UserStatus.SPECTATING);
+                user.setStatus(userActivityService.activityToStatus(userActivityService.getCurrentStatus(user)));
+                if (user.getStatus() == null) {
+                    user.setStatus(UserStatus.ONLINE);
                 }
             } else {
                 user.setStatus(UserStatus.OFFLINE);

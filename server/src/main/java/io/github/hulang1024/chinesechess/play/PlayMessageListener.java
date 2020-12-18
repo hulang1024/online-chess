@@ -11,10 +11,8 @@ import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.room.ws.LobbyRoomUpdateServerMsg;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.User;
-import io.github.hulang1024.chinesechess.user.UserActivity;
-import io.github.hulang1024.chinesechess.user.UserActivityService;
-import io.github.hulang1024.chinesechess.user.UserStatus;
-import io.github.hulang1024.chinesechess.user.ws.UserStatusChangedServerMsg;
+import io.github.hulang1024.chinesechess.user.activity.UserActivity;
+import io.github.hulang1024.chinesechess.user.activity.UserActivityService;
 import io.github.hulang1024.chinesechess.userstats.UserStatsService;
 import io.github.hulang1024.chinesechess.ws.AbstractMessageListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +62,7 @@ public class PlayMessageListener extends AbstractMessageListener {
 
         roomManager.broadcast(room, readyServerMsg);
 
-        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room), user);
+        userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room), user);
     }
 
     private void onStartGame(StartGameMsg msg) {
@@ -197,12 +195,13 @@ public class PlayMessageListener extends AbstractMessageListener {
 
         room.setStatus(RoomStatus.PLAYING);
 
-        roomManager.broadcast(room, new GameStartServerMsg(room.getRedChessUser(), room.getBlackChessUser()));
-        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room));
         room.getUsers().forEach(user -> {
-            userActivityService.broadcast(
-                UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.PLAYING));
+            userActivityService.enter(user, UserActivity.PLAYING);
         });
+
+        roomManager.broadcast(room, new GameStartServerMsg(room.getRedChessUser(), room.getBlackChessUser()));
+        userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
+
     }
 
     private void onGameContinue(GameContinueMsg clientMsg) {
@@ -225,8 +224,7 @@ public class PlayMessageListener extends AbstractMessageListener {
 
             send(gamePlayStatesServerMsg, user);
 
-            userActivityService.broadcast(
-                UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.PLAYING));
+            userActivityService.enter(user, UserActivity.PLAYING);
         } else {
             // 如果不想继续，离开房间
             roomManager.partRoom(joinedRoom, user);
@@ -269,10 +267,9 @@ public class PlayMessageListener extends AbstractMessageListener {
             });
         }
         spectatorManager.broadcast(room, new GameOverServerMsg(msg.getWinUserId()));
-        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room));
+        userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
         room.getUsers().forEach(user -> {
-            userActivityService.broadcast(
-                UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.IN_ROOM));
+            userActivityService.enter(user, UserActivity.IN_ROOM);
         });
     }
 }

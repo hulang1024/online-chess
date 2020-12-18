@@ -5,6 +5,7 @@ import io.github.hulang1024.chinesechess.play.GameState;
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
+import io.github.hulang1024.chinesechess.user.activity.UserActivityService;
 import io.github.hulang1024.chinesechess.user.ws.UserOfflineServerMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,6 +33,7 @@ public class UserSessionCloseListener {
         if (user == null) {
             // 游客退出
             GuestUser guestUser = getGuestUser(session);
+            user = guestUser;
             if (guestUser != null) {
                 userManager.guestLogout(session, guestUser);
             }
@@ -76,7 +78,9 @@ public class UserSessionCloseListener {
             userSessionManager.removeBinding(user);
         }
 
-        userActivityService.exit(user);
+        if (user != null) {
+            userActivityService.removeUser(user);
+        }
     }
 
     public GuestUser getGuestUser(Session session) {

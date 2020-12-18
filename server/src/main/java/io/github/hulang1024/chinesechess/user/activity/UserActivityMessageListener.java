@@ -1,5 +1,6 @@
-package io.github.hulang1024.chinesechess.user;
+package io.github.hulang1024.chinesechess.user.activity;
 
+import io.github.hulang1024.chinesechess.user.UserSessionManager;
 import io.github.hulang1024.chinesechess.user.ws.OnlineStatServerMsg;
 import io.github.hulang1024.chinesechess.user.ws.UserEnterActivityMsg;
 import io.github.hulang1024.chinesechess.user.ws.UserExitActivityMsg;
@@ -19,9 +20,9 @@ public class UserActivityMessageListener extends AbstractMessageListener {
     public void init() {
         addMessageHandler(UserEnterActivityMsg.class, (msg) -> {
             UserActivity userActivity = UserActivity.from(msg.getCode());
-            userActivityService.enter(userActivity, msg.getUser());
+            userActivityService.enter(msg.getUser(), userActivity);
 
-            if (userActivity == UserActivity.ONLINE_USER) {
+            if (userActivity == UserActivity.VIEW_ONLINE_USER) {
                 wsMessageService.send(
                     new OnlineStatServerMsg(UserSessionManager.onlineUserCount),
                     msg.getUser());
@@ -29,7 +30,7 @@ public class UserActivityMessageListener extends AbstractMessageListener {
         });
         
         addMessageHandler(UserExitActivityMsg.class, (msg) -> {
-            userActivityService.exit(UserActivity.from(msg.getCode()), msg.getUser());
+            userActivityService.exit(msg.getUser(), UserActivity.from(msg.getCode()));
         });
     }
 }

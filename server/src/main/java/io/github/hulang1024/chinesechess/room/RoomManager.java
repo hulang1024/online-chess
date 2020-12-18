@@ -7,8 +7,11 @@ import io.github.hulang1024.chinesechess.chat.ws.ChatUpdatesServerMsg;
 import io.github.hulang1024.chinesechess.play.GameState;
 import io.github.hulang1024.chinesechess.room.ws.*;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
-import io.github.hulang1024.chinesechess.user.*;
-import io.github.hulang1024.chinesechess.user.ws.UserStatusChangedServerMsg;
+import io.github.hulang1024.chinesechess.user.User;
+import io.github.hulang1024.chinesechess.user.UserManager;
+import io.github.hulang1024.chinesechess.user.UserUtils;
+import io.github.hulang1024.chinesechess.user.activity.UserActivity;
+import io.github.hulang1024.chinesechess.user.activity.UserActivityService;
 import io.github.hulang1024.chinesechess.ws.ServerMessage;
 import io.github.hulang1024.chinesechess.ws.WSMessageService;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,10 +79,6 @@ public class RoomManager {
         return rooms;
     }
 
-    public Collection<Room> getRooms() {
-        return roomMap.values();
-    }
-
     public Room getRoom(long id) {
         return roomMap.get(id);
     }
@@ -135,7 +133,7 @@ public class RoomManager {
         roomJoinParam.setPassword(createRoomParam.getPassword());
         joinRoom(createdRoom, creator, roomJoinParam);
 
-        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomCreateServerMsg(createdRoom));
+        userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomCreateServerMsg(createdRoom));
 
         return createdRoom;
     }
@@ -198,14 +196,13 @@ public class RoomManager {
         userJoinedRoomMap.put(user.getId(), room);
 
         room.joinUser(user);
+        userActivityService.enter(user, UserActivity.IN_ROOM);
 
         broadcast(room, new RoomUserJoinServerMsg(user), user);
 
         if (!room.getOwner().equals(user)) {
-            userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room), user);
+            userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room), user);
         }
-        userActivityService.broadcast(
-            UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.IN_ROOM));
 
         ChatUpdatesServerMsg chatUpdatesServerMsg = new ChatUpdatesServerMsg();
         chatUpdatesServerMsg.setChannel(room.getChannel());
@@ -236,10 +233,7 @@ public class RoomManager {
     public int partRoom(Room room, User user) {
         room.partUser(user);
         userJoinedRoomMap.remove(user.getId());
-
-        userActivityService.broadcast(
-            UserActivity.ONLINE_USER,
-            new UserStatusChangedServerMsg(user, userManager.isOnline(user) ? UserStatus.ONLINE : UserStatus.OFFLINE));
+        userActivityService.exit(user, UserActivity.IN_ROOM);
 
         // 离开之后，房间内还有用户
         if (room.getUserCount() == 1) {
@@ -258,8 +252,7 @@ public class RoomManager {
                     room.setOwner(otherUser);
                     room.updateUserReadyState(room.getOwner(), true);
                 }
-                userActivityService.broadcast(
-                    UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(otherUser, UserStatus.IN_ROOM));
+                userActivityService.enter(otherUser, UserActivity.IN_ROOM);
             }
         }
 
@@ -267,7 +260,7 @@ public class RoomManager {
             // 如果全部离开了，解散房间
             dismissRoom(room);
         } else {
-            userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room));
+            userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
         }
 
         // 如果有在线用户，发送离开消息
@@ -276,7 +269,6 @@ public class RoomManager {
         if (room.getOnlineUserCount() > 0) {
             broadcast(room, leftMsg);
         } else {
-            // 观众一定要收到
             spectatorManager.broadcast(room, leftMsg);
         }
 
@@ -292,7 +284,7 @@ public class RoomManager {
             room.setPassword(param.getPassword());
         }
 
-        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomUpdateServerMsg(room));
+        userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
         return true;
     }
 
@@ -300,7 +292,7 @@ public class RoomManager {
         room.setStatus(RoomStatus.DISMISSED);
         channelManager.removeChannel(room.getChannel());
         roomMap.remove(room.getId());
-        userActivityService.broadcast(UserActivity.LOBBY, new LobbyRoomRemoveServerMsg(room));
+        userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomRemoveServerMsg(room));
     }
 
     public void broadcast(Room room, ServerMessage message) {

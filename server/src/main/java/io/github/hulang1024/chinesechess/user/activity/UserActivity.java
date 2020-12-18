@@ -1,9 +1,12 @@
-package io.github.hulang1024.chinesechess.user;
+package io.github.hulang1024.chinesechess.user.activity;
 
 public enum UserActivity {
-    LOBBY(1),
-    ONLINE_USER(2),
-    ROOM(3);
+    AFK(0),
+    IN_LOBBY(1),
+    VIEW_ONLINE_USER(2),
+    IN_ROOM(3),
+    PLAYING(4),
+    SPECTATING(5);
 
     int code;
 

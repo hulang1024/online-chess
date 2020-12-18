@@ -1,6 +1,8 @@
 package io.github.hulang1024.chinesechess.user;
 
 import io.github.hulang1024.chinesechess.friend.FriendsManager;
+import io.github.hulang1024.chinesechess.user.activity.UserActivity;
+import io.github.hulang1024.chinesechess.user.activity.UserActivityService;
 import io.github.hulang1024.chinesechess.user.ws.OnlineStatServerMsg;
 import io.github.hulang1024.chinesechess.user.ws.UserOfflineServerMsg;
 import io.github.hulang1024.chinesechess.user.ws.UserOnlineServerMsg;
@@ -28,7 +30,7 @@ public class OnlineListener {
             }
         });
         userActivityService.broadcast(
-            UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.ONLINE));
+            UserActivity.VIEW_ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.ONLINE));
         sendOnlineStat();
     }
 
@@ -40,14 +42,15 @@ public class OnlineListener {
             }
         });
         userActivityService.broadcast(
-            UserActivity.ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.OFFLINE));
+            UserActivity.VIEW_ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.OFFLINE));
+
         sendOnlineStat();
     }
 
 
     public void sendOnlineStat() {
         userActivityService.broadcast(
-            UserActivity.ONLINE_USER,
+            UserActivity.VIEW_ONLINE_USER,
             new OnlineStatServerMsg(UserSessionManager.onlineUserCount));
     }
 

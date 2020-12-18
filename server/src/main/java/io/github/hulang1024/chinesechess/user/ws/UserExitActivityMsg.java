@@ -5,7 +5,7 @@ import io.github.hulang1024.chinesechess.ws.ClientMsgType;
 import lombok.Data;
 
 @Data
-@ClientMsgType(value = "activity.exit", guest = true)
+@ClientMsgType(value = "user_activity.exit", guest = true)
 public class UserExitActivityMsg extends ClientMessage {
     private int code;
 }
