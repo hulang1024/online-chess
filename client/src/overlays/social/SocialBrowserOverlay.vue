@@ -188,14 +188,14 @@ export default defineComponent({
         queryUsers();
       }, 300);
       socketService.queue((send) => {
-        send('activity.enter', { code: 2 });
+        send('user_activity.enter', { code: 2 });
       });
     };
 
     const hide = () => {
       isOpen.value = false;
       socketService.queue((send) => {
-        send('activity.exit', { code: 2 });
+        send('user_activity.exit', { code: 2 });
       });
     };
 

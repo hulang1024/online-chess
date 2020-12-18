@@ -56,6 +56,13 @@ export default defineComponent({
 
     context.$q.dark.set(configManager.get(ConfigItem.theme) == 'dark');
     start(context.$router);
+
+    document.addEventListener('visibilitychange', () => {
+      socketService.queue((send) => {
+        const hide = document.hidden;
+        send(`user_activity.${hide ? 'enter' : 'exit'}`, { code: 0 });
+      });
+    });
   },
 });
 </script>

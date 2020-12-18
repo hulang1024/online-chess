@@ -55,13 +55,17 @@ export default defineComponent({
     const USER_STATUS_COLOR_MAP = {
       [UserStatus.OFFLINE]: '#1f1f1f',
       [UserStatus.ONLINE]: '#8bc34a',
+      [UserStatus.AFK]: 'grey',
+      [UserStatus.IN_LOBBY]: '#8bc34a',
       [UserStatus.IN_ROOM]: '#af52c6',
       [UserStatus.PLAYING]: '#ff9800',
-      [UserStatus.SPECTATING]: 'grey',
+      [UserStatus.SPECTATING]: '#607d8b',
     };
     const USER_STATUS_TEXT_MAP = {
       [UserStatus.OFFLINE]: '离线',
       [UserStatus.ONLINE]: '空闲',
+      [UserStatus.AFK]: '离开',
+      [UserStatus.IN_LOBBY]: '大厅中',
       [UserStatus.IN_ROOM]: '准备游戏',
       [UserStatus.PLAYING]: '正在游戏',
       [UserStatus.SPECTATING]: '正在旁观',

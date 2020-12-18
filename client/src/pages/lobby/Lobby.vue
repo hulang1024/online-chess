@@ -71,8 +71,6 @@ export default defineComponent({
     const { $refs, $router, $q } = getCurrentInstance() as Vue;
     const roomManager = new RoomManager();
 
-    socketService.queue((send) => send('activity.enter', { code: 1 }));
-
     GameEvents.gameContinue.add(() => {
       // eslint-disable-next-line
       (<any>$refs.confirmDialog).open({
@@ -158,6 +156,8 @@ export default defineComponent({
     });
 
     onMounted(() => {
+      socketService.queue((send) => send('user_activity.enter', { code: 1 }));
+
       queryRooms();
     });
 
