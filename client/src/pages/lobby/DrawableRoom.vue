@@ -86,25 +86,14 @@ export default defineComponent({
           $router.push({name: 'play', params: { room: result.room as unknown as string }});
         };
         req.failure = (result) => {
-          switch (result.code) {
-            case 2:
-              $q.notify({ type: 'warning', message: '加入棋桌失败：该棋桌已不存在' });
-              break;
-            case 3:
-              $q.notify({ type: 'warning', message: '加入棋桌失败：棋桌已满' });
-              break;
-            case 4:
-              $q.notify({ type: 'warning', message: '加入棋桌失败：你已加入本棋桌' });
-              break;
-            case 5:
-              $q.notify({ type: 'warning', message: '加入棋桌失败：你已加入其它棋桌' });
-              break;
-            case 6:
-              $q.notify({ type: 'warning', message: '加入棋桌失败：密码错误' });
-              break;
-            default:
-              break;
-          }
+          const codeMsgMap: { [code: number]: string } = {
+            2: '加入棋桌失败：该棋桌已不存在',
+            3: '加入棋桌失败：棋桌已满',
+            4: '加入棋桌失败：你已加入本棋桌',
+            5: '加入棋桌失败：你已加入其它棋桌',
+            6: '加入棋桌失败：密码错误',
+          };
+          $q.notify({ type: 'warning', message: codeMsgMap[result.code] });
         };
         api.perform(req);
       } else {
