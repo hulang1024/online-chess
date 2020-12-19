@@ -79,7 +79,7 @@ public class ChannelManager {
             }
         }
 
-        if (channel.getType() != ChannelType.PM && !userManager.isOnline(user)) {
+        if (channel.getType() != ChannelType.PUBLIC && !userManager.isOnline(user)) {
             return false;
         }
 
