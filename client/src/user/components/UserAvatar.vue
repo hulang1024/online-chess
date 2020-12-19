@@ -2,7 +2,7 @@
   <q-avatar
     v-bind="$attrs"
     class="user-avatar"
-    :class="{offline: !online}"
+    :class="{offline}"
     :style="{backgroundColor}"
   >
     <img
@@ -34,22 +34,23 @@ export default defineComponent({
       id: null,
       nickname: '',
       avatarUrl: '',
-      isOnline: false,
+      offline: false,
     };
 
     const states = reactive({
       ...NULL_USER,
       ...props.user,
-      online: props.online,
+      offline: !props.online,
     });
 
-    const backgroundColor = computed(() => ((states.id && !states.avatarUrl)
-      ? `#${USERNAME_COLORS[states.id % USERNAME_COLORS.length].toString(16)}`
-      : ''));
+    const backgroundColor = computed(() => (
+      (states.id && states.id > 0 && !states.avatarUrl)
+        ? `#${USERNAME_COLORS[states.id % USERNAME_COLORS.length].toString(16)}`
+        : ''));
 
     watch(props, () => {
       Object.assign(states, props.user || NULL_USER);
-      states.online = props.online;
+      states.offline = !props.online;
     });
 
     return {
