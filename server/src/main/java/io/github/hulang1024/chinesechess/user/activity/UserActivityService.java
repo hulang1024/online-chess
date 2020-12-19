@@ -1,5 +1,7 @@
 package io.github.hulang1024.chinesechess.user.activity;
 
+import io.github.hulang1024.chinesechess.room.Room;
+import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.user.GuestUser;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserStatus;
@@ -19,6 +21,8 @@ public class UserActivityService {
     private static Map<UserActivity, List<User>> activityUsersMap = new ConcurrentHashMap<>();
     private static Map<Long, UserActivity> userCurrentStatusMap = new ConcurrentHashMap<>();
     private static Map<Long, UserActivity> userPreviousStatusMap = new ConcurrentHashMap<>();
+    @Autowired
+    private RoomManager roomManager;
 
     static {
         for (UserActivity ua : UserActivity.values()) {
@@ -85,7 +89,7 @@ public class UserActivityService {
 
         UserStatus newUserStatus =  activityToStatus(nowStatus);
         if (newUserStatus != null) {
-            broadcast(UserActivity.VIEW_ONLINE_USER, new UserStatusChangedServerMsg(user, newUserStatus));
+            broadcast(user, newUserStatus);
         }
     }
 
@@ -107,7 +111,7 @@ public class UserActivityService {
             }
         }
         if (newUserStatus != null) {
-            broadcast(UserActivity.VIEW_ONLINE_USER, new UserStatusChangedServerMsg(user, newUserStatus));
+            broadcast(user, newUserStatus);
         }
     }
 
@@ -134,6 +138,15 @@ public class UserActivityService {
                 return UserStatus.SPECTATING;
             default:
                 return null;
+        }
+    }
+
+    private void broadcast(User user, UserStatus newUserStatus) {
+        UserStatusChangedServerMsg msg = new UserStatusChangedServerMsg(user, newUserStatus);
+        broadcast(UserActivity.VIEW_ONLINE_USER, msg);
+        Room joinedRoom = roomManager.getJoinedRoom(user);
+        if (joinedRoom != null) {
+            roomManager.broadcast(joinedRoom, msg, user);
         }
     }
 
