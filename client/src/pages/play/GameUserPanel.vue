@@ -16,6 +16,12 @@
           :class="{offline: !online}"
           size="60px"
         />
+        <div
+          v-show="user && status == UserStatus.AFK"
+          class="absolute-bottom-right user-status"
+        >
+          <span>({{ online ? '离开' : '离线' }})</span>
+        </div>
       </div>
       <div
         v-show="user"
@@ -49,6 +55,7 @@
 import { computed, defineComponent, PropType } from "@vue/composition-api";
 import UserAvatar from "src/components/UserAvatar.vue";
 import User from "src/online/user/User";
+import UserStatus from "src/online/user/UserStatus";
 import ChessHost from "src/rule/chess_host";
 import Timer from "./Timer.vue";
 
@@ -57,11 +64,13 @@ export default defineComponent({
   props: {
     user: Object as PropType<User>,
     online: Boolean,
+    status: Number as PropType<UserStatus>,
     chessHost: Number as PropType<ChessHost | undefined>,
     active: Boolean,
   },
   setup(props) {
     return {
+      UserStatus,
       chessHostColor: computed(() => (props.chessHost == ChessHost.RED ? 'red' : 'black')),
     };
   },
@@ -85,12 +94,16 @@ export default defineComponent({
     content: ')'
 
 .user-avatar-frame
+  position: relative
   border: 2px solid transparent
   border-radius: 100%
   transition: all 0.1s ease-out
 
   .user-avatar.offline
     filter: grayscale(100%)
+
+  .user-status
+    font-size: 10px
 
 .time-panel
   .item

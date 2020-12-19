@@ -20,6 +20,7 @@ import InfoMessage from 'src/online/chat/InfoMessage';
 import { api, channelManager, socketService } from 'src/boot/main';
 import ConfirmRequest from 'src/rule/confirm_request';
 import Signal from 'src/utils/signals/Signal';
+import UserStatus from 'src/online/user/UserStatus';
 import Timer from './Timer';
 import DrawableChess from './DrawableChess';
 import DrawableChessboard from './DrawableChessboard';
@@ -45,6 +46,8 @@ export default class GamePlay {
   public otherUser = new Bindable<User | null>();
 
   public otherOnline = new BindableBool();
+
+  public otherUserStatus = new Bindable<UserStatus>();
 
   public otherReadied = new BindableBool();
 
@@ -150,12 +153,6 @@ export default class GamePlay {
       this.otherGameTimer.setOnEnd(() => this.onTimerEnd(true, false));
       this.otherStepTimer.setOnEnd(() => this.onTimerEnd(false, false));
 
-      const { roomSettings } = this.room;
-      this.gameTimer.setTotalSeconds(roomSettings.gameDuration);
-      this.stepTimer.setTotalSeconds(roomSettings.stepDuration);
-      this.otherGameTimer.setTotalSeconds(roomSettings.gameDuration);
-      this.otherStepTimer.setTotalSeconds(roomSettings.stepDuration);
-
       this.loadState(initialGameStates);
 
       this.isWaitingForOther.changed.add((value: number) => {
@@ -184,10 +181,16 @@ export default class GamePlay {
 
     // 初始双方游戏状态和持棋方
     const {
+      roomSettings,
       redChessUser, blackChessUser,
       redReadied, blackReadied,
       redOnline, blackOnline,
     } = this.room;
+
+    this.gameTimer.setTotalSeconds(roomSettings.gameDuration);
+    this.stepTimer.setTotalSeconds(roomSettings.stepDuration);
+    this.otherGameTimer.setTotalSeconds(roomSettings.gameDuration);
+    this.otherStepTimer.setTotalSeconds(roomSettings.stepDuration);
 
     let redTimer: ResponseGameStateTimer | null = null;
     let blackTimer: ResponseGameStateTimer | null = null;
@@ -228,12 +231,15 @@ export default class GamePlay {
       RoomEvents.userLeft,
       UserEvents.online,
       UserEvents.offline,
+      UserEvents.statusChanged,
       GameEvents.readied,
       GameEvents.chessPickup,
       GameEvents.chessMoved,
       GameEvents.gameStarted,
       GameEvents.confirmRequest,
       GameEvents.confirmResponse,
+      GameEvents.gameContinue,
+      GameEvents.gameContinueResponse,
       SpectatorEvents.joined,
       SpectatorEvents.left,
     ].forEach((event) => {
@@ -248,6 +254,10 @@ export default class GamePlay {
     RoomEvents.userJoined.add(this.onRoomUserJoinedEvent.bind(this), this);
     RoomEvents.userLeft.add(this.onRoomUserLeftEvent.bind(this), this);
 
+    UserEvents.offline.add(this.onUserOfflineEvent.bind(this), this);
+    UserEvents.online.add(this.onUserOnlineEvent.bind(this), this);
+    UserEvents.statusChanged.add(this.onUserStatusChangedEvent.bind(this), this);
+
     GameEvents.readied.add(this.onGameReadyEvent.bind(this), this);
     GameEvents.gameStarted.add(this.onGameStartedEvent.bind(this), this);
     GameEvents.chessPickup.add(this.onGameChessPickupEvent.bind(this), this);
@@ -256,9 +266,6 @@ export default class GamePlay {
     GameEvents.confirmResponse.add(this.onGameConfirmResponseEvent.bind(this), this);
     GameEvents.gameContinue.add(this.onGameContinueEvent.bind(this), this);
     GameEvents.gameContinueResponse.add(this.onGameContinueResponseEvent.bind(this), this);
-
-    UserEvents.offline.add(this.onUserOfflineEvent.bind(this), this);
-    UserEvents.online.add(this.onUserOnlineEvent.bind(this), this);
 
     SpectatorEvents.joined.add((msg: SpectatorEvents.SpectatorJoinedMsg) => {
       this.channelManager.openChannel(this.room.channelId);
@@ -460,6 +467,14 @@ export default class GamePlay {
     this.showText('对手已上线', 3000);
   }
 
+  private onUserStatusChangedEvent(msg: UserEvents.UserStatusChangedMsg) {
+    if (this.gameState.value == GameState.READY
+      || !(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
+      return;
+    }
+    this.otherUserStatus.value = msg.status;
+  }
+
   private onGameStateChanged(gameState: GameState, prevGameState: GameState) {
     switch (gameState) {
       case GameState.PLAYING: {
@@ -468,10 +483,12 @@ export default class GamePlay {
           if (this.activeChessHost.value == this.chessHost.value) {
             this.gameTimer.resume();
             this.stepTimer.resume();
+            this.onTurnActiveChessHost(this.activeChessHost.value);
           } else {
             this.otherGameTimer.resume();
             this.otherStepTimer.resume();
           }
+          this.showText('游戏继续', 1000);
         }
         break;
       }

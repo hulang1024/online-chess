@@ -5,6 +5,7 @@
         <game-user-panel
           :user="otherUser"
           :online="otherOnline"
+          :status="otherUserStatus"
           :chess-host="otherChessHost"
           :active="activeChessHost == otherChessHost"
           class="q-py-sm q-ml-xs"
@@ -124,6 +125,7 @@
         <game-user-panel
           :user="otherUser"
           :online="otherOnline"
+          :status="otherUserStatus"
           :chess-host="otherChessHost"
           :active="activeChessHost == otherChessHost"
         >
@@ -194,6 +196,7 @@ import { createBoundRef } from 'src/utils/vue/vue_ref_utils';
 import { api } from 'src/boot/main';
 import Room from 'src/online/room/Room';
 import ResponseGameStates from 'src/online/play/game_states_response';
+import UserStatus from 'src/online/user/UserStatus';
 import DrawableChessboard from './DrawableChessboard';
 import PlayerContainer from './PlayerContainer.vue';
 import GameUserPanel from './GameUserPanel.vue';
@@ -234,6 +237,7 @@ export default defineComponent({
     const chessHost: Ref<ChessHost> = createBoundRef(gamePlay.chessHost);
     const isRoomOwner: Ref<boolean> = createBoundRef(gamePlay.isRoomOwner);
     const otherUser: Ref<User | null> = createBoundRef(gamePlay.otherUser);
+    const otherUserStatus: Ref<UserStatus> = createBoundRef(gamePlay.otherUserStatus);
     const otherOnline: Ref<boolean> = createBoundRef(gamePlay.otherOnline);
     const otherReadied: Ref<boolean> = createBoundRef(gamePlay.otherReadied);
     const otherChessHost: Ref<ChessHost> = createBoundRef(gamePlay.otherChessHost);
@@ -282,6 +286,7 @@ export default defineComponent({
 
       otherUser,
       otherOnline,
+      otherUserStatus,
       otherReadied,
       otherChessHost,
 
