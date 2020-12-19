@@ -523,12 +523,6 @@ export default class GamePlay {
 
   private onGameOver(winChessHost: ChessHost | null, isTimeout?: boolean) {
     this.gameState.value = GameState.END;
-    [
-      this.gameTimer, this.stepTimer,
-      this.otherGameTimer, this.otherStepTimer,
-    ].forEach((timer) => {
-      timer.stop();
-    });
 
     const winUserId = winChessHost == null
       ? undefined
