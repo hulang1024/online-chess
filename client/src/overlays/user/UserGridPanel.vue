@@ -3,7 +3,7 @@
     class="list-user-card text-white"
     :style="{backgroundColor}"
   >
-    <div class="row">
+    <div class="row items-center">
       <user-avatar
         :user="user"
         rounded
@@ -27,7 +27,7 @@
           {{ nickname }}
         </div>
         <div class="status-desc">
-          ({{ userStatusText }})
+          [{{ userStatusText }}]
         </div>
       </div>
     </div>
@@ -52,26 +52,39 @@ export default defineComponent({
     const userStatus = ref<UserStatus>(props.user?.status as UserStatus);
     const isFriend = ref(props.user?.isFriend);
 
-    const USER_STATUS_COLOR_MAP = {
-      [UserStatus.OFFLINE]: '#1f1f1f',
-      [UserStatus.ONLINE]: '#8bc34a',
-      [UserStatus.AFK]: 'grey',
-      [UserStatus.IN_LOBBY]: '#8bc34a',
-      [UserStatus.IN_ROOM]: '#af52c6',
-      [UserStatus.PLAYING]: '#ff9800',
-      [UserStatus.SPECTATING]: '#607d8b',
+    const USER_STATUS_MAP = {
+      [UserStatus.OFFLINE]: {
+        text: '离线',
+        color: '#1f1f1f',
+      },
+      [UserStatus.ONLINE]: {
+        text: '在线空闲',
+        color: '#8bc34a',
+      },
+      [UserStatus.AFK]: {
+        text: '暂时离开',
+        color: 'grey',
+      },
+      [UserStatus.IN_LOBBY]: {
+        text: '正在大厅',
+        color: '#8bc34a',
+      },
+      [UserStatus.IN_ROOM]: {
+        text: '准备游戏',
+        color: '#af52c6',
+      },
+      [UserStatus.PLAYING]: {
+        text: '正在游戏',
+        color: '#ff9800',
+      },
+      [UserStatus.SPECTATING]: {
+        text: '正在旁观',
+        color: '#607d8b',
+      },
     };
-    const USER_STATUS_TEXT_MAP = {
-      [UserStatus.OFFLINE]: '离线',
-      [UserStatus.ONLINE]: '空闲',
-      [UserStatus.AFK]: '离开',
-      [UserStatus.IN_LOBBY]: '大厅中',
-      [UserStatus.IN_ROOM]: '准备游戏',
-      [UserStatus.PLAYING]: '正在游戏',
-      [UserStatus.SPECTATING]: '正在旁观',
-    };
-    const backgroundColor = computed(() => USER_STATUS_COLOR_MAP[userStatus.value]);
-    const userStatusText = computed(() => USER_STATUS_TEXT_MAP[userStatus.value]);
+
+    const backgroundColor = computed(() => USER_STATUS_MAP[userStatus.value].color);
+    const userStatusText = computed(() => USER_STATUS_MAP[userStatus.value].text);
 
     watch(props, () => {
       userStatus.value = props.user?.status as UserStatus;

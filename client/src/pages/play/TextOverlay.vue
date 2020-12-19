@@ -3,7 +3,7 @@
     v-show="visible"
     transition-show="fade"
     transition-hide="fade"
-    class="q-py-sm full-width"
+    :class="[`q-py-${$q.screen.xs ? 'xs' : 'sm'}`, 'full-width']"
   >
     <span class="text-subtitle1">{{ _text }}</span>
   </q-card>
