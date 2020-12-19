@@ -1,7 +1,6 @@
 import { ref } from "@vue/composition-api";
-import { api, socketService } from "src/boot/main";
+import { api } from "src/boot/main";
 import APIAccess from "../api/APIAccess";
-import SocketService from '../../online/ws/SocketService';
 import CreateRoomRequest from "./CreateRoomRequest";
 import GetRoomsRequest from "./GetRoomsRequest";
 import Room from "./Room";
@@ -19,13 +18,10 @@ export default class RoomManager {
 
   private api: APIAccess;
 
-  private socketService: SocketService;
-
   private lastSearchParams: SearchRoomParams | undefined;
 
   constructor() {
     this.api = api;
-    this.socketService = socketService;
 
     this.initSocketListeners();
   }
@@ -69,9 +65,12 @@ export default class RoomManager {
       }
       this.rooms.value = this.rooms.value.filter((room: Room) => room.id != msg.roomId);
     });
+  }
 
-    this.socketService.reconnected.add(() => {
-      this.searchRooms();
+  public removeListeners() {
+    [roomCreated, roomUpdated, roomRemoved].forEach((signal) => {
+      signal.removeAll();
     });
+    this.rooms.value = [];
   }
 }

@@ -52,7 +52,7 @@
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, onMounted, ref, watch,
+  defineComponent, getCurrentInstance, onMounted, onUnmounted, ref, watch,
 } from '@vue/composition-api';
 import CreateRoomRequest from 'src/online/room/CreateRoomRequest';
 import QuickStartRequest from 'src/online/room/QuickStartRequest';
@@ -71,7 +71,21 @@ export default defineComponent({
     const { $refs, $router, $q } = getCurrentInstance() as Vue;
     const roomManager = new RoomManager();
 
-    GameEvents.gameContinue.add(() => {
+    const roomStatusActiveTab = ref(0);
+
+    const queryRooms = () => {
+      let status: number | null = roomStatusActiveTab.value;
+      status = status == 0 ? null : status;
+      roomManager.searchRooms({ status });
+    };
+
+    const onReconnected = () => {
+      queryRooms();
+      socketService.send('user_activity.enter', { code: 1 });
+    };
+    socketService.reconnected.add(onReconnected);
+
+    const onGameContinue = () => {
       // eslint-disable-next-line
       (<any>$refs.confirmDialog).open({
         yesText: '继续游戏',
@@ -87,9 +101,23 @@ export default defineComponent({
           });
         },
       });
+    };
+    GameEvents.gameContinue.add(onGameContinue);
+
+    watch(roomStatusActiveTab, () => {
+      queryRooms();
     });
 
-    const roomStatusActiveTab = ref(0);
+    onMounted(() => {
+      socketService.queue((send) => send('user_activity.enter', { code: 1 }));
+      queryRooms();
+    });
+
+    onUnmounted(() => {
+      socketService.reconnected.remove(onReconnected);
+      roomManager.removeListeners();
+      GameEvents.gameContinue.remove(onGameContinue);
+    });
 
     const checkNotLoggedIn = (): boolean => {
       if (!api.isLoggedIn.value) {
@@ -144,22 +172,6 @@ export default defineComponent({
         },
       });
     };
-
-    const queryRooms = () => {
-      let status: number | null = roomStatusActiveTab.value;
-      status = status == 0 ? null : status;
-      roomManager.searchRooms({ status });
-    };
-
-    watch(roomStatusActiveTab, () => {
-      queryRooms();
-    });
-
-    onMounted(() => {
-      socketService.queue((send) => send('user_activity.enter', { code: 1 }));
-
-      queryRooms();
-    });
 
     return {
       roomStatusActiveTab,
