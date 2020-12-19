@@ -20,7 +20,8 @@ import InfoMessage from "src/online/chat/InfoMessage";
 import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
 import Signal from "src/utils/signals/Signal";
 import Player from "./Player";
-import Timer from "./Timer";
+import Timer from "./timer/Timer";
+import CircleTimer from "./timer/CircleTimer";
 
 export default class Spectate {
   public gameState = new Bindable<GameState>(GameState.READY);
@@ -112,22 +113,7 @@ export default class Spectate {
 
       this.textOverlay = $refs.textOverlay;
 
-      if (this.viewChessHost.value == ChessHost.RED) {
-        this.redGameTimer = $refs.viewGameTimer as unknown as Timer;
-        this.redStepTimer = $refs.viewStepTimer as unknown as Timer;
-        this.blackGameTimer = $refs.otherGameTimer as unknown as Timer;
-        this.blackStepTimer = $refs.otherStepTimer as unknown as Timer;
-      } else {
-        this.redGameTimer = $refs.otherGameTimer as unknown as Timer;
-        this.redStepTimer = $refs.otherStepTimer as unknown as Timer;
-        this.blackGameTimer = $refs.viewGameTimer as unknown as Timer;
-        this.blackStepTimer = $refs.viewStepTimer as unknown as Timer;
-      }
-
-      this.redGameTimer.setOnEnd(() => this.onTimerEnd(true, ChessHost.RED));
-      this.redStepTimer.setOnEnd(() => this.onTimerEnd(false, ChessHost.RED));
-      this.blackGameTimer.setOnEnd(() => this.onTimerEnd(true, ChessHost.BLACK));
-      this.blackStepTimer.setOnEnd(() => this.onTimerEnd(false, ChessHost.BLACK));
+      this.swapTimers(true);
 
       this.loadState(spectateResponse);
     });
@@ -436,14 +422,14 @@ export default class Spectate {
 
     if (activeChessHost == ChessHost.BLACK) {
       this.redGameTimer.pause();
-      this.redStepTimer.pause();
+      this.redStepTimer.stop();
       this.blackGameTimer.resume();
       this.blackStepTimer.start();
     } else {
       this.redGameTimer.resume();
       this.redStepTimer.start();
       this.blackGameTimer.pause();
-      this.blackStepTimer.pause();
+      this.blackStepTimer.stop();
     }
   }
 
@@ -461,53 +447,69 @@ export default class Spectate {
   }
 
   public onToggleViewClick() {
-    this.swapTimerTime();
+    this.swapTimers();
     this.viewChessHost.value = ChessHost.reverse(this.viewChessHost.value);
     this.player.reverseChessLayoutView();
   }
 
-  private swapTimerTime() {
+  private swapTimers(isInit = false) {
     const { $refs } = this.context;
 
-    if (this.gameState.value == GameState.PLAYING) {
-      if (this.activeChessHost.value == ChessHost.RED) {
-        this.redGameTimer.pause();
-        this.redStepTimer.pause();
-      } else {
-        this.blackGameTimer.pause();
-        this.blackStepTimer.pause();
+    if (!isInit) {
+      if (this.gameState.value == GameState.PLAYING) {
+        if (this.activeChessHost.value == ChessHost.RED) {
+          this.redGameTimer.pause();
+          this.redStepTimer.pause();
+        } else {
+          this.blackGameTimer.pause();
+          this.blackStepTimer.pause();
+        }
       }
-    }
 
-    // 交换时间
-    const t1 = this.redGameTimer.getCurrent();
-    this.redGameTimer.setCurrent(this.blackGameTimer.getCurrent());
-    this.blackGameTimer.setCurrent(t1);
-    const t2 = this.redStepTimer.getCurrent();
-    this.redStepTimer.setCurrent(this.blackStepTimer.getCurrent());
-    this.blackStepTimer.setCurrent(t2);
+      // 交换时间
+      const t1 = this.redGameTimer.getCurrent();
+      this.redGameTimer.setCurrent(this.blackGameTimer.getCurrent());
+      this.blackGameTimer.setCurrent(t1);
+      const t2 = this.redStepTimer.getCurrent();
+      this.redStepTimer.setCurrent(this.blackStepTimer.getCurrent());
+      this.blackStepTimer.setCurrent(t2);
+    }
 
     // 重新设置引用
     if (this.viewChessHost.value == ChessHost.RED) {
-      this.redGameTimer = $refs.otherGameTimer as unknown as Timer;
-      this.redStepTimer = $refs.otherStepTimer as unknown as Timer;
-      this.blackGameTimer = $refs.viewGameTimer as unknown as Timer;
-      this.blackStepTimer = $refs.viewStepTimer as unknown as Timer;
+      this.redGameTimer = ($refs.viewGameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
+      this.redStepTimer = ($refs.viewGameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
+      this.blackGameTimer = ($refs.otherGameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
+      this.blackStepTimer = ($refs.otherGameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
+      (($refs.viewGameUserPanel as Vue).$refs.circleStepTimer as unknown as CircleTimer)
+        .setSyncTimer(this.redStepTimer);
+      (($refs.otherGameUserPanel as Vue).$refs.circleStepTimer as unknown as CircleTimer)
+        .setSyncTimer(this.blackStepTimer);
     } else {
-      this.redGameTimer = $refs.viewGameTimer as unknown as Timer;
-      this.redStepTimer = $refs.viewStepTimer as unknown as Timer;
-      this.blackGameTimer = $refs.otherGameTimer as unknown as Timer;
-      this.blackStepTimer = $refs.otherStepTimer as unknown as Timer;
+      this.redGameTimer = ($refs.otherGameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
+      this.redStepTimer = ($refs.otherGameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
+      this.blackGameTimer = ($refs.viewGameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
+      this.blackStepTimer = ($refs.viewGameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
+      (($refs.viewGameUserPanel as Vue).$refs.circleStepTimer as unknown as CircleTimer)
+        .setSyncTimer(this.blackStepTimer);
+      (($refs.otherGameUserPanel as Vue).$refs.circleStepTimer as unknown as CircleTimer)
+        .setSyncTimer(this.redStepTimer);
     }
+    (this.redGameTimer as unknown as Vue).$off('ended').$on('ended', () => this.onTimerEnd(true, ChessHost.RED));
+    (this.redStepTimer as unknown as Vue).$off('ended').$on('ended', () => this.onTimerEnd(false, ChessHost.RED));
+    (this.blackGameTimer as unknown as Vue).$off('ended').$on('ended', () => this.onTimerEnd(true, ChessHost.BLACK));
+    (this.blackStepTimer as unknown as Vue).$off('ended').$on('ended', () => this.onTimerEnd(false, ChessHost.BLACK));
 
-    // 恢复之前的状态
-    if (this.gameState.value == GameState.PLAYING) {
-      if (this.activeChessHost.value == ChessHost.RED) {
-        this.redGameTimer.resume();
-        this.redStepTimer.resume();
-      } else {
-        this.blackGameTimer.resume();
-        this.blackStepTimer.resume();
+    if (!isInit) {
+      // 恢复之前的状态
+      if (this.gameState.value == GameState.PLAYING) {
+        if (this.activeChessHost.value == ChessHost.RED) {
+          this.redGameTimer.resume();
+          this.redStepTimer.resume();
+        } else {
+          this.blackGameTimer.resume();
+          this.blackStepTimer.resume();
+        }
       }
     }
   }

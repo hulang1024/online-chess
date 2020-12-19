@@ -21,10 +21,11 @@ import { api, channelManager, socketService } from 'src/boot/main';
 import ConfirmRequest from 'src/rule/confirm_request';
 import Signal from 'src/utils/signals/Signal';
 import UserStatus from 'src/user/UserStatus';
-import Timer from './Timer';
+import Timer from './timer/Timer';
 import DrawableChess from './DrawableChess';
 import DrawableChessboard from './DrawableChessboard';
 import Player from './Player';
+import CircleTimer from './timer/CircleTimer';
 
 export default class GamePlay {
   public gameState = new Bindable<GameState>(GameState.READY);
@@ -124,7 +125,9 @@ export default class GamePlay {
 
     this.playerLoaded.add(() => {
       this.player.gameOver.add(this.onGameOver.bind(this), this);
-      this.player.activeChessHost.changed.add(this.onTurnActiveChessHost.bind(this), this);
+      this.player.activeChessHost.changed.add(
+        (v: ChessHost) => this.onTurnActiveChessHost(v, false), this,
+      );
       this.chessboard = this.player.chessboard as unknown as DrawableChessboard;
       this.chessboard.chessPickupOrDrop.add(this.onChessPickupOrDrop.bind(this), this);
       this.chessboard.clicked.add(this.onChessboardClick.bind(this), this);
@@ -144,14 +147,18 @@ export default class GamePlay {
       this.resultDialog = $refs.resultDialog;
       this.textOverlay = $refs.textOverlay;
 
-      this.gameTimer = $refs.gameTimer as unknown as Timer;
-      this.stepTimer = $refs.stepTimer as unknown as Timer;
-      this.otherGameTimer = $refs.otherGameTimer as unknown as Timer;
-      this.otherStepTimer = $refs.otherStepTimer as unknown as Timer;
-      this.gameTimer.setOnEnd(() => this.onTimerEnd(true, true));
-      this.stepTimer.setOnEnd(() => this.onTimerEnd(false, true));
-      this.otherGameTimer.setOnEnd(() => this.onTimerEnd(true, false));
-      this.otherStepTimer.setOnEnd(() => this.onTimerEnd(false, false));
+      this.gameTimer = ($refs.gameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
+      this.stepTimer = ($refs.gameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
+      this.otherGameTimer = ($refs.otherGameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
+      this.otherStepTimer = ($refs.otherGameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
+      (this.gameTimer as unknown as Vue).$on('ended', () => this.onTimerEnd(true, true));
+      (this.stepTimer as unknown as Vue).$on('ended', () => this.onTimerEnd(false, true));
+      (this.otherGameTimer as unknown as Vue).$on('ended', () => this.onTimerEnd(true, false));
+      (this.otherStepTimer as unknown as Vue).$on('ended', () => this.onTimerEnd(false, false));
+      (($refs.gameUserPanel as Vue)
+        .$refs.circleStepTimer as unknown as CircleTimer).setSyncTimer(this.stepTimer);
+      (($refs.otherGameUserPanel as Vue)
+        .$refs.circleStepTimer as unknown as CircleTimer).setSyncTimer(this.otherStepTimer);
 
       this.loadState(initialGameStates);
 
@@ -483,7 +490,7 @@ export default class GamePlay {
           if (this.activeChessHost.value == this.chessHost.value) {
             this.gameTimer.resume();
             this.stepTimer.resume();
-            this.onTurnActiveChessHost(this.activeChessHost.value);
+            this.onTurnActiveChessHost(this.activeChessHost.value, true);
           } else {
             this.otherGameTimer.resume();
             this.otherStepTimer.resume();
@@ -570,19 +577,21 @@ export default class GamePlay {
     }
   }
 
-  private onTurnActiveChessHost(activeChessHost: ChessHost) {
+  private onTurnActiveChessHost(activeChessHost: ChessHost, isGameResume = false) {
     this.activeChessHost.value = activeChessHost;
 
-    if (activeChessHost == this.chessHost.value) {
-      this.gameTimer.resume();
-      this.stepTimer.start();
-      this.otherGameTimer.pause();
-      this.otherStepTimer.pause();
-    } else {
-      this.gameTimer.pause();
-      this.stepTimer.pause();
-      this.otherGameTimer.resume();
-      this.otherStepTimer.start();
+    if (!isGameResume) {
+      if (activeChessHost == this.chessHost.value) {
+        this.gameTimer.resume();
+        this.stepTimer.start();
+        this.otherGameTimer.pause();
+        this.otherStepTimer.stop();
+      } else {
+        this.gameTimer.pause();
+        this.stepTimer.stop();
+        this.otherGameTimer.resume();
+        this.otherStepTimer.start();
+      }
     }
 
     this.chessboard.enabled = this.activeChessHost.value == this.chessHost.value;

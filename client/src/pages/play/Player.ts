@@ -1,6 +1,6 @@
 import { onBeforeUnmount } from "@vue/composition-api";
 import { configManager } from "src/boot/main";
-import ConfigManager, { ConfigItem } from "src/config/ConfigManager";
+import ConfigManager from "src/config/ConfigManager";
 import ResponseGameStates, { ResponseGameStateChess, ResponseGameStateChessAction } from "src/online/play/game_states_response";
 import Checkmate from "src/rule/Checkmate";
 import Chess from "src/rule/Chess";
@@ -340,9 +340,7 @@ export default class Player implements Game {
   }
 
   private createDrawableChess(chess: Chess) {
-    return new DrawableChess(chess,
-      this.chessboard.bounds.chessRadius,
-      this.configManager.get(ConfigItem.theme) as string);
+    return new DrawableChess(chess, this.chessboard.bounds.chessRadius);
   }
 
   public resize(stageWidth: number) {

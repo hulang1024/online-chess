@@ -3,19 +3,13 @@
     <template v-if="isXSScreen">
       <div>
         <game-user-panel
+          ref="otherGameUserPanel"
           :user="otherUser"
           :online="otherOnline"
           :chess-host="otherChessHost"
           :active="activeChessHost == otherChessHost"
           class="q-py-sm q-ml-xs"
-        >
-          <template #game-timer>
-            <timer ref="otherGameTimer" />
-          </template>
-          <template #step-timer>
-            <timer ref="otherStepTimer" />
-          </template>
-        </game-user-panel>
+        />
         <player-container
           ref="playerContainer"
           class="absolute-center"
@@ -56,19 +50,13 @@
           </q-menu>
         </q-btn>
         <game-user-panel
+          ref="viewGameUserPanel"
           :user="viewUser"
           :online="viewOnline"
           :chess-host="viewChessHost"
           :active="activeChessHost == viewChessHost"
           class="fixed-bottom-right"
-        >
-          <template #game-timer>
-            <timer ref="viewGameTimer" />
-          </template>
-          <template #step-timer>
-            <timer ref="viewStepTimer" />
-          </template>
-        </game-user-panel>
+        />
       </div>
     </template>
     <template v-else>
@@ -83,32 +71,20 @@
         class="controls q-px-sm q-py-sm"
       >
         <game-user-panel
+          ref="otherGameUserPanel"
           :user="otherUser"
           :online="otherOnline"
           :chess-host="otherChessHost"
           :active="activeChessHost == otherChessHost"
-        >
-          <template #game-timer>
-            <timer ref="otherGameTimer" />
-          </template>
-          <template #step-timer>
-            <timer ref="otherStepTimer" />
-          </template>
-        </game-user-panel>
+        />
         <q-separator />
         <game-user-panel
+          ref="viewGameUserPanel"
           :user="viewUser"
           :online="viewOnline"
           :chess-host="viewChessHost"
           :active="activeChessHost == viewChessHost"
-        >
-          <template #game-timer>
-            <timer ref="viewGameTimer" />
-          </template>
-          <template #step-timer>
-            <timer ref="viewStepTimer" />
-          </template>
-        </game-user-panel>
+        />
         <q-separator />
         <div class="row q-gutter-x-sm q-mt-sm">
           <q-btn
@@ -143,7 +119,6 @@ import PlayerContainer from './PlayerContainer.vue';
 import GameUserPanel from './GameUserPanel.vue';
 import ResultDialog from './ResultDialog.vue';
 import TextOverlay from './TextOverlay.vue';
-import Timer from './Timer.vue';
 import Spectate from './Spectate';
 import Player from './Player';
 
@@ -153,7 +128,6 @@ export default defineComponent({
     GameUserPanel,
     ResultDialog,
     TextOverlay,
-    Timer,
   },
   setup() {
     const ctx = getCurrentInstance() as Vue;

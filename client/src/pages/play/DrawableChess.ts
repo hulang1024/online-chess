@@ -46,14 +46,10 @@ export default class DrawableChess implements Chess {
 
   private radius: number;
 
-  constructor(chess: Chess, radius: number, theme: string) {
+  constructor(chess: Chess, radius: number) {
     this.chess = chess;
     this.radius = radius;
     this.load();
-
-    if (theme != 'default') {
-      throw Error('no implement');
-    }
   }
 
   private load() {

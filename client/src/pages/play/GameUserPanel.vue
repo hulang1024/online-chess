@@ -7,9 +7,11 @@
     ]"
   >
     <div class="row items-start">
-      <div
+      <circle-timer
+        ref="circleStepTimer"
+        size="64px"
         class="user-avatar-frame"
-        :style="{borderColor: (user == null || active) ? chessHostColor : 'transparent'}"
+        :color="color"
       >
         <user-avatar
           :user="user"
@@ -23,7 +25,7 @@
         >
           <span>({{ online ? '离开' : '离线' }})</span>
         </div>
-      </div>
+      </circle-timer>
       <div
         v-show="user"
         class="q-ml-xs"
@@ -34,17 +36,11 @@
         <div class="time-panel">
           <div class="item">
             <span class="label">步时</span>
-            <slot
-              name="step-timer"
-              class="time"
-            />
+            <timer ref="stepTimer" class="step-timer" />
           </div>
           <div class="item">
             <span class="label">局时</span>
-            <slot
-              name="game-timer"
-              class="time"
-            />
+            <timer ref="gameTimer" class="game-timer" />
           </div>
         </div>
       </div>
@@ -53,15 +49,18 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from "@vue/composition-api";
+import {
+  computed, defineComponent, getCurrentInstance, PropType,
+} from "@vue/composition-api";
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import User from "src/user/User";
 import UserStatus from "src/user/UserStatus";
 import ChessHost from "src/rule/chess_host";
-import Timer from "./Timer.vue";
+import Timer from "./timer/Timer.vue";
+import CircleTimer from "./timer/CircleTimer.vue";
 
 export default defineComponent({
-  components: { UserAvatar, Timer },
+  components: { UserAvatar, Timer, CircleTimer },
   props: {
     user: Object as PropType<User>,
     online: Boolean,
@@ -70,9 +69,15 @@ export default defineComponent({
     active: Boolean,
   },
   setup(props) {
+    const ctx = getCurrentInstance() as Vue;
+
+    const color = computed(() => ((props.user && props.active)
+      ? (props.chessHost == ChessHost.RED ? 'red' : ctx.$q.dark.isActive ? 'grey-2' : 'black')
+      : 'transparent'));
+
     return {
       UserStatus,
-      chessHostColor: computed(() => (props.chessHost == ChessHost.RED ? 'red' : 'black')),
+      color,
     };
   },
 });
@@ -96,8 +101,6 @@ export default defineComponent({
 
 .user-avatar-frame
   position: relative
-  border: 2px solid transparent
-  border-radius: 100%
 
   .user-avatar.afk
     filter: grayscale(80%) !important
