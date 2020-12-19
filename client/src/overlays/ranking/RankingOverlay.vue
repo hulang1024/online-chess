@@ -211,7 +211,7 @@ export default defineComponent({
 
         .rank-no {
           padding-left: 8px;
-          padding-right: 0px;
+          padding-right: 4px;
           width: 10px;
           font-weight: bold;
         }
