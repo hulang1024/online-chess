@@ -19,7 +19,7 @@ import {
   defineComponent, PropType, reactive, toRefs, watch,
 } from "@vue/composition-api";
 import User from "src/user/User";
-import { USERNAME_COLORS } from 'src/user/colors';
+import { USERNAME_COLORS } from './colors';
 
 export default defineComponent({
   props: {

@@ -25,7 +25,7 @@
 import { defineComponent, PropType, ref } from "@vue/composition-api";
 import ErrorMessage from "src/online/chat/ErrorMessage";
 import Message from "src/online/chat/Message";
-import { USERNAME_COLORS } from 'src/user/colors';
+import { USERNAME_COLORS } from 'src/user/components/colors';
 
 export default defineComponent({
   props: {
