@@ -1,4 +1,4 @@
-import { ref, watch } from "@vue/composition-api";
+import { onUnmounted, ref } from "@vue/composition-api";
 
 export enum TimerState {
   TICKING,
@@ -24,8 +24,8 @@ export default class Timer {
   constructor(emit: (event: string, ...args: any[]) => void) {
     this.emit = emit;
 
-    watch(this.seconds, () => {
-      this.emit('changed', this.seconds.value);
+    onUnmounted(() => {
+      clearInterval(this.timer);
     });
   }
 
@@ -36,7 +36,7 @@ export default class Timer {
   /** 设置计时时间 */
   public setTotalSeconds(seconds: number | null) {
     this.totalSeconds.value = seconds as number;
-    this.emit('totalSecondsChanged', this.totalSeconds.value);
+    this.emit('readied', this.totalSeconds.value, this.seconds.value);
   }
 
   /** 准备开始，显示总计时，并重置启动次数 */
@@ -44,6 +44,7 @@ export default class Timer {
     this.timerState = null;
     this.starts = 0;
     this.seconds.value = current || this.totalSeconds.value;
+    this.emit('readied', this.totalSeconds.value, this.seconds.value);
   }
 
   /** 重置为总时，重新计时 */
@@ -63,6 +64,7 @@ export default class Timer {
       // 使用当前值计时
       this.tick();
     }
+    this.emit('started');
   }
 
   public getCurrent() { return this.seconds.value; }
@@ -78,6 +80,7 @@ export default class Timer {
     }
     this.timerState = TimerState.PAUSED;
     clearInterval(this.timer);
+    this.emit('paused');
   }
 
   /** 暂停后恢复计时 */
@@ -86,6 +89,7 @@ export default class Timer {
       return;
     }
     this.tick();
+    this.emit('resumed');
   }
 
   public stop() {

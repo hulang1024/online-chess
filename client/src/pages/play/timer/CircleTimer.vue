@@ -1,12 +1,12 @@
 <template>
   <q-circular-progress
     show-value
-    font-size="10px"
-    class="circle-timer"
+    instant-feedback
+    :max="totalMS"
     :value="current"
-    :thickness="0.1"
     track-color="transparent"
     v-bind="$attrs"
+    class="circle-timer"
   >
     <slot />
   </q-circular-progress>
@@ -28,6 +28,7 @@ export default defineComponent({
 
     return {
       current: timer.current,
+      totalMS: timer.totalMS,
       setSyncTimer: timer.setSyncTimer.bind(timer),
     };
   },
