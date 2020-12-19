@@ -1,5 +1,5 @@
 import Signal from "src/utils/signals/Signal";
-import User from "../user/User";
+import User from "../../user/User";
 import BindableBool from "../../utils/bindables/BindableBool";
 import ChannelType from "./ChannelType";
 import Message from "./Message";

@@ -32,8 +32,8 @@ import {
 import { ConfigItem } from 'src/config/ConfigManager';
 import LogoutRequest from 'src/online/api/LogoutRequest';
 import RegisterRequest from 'src/online/api/RegisterRequest';
-import User from 'src/online/user/User';
-import UserAvatar from "src/components/UserAvatar.vue";
+import User from 'src/user/User';
+import UserAvatar from "src/user/components/UserAvatar.vue";
 import { api, configManager } from 'src/boot/main';
 import LoggedInUserOverlay from '../user/LoggedInUserOverlay.vue';
 import LoginOverlay from '../user/LoginOverlay.vue';

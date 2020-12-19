@@ -8,9 +8,9 @@ import { defineComponent, getCurrentInstance } from '@vue/composition-api';
 import { Notify } from 'quasar';
 import Vue from 'vue';
 import VueRouter from 'vue-router';
+import User from 'src/user/User';
 import { configManager, api, socketService } from './boot/main';
 import { ConfigItem } from './config/ConfigManager';
-import User from './online/user/User';
 
 function start(router: VueRouter) {
   if (window.location.hash.substring('#/?'.length)) {

@@ -1,4 +1,4 @@
-import User from "../user/User";
+import User from "../../user/User";
 import InfoMessage from "./InfoMessage";
 
 export default class ErrorMessage extends InfoMessage {

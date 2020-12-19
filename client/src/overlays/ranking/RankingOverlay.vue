@@ -101,7 +101,7 @@ import SearchUserInfo from 'src/online/user/SearchUserInfo';
 import { api } from 'src/boot/main';
 import SearchRankingParams from 'src/online/ranking/SearchRankingParams';
 import APIPageResponse from 'src/online/api/APIPageResponse';
-import UserAvatar from 'src/components/UserAvatar.vue';
+import UserAvatar from 'src/user/components/UserAvatar.vue';
 
 export default defineComponent({
   components: { UserAvatar },

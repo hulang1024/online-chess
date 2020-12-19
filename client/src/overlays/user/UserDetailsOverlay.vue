@@ -20,7 +20,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
-import User from 'src/online/user/User';
+import User from 'src/user/User';
 
 export default defineComponent({
   setup() {

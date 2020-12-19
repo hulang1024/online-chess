@@ -1,5 +1,5 @@
 import SearchUserInfo from "src/online/user/SearchUserInfo";
-import UserStatus from "src/online/user/UserStatus";
+import UserStatus from "src/user/UserStatus";
 import Signal from "../../../utils/signals/Signal";
 import ServerMsg from "../ServerMsg";
 

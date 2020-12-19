@@ -1,4 +1,4 @@
-import User from "../user/User";
+import User from "../../user/User";
 import Bindable from "../../utils/bindables/Bindable";
 import BindableList from "../../utils/bindables/BindableList";
 import APIAccess from "../api/APIAccess";

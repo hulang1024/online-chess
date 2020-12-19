@@ -74,7 +74,7 @@ import Channel from 'src/online/chat/Channel';
 import ChannelType from 'src/online/chat/ChannelType';
 import InfoMessage from 'src/online/chat/InfoMessage';
 import Message from 'src/online/chat/Message';
-import User from 'src/online/user/User';
+import User from 'src/user/User';
 import DrawableChannel from './DrawableChannel.vue';
 
 export default defineComponent({

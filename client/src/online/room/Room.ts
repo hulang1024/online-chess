@@ -1,5 +1,5 @@
 import GameState from "../play/GameState";
-import User from "../user/User";
+import User from "../../user/User";
 import { RoomSettings } from "./RoomSettings";
 
 export default class Room {

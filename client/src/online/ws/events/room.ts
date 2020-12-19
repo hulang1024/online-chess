@@ -1,4 +1,4 @@
-import User from "src/online/user/User";
+import User from "src/user/User";
 import Signal from "src/utils/signals/Signal";
 import ServerMsg from "../ServerMsg";
 

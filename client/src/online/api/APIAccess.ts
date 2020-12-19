@@ -1,11 +1,11 @@
 import { Notify } from 'quasar';
 import ConfigManager, { ConfigItem } from '../../config/ConfigManager';
-import User from '../user/User';
+import User from '../../user/User';
 import BindableBool from '../../utils/bindables/BindableBool';
 import { APIRequest } from './api_request';
 import LoginRequest from './LoginRequest';
 import AccessToken from './AccessToken';
-import GuestUser from '../user/GuestUser';
+import GuestUser from '../../user/GuestUser';
 import APILoginResult from './APILoginResult';
 
 export default class APIAccess {

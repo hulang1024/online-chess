@@ -3,7 +3,7 @@ import APIAccess from "src/online/api/APIAccess";
 import ChannelManager from "src/online/chat/ChannelManager";
 import GameState from "src/online/play/GameState";
 import Room from "src/online/room/Room";
-import User from "src/online/user/User";
+import User from "src/user/User";
 import * as UserEvents from 'src/online/ws/events/user';
 import * as GameEvents from 'src/online/ws/events/play';
 import * as SpectatorEvents from 'src/online/ws/events/spectator';

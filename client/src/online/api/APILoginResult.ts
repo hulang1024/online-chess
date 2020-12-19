@@ -1,4 +1,4 @@
-import User from "../user/User";
+import User from "../../user/User";
 import AccessToken from "./AccessToken";
 import APIResult from './APIResult';
 

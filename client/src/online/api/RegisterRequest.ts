@@ -1,4 +1,4 @@
-import User from "../user/User";
+import User from "../../user/User";
 import APIResult from "./APIResult";
 import { APIRequest, HttpMethod } from "./api_request";
 

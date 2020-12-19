@@ -68,7 +68,7 @@ import {
 } from '@vue/composition-api';
 import { configManager } from 'src/boot/main';
 import { ConfigItem } from 'src/config/ConfigManager';
-import User from 'src/online/user/User';
+import User from 'src/user/User';
 import CreateUserOverlay from './CreateUserOverlay.vue';
 
 export default defineComponent({

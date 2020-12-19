@@ -53,7 +53,7 @@
 import {
   defineComponent, getCurrentInstance, reactive, Ref, ref, toRefs,
 } from '@vue/composition-api';
-import User from 'src/online/user/User';
+import User from 'src/user/User';
 
 export default defineComponent({
   setup() {

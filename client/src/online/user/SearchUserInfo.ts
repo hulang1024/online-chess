@@ -1,6 +1,6 @@
-import User from "src/online/user/User";
-import UserStats from "./UserStats";
-import UserStatus from "./UserStatus";
+import User from "src/user/User";
+import UserStats from "../../user/UserStats";
+import UserStatus from "../../user/UserStatus";
 
 export default class SearchUserInfo extends User {
   isOnline: boolean;

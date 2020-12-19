@@ -11,8 +11,8 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from '@vue/composition-api';
-import UserAvatar from 'src/components/UserAvatar.vue';
-import User from 'src/online/user/User';
+import UserAvatar from 'src/user/components/UserAvatar.vue';
+import User from 'src/user/User';
 
 export default defineComponent({
   components: { UserAvatar },

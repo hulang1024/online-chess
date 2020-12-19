@@ -6,6 +6,7 @@
     <div class="row items-center">
       <user-avatar
         :user="user"
+        :online="userStatus != UserStatus.OFFLINE"
         rounded
         :size="$q.screen.xs ? '50px': '60px'"
       />
@@ -21,7 +22,7 @@
       </q-icon>
       <div
         v-show="user"
-        class="q-ml-xs"
+        class="q-ml-sm"
       >
         <div class="nickname ellipsis">
           {{ nickname }}
@@ -39,9 +40,40 @@
 import {
   computed, defineComponent, PropType, watch, ref,
 } from "@vue/composition-api";
-import UserAvatar from "src/components/UserAvatar.vue";
-import UserStatus from "src/online/user/UserStatus";
+import UserAvatar from "src/user/components/UserAvatar.vue";
+import UserStatus from "src/user/UserStatus";
 import SearchUserInfo from 'src/online/user/SearchUserInfo';
+
+const USER_STATUS_MAP = {
+  [UserStatus.OFFLINE]: {
+    text: '离线',
+    color: '#1f1f1f',
+  },
+  [UserStatus.ONLINE]: {
+    text: '在线空闲',
+    color: '#8bc34a',
+  },
+  [UserStatus.AFK]: {
+    text: '暂时离开',
+    color: 'grey',
+  },
+  [UserStatus.IN_LOBBY]: {
+    text: '正在大厅',
+    color: '#8bc34a',
+  },
+  [UserStatus.IN_ROOM]: {
+    text: '准备游戏',
+    color: '#af52c6',
+  },
+  [UserStatus.PLAYING]: {
+    text: '正在游戏',
+    color: '#ff9800',
+  },
+  [UserStatus.SPECTATING]: {
+    text: '正在旁观',
+    color: '#607d8b',
+  },
+};
 
 export default defineComponent({
   components: { UserAvatar },
@@ -52,37 +84,6 @@ export default defineComponent({
     const userStatus = ref<UserStatus>(props.user?.status as UserStatus);
     const isFriend = ref(props.user?.isFriend);
 
-    const USER_STATUS_MAP = {
-      [UserStatus.OFFLINE]: {
-        text: '离线',
-        color: '#1f1f1f',
-      },
-      [UserStatus.ONLINE]: {
-        text: '在线空闲',
-        color: '#8bc34a',
-      },
-      [UserStatus.AFK]: {
-        text: '暂时离开',
-        color: 'grey',
-      },
-      [UserStatus.IN_LOBBY]: {
-        text: '正在大厅',
-        color: '#8bc34a',
-      },
-      [UserStatus.IN_ROOM]: {
-        text: '准备游戏',
-        color: '#af52c6',
-      },
-      [UserStatus.PLAYING]: {
-        text: '正在游戏',
-        color: '#ff9800',
-      },
-      [UserStatus.SPECTATING]: {
-        text: '正在旁观',
-        color: '#607d8b',
-      },
-    };
-
     const backgroundColor = computed(() => USER_STATUS_MAP[userStatus.value].color);
     const userStatusText = computed(() => USER_STATUS_MAP[userStatus.value].text);
 
@@ -92,9 +93,10 @@ export default defineComponent({
     });
 
     return {
+      UserStatus,
       ...props.user,
-      isFriend,
       userStatus,
+      isFriend,
       userStatusText,
       backgroundColor,
     };
@@ -110,7 +112,7 @@ export default defineComponent({
   transition: all 0.2s ease-out
 
 .nickname
-  width: 160px
+  width: 156px
   font-size: 1.1em
   font-weight: 500
 

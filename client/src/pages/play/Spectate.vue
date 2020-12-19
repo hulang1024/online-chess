@@ -135,7 +135,7 @@ import {
 } from '@vue/composition-api';
 import GameState from 'src/online/play/GameState';
 import ChessHost from 'src/rule/chess_host';
-import User from 'src/online/user/User';
+import User from 'src/user/User';
 import { binableBindToRef, createBoundRef } from 'src/utils/vue/vue_ref_utils';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import DrawableChessboard from './DrawableChessboard';

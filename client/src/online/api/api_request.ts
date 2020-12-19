@@ -1,6 +1,6 @@
 import { Ref } from '@vue/composition-api';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import User from '../user/User';
+import User from '../../user/User';
 import APIAccess from './APIAccess';
 import APIResult from './APIResult';
 

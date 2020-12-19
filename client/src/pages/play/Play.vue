@@ -191,12 +191,12 @@ import {
 } from '@vue/composition-api';
 import GameState from 'src/online/play/GameState';
 import ChessHost from 'src/rule/chess_host';
-import User from 'src/online/user/User';
+import User from 'src/user/User';
 import { createBoundRef } from 'src/utils/vue/vue_ref_utils';
 import { api } from 'src/boot/main';
 import Room from 'src/online/room/Room';
 import ResponseGameStates from 'src/online/play/game_states_response';
-import UserStatus from 'src/online/user/UserStatus';
+import UserStatus from 'src/user/UserStatus';
 import DrawableChessboard from './DrawableChessboard';
 import PlayerContainer from './PlayerContainer.vue';
 import GameUserPanel from './GameUserPanel.vue';

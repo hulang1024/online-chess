@@ -143,11 +143,11 @@ import * as UserEvents from "src/online/ws/events/user";
 import * as StatEvents from "src/online/ws/events/stat";
 import { api, channelManager, socketService } from 'src/boot/main';
 import SearchUserParams from 'src/online/user/SearchUserParams';
-import UserStatus from 'src/online/user/UserStatus';
+import UserStatus from 'src/user/UserStatus';
 import APIPageResponse from 'src/online/api/APIPageResponse';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
+import UserGridPanel from 'src/user/components/UserGridPanel.vue';
 import UserDetailsOverlay from '../user/UserDetailsOverlay.vue';
-import UserGridPanel from '../user/UserGridPanel.vue';
 
 export default defineComponent({
   components: { UserGridPanel, UserDetailsOverlay },

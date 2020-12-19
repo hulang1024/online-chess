@@ -1,4 +1,4 @@
-import User from "../user/User";
+import User from "../../user/User";
 import { APIRequest, HttpMethod } from "../api/api_request";
 import SpectateResponse from "./APISpectateResponse";
 

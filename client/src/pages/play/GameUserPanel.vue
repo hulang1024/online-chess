@@ -13,11 +13,12 @@
       >
         <user-avatar
           :user="user"
-          :class="{offline: !online}"
+          :online="online"
+          :class="[{afk: user && (status == UserStatus.AFK)}]"
           size="60px"
         />
         <div
-          v-show="user && status == UserStatus.AFK"
+          v-show="user && (status == UserStatus.AFK)"
           class="absolute-bottom-right user-status"
         >
           <span>({{ online ? '离开' : '离线' }})</span>
@@ -53,9 +54,9 @@
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from "@vue/composition-api";
-import UserAvatar from "src/components/UserAvatar.vue";
-import User from "src/online/user/User";
-import UserStatus from "src/online/user/UserStatus";
+import UserAvatar from "src/user/components/UserAvatar.vue";
+import User from "src/user/User";
+import UserStatus from "src/user/UserStatus";
 import ChessHost from "src/rule/chess_host";
 import Timer from "./Timer.vue";
 
@@ -97,10 +98,9 @@ export default defineComponent({
   position: relative
   border: 2px solid transparent
   border-radius: 100%
-  transition: all 0.1s ease-out
 
-  .user-avatar.offline
-    filter: grayscale(100%)
+  .user-avatar.afk
+    filter: grayscale(80%) !important
 
   .user-status
     font-size: 10px
