@@ -63,7 +63,7 @@ export default class DrawableChess implements Chess {
     el.style.backgroundColor = this.chess.getHost() == ChessHost.RED ? '#dd1100' : '#443322';
     el.style.userSelect = 'none';
     el.style.color = '#f6f6f6';
-    el.style.outlineOffset = '2px';
+    el.style.outlineOffset = '1px';
     el.style.fontWeight = 'bolder';
     el.style.textAlign = 'center';
     el.style.lineHeight = `${this.radius * 2}px`;
