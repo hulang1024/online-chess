@@ -12,6 +12,7 @@
         color="green"
         label="快速加入"
         class="col float-right q-mt-sm"
+        :loading="joining"
         @click="onQuickJoinClick"
       />
     </div>
@@ -20,7 +21,7 @@
       v-model="roomStatusActiveTab"
       dense
       indicator-color="yellow"
-      class="row bg-grey-4 text-black"
+      :class="['row', 'bg-grey-4', $q.dark.isActive && 'text-black']"
     >
       <q-tab
         :name="0"
@@ -70,6 +71,7 @@ export default defineComponent({
   setup() {
     const { $refs, $router, $q } = getCurrentInstance() as Vue;
     const roomManager = new RoomManager();
+    const joining = ref(false);
 
     const roomStatusActiveTab = ref(0);
 
@@ -88,9 +90,9 @@ export default defineComponent({
     const onGameContinue = () => {
       // eslint-disable-next-line
       (<any>$refs.confirmDialog).open({
-        yesText: '继续游戏',
-        noText: '不继续',
-        text: '你还有进行中的对局，是否回到游戏？',
+        yesText: '是',
+        noText: '否',
+        text: '是否返回到中途退出的游戏中？',
         action: (isOk: boolean) => {
           socketService.queue((send) => {
             send('play.game_continue', { ok: isOk });
@@ -134,6 +136,7 @@ export default defineComponent({
       }
 
       const req = new QuickStartRequest();
+      req.loading = joining;
       req.success = (room) => {
         // eslint-disable-next-line
         $router.push({name: 'play', params: { room: room as unknown as string }});
@@ -178,6 +181,7 @@ export default defineComponent({
 
       rooms: roomManager.rooms,
       roomsLoading: roomManager.roomsLoading,
+      joining,
 
       onQuickJoinClick,
       onCreateRoomClick,

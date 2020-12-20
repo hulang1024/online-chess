@@ -3,22 +3,22 @@
     v-model="isOpen"
     persistent
   >
-    <q-card style="width: 200px">
+    <q-card style="width: 300px">
       <q-card-section class="row items-center">
         <span class="q-ml-sm">{{ displayText }}</span>
       </q-card-section>
 
-      <q-card-actions align="center">
-        <q-btn
-          label="再来"
-          @click="() => onAction('again')"
-          color="positive"
-          v-close-popup
-        />
+      <q-card-actions align="evenly">
         <q-btn
           label="退出"
           @click="() => onAction('quit')"
           color="negative"
+          v-close-popup
+        />
+        <q-btn
+          label="再来"
+          @click="() => onAction('again')"
+          color="primary"
           v-close-popup
         />
       </q-card-actions>

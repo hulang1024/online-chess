@@ -3,22 +3,27 @@
     v-model="isOpen"
     persistent
   >
-    <q-card style="width: 300px">
+    <q-card
+      style="min-width: 300px !important"
+    >
       <q-card-section class="column items-center">
-        <span class="q-ml-sm">{{ displayText }}</span>
+        <span class="text-subtitle1">{{ displayText }}</span>
       </q-card-section>
 
-      <q-card-actions align="center">
-        <q-btn
-          :label="_yesText"
-          @click="() => onAction(true)"
-          color="positive"
-          v-close-popup
-        />
+      <q-card-actions
+        align="evenly"
+        class="q-mb-md"
+      >
         <q-btn
           :label="_noText"
           @click="() => onAction(false)"
           color="negative"
+          v-close-popup
+        />
+        <q-btn
+          :label="_yesText"
+          @click="() => onAction(true)"
+          color="primary"
           v-close-popup
         />
       </q-card-actions>

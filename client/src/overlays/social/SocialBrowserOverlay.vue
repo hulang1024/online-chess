@@ -12,7 +12,7 @@
       flat
       class="content-card q-px-sm"
     >
-      <span class="text-white text-subtitle1">在线人数: {{ onlineCount }}</span>
+      <span class="text-subtitle1">在线人数: {{ onlineCount }}</span>
       <q-tabs
         v-model="activeTab"
         align="left"
@@ -344,16 +344,10 @@ export default defineComponent({
 .social-browser-overlay {
   & .content-card {
     top: 40px;
-    background: rgba(0, 0, 0, 0.7);
-
-    & .q-tabs {
-      color: white;
-    }
 
     & .q-tab-panels {
       height: 180px;
       background: transparent;
-      color: white;
 
       .q-tab-panel {
         padding: 4px 4px;

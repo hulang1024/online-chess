@@ -416,6 +416,9 @@ export default class GamePlay {
   }
 
   private onGameContinueResponseEvent(msg: GameEvents.GameContinueResponseMsg) {
+    if (this.user.id == msg.uid) {
+      return;
+    }
     this.otherOnline.value = true;
     if (msg.ok) {
       this.gameState.value = GameState.PLAYING;
@@ -576,15 +579,15 @@ export default class GamePlay {
 
     if (!isGameResume) {
       if (activeChessHost == this.chessHost.value) {
-        this.gameTimer.resume();
         this.stepTimer.start();
-        this.otherGameTimer.pause();
+        this.gameTimer.resume();
         this.otherStepTimer.stop();
+        this.otherGameTimer.pause();
       } else {
-        this.gameTimer.pause();
         this.stepTimer.stop();
-        this.otherGameTimer.resume();
+        this.gameTimer.pause();
         this.otherStepTimer.start();
+        this.otherGameTimer.resume();
       }
     }
 
@@ -732,8 +735,8 @@ export default class GamePlay {
     } else {
     // eslint-disable-next-line
       this.confirmDialog.open({
-        yesText: '是',
-        noText: '取消',
+        yesText: '取消',
+        noText: '离开',
         text: '你正在游戏中，是否真的离开？',
         action: (ok: boolean) => {
           if (ok) {

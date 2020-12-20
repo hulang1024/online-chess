@@ -8,7 +8,7 @@
     class="z-top"
     content-class="chat-overlay"
   >
-    <q-card>
+    <q-card :elevated="false">
       <q-tabs
         v-model="activeChannelTab"
         align="left"
@@ -44,10 +44,9 @@
       <div class="full-width">
         <q-input
           v-model="messageText"
-          standout
+          :outlined="!$q.dark.isActive"
+          :standout="$q.dark.isActive"
           dense
-          shadow-text
-          :dark="$q.dark.isActive"
           placeholder="键入你的消息"
           class="message-input"
           @keydown.enter="onSend"
@@ -202,23 +201,19 @@ export default defineComponent({
 <style lang="scss" scoped>
 .chat-overlay {
   & .q-card {
-    background: rgba(40,40,40,0.8);
-
-    & .q-tabs {
-      color: white;
-    }
+    background-color: rgba(255, 255, 255, 0.9);
 
     & .q-tab-panels {
       height: 180px;
       background: transparent;
-      color: white;
-
       .q-tab-panel {
         padding: 4px 4px;
       }
     }
   }
-
+  & .q-card.q-dark {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
   .message-input {
     float: right;
     margin-right: 8px;

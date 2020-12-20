@@ -47,7 +47,7 @@
           page: 1,
           rowsPerPage: 50,
         }"
-        class="q-mt-sm bg-transparent text-white"
+        class="q-mt-sm bg-transparent"
       >
         <template v-slot:body="props">
           <q-tr :props="props" class="user-row">
@@ -70,7 +70,7 @@
             <q-td key="playCount" :props="props" class="count">
               {{ props.row.userStats.playCount }}
             </q-td>
-            <q-td key="winCount" :props="props" class="count text-white">
+            <q-td key="winCount" :props="props" class="count">
               {{ props.row.userStats.winCount }}
             </q-td>
             <q-td key="loseCount" :props="props" class="count">
@@ -187,16 +187,10 @@ export default defineComponent({
 .social-browser-overlay {
   & .content-card {
     top: 40px;
-    background: rgba(0, 0, 0, 0.7);
-
-    & .q-tabs {
-      color: white;
-    }
 
     & .q-tab-panels {
       height: 180px;
       background: transparent;
-      color: white;
 
       .q-tab-panel {
         padding: 4px 4px;
@@ -205,9 +199,6 @@ export default defineComponent({
 
     .q-table {
       .user-row {
-        background: rgba(0, 0, 0, 0.1);
-        border: black;
-        color: white;
 
         .rank-no {
           padding-left: 8px;
@@ -229,7 +220,6 @@ export default defineComponent({
 
         .count {
           width: 40px;
-          color: $grey-5;
         }
 
         .win-rate {

@@ -1,7 +1,6 @@
 <template>
   <q-drawer
     v-model="isOpen"
-    bordered
     overlay
     behavior="desktop"
     class="settings-drawer z-top"
@@ -10,7 +9,7 @@
     <q-tabs
       v-model="activeTab"
       vertical
-      class="col text-white"
+      class="col"
     >
       <q-tab
         name="general"
@@ -154,22 +153,16 @@ export default defineComponent({
 .settings-drawer > .q-drawer {
   width: 70% !important;
   max-width: 300px;
-  background-color: transparent;
-  color: white;
 }
 </style>
 <style lang="sass" scoped>
 .q-tabs
   max-width: 60px !important
-  background-color: black
-  opacity: 0.8
 
 .content
   position: relative
   padding: 8px
-  background-color: black
   opacity: 0.78
-  color: white
 
   .section-row
     &.toggle-row

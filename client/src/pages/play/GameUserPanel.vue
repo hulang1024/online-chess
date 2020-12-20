@@ -103,7 +103,7 @@ export default defineComponent({
   position: relative
 
   .user-avatar.afk
-    filter: grayscale(80%) !important
+    opacity: 0.6 !important
 
   .user-status
     font-size: 10px

@@ -1,15 +1,15 @@
 <template>
-  <q-card
+  <div
     v-show="visible"
-    class="row text-white justify-evenly q-py-lg"
-    style="width: 300px"
+    class="ready-start row justify-evenly text-white q-py-lg"
   >
     <q-btn
       :label="label"
-      @click="onReadyStart"
       :color="color"
+      style="width: 100px"
+      @click="onReadyStart"
     />
-  </q-card>
+  </div>
 </template>
 
 <script lang="ts">
@@ -46,7 +46,7 @@ export default defineComponent({
           }
         } else {
           label.value = readied ? '取消准备' : '准备!';
-          color.value = 'orange';
+          color.value = readied ? 'negative' : 'positive';
           visible.value = true;
         }
       } else {
@@ -67,3 +67,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="sass" scoped>
+.ready-start
+  width: 100%
+  background-color: rgba(0, 0, 0, 0.2)
+</style>

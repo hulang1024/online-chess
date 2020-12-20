@@ -9,7 +9,7 @@
       v-if="avatarUrl"
       :src="avatarUrl"
     >
-    <span v-else>{{ nickname ? nickname.substring(0,1) : '' }}</span>
+    <span v-else class="text-white">{{ nickname ? nickname.substring(0,1) : '' }}</span>
   </q-avatar>
 </template>
 
@@ -66,5 +66,5 @@ export default defineComponent({
   transition: all 0.2s ease-out
 
 .user-avatar.offline
-  filter: grayscale(90%)
+  opacity: 0.2
 </style>

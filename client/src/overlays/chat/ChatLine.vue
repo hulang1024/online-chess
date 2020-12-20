@@ -46,7 +46,7 @@ export default defineComponent({
 
     const nicknameColor = message.id > 0
       ? USERNAME_COLORS[sender.id % USERNAME_COLORS.length]
-      : 0xdddddd;
+      : '';
 
     const color = ref<string>('');
     if (message instanceof ErrorMessage) {
