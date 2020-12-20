@@ -19,10 +19,10 @@ import ChessPos from "src/rule/ChessPos";
 import InfoMessage from "src/online/chat/InfoMessage";
 import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
 import Signal from "src/utils/signals/Signal";
+import UserStatus from "src/user/UserStatus";
 import Player from "./Player";
 import Timer from "./timer/Timer";
 import CircleTimer from "./timer/CircleTimer";
-import UserStatus from "src/user/UserStatus";
 
 export default class Spectate {
   public gameState = new Bindable<GameState>(GameState.READY);
