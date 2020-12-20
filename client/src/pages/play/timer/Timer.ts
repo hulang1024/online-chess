@@ -58,13 +58,14 @@ export default class Timer {
   public start() {
     // 第一次之后才重新计时
     if (this.starts > 0) {
+      this.emit('restarted');
       this.restart();
     } else {
+      this.emit('started');
       this.starts++;
       // 使用当前值计时
       this.tick();
     }
-    this.emit('started');
   }
 
   public getCurrent() { return this.seconds.value; }

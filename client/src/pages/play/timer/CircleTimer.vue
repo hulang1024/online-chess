@@ -3,8 +3,9 @@
     show-value
     instant-feedback
     :max="totalMS"
-    :value="current"
+    :value="currentMS"
     track-color="transparent"
+    :thickness="0.1"
     v-bind="$attrs"
     class="circle-timer"
   >
@@ -27,7 +28,7 @@ export default defineComponent({
     const timer = new CircleTimer();
 
     return {
-      current: timer.current,
+      currentMS: timer.currentMS,
       totalMS: timer.totalMS,
       setSyncTimer: timer.setSyncTimer.bind(timer),
     };
