@@ -9,9 +9,6 @@ import io.github.hulang1024.chinesechess.friend.FriendsManager;
 import io.github.hulang1024.chinesechess.http.TokenUtils;
 import io.github.hulang1024.chinesechess.http.params.PageParam;
 import io.github.hulang1024.chinesechess.http.results.PageRet;
-import io.github.hulang1024.chinesechess.room.Room;
-import io.github.hulang1024.chinesechess.room.RoomManager;
-import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.activity.UserActivityService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +33,11 @@ public class UserManager {
     @Autowired
     private FriendUserDao friendUserDao;
     @Autowired
-    private RoomManager roomManager;
-    @Autowired
     private ChannelManager channelManager;
     @Autowired
-    private SpectatorManager spectatorManager;
-    @Autowired
     private UserSessionManager userSessionManager;
+    @Autowired
+    private UserSessionCloseListener sessionCloseListener;
     @Autowired
     private UserActivityService userActivityService;
 
@@ -110,13 +105,16 @@ public class UserManager {
             }
         });
         pageData.setRecords(
-            pageData.getRecords().stream().filter(user -> {
-                boolean ret = true;
-                if (searchUserParam.getStatus() != null) {
-                    ret = ret && user.getStatus().code == searchUserParam.getStatus();
-                }
-                return ret;
-            }).collect(Collectors.toList()));
+            pageData.getRecords().stream()
+                .filter(user -> {
+                    boolean ret = true;
+                    if (searchUserParam.getStatus() != null) {
+                        ret = ret && user.getStatus().code == searchUserParam.getStatus();
+                    }
+                    return ret;
+                })
+                .sorted((a, b) -> a.getIsOnline() ? b.getIsOnline() ? 0 : -1 : +1)
+                .collect(Collectors.toList()));
 
         return new PageRet<>(pageData);
     }
@@ -199,27 +197,10 @@ public class UserManager {
     }
 
     public boolean logout(User user) {
-        loggedInUserMap.remove(user.getId());
-
-        Room joinedRoom = roomManager.getJoinedRoom(user);
-        if (joinedRoom != null) {
-            roomManager.partRoom(joinedRoom, user);
-        }
-
-        Room spectatingRoom = spectatorManager.getSpectatingRoom(user);
-        if (spectatingRoom != null) {
-            spectatorManager.leaveRoom(user, spectatingRoom);
-        }
         Session session = userSessionManager.getSession(user);
-
-        userSessionManager.removeBinding(user);
-
-        channelManager.leaveDefaultChannels(user);
-
-        if (session != null) {
-            guestLogin(session);
-        }
-
+        sessionCloseListener.onClose(session);
+        loggedInUserMap.remove(user.getId());
+        session.close();
         return true;
     }
 

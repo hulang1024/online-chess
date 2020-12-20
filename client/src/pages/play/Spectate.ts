@@ -22,6 +22,7 @@ import Signal from "src/utils/signals/Signal";
 import Player from "./Player";
 import Timer from "./timer/Timer";
 import CircleTimer from "./timer/CircleTimer";
+import UserStatus from "src/user/UserStatus";
 
 export default class Spectate {
   public gameState = new Bindable<GameState>(GameState.READY);
@@ -34,11 +35,15 @@ export default class Spectate {
 
   public redOnline = new BindableBool();
 
+  public redUserStatus = new Bindable<UserStatus>();
+
   public redReadied = new BindableBool();
 
   public blackUser = new Bindable<User | null>();
 
   public blackOnline = new BindableBool();
+
+  public blackUserStatus = new Bindable<UserStatus>();
 
   public blackReadied = new BindableBool();
 
@@ -88,9 +93,9 @@ export default class Spectate {
     this.initListeners();
 
     this.playerLoaded.add(() => {
-      this.player.gameOver.add(this.onGameOver.bind(this), this);
-      this.player.activeChessHost.changed.add(this.onTurnActiveChessHost.bind(this), this);
-      this.gameState.addAndRunOnce(this.onGameStateChanged.bind(this), this);
+      this.player.gameOver.add(this.onGameOver, this);
+      this.player.activeChessHost.changed.add(this.onTurnActiveChessHost, this);
+      this.gameState.addAndRunOnce(this.onGameStateChanged, this);
       if (spectateResponse.states) {
         this.player.startGame(this.viewChessHost.value, spectateResponse.states);
       }
@@ -121,6 +126,60 @@ export default class Spectate {
     onBeforeUnmount(() => {
       this.onQuit();
     });
+  }
+
+  private initListeners() {
+    RoomEvents.userJoined.add(this.onRoomUserJoinedEvent, this);
+    RoomEvents.userLeft.add(this.onRoomUserLeftEvent, this);
+    UserEvents.offline.add(this.onUserOfflineEvent, this);
+    UserEvents.online.add(this.onUserOnlineEvent, this);
+    UserEvents.statusChanged.add(this.onUserStatusChangedEvent, this);
+
+    GameEvents.readied.add((msg: GameEvents.GameReadyMsg) => {
+      if (msg.uid == this.redUser.value?.id) {
+        this.redReadied.value = msg.readied;
+      } else {
+        this.blackReadied.value = msg.readied;
+      }
+    }, this);
+
+    GameEvents.gameStarted.add(this.onGameStartedEvent, this);
+
+    GameEvents.gameOver.add((msg: GameEvents.GameOverMsg) => {
+      this.onGameOver(msg.winUserId == this.redUser.value?.id ? ChessHost.RED : ChessHost.BLACK);
+    });
+
+    GameEvents.chessPickup.add((msg: GameEvents.ChessPickUpMsg) => {
+      this.player.pickChess(msg.pickup, ChessPos.make(msg.pos), msg.chessHost);
+    }, this);
+
+    GameEvents.chessMoved.add((msg: GameEvents.ChessMoveMsg) => {
+      this.player.moveChess(
+        ChessPos.make(msg.fromPos),
+        ChessPos.make(msg.toPos),
+        msg.chessHost, msg.moveType == 2,
+      );
+    }, this);
+
+    GameEvents.confirmRequest.add(this.onGameConfirmRequestEvent, this);
+    GameEvents.confirmResponse.add(this.onGameConfirmResponseEvent, this);
+    GameEvents.gameContinueResponse.add(this.onGameContinueResponseEvent, this);
+
+    SpectatorEvents.joined.add((msg: SpectatorEvents.SpectatorJoinedMsg) => {
+      this.channelManager.openChannel(this.room.channelId);
+      this.channelManager.currentChannel.value.addNewMessages(
+        new InfoMessage(`${msg.user.nickname} 加入观看`),
+      );
+      this.spectatorCount.value = msg.spectatorCount;
+    }, this);
+
+    SpectatorEvents.left.add((msg: SpectatorEvents.SpectatorLeftMsg) => {
+      this.spectatorCount.value = msg.spectatorCount;
+    }, this);
+
+    this.socketService.disconnect.add(this.disconnectHandler = () => {
+      this.exitScreen();
+    }, this);
   }
 
   private loadState(spectateResponse: SpectateResponse) {
@@ -168,215 +227,17 @@ export default class Spectate {
     }
   }
 
-  private initListeners() {
-    RoomEvents.userJoined.add((msg: RoomEvents.RoomUserJoinedMsg) => {
-      if (this.redUser.value == null) {
-        this.redUser.value = msg.user;
-        this.redOnline.value = true;
-        this.redReadied.value = false;
-      } else {
-        this.blackUser.value = msg.user;
-        this.blackOnline.value = true;
-        this.blackReadied.value = false;
-      }
-      this.context.$q.notify(`${msg.user.nickname} 已加入棋桌`);
-    }, this);
-
-    RoomEvents.userLeft.add((msg: RoomEvents.RoomUserLeftMsg) => {
-      let leftUser: User | null;
-
-      if (msg.uid == this.targetUserId) {
-        this.targetUserId = null;
-      }
-
-      if (msg.uid == this.redUser.value?.id) {
-        leftUser = this.redUser.value;
-        this.redUser.value = null;
-        this.redOnline.value = false;
-        this.redReadied.value = false;
-      } else {
-        leftUser = this.blackUser.value;
-        this.blackUser.value = null;
-        this.blackOnline.value = false;
-        this.blackReadied.value = false;
-      }
-
-      this.context.$q.notify(`${leftUser?.nickname || '玩家'} 已离开棋桌`);
-
-      if (this.redUser.value == null && this.blackUser.value == null) {
-        this.context.$q.notify({ message: '你观看的棋桌已经解散' });
-        this.exitScreen();
-        return;
-      }
-
-      if (this.gameState.value != GameState.END) {
-        this.gameState.value = GameState.READY;
-      }
-      this.activeChessHost.value = null;
-    }, this);
-
-    GameEvents.readied.add((msg: GameEvents.GameReadyMsg) => {
-      if (msg.uid == this.redUser.value?.id) {
-        this.redReadied.value = msg.readied;
-      } else {
-        this.blackReadied.value = msg.readied;
-      }
-    }, this);
-
-    GameEvents.gameStarted.add((msg: GameEvents.GameStartedMsg) => {
-      // 新对局可能交换棋方，找出新的红方用户和黑方用户
-      let redUser: User = this.redUser.value as User;
-      let blackUser: User = this.blackUser.value as User;
-      [this.redUser.value, this.blackUser.value].forEach((user) => {
-        if (user?.id == msg.redChessUid) {
-          redUser = user;
-        } else {
-          blackUser = user as User;
-        }
-      });
-      this.redUser.value = redUser;
-      this.blackUser.value = blackUser;
-
-      // 跟随观看目标用户视角
-      if (this.targetUserId) {
-        this.viewChessHost.value = this.targetUserId == redUser.id
-          ? ChessHost.RED : ChessHost.BLACK;
-      }
-
-      this.gameState.value = GameState.PLAYING;
-
-      this.redGameTimer.ready();
-      this.redStepTimer.ready();
-      this.blackGameTimer.ready();
-      this.blackStepTimer.ready();
-      this.player.startGame(this.viewChessHost.value);
-      this.onTurnActiveChessHost(ChessHost.RED);
-      this.showText(`开始对局`, 1000);
-    }, this);
-
-    GameEvents.gameOver.add((msg: GameEvents.GameOverMsg) => {
-      this.onGameOver(msg.winUserId == this.redUser.value?.id ? ChessHost.RED : ChessHost.BLACK);
-    });
-
-    GameEvents.chessPickup.add((msg: GameEvents.ChessPickUpMsg) => {
-      this.player.pickChess(msg.pickup, ChessPos.make(msg.pos), msg.chessHost);
-    }, this);
-
-    GameEvents.chessMoved.add((msg: GameEvents.ChessMoveMsg) => {
-      this.player.moveChess(
-        ChessPos.make(msg.fromPos),
-        ChessPos.make(msg.toPos),
-        msg.chessHost, msg.moveType == 2,
-      );
-    }, this);
-
-    GameEvents.confirmRequest.add((msg: GameEvents.ConfirmRequestMsg) => {
-      let text = msg.chessHost == ChessHost.BLACK ? '黑方' : '红方';
-      text += `请求${ConfirmRequest.toReadableText(msg.reqType)}`;
-      this.showText(text);
-    }, this);
-
-    GameEvents.confirmResponse.add((msg: GameEvents.ConfirmResponseMsg) => {
-      let text = '';
-      text += msg.chessHost == ChessHost.BLACK ? '黑方' : '红方';
-      text += msg.ok ? '同意' : '不同意';
-      text += ConfirmRequest.toReadableText(msg.reqType);
-      this.showText(text, 2000);
-
-      switch (msg.reqType) {
-        case ConfirmRequest.Type.WHITE_FLAG:
-          this.onGameOver(msg.chessHost);
-          break;
-        case ConfirmRequest.Type.DRAW:
-          this.onGameOver(null);
-          break;
-        case ConfirmRequest.Type.WITHDRAW: {
-          this.player.withdraw();
-          break;
-        }
-        default:
-          break;
-      }
-    }, this);
-
-    SpectatorEvents.joined.add((msg: SpectatorEvents.SpectatorJoinedMsg) => {
-      this.channelManager.openChannel(this.room.channelId);
-      this.channelManager.currentChannel.value.addNewMessages(
-        new InfoMessage(`${msg.user.nickname} 加入观看`),
-      );
-      this.spectatorCount.value = msg.spectatorCount;
-    }, this);
-
-    SpectatorEvents.left.add((msg: SpectatorEvents.SpectatorLeftMsg) => {
-      this.spectatorCount.value = msg.spectatorCount;
-    }, this);
-
-    this.socketService.disconnect.add(this.disconnectHandler = () => {
-      this.exitScreen();
-    }, this);
-
-    UserEvents.offline.add((msg: UserEvents.UserOfflineMsg) => {
-      if (!(this.blackUser.value && this.blackUser.value.id == msg.uid)) {
-        return;
-      }
-      this.gameState.value = GameState.PAUSE;
-      let who: string | null = null;
-      if (this.redUser.value && msg.uid == this.redUser.value.id) {
-        who = '红方';
-        this.redOnline.value = false;
-      }
-      if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
-        who = '黑方';
-        this.blackOnline.value = false;
-      }
-      if (!who) {
-        return;
-      }
-      this.showText(`${who}已下线或掉线，可等待回来继续`);
-    });
-
-    UserEvents.online.add((msg: UserEvents.UserOnlineMsg) => {
-      if (!(this.blackUser.value && this.blackUser.value.id == msg.uid)) {
-        return;
-      }
-      let who: string | null = null;
-      if (this.redUser.value && msg.uid == this.redUser.value.id) {
-        who = '红方';
-        this.redOnline.value = true;
-      }
-      if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
-        who = '黑方';
-        this.blackOnline.value = true;
-      }
-      if (!who) {
-        return;
-      }
-      this.showText(`${who}已上线`);
-    });
-
-    GameEvents.gameContinueResponse.add((msg: GameEvents.GameContinueResponseMsg) => {
-      let who = '玩家';
-      if (this.redUser.value && msg.uid == this.redUser.value.id) {
-        who = '红方';
-        if (msg.ok) {
-          this.redOnline.value = true;
-        }
-      }
-      if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
-        who = '黑方';
-        if (msg.ok) {
-          this.blackOnline.value = true;
-        }
-      }
-      if (msg.ok) {
-        this.showText(`${who}已回来`, 2000);
-      } else {
-        this.showText(`${who}已选择不继续对局`);
-      }
-      if (this.redOnline.value && this.blackOnline.value) {
-        this.gameState.value = GameState.PLAYING;
-      }
-    });
+  private onUserStatusChangedEvent(msg: UserEvents.UserStatusChangedMsg) {
+    let bindable: Bindable<UserStatus> | null = null;
+    if (this.redUser.value && msg.uid == this.redUser.value.id) {
+      bindable = this.redUserStatus;
+    }
+    if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
+      bindable = this.blackUserStatus;
+    }
+    if (bindable) {
+      bindable.value = msg.status;
+    }
   }
 
   private onGameStateChanged(gameState: GameState, prevGameState: GameState) {
@@ -400,6 +261,90 @@ export default class Spectate {
     ].forEach((timer) => {
       timer.pause();
     });
+  }
+
+  private onGameStartedEvent(msg: GameEvents.GameStartedMsg) {
+    // 新对局可能交换棋方，找出新的红方用户和黑方用户
+    let redUser: User = this.redUser.value as User;
+    let blackUser: User = this.blackUser.value as User;
+    [this.redUser.value, this.blackUser.value].forEach((user) => {
+      if (user?.id == msg.redChessUid) {
+        redUser = user;
+      } else {
+        blackUser = user as User;
+      }
+    });
+    this.redUser.value = redUser;
+    this.blackUser.value = blackUser;
+
+    // 跟随观看目标用户视角
+    if (this.targetUserId) {
+      this.viewChessHost.value = this.targetUserId == redUser.id
+        ? ChessHost.RED : ChessHost.BLACK;
+    }
+
+    this.gameState.value = GameState.PLAYING;
+
+    this.redGameTimer.ready();
+    this.redStepTimer.ready();
+    this.blackGameTimer.ready();
+    this.blackStepTimer.ready();
+    this.player.startGame(this.viewChessHost.value);
+    this.onTurnActiveChessHost(ChessHost.RED);
+    this.showText(`开始对局`, 1000);
+  }
+
+  private onGameConfirmRequestEvent(msg: GameEvents.ConfirmRequestMsg) {
+    let text = msg.chessHost == ChessHost.BLACK ? '黑方' : '红方';
+    text += `请求${ConfirmRequest.toReadableText(msg.reqType)}`;
+    this.showText(text);
+  }
+
+  private onGameConfirmResponseEvent(msg: GameEvents.ConfirmResponseMsg) {
+    let text = '';
+    text += msg.chessHost == ChessHost.BLACK ? '黑方' : '红方';
+    text += msg.ok ? '同意' : '不同意';
+    text += ConfirmRequest.toReadableText(msg.reqType);
+    this.showText(text, 2000);
+
+    switch (msg.reqType) {
+      case ConfirmRequest.Type.WHITE_FLAG:
+        this.onGameOver(msg.chessHost);
+        break;
+      case ConfirmRequest.Type.DRAW:
+        this.onGameOver(null);
+        break;
+      case ConfirmRequest.Type.WITHDRAW: {
+        this.player.withdraw();
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  private onGameContinueResponseEvent(msg: GameEvents.GameContinueResponseMsg) {
+    let who = '玩家';
+    if (this.redUser.value && msg.uid == this.redUser.value.id) {
+      who = '红方';
+      if (msg.ok) {
+        this.redOnline.value = true;
+      }
+    }
+    if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
+      who = '黑方';
+      if (msg.ok) {
+        this.blackOnline.value = true;
+      }
+    }
+    if (msg.ok) {
+      this.showText(`${who}已回来`, 2000);
+    } else {
+      this.showText(`${who}已选择不继续对局`);
+    }
+    if (this.redOnline.value && this.blackOnline.value) {
+      this.gameState.value = GameState.PLAYING;
+    }
   }
 
   public onTimerEnd(isGameTimer: boolean, chessHost: ChessHost) {
@@ -438,6 +383,91 @@ export default class Spectate {
     this.showText(winChessHost == null
       ? '平局'
       : `${winChessHost == ChessHost.RED ? '红方' : '黑方'}赢！`);
+  }
+
+  private onRoomUserJoinedEvent(msg: RoomEvents.RoomUserJoinedMsg) {
+    if (this.redUser.value == null) {
+      this.redUser.value = msg.user;
+      this.redOnline.value = true;
+      this.redReadied.value = false;
+    } else {
+      this.blackUser.value = msg.user;
+      this.blackOnline.value = true;
+      this.blackReadied.value = false;
+    }
+    this.context.$q.notify(`${msg.user.nickname} 已加入棋桌`);
+  }
+
+  private onRoomUserLeftEvent(msg: RoomEvents.RoomUserLeftMsg) {
+    let leftUser: User | null;
+
+    if (msg.uid == this.targetUserId) {
+      this.targetUserId = null;
+    }
+
+    if (msg.uid == this.redUser.value?.id) {
+      leftUser = this.redUser.value;
+      this.redUser.value = null;
+      this.redOnline.value = false;
+      this.redReadied.value = false;
+    } else {
+      leftUser = this.blackUser.value;
+      this.blackUser.value = null;
+      this.blackOnline.value = false;
+      this.blackReadied.value = false;
+    }
+
+    this.context.$q.notify(`${leftUser?.nickname || '玩家'} 已离开棋桌`);
+
+    if (this.redUser.value == null && this.blackUser.value == null) {
+      this.context.$q.notify({ message: '你观看的棋桌已经解散' });
+      this.exitScreen();
+      return;
+    }
+
+    if (this.gameState.value != GameState.END) {
+      this.gameState.value = GameState.READY;
+    }
+    this.activeChessHost.value = null;
+  }
+
+  private onUserOfflineEvent(msg: UserEvents.UserOfflineMsg) {
+    if (!(this.blackUser.value && this.blackUser.value.id == msg.uid)) {
+      return;
+    }
+    this.gameState.value = GameState.PAUSE;
+    let who: string | null = null;
+    if (this.redUser.value && msg.uid == this.redUser.value.id) {
+      who = '红方';
+      this.redOnline.value = false;
+    }
+    if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
+      who = '黑方';
+      this.blackOnline.value = false;
+    }
+    if (!who) {
+      return;
+    }
+    this.showText(`${who}已下线或掉线，可等待回来继续`);
+  }
+
+  private onUserOnlineEvent(msg: UserEvents.UserOnlineMsg) {
+    if (!(this.blackUser.value && this.blackUser.value.id == msg.uid)) {
+      return;
+    }
+    let who: string | null = null;
+    if (this.redUser.value && msg.uid == this.redUser.value.id) {
+      who = '红方';
+      this.redOnline.value = true;
+    }
+    if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
+      who = '黑方';
+      this.blackOnline.value = true;
+    }
+    if (!who) {
+      return;
+    }
+    this.showText(`${who}已上线`);
   }
 
   public onQuitClick() {
@@ -516,10 +546,6 @@ export default class Spectate {
 
   private onQuit() {
     [
-      RoomEvents.userJoined,
-      RoomEvents.userLeft,
-      UserEvents.online,
-      UserEvents.offline,
       GameEvents.readied,
       GameEvents.chessPickup,
       GameEvents.chessMoved,
@@ -532,8 +558,15 @@ export default class Spectate {
       event.removeAll();
     });
 
-    this.channelManager.leaveChannel(this.room.channelId);
+    RoomEvents.userJoined.remove(this.onRoomUserJoinedEvent, this);
+    RoomEvents.userLeft.remove(this.onRoomUserLeftEvent, this);
+    UserEvents.offline.remove(this.onUserOfflineEvent, this);
+    UserEvents.online.remove(this.onUserOnlineEvent, this);
+    UserEvents.statusChanged.remove(this.onUserStatusChangedEvent, this);
+    GameEvents.gameContinueResponse.remove(this.onGameContinueResponseEvent, this);
     this.socketService.disconnect.remove(this.disconnectHandler);
+
+    this.channelManager.leaveChannel(this.room.channelId);
   }
 
   private exitScreen() {

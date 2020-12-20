@@ -4,7 +4,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, getCurrentInstance } from '@vue/composition-api';
+import { defineComponent, getCurrentInstance, onMounted } from '@vue/composition-api';
 import { Notify } from 'quasar';
 import Vue from 'vue';
 import VueRouter from 'vue-router';
@@ -55,8 +55,10 @@ export default defineComponent({
     const context = getCurrentInstance() as Vue;
 
     context.$q.dark.set(configManager.get(ConfigItem.theme) == 'dark');
-    start(context.$router);
 
+    onMounted(() => {
+      start(context.$router);
+    });
     document.addEventListener('visibilitychange', () => {
       socketService.queue((send) => {
         const hide = document.hidden;

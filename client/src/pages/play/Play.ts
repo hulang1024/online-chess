@@ -124,16 +124,16 @@ export default class GamePlay {
     this.initListeners();
 
     this.playerLoaded.add(() => {
-      this.player.gameOver.add(this.onGameOver.bind(this), this);
+      this.player.gameOver.add(this.onGameOver, this);
       this.player.activeChessHost.changed.add(
         (v: ChessHost) => this.onTurnActiveChessHost(v, false), this,
       );
       this.chessboard = this.player.chessboard as unknown as DrawableChessboard;
-      this.chessboard.chessPickupOrDrop.add(this.onChessPickupOrDrop.bind(this), this);
-      this.chessboard.clicked.add(this.onChessboardClick.bind(this), this);
-      this.chessboard.chessMoved.add(this.onInputChessMove.bind(this), this);
+      this.chessboard.chessPickupOrDrop.add(this.onChessPickupOrDrop, this);
+      this.chessboard.clicked.add(this.onChessboardClick, this);
+      this.chessboard.chessMoved.add(this.onInputChessMove, this);
 
-      this.gameState.addAndRunOnce(this.onGameStateChanged.bind(this), this);
+      this.gameState.addAndRunOnce(this.onGameStateChanged, this);
 
       if (initialGameStates) {
         this.player.startGame(this.chessHost.value, initialGameStates);
@@ -161,6 +161,12 @@ export default class GamePlay {
         .$refs.circleStepTimer as unknown as CircleTimer).setSyncTimer(this.otherStepTimer);
 
       this.loadState(initialGameStates);
+
+      api.isLoggedIn.changed.add((isLoggedIn: boolean) => {
+        if (!isLoggedIn) {
+          this.exitScreen();
+        }
+      });
 
       this.isWaitingForOther.changed.add((value: number) => {
         if (value == 0) {
@@ -234,45 +240,46 @@ export default class GamePlay {
 
   private onQuit() {
     [
-      RoomEvents.userJoined,
-      RoomEvents.userLeft,
-      UserEvents.online,
-      UserEvents.offline,
-      UserEvents.statusChanged,
       GameEvents.readied,
       GameEvents.chessPickup,
       GameEvents.chessMoved,
       GameEvents.gameStarted,
       GameEvents.confirmRequest,
       GameEvents.confirmResponse,
-      GameEvents.gameContinue,
-      GameEvents.gameContinueResponse,
       SpectatorEvents.joined,
       SpectatorEvents.left,
     ].forEach((event) => {
       event.removeAll();
     });
 
-    this.channelManager.leaveChannel(this.room.channelId);
+    RoomEvents.userJoined.remove(this.onRoomUserJoinedEvent, this);
+    RoomEvents.userLeft.remove(this.onRoomUserLeftEvent, this);
+    UserEvents.offline.remove(this.onUserOfflineEvent, this);
+    UserEvents.online.remove(this.onUserOnlineEvent, this);
+    UserEvents.statusChanged.remove(this.onUserStatusChangedEvent, this);
+    GameEvents.gameContinue.remove(this.onGameContinueEvent, this);
+    GameEvents.gameContinueResponse.remove(this.onGameContinueResponseEvent, this);
     this.socketService.disconnect.remove(this.disconnectHandler);
+
+    this.channelManager.leaveChannel(this.room.channelId);
   }
 
   private initListeners() {
-    RoomEvents.userJoined.add(this.onRoomUserJoinedEvent.bind(this), this);
-    RoomEvents.userLeft.add(this.onRoomUserLeftEvent.bind(this), this);
+    RoomEvents.userJoined.add(this.onRoomUserJoinedEvent, this);
+    RoomEvents.userLeft.add(this.onRoomUserLeftEvent, this);
 
-    UserEvents.offline.add(this.onUserOfflineEvent.bind(this), this);
-    UserEvents.online.add(this.onUserOnlineEvent.bind(this), this);
-    UserEvents.statusChanged.add(this.onUserStatusChangedEvent.bind(this), this);
+    UserEvents.offline.add(this.onUserOfflineEvent, this);
+    UserEvents.online.add(this.onUserOnlineEvent, this);
+    UserEvents.statusChanged.add(this.onUserStatusChangedEvent, this);
 
-    GameEvents.readied.add(this.onGameReadyEvent.bind(this), this);
-    GameEvents.gameStarted.add(this.onGameStartedEvent.bind(this), this);
-    GameEvents.chessPickup.add(this.onGameChessPickupEvent.bind(this), this);
-    GameEvents.chessMoved.add(this.onGameChessMovedEvent.bind(this), this);
-    GameEvents.confirmRequest.add(this.onGameConfirmRequestEvent.bind(this), this);
-    GameEvents.confirmResponse.add(this.onGameConfirmResponseEvent.bind(this), this);
-    GameEvents.gameContinue.add(this.onGameContinueEvent.bind(this), this);
-    GameEvents.gameContinueResponse.add(this.onGameContinueResponseEvent.bind(this), this);
+    GameEvents.readied.add(this.onGameReadyEvent, this);
+    GameEvents.gameStarted.add(this.onGameStartedEvent, this);
+    GameEvents.chessPickup.add(this.onGameChessPickupEvent, this);
+    GameEvents.chessMoved.add(this.onGameChessMovedEvent, this);
+    GameEvents.confirmRequest.add(this.onGameConfirmRequestEvent, this);
+    GameEvents.confirmResponse.add(this.onGameConfirmResponseEvent, this);
+    GameEvents.gameContinue.add(this.onGameContinueEvent, this);
+    GameEvents.gameContinueResponse.add(this.onGameContinueResponseEvent, this);
 
     SpectatorEvents.joined.add((msg: SpectatorEvents.SpectatorJoinedMsg) => {
       this.channelManager.openChannel(this.room.channelId);

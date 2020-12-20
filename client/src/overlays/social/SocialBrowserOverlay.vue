@@ -217,9 +217,7 @@ export default defineComponent({
       let isToAdd = false;
       switch (activeTab.value) {
         case 'all':
-          if (found) {
-            found.status = msg.status;
-          } else {
+          if (!found) {
             isToAdd = true;
           }
           break;
@@ -241,6 +239,12 @@ export default defineComponent({
       if (isToAdd) {
         users.value = users.value.concat([msg.user]);
       }
+      if (found) {
+        found.status = msg.status;
+        found.isOnline = msg.status != UserStatus.OFFLINE;
+      }
+
+      users.value = users.value.sort((a, b) => (a.isOnline ? (b.isOnline ? 0 : -1) : +1));
     });
 
     StatEvents.online.add((msg: StatEvents.StatOnlineCountMsg) => {

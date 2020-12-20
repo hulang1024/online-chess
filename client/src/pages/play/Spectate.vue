@@ -6,6 +6,7 @@
           ref="otherGameUserPanel"
           :user="otherUser"
           :online="otherOnline"
+          :status="otherUserStatus"
           :chess-host="otherChessHost"
           :active="activeChessHost == otherChessHost"
           class="q-py-sm q-ml-xs"
@@ -53,6 +54,7 @@
           ref="viewGameUserPanel"
           :user="viewUser"
           :online="viewOnline"
+          :status="viewUserStatus"
           :chess-host="viewChessHost"
           :active="activeChessHost == viewChessHost"
           class="fixed-bottom-right"
@@ -74,6 +76,7 @@
           ref="otherGameUserPanel"
           :user="otherUser"
           :online="otherOnline"
+          :status="otherUserStatus"
           :chess-host="otherChessHost"
           :active="activeChessHost == otherChessHost"
         />
@@ -82,6 +85,7 @@
           ref="viewGameUserPanel"
           :user="viewUser"
           :online="viewOnline"
+          :status="viewUserStatus"
           :chess-host="viewChessHost"
           :active="activeChessHost == viewChessHost"
         />
@@ -114,6 +118,7 @@ import ChessHost from 'src/rule/chess_host';
 import User from 'src/user/User';
 import { binableBindToRef, createBoundRef } from 'src/utils/vue/vue_ref_utils';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
+import UserStatus from 'src/user/UserStatus';
 import DrawableChessboard from './DrawableChessboard';
 import PlayerContainer from './PlayerContainer.vue';
 import GameUserPanel from './GameUserPanel.vue';
@@ -142,32 +147,38 @@ export default defineComponent({
 
     const otherChessHost: Ref<ChessHost | null> = ref(null);
     const viewUser: Ref<User | null> = ref(null);
+    const viewUserStatus: Ref<UserStatus | null> = ref(null);
     const viewOnline: Ref<boolean> = ref(false);
     const viewReadied: Ref<boolean> = ref(false);
     const otherUser: Ref<User | null> = ref(null);
+    const otherUserStatus: Ref<UserStatus | null> = ref(null);
     const otherOnline: Ref<boolean> = ref(false);
     const otherReadied: Ref<boolean> = ref(false);
 
     spectate.viewChessHost.addAndRunOnce((chessHost: ChessHost) => {
       otherChessHost.value = ChessHost.reverse(chessHost);
       [
-        spectate.blackUser, spectate.blackOnline, spectate.blackReadied,
-        spectate.redUser, spectate.redOnline, spectate.redReadied,
+        spectate.blackUser, spectate.redUserStatus, spectate.blackOnline, spectate.blackReadied,
+        spectate.redUser, spectate.blackUserStatus, spectate.redOnline, spectate.redReadied,
       ].forEach((bindable) => {
         bindable.changed.removeAll(); // todo: 这里假设只有这里增加了绑定
       });
       if (chessHost == ChessHost.BLACK) {
         binableBindToRef(spectate.blackUser, viewUser);
+        binableBindToRef(spectate.blackUserStatus, viewUserStatus);
         binableBindToRef(spectate.blackOnline, viewOnline);
         binableBindToRef(spectate.blackReadied, viewReadied);
         binableBindToRef(spectate.redUser, otherUser);
+        binableBindToRef(spectate.redUserStatus, otherUserStatus);
         binableBindToRef(spectate.redOnline, otherOnline);
         binableBindToRef(spectate.redReadied, otherReadied);
       } else {
         binableBindToRef(spectate.blackUser, otherUser);
+        binableBindToRef(spectate.blackUserStatus, otherUserStatus);
         binableBindToRef(spectate.blackOnline, otherOnline);
         binableBindToRef(spectate.blackReadied, otherReadied);
         binableBindToRef(spectate.redUser, viewUser);
+        binableBindToRef(spectate.redUserStatus, viewUserStatus);
         binableBindToRef(spectate.redOnline, viewOnline);
         binableBindToRef(spectate.redReadied, viewReadied);
       }
@@ -208,11 +219,13 @@ export default defineComponent({
       activeChessHost,
 
       viewUser,
+      viewUserStatus,
       viewOnline,
       viewReadied,
       viewChessHost,
 
       otherUser,
+      otherUserStatus,
       otherOnline,
       otherReadied,
       otherChessHost,
