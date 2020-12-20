@@ -738,8 +738,8 @@ export default class GamePlay {
         yesText: '取消',
         noText: '离开',
         text: '你正在游戏中，是否真的离开？',
-        action: (ok: boolean) => {
-          if (ok) {
+        action: (cancel: boolean) => {
+          if (!cancel) {
             this.gameState.value = GameState.END;
             this.partRoom();
           }
