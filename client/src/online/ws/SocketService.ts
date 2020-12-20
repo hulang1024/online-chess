@@ -49,12 +49,16 @@ export default class SocketService {
 
     api.isLoggedIn.changed.add((isAPILoggedIn: boolean) => {
       if (isAPILoggedIn) {
+        // 当API登录成功，需要WS(重新)登录
         this.isLoggedIn = false;
-      }
-      if (!this.connected) {
-        this.doConnect();
+        if (!this.connected) {
+          this.doConnect();
+        } else {
+          this.login();
+        }
       } else {
-        this.login();
+        // 注销时无需重新登录，服务器已保证游客身份
+        this.isLoggedIn = false;
       }
     });
 
