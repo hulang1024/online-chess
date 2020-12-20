@@ -71,15 +71,15 @@ public class UserActivityService {
 
         switch (nowStatus) {
             case IN_ROOM:
-                exit(user, UserActivity.IN_LOBBY);
-                exit(user, UserActivity.PLAYING);
+                exit(user, UserActivity.IN_LOBBY, false);
+                exit(user, UserActivity.PLAYING, false);
                 break;
             case PLAYING:
-                exit(user, UserActivity.IN_LOBBY);
-                exit(user, UserActivity.IN_ROOM);
+                exit(user, UserActivity.IN_LOBBY, false);
+                exit(user, UserActivity.IN_ROOM, false);
                 break;
             case SPECTATING:
-                exit(user, UserActivity.IN_LOBBY);
+                exit(user, UserActivity.IN_LOBBY, false);
                 break;
             default:
                 break;
@@ -94,6 +94,10 @@ public class UserActivityService {
     }
 
     public void exit(User user, UserActivity activityToExit) {
+        exit(user, activityToExit, true);
+    }
+
+    public void exit(User user, UserActivity activityToExit, boolean doBroadcast) {
         activityUsersMap.get(activityToExit).remove(user);
         // 保留当前状态，直到下一个状态覆盖
 
@@ -101,17 +105,11 @@ public class UserActivityService {
             return;
         }
 
-        // 广播新用户状态
-        UserStatus newUserStatus = null;
         if (activityToExit == UserActivity.AFK) {
             UserActivity prevStatus = getPreviousStatus(user);
             if (prevStatus != null) {
-                newUserStatus = activityToStatus(prevStatus);
                 enter(user, prevStatus);
             }
-        }
-        if (newUserStatus != null) {
-            broadcast(user, newUserStatus);
         }
     }
 
