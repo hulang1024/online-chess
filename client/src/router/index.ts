@@ -1,4 +1,5 @@
 import { route } from 'quasar/wrappers';
+import { api } from 'src/boot/main';
 import VueRouter, { Route } from 'vue-router';
 import routes from './routes';
 
@@ -19,6 +20,18 @@ export default route(({ Vue }) => {
     // quasar.conf.js -> build -> publicPath
     mode: process.env.VUE_ROUTER_MODE,
     base: process.env.VUE_ROUTER_BASE,
+  });
+
+  Router.beforeEach((to, from, next) => {
+    if (to.path !== '/') {
+      if (!api.isLoggedIn.value) {
+        next({ path: '/' });
+      } else {
+        next();
+      }
+    } else {
+      next();
+    }
   });
 
   return Router;
