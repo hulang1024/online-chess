@@ -198,9 +198,13 @@ public class UserManager {
 
     public boolean logout(User user) {
         Session session = userSessionManager.getSession(user);
-        sessionCloseListener.onClose(session);
+        if (session != null) {
+            // 并不真的关闭，走关闭的流程
+            // TODO：未来onClose实现可能会变化
+            sessionCloseListener.onClose(session);
+            guestLogin(session);
+        }
         loggedInUserMap.remove(user.getId());
-        session.close();
         return true;
     }
 
