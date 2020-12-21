@@ -181,6 +181,10 @@ export default defineComponent({
       api.queue(req);
     };
 
+    watch(activeTab, () => {
+      queryUsers();
+    });
+
     const show = () => {
       isOpen.value = true;
       users.value = [];
@@ -251,10 +255,6 @@ export default defineComponent({
       onlineCount.value = msg.online;
     });
 
-    watch(activeTab, () => {
-      queryUsers();
-    });
-
     const isShowInTab = (user: SearchUserInfo) => {
       if (activeTab.value == 'friends') {
         return user.isFriend;
@@ -318,6 +318,14 @@ export default defineComponent({
       };
       api.perform(req);
     };
+
+    socketService.reconnected.add(() => {
+      if (!isOpen.value) {
+        return;
+      }
+      queryUsers();
+      socketService.send('user_activity.enter', { code: 2 });
+    });
 
     return {
       isOpen,
