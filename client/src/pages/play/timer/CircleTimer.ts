@@ -2,43 +2,63 @@ import { onBeforeUnmount, ref } from "@vue/composition-api";
 import Timer from "./Timer";
 
 export default class CircleTimer {
-  public currentMS = ref(0);
+  public max = ref(0);
 
-  public totalMS = ref(0);
+  public current = ref(0);
 
+  // 在计时过程中，保证不直接改变max，保存总时
+  public totalMS = 0;
+
+  // 计时开始时间戳
   private startTime = 0;
 
+  // 计时暂停时间戳
   private pauseTime = 0;
 
   private animationId: number;
+
+  // eslint-disable-next-line
+  private listeners: { [name: string]: Function };
 
   constructor() {
     onBeforeUnmount(() => {
       cancelAnimationFrame(this.animationId);
     });
+
+    this.listeners = {
+      totalSecondsSet: (totalS: number) => {
+        this.totalMS = totalS * 1000;
+      },
+      readied: (currentS: number) => {
+        this.max.value = this.totalMS;
+        this.current.value = currentS * 1000;
+      },
+      started: this.start.bind(this),
+      restarted: this.restart.bind(this),
+      paused: this.pause.bind(this),
+      resumed: this.resume.bind(this),
+      stoped: this.stop.bind(this),
+    };
   }
 
   public setSyncTimer(timer: Timer) {
-    const timerComponent = (timer as unknown as Vue);
-    timerComponent.$on('readied', (totalS: number, currentS: number) => {
-      this.totalMS.value = totalS * 1000;
-      this.currentMS.value = currentS * 1000;
+    Object.keys(this.listeners).forEach((key) => {
+      (timer as unknown as Vue)
+        .$off(key, this.listeners[key])
+        .$on(key, this.listeners[key]);
     });
-    timerComponent.$on('started', this.start.bind(this));
-    timerComponent.$on('restarted', this.restart.bind(this));
-    timerComponent.$on('paused', this.pause.bind(this));
-    timerComponent.$on('resumed', this.resume.bind(this));
-    timerComponent.$on('stoped', this.stop.bind(this));
   }
 
   private start() {
+    this.max.value = this.totalMS;
     this.startTime = performance.now();
     this.pauseTime = 0;
-    this.tick(this.currentMS.value ? this.totalMS.value - this.currentMS.value : 0);
+    this.tick(this.current.value ? this.totalMS - this.current.value : 0);
   }
 
   private restart() {
-    this.currentMS.value = this.totalMS.value;
+    this.max.value = this.totalMS;
+    this.current.value = this.totalMS;
     this.startTime = performance.now();
     this.pauseTime = 0;
     this.tick();
@@ -56,15 +76,17 @@ export default class CircleTimer {
 
   private stop() {
     cancelAnimationFrame(this.animationId);
-    this.currentMS.value = this.totalMS.value;
+    this.current.value = this.totalMS;
   }
 
   private tick(offsetTime = 0) {
-    cancelAnimationFrame(this.animationId);
+    const max = this.max.value;
     const update = (now: number) => {
-      this.currentMS.value = this.totalMS.value - offsetTime - (now - this.startTime);
+      this.current.value = max - offsetTime - (now - this.startTime);
       this.animationId = requestAnimationFrame(update);
     };
+
+    cancelAnimationFrame(this.animationId);
     this.animationId = requestAnimationFrame(update);
   }
 }

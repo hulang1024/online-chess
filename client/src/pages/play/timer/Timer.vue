@@ -18,12 +18,6 @@ function padZero(n: number) {
 }
 
 export default defineComponent({
-  props: {
-    totalSeconds: {
-      type: Number,
-      default: null,
-    },
-  },
   setup(props, { emit }) {
     const timer = new Timer(emit);
     // 计算显示

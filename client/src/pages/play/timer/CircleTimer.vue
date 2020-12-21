@@ -2,8 +2,8 @@
   <q-circular-progress
     show-value
     instant-feedback
-    :max="totalMS"
-    :value="currentMS"
+    :max="max"
+    :value="current"
     track-color="transparent"
     :thickness="0.1"
     v-bind="$attrs"
@@ -28,8 +28,8 @@ export default defineComponent({
     const timer = new CircleTimer();
 
     return {
-      currentMS: timer.currentMS,
-      totalMS: timer.totalMS,
+      max: timer.max,
+      current: timer.current,
       setSyncTimer: timer.setSyncTimer.bind(timer),
     };
   },

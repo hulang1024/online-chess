@@ -36,7 +36,7 @@ export default class Timer {
   /** 设置计时时间 */
   public setTotalSeconds(seconds: number | null) {
     this.totalSeconds.value = seconds as number;
-    this.emit('readied', this.totalSeconds.value, this.seconds.value);
+    this.emit('totalSecondsSet', this.totalSeconds.value);
   }
 
   /** 准备开始，显示总计时，并重置启动次数 */
@@ -44,7 +44,7 @@ export default class Timer {
     this.timerState = null;
     this.starts = 0;
     this.seconds.value = current || this.totalSeconds.value;
-    this.emit('readied', this.totalSeconds.value, this.seconds.value);
+    this.emit('readied', this.seconds.value);
   }
 
   /** 重置为总时，重新计时 */
