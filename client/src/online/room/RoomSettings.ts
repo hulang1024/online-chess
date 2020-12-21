@@ -1,7 +1,7 @@
 export class RoomSettings {
   gameDuration = 10;
 
-  stepDuration = 1;
+  stepDuration = 60;
 
   secondsCountdown = 10;
 }

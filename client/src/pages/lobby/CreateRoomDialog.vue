@@ -35,7 +35,7 @@
           standout
           dense
           label="步时"
-          suffix="分钟"
+          suffix="秒"
           hint="局时内每步可用时间"
           lazy-rules
           :rules="[ val => val || '' ]"

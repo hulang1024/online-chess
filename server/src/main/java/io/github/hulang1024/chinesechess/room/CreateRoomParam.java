@@ -11,9 +11,9 @@ public class CreateRoomParam {
      */
     private float gameDuration;
     /**
-     * 步时（分钟）
+     * 步时（秒）
      */
-    private float stepDuration;
+    private int stepDuration;
     /**
      * 读秒
      */
@@ -23,7 +23,7 @@ public class CreateRoomParam {
         RoomSettings roomSettings = new RoomSettings();
         // 转换为秒
         roomSettings.setGameDuration((int)(gameDuration * 60));
-        roomSettings.setStepDuration((int)(stepDuration * 60));
+        roomSettings.setStepDuration(stepDuration);
         roomSettings.setSecondsCountdown(secondsCountdown);
         return roomSettings;
     }
