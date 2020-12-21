@@ -134,23 +134,25 @@ export default defineComponent({
       if (checkNotLoggedIn()) {
         return;
       }
-
+      joining.value = true;
       const req = new QuickStartRequest();
-      req.loading = joining;
-      req.success = (room) => {
+      req.success = async (room) => {
         // eslint-disable-next-line
-        $router.push({name: 'play', params: { room: room as unknown as string }});
+        await $router.push({name: 'play', params: { room: room as unknown as string }});
+        joining.value = false;
       };
       req.failure = () => {
         const room = new Room();
         room.name = '';
         room.roomSettings = new RoomSettings();
         const createReq = new CreateRoomRequest(room);
-        createReq.success = (createdRoom) => {
+        createReq.success = async (createdRoom) => {
           // eslint-disable-next-line
-          $router.push({name: 'play', params: { room: createdRoom as unknown as string }});
+          await $router.push({name: 'play', params: { room: createdRoom as unknown as string }});
+          joining.value = false;
         };
         createReq.failure = () => {
+          joining.value = false;
           $q.notify({ type: 'warning', message: '快速加入失败' });
         };
         api.perform(createReq);
@@ -166,10 +168,10 @@ export default defineComponent({
       (<any>$refs.createRoomDialog).show({
         action: (room: Room, done: (success: boolean) => void) => {
           const req = roomManager.createRoom(room);
-          req.success = (createdRoom) => {
-            done(true);
+          req.success = async (createdRoom) => {
             // eslint-disable-next-line
-            $router.push({ name: 'play', params: { room: createdRoom as unknown as string } });
+            await $router.push({ name: 'play', params: { room: createdRoom as unknown as string } });
+            done(true);
           };
           req.failure = () => done(false);
         },
