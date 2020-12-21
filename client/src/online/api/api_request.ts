@@ -56,10 +56,10 @@ export abstract class APIRequest<T> {
       }
       this.setLoading(false);
     }).catch((e: AxiosError) => {
+      this.setLoading(false);
       const { response } = e;
       this.triggerFailure(response?.data);
       this.api.handleHttpExceptionStatus(response?.status);
-      this.setLoading(false);
     });
   }
 
