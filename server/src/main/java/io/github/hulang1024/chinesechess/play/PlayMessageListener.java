@@ -212,19 +212,19 @@ public class PlayMessageListener extends AbstractMessageListener {
             gamePlayStatesServerMsg.setStates(joinedRoom.getGame().buildGameStatesResponse());
 
             if (joinedRoom.getGame().getState() == GameState.PAUSE) {
-                // 如果之前房间内用户一直在线并且没离开房间，现在继续游戏
-                if (joinedRoom.getOnlineUserCount() == 2) {
-                    joinedRoom.getGame().setState(GameState.PLAYING);
-                    GameTimer gameTimer = user.equals(joinedRoom.getRedChessUser())
-                        ? joinedRoom.getGame().getRedTimer()
-                        : joinedRoom.getGame().getBlackTimer();
-                    gameTimer.start(false);
+                User otherUser = joinedRoom.getOtherUser(user);
+                UserActivity otherUserStatus = userActivityService.getCurrentStatus(otherUser);
+                if (otherUserStatus == UserActivity.IN_ROOM) {
+                    joinedRoom.getGame().resume();
+                    joinedRoom.setStatus(RoomStatus.PLAYING);
+                    userActivityService.enter(user, UserActivity.PLAYING);
+                    userActivityService.enter(otherUser, UserActivity.PLAYING);
+                } else {
+                    userActivityService.enter(user, UserActivity.IN_ROOM);
                 }
             }
 
             send(gamePlayStatesServerMsg, user);
-
-            userActivityService.enter(user, UserActivity.PLAYING);
         } else {
             // 如果不想继续，离开房间
             roomManager.partRoom(joinedRoom, user);

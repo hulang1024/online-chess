@@ -4,10 +4,13 @@
     persistent
   >
     <q-card
-      style="min-width: 300px !important"
+      style="min-width: 320px !important"
     >
       <q-card-section class="column items-center">
-        <span class="text-subtitle1">{{ displayText }}</span>
+        <span
+          v-html="displayText"
+          class="text-subtitle1"
+        />
       </q-card-section>
 
       <q-card-actions

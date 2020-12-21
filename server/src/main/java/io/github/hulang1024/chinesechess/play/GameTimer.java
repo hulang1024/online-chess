@@ -30,18 +30,16 @@ public class GameTimer {
         stepTime = roomSettings.getStepDuration();
     }
 
-    /**
-     * 设置开始计时点
-     */
-    public void start(boolean resetStep) {
-        startTime = TimeUtils.nowTimestamp();
-        if (resetStep) {
-            resetStepTime();
-        }
-    }
-
     public void start() {
         start(true);
+    }
+
+    public void pause() {
+        stop();
+    }
+
+    public void resume() {
+        start(false);
     }
 
     /**
@@ -54,6 +52,16 @@ public class GameTimer {
         }
         useTime();
         startTime = 0;
+    }
+
+    /**
+     * 设置开始计时点
+     */
+    private void start(boolean resetStep) {
+        startTime = TimeUtils.nowTimestamp();
+        if (resetStep) {
+            resetStepTime();
+        }
     }
 
     /**

@@ -60,8 +60,16 @@ public class Game {
 
     public void pause() {
         state = GameState.PAUSE;
-        blackTimer.stop();
-        redTimer.stop();
+        getActiveTimer().pause();
+    }
+
+    public void resume() {
+        state = GameState.PLAYING;
+        getActiveTimer().resume();
+    }
+
+    public GameTimer getActiveTimer() {
+        return activeChessHost == ChessHost.RED ? redTimer : blackTimer;
     }
 
     public GamePlayStatesResponse buildGameStatesResponse() {
@@ -74,8 +82,7 @@ public class Game {
         gameStates.setRoom(room);
 
         if (state == GameState.PLAYING) {
-            GameTimer gameTimer = (activeChessHost == ChessHost.RED ? redTimer : blackTimer);
-            gameTimer.useTime();
+            getActiveTimer().useTime();
         }
         gameStates.setRedTimer(redTimer);
         gameStates.setBlackTimer(blackTimer);
@@ -99,5 +106,4 @@ public class Game {
         }
         return chesses;
     }
-
 }

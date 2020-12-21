@@ -138,6 +138,10 @@ export default class GamePlay {
       if (initialGameStates) {
         this.player.startGame(this.chessHost.value, initialGameStates);
       }
+
+      if (this.gameState.value == GameState.PAUSE) {
+        this.showText('游戏暂停中，等待对手回来继续');
+      }
     });
 
     onMounted(() => {
@@ -584,6 +588,10 @@ export default class GamePlay {
   private onTurnActiveChessHost(activeChessHost: ChessHost, isGameResume = false) {
     this.activeChessHost.value = activeChessHost;
 
+    if (this.gameState.value != GameState.PLAYING) {
+      return;
+    }
+
     if (!isGameResume) {
       if (activeChessHost == this.chessHost.value) {
         this.stepTimer.start();
@@ -740,11 +748,19 @@ export default class GamePlay {
     if ([GameState.READY, GameState.END].includes(this.gameState.value)) {
       this.partRoom();
     } else {
-    // eslint-disable-next-line
+      const isPlaying = this.gameState.value == GameState.PLAYING;
+      let text = '是否真的离开？';
+      if (isPlaying) {
+        text = '游戏进行中，是否真的离开？';
+      }
+      if (this.gameState.value == GameState.PAUSE) {
+        text = '游戏暂停中，是否解散棋局？<br>(你也可以退出登录，棋局将保留3小时)';
+      }
+      // eslint-disable-next-line
       this.confirmDialog.open({
         yesText: '取消',
-        noText: '离开',
-        text: '你正在游戏中，是否真的离开？',
+        noText: isPlaying ? '离开' : '解散棋局',
+        text,
         action: (cancel: boolean) => {
           if (!cancel) {
             this.gameState.value = GameState.END;

@@ -34,7 +34,7 @@ public class UserActivityService {
     private WSMessageService wsMessageService;
 
     public UserActivity getCurrentStatus(User user) {
-        return userCurrentStatusMap.get(user.getId());
+        return user != null ? userCurrentStatusMap.get(user.getId()) : null;
     }
     public UserActivity getPreviousStatus(User user) {
         return userPreviousStatusMap.get(user.getId());
