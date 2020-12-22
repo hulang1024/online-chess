@@ -16,7 +16,6 @@ import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import { onBeforeUnmount, onMounted } from "@vue/composition-api";
 import ConfirmRequest from "src/rule/confirm_request";
 import ChessPos from "src/rule/ChessPos";
-import InfoMessage from "src/online/chat/InfoMessage";
 import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
 import Signal from "src/utils/signals/Signal";
 import UserStatus from "src/user/UserStatus";
@@ -49,6 +48,8 @@ export default class Spectate {
 
   public otherChessHost = new Bindable<ChessHost>();
 
+  public spectatorCount = new Bindable<number>(0);
+
   public player: Player;
 
   public playerLoaded = new Signal();
@@ -62,8 +63,6 @@ export default class Spectate {
   private blackStepTimer: Timer;
 
   private room: Room;
-
-  private spectatorCount: Bindable<number> = new Bindable<number>(0);
 
   private targetUserId: number | null;
 
@@ -166,10 +165,6 @@ export default class Spectate {
     GameEvents.gameContinueResponse.add(this.onGameContinueResponseEvent, this);
 
     SpectatorEvents.joined.add((msg: SpectatorEvents.SpectatorJoinedMsg) => {
-      this.channelManager.openChannel(this.room.channelId);
-      this.channelManager.currentChannel.value.addNewMessages(
-        new InfoMessage(`${msg.user.nickname} 加入观看`),
-      );
       this.spectatorCount.value = msg.spectatorCount;
     }, this);
 
@@ -225,6 +220,8 @@ export default class Spectate {
       this.blackGameTimer.ready();
       this.blackStepTimer.ready();
     }
+
+    this.spectatorCount.value = this.room.spectatorCount;
   }
 
   private onUserStatusChangedEvent(msg: UserEvents.UserStatusChangedMsg) {

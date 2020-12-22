@@ -11,6 +11,10 @@
           :active="activeChessHost == otherChessHost"
           class="q-py-sm q-ml-xs"
         />
+        <spectators-count-display
+          :count="spectatorCount"
+          class="absolute-top-right q-mt-sm q-mr-sm"
+        />
         <player-container
           ref="playerContainer"
           class="absolute-center"
@@ -69,43 +73,52 @@
           class="absolute-center"
         />
       </player-container>
-      <q-card
-        flat
-        class="controls q-px-sm q-py-sm"
-      >
-        <game-user-panel
-          ref="otherGameUserPanel"
-          :user="otherUser"
-          :online="otherOnline"
-          :status="otherUserStatus"
-          :chess-host="otherChessHost"
-          :active="activeChessHost == otherChessHost"
+      <div class="controls">
+        <spectators-count-display
+          :count="spectatorCount"
+          class="q-mb-sm"
+          style="text-align: right"
         />
-        <q-separator />
-        <game-user-panel
-          ref="viewGameUserPanel"
-          :user="viewUser"
-          :online="viewOnline"
-          :status="viewUserStatus"
-          :chess-host="viewChessHost"
-          :active="activeChessHost == viewChessHost"
-        />
-        <q-separator />
-        <div class="row q-gutter-x-sm q-mt-sm">
-          <q-btn
-            label="离开"
-            color="negative"
-            class="q-mt-sm"
-            @click="onQuitClick"
+        <q-card
+          flat
+          class="q-mb-sm q-px-sm q-py-sm"
+        >
+          <game-user-panel
+            ref="otherGameUserPanel"
+            :user="otherUser"
+            :online="otherOnline"
+            :status="otherUserStatus"
+            :chess-host="otherChessHost"
+            :active="activeChessHost == otherChessHost"
           />
-          <q-btn
-            label="切换"
-            color="warning"
-            class="q-mt-sm"
-            @click="onToggleViewClick"
+          <q-separator />
+          <game-user-panel
+            ref="viewGameUserPanel"
+            :user="viewUser"
+            :online="viewOnline"
+            :status="viewUserStatus"
+            :chess-host="viewChessHost"
+            :active="activeChessHost == viewChessHost"
           />
-        </div>
-      </q-card>
+        </q-card>
+        <q-card
+          flat
+          class="q-px-sm q-py-sm"
+        >
+          <div class="row q-gutter-x-sm">
+            <q-btn
+              label="离开"
+              color="negative"
+              @click="onQuitClick"
+            />
+            <q-btn
+              label="切换"
+              color="warning"
+              @click="onToggleViewClick"
+            />
+          </div>
+        </q-card>
+      </div>
     </template>
   </q-page>
 </template>
@@ -123,6 +136,7 @@ import UserStatus from 'src/user/UserStatus';
 import DrawableChessboard from './DrawableChessboard';
 import PlayerContainer from './PlayerContainer.vue';
 import GameUserPanel from './GameUserPanel.vue';
+import SpectatorsCountDisplay from './SpectatorsCountDisplay.vue';
 import ResultDialog from './ResultDialog.vue';
 import TextOverlay from './TextOverlay.vue';
 import Spectate from './Spectate';
@@ -132,6 +146,7 @@ export default defineComponent({
   components: {
     PlayerContainer,
     GameUserPanel,
+    SpectatorsCountDisplay,
     ResultDialog,
     TextOverlay,
   },
@@ -145,6 +160,7 @@ export default defineComponent({
     const isPlaying = computed(() => gameState.value == GameState.PLAYING);
     const activeChessHost: Ref<ChessHost | null> = createBoundRef(spectate.activeChessHost);
     const viewChessHost: Ref<ChessHost> = createBoundRef(spectate.viewChessHost);
+    const spectatorCount: Ref<number> = createBoundRef(spectate.spectatorCount);
 
     const otherChessHost: Ref<ChessHost | null> = ref(null);
     const viewUser: Ref<User | null> = ref(null);
@@ -230,6 +246,8 @@ export default defineComponent({
       otherOnline,
       otherReadied,
       otherChessHost,
+
+      spectatorCount,
 
       onQuitClick: spectate.onQuitClick.bind(spectate),
       onToggleViewClick: spectate.onToggleViewClick.bind(spectate),

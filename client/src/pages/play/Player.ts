@@ -198,7 +198,7 @@ export default class Player implements Game {
           if (targetChess != null && targetChess.is(ChessK)) {
             this.gameOver.dispatch(chess.getHost());
           } else {
-            this.showText(`吃!（${targetChess.getHost() == ChessHost.RED ? '红方' : '黑方'}的${chessClassToText(targetChess.chess)}被吃）`, 1000);
+            this.showText(`吃!（${targetChess.getHost() == ChessHost.RED ? '红方' : '黑方'}的${chessClassToText(targetChess.chess)}被吃）`, 1500);
             this.checkCheckmate();
             this.turnActiveChessHost();
           }

@@ -16,7 +16,6 @@ import Bindable from 'src/utils/bindables/Bindable';
 import BindableBool from 'src/utils/bindables/BindableBool';
 import { onBeforeUnmount, onMounted } from '@vue/composition-api';
 import ChessPos from 'src/rule/ChessPos';
-import InfoMessage from 'src/online/chat/InfoMessage';
 import { api, channelManager, socketService } from 'src/boot/main';
 import ConfirmRequest from 'src/rule/confirm_request';
 import Signal from 'src/utils/signals/Signal';
@@ -54,6 +53,8 @@ export default class GamePlay {
 
   public otherChessHost = new Bindable<ChessHost>();
 
+  public spectatorCount = new Bindable<number>(0);
+
   public isWaitingForOther = new Bindable<number>();
 
   public player: Player;
@@ -79,8 +80,6 @@ export default class GamePlay {
   private chessboard: DrawableChessboard;
 
   private room: Room;
-
-  private spectatorCount: Bindable<number> = new Bindable<number>(0);
 
   private lastSelected: DrawableChess | null;
 
@@ -240,6 +239,8 @@ export default class GamePlay {
       this.otherGameTimer.ready(redTimer?.gameTime);
       this.otherStepTimer.ready(redTimer?.stepTime);
     }
+
+    this.spectatorCount.value = this.room.spectatorCount;
   }
 
   private onQuit() {
@@ -286,10 +287,6 @@ export default class GamePlay {
     GameEvents.gameContinueResponse.add(this.onGameContinueResponseEvent, this);
 
     SpectatorEvents.joined.add((msg: SpectatorEvents.SpectatorJoinedMsg) => {
-      this.channelManager.openChannel(this.room.channelId);
-      this.channelManager.currentChannel.value.addNewMessages(
-        new InfoMessage(`${msg.user.nickname} 加入观看`),
-      );
       this.spectatorCount.value = msg.spectatorCount;
     }, this);
 

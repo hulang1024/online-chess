@@ -11,6 +11,10 @@
           :active="activeChessHost == otherChessHost"
           class="q-py-sm q-ml-xs"
         />
+        <spectators-count-display
+          :count="spectatorCount"
+          class="absolute-top-right q-mt-sm q-mr-sm"
+        />
         <player-container
           ref="playerContainer"
           class="absolute-center"
@@ -107,57 +111,65 @@
         />
         <result-dialog ref="resultDialog" />
       </player-container>
-      <q-card
-        flat
-        class="controls q-px-sm q-py-sm"
-      >
-        <game-user-panel
-          ref="otherGameUserPanel"
-          :user="otherUser"
-          :online="otherOnline"
-          :status="otherUserStatus"
-          :chess-host="otherChessHost"
-          :active="activeChessHost == otherChessHost"
+      <div class="controls">
+        <spectators-count-display
+          :count="spectatorCount"
+          class="q-mb-sm"
+          style="text-align: right"
         />
-        <q-separator />
-        <game-user-panel
-          ref="gameUserPanel"
-          :user="user"
-          :online="online"
-          :chess-host="chessHost"
-          :active="activeChessHost == chessHost"
-        />
-        <q-separator />
-        <div class="row q-gutter-x-sm q-mt-sm">
-          <q-btn
-            label="悔棋"
-            color="warning"
-            class="q-mt-sm"
-            :disable="!(isPlaying && canWithdraw)"
-            @click="onWithdrawClick"
+        <q-card
+          flat
+          class="q-mb-sm q-px-sm q-py-sm"
+        >
+          <game-user-panel
+            ref="otherGameUserPanel"
+            :user="otherUser"
+            :online="otherOnline"
+            :status="otherUserStatus"
+            :chess-host="otherChessHost"
+            :active="activeChessHost == otherChessHost"
           />
-          <q-btn
-            label="求和"
-            color="warning"
-            class="q-mt-sm"
-            :disable="!isPlaying"
-            @click="onChessDrawClick"
+          <q-separator />
+          <game-user-panel
+            ref="gameUserPanel"
+            :user="user"
+            :online="online"
+            :chess-host="chessHost"
+            :active="activeChessHost == chessHost"
           />
+        </q-card>
+        <q-card
+          flat
+          class="q-px-sm q-py-sm"
+        >
+          <div class="row q-gutter-x-sm">
+            <q-btn
+              label="悔棋"
+              color="warning"
+              :disable="!(isPlaying && canWithdraw)"
+              @click="onWithdrawClick"
+            />
+            <q-btn
+              label="求和"
+              color="warning"
+              :disable="!isPlaying"
+              @click="onChessDrawClick"
+            />
+            <q-btn
+              label="认输"
+              color="warning"
+              :disable="!isPlaying"
+              @click="onWhiteFlagClick"
+            />
+          </div>
           <q-btn
-            label="认输"
-            color="warning"
+            label="离开"
+            color="negative"
             class="q-mt-sm"
-            :disable="!isPlaying"
-            @click="onWhiteFlagClick"
+            @click="onQuitClick"
           />
-        </div>
-        <q-btn
-          label="离开"
-          color="negative"
-          class="q-mt-sm"
-          @click="onQuitClick"
-        />
-      </q-card>
+        </q-card>
+      </div>
     </template>
   </q-page>
 </template>
@@ -177,6 +189,7 @@ import UserStatus from 'src/user/UserStatus';
 import DrawableChessboard from './DrawableChessboard';
 import PlayerContainer from './PlayerContainer.vue';
 import GameUserPanel from './GameUserPanel.vue';
+import SpectatorsCountDisplay from './SpectatorsCountDisplay.vue';
 import ReadyStartOverlay from './ReadyStartOverlay.vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import ResultDialog from './ResultDialog.vue';
@@ -188,6 +201,7 @@ export default defineComponent({
   components: {
     PlayerContainer,
     GameUserPanel,
+    SpectatorsCountDisplay,
     ReadyStartOverlay,
     ConfirmDialog,
     ResultDialog,
@@ -216,6 +230,7 @@ export default defineComponent({
     const otherOnline: Ref<boolean> = createBoundRef(gamePlay.otherOnline);
     const otherReadied: Ref<boolean> = createBoundRef(gamePlay.otherReadied);
     const otherChessHost: Ref<ChessHost> = createBoundRef(gamePlay.otherChessHost);
+    const spectatorCount: Ref<number> = createBoundRef(gamePlay.spectatorCount);
 
     // 有些元素随窗口尺寸变化无法实现，因此在初始时就确定屏幕大小
     const isXSScreen = ctx.$q.screen.xs;
@@ -264,6 +279,8 @@ export default defineComponent({
       otherUserStatus,
       otherReadied,
       otherChessHost,
+
+      spectatorCount,
 
       onReadyStartClick: gamePlay.onReadyStartClick.bind(gamePlay),
       onQuitClick: gamePlay.onQuitClick.bind(gamePlay),

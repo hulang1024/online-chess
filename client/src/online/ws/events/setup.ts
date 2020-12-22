@@ -38,8 +38,8 @@ export function setupEvents(socketService: SocketService) {
     ['play.game_continue_response', play.gameContinueResponse],
     ['play.game_states', play.gameStates],
 
-    ['spectator.user_join', spectator.joined],
-    ['spectator.user_left', spectator.left],
+    ['spectator.join', spectator.joined],
+    ['spectator.left', spectator.left],
 
     ['stat.online', stat.online],
 
