@@ -8,6 +8,7 @@
     <img
       v-if="avatarUrl"
       :src="avatarUrl"
+      style="object-fit: cover;"
     >
     <span v-else class="text-white">{{ nickname ? nickname.substring(0,1) : '' }}</span>
   </q-avatar>
