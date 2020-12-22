@@ -280,22 +280,28 @@ export default defineComponent({
 
     const onSpectateClick = (user: SearchUserInfo) => {
       const req = new SpectateUserRequest(user);
+      $q.loading.show();
       req.success = async (spectateResponse: SpectateResponse) => {
         isOpen.value = false;
+        if (spectateResponse.isFollowedOtherSpectator) {
+          $q.loading.show({ message: `正在跟随${user.nickname}旁观` });
+        }
         await $router.push({
           name: 'spectate', params: { spectateResponse: spectateResponse as unknown as string },
         });
+        $q.loading.hide();
       };
       req.failure = (res) => {
+        $q.loading.hide();
         const codeMsgMap: {[code: number]: string} = {
           2: '该用户未在线',
           3: '该用户未加入游戏',
-          4: '不满足观看条件',
+          4: '不满足旁观条件',
           5: '你在游戏中不能观看其它游戏',
         };
         $q.notify({
           type: 'warning',
-          message: `观看请求失败，${codeMsgMap[res.code] || '原因未知'}`,
+          message: `旁观请求失败，${codeMsgMap[res.code] || '原因未知'}`,
         });
       };
       api.perform(req);

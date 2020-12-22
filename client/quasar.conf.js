@@ -99,6 +99,7 @@ module.exports = configure((ctx) => ({
       notify: {
         position: 'bottom-right',
       },
+      loading: { },
     },
 
     // Possible values for "importStrategy":
@@ -117,6 +118,7 @@ module.exports = configure((ctx) => ({
     plugins: [
       'AppFullscreen',
       'Notify',
+      'Loading',
     ],
   },
 

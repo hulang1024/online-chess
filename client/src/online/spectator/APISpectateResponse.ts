@@ -9,4 +9,6 @@ export default class SpectateResponse {
   states: ResponseGameStates;
 
   targetUserId: number;
+
+  isFollowedOtherSpectator: boolean;
 }

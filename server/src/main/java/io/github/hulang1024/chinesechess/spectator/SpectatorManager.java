@@ -22,7 +22,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class SpectatorManager {
+    // 记录用户观看房间
     private static Map<Long, Room> spectatorRoomMap = new ConcurrentHashMap<>();
+    // 记录用户观看目标用户（同时观看房间）
+    private static Map<Long, Long> spectatorTargetUserMap = new ConcurrentHashMap<>();
 
     @Autowired
     private UserManager userManager;
@@ -43,7 +46,6 @@ public class SpectatorManager {
         return room.getSpectators();
     }
 
-
     public SpectateResponse spectateRoom(long roomId, long spectatorId) {
         return spectate(null, roomId, spectatorId);
     }
@@ -55,10 +57,17 @@ public class SpectatorManager {
             response.setCode(2);
             return response;
         }
+
+        // 目标用户已在旁观（也已是观众），则跟随
+        Room spectatingRoom = getSpectatingRoom(targetUser);
+        if (spectatingRoom != null) {
+            return followOtherSpectator(targetUser.getId(), spectatingRoom, spectatorId);
+        }
+
         return spectate(targetUser, null, spectatorId);
     }
 
-    private SpectateResponse spectate(User targetUserId, Long roomId, long spectatorId) {
+    private SpectateResponse spectate(User targetUser, Long roomId, long spectatorId) {
         SpectateResponse response = new SpectateResponse();
 
         User spectator = userManager.getLoggedInUser(spectatorId);
@@ -68,7 +77,7 @@ public class SpectatorManager {
         }
 
         // 房间不存在或者目标用户是否不在任何游戏房间中
-        Room room = targetUserId != null ? roomManager.getJoinedRoom(targetUserId) : roomManager.getRoom(roomId);
+        Room room = targetUser != null ? roomManager.getJoinedRoom(targetUser) : roomManager.getRoom(roomId);
         if (room == null) {
             response.setCode(3);
             return response;
@@ -108,8 +117,9 @@ public class SpectatorManager {
             response.getStates().setRoom(null);
         }
         response.setRoom(room);
-        if (targetUserId != null) {
-            response.setTargetUserId(targetUserId.getId());
+        if (targetUser != null) {
+            spectatorTargetUserMap.put(spectator.getId(), targetUser.getId());
+            response.setTargetUserId(targetUser.getId());
         }
 
         // 发送给房间玩家用户观众信息
@@ -121,6 +131,17 @@ public class SpectatorManager {
         return response;
     }
 
+    private SpectateResponse followOtherSpectator(long otherSpectatorId, Room room, long spectatorId) {
+        SpectateResponse response;
+        Long targetUserId = spectatorTargetUserMap.get(otherSpectatorId);
+        if (targetUserId != null) {
+            response = spectateUser(targetUserId, spectatorId);
+        } else {
+            response = spectateRoom(room.getId(), spectatorId);
+        }
+        response.setFollowedOtherSpectator(true);
+        return response;
+    }
 
     public void leaveRoom(long roomId, long userId) {
         User user = userManager.getLoggedInUser(userId);
@@ -132,6 +153,7 @@ public class SpectatorManager {
         room.getSpectators().remove(spectator);
         room.getChannel().removeUser(spectator);
         spectatorRoomMap.remove(spectator.getId());
+        spectatorTargetUserMap.remove(spectator.getId());
         userActivityService.exit(spectator, UserActivity.SPECTATING);
 
         SpectatorLeftServerMsg leftMsg = new SpectatorLeftServerMsg();

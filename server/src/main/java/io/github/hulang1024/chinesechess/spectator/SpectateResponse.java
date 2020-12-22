@@ -19,4 +19,6 @@ public class SpectateResponse {
      * 观看目标用户（为空时是围观房间）
      */
     private Long targetUserId;
+
+    private boolean isFollowedOtherSpectator;
 }
