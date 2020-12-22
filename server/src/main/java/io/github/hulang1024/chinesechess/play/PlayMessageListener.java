@@ -208,6 +208,9 @@ public class PlayMessageListener extends AbstractMessageListener {
         User user = clientMsg.getUser();
         Room joinedRoom = roomManager.getJoinedRoom(user);
         if (clientMsg.isOk()) {
+            if (joinedRoom.getStatus() == RoomStatus.DISMISSED) {
+                return;
+            }
             GamePlayStatesServerMsg gamePlayStatesServerMsg = new GamePlayStatesServerMsg();
             gamePlayStatesServerMsg.setStates(joinedRoom.getGame().buildGameStatesResponse());
 
