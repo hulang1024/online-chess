@@ -32,6 +32,18 @@ export function chessClassToKey(chess: Chess) {
   return null;
 }
 
+export function chessClassToText(chess: Chess) {
+  let text: string[] = [];
+  if (chess instanceof ChessC) text = ['炮', '炮'];
+  if (chess instanceof ChessG) text = ['士', '士'];
+  if (chess instanceof ChessK) text = ['帅', '将'];
+  if (chess instanceof ChessM) text = ['相', '象'];
+  if (chess instanceof ChessN) text = ['馬', '馬'];
+  if (chess instanceof ChessR) text = ['車', '車'];
+  if (chess instanceof ChessS) text = ['兵', '卒'];
+  return text[chess.getHost() - 1];
+}
+
 export function createIntialLayoutChessList(chessHost1: ChessHost, chessHost2: ChessHost) {
   return [
     new ChessR(new ChessPos(0, 0), chessHost1),

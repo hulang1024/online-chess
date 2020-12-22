@@ -1,27 +1,9 @@
 import Chess from 'src/rule/Chess';
-import ChessC from 'src/rule/chess/ChessC';
-import ChessG from 'src/rule/chess/ChessG';
-import ChessK from 'src/rule/chess/ChessK';
-import ChessM from 'src/rule/chess/ChessM';
-import ChessN from 'src/rule/chess/ChessN';
-import ChessR from 'src/rule/chess/ChessR';
-import ChessS from 'src/rule/chess/ChessS';
 import ChessPos from 'src/rule/ChessPos';
 import ChessHost from 'src/rule/chess_host';
+import { chessClassToText } from 'src/rule/chess_map';
 import Game from 'src/rule/Game';
 import Signal from 'src/utils/signals/Signal';
-
-function chessClassToKey(chess: Chess) {
-  let text: string[] = [];
-  if (chess instanceof ChessC) text = ['炮', '炮'];
-  if (chess instanceof ChessG) text = ['士', '士'];
-  if (chess instanceof ChessK) text = ['帅', '将'];
-  if (chess instanceof ChessM) text = ['相', '象'];
-  if (chess instanceof ChessN) text = ['馬', '馬'];
-  if (chess instanceof ChessR) text = ['車', '車'];
-  if (chess instanceof ChessS) text = ['兵', '卒'];
-  return text[chess.getHost() - 1];
-}
 
 export default class DrawableChess implements Chess {
   private _el: HTMLDivElement;
@@ -67,7 +49,7 @@ export default class DrawableChess implements Chess {
     el.style.fontWeight = 'bolder';
     el.style.textAlign = 'center';
     el.style.lineHeight = `${this.radius * 2}px`;
-    el.innerText = chessClassToKey(this.chess);
+    el.innerText = chessClassToText(this.chess);
 
     el.onmouseenter = () => {
       if (!this.enabled || this.lit || this.selected) return;
