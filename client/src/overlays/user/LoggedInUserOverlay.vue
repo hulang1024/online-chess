@@ -1,21 +1,39 @@
 <template>
   <q-menu>
-    <div class="row no-wrap q-pa-md">
+    <div
+      class="column items-center q-py-lg"
+      style="min-width: 140px"
+    >
       <div class="column items-center">
+        <div class="text-subtitle1 q-mb-sm">
+          {{ user.nickname }}
+        </div>
         <user-avatar
           :user="user"
           size="72px"
         />
 
-        <div class="text-subtitle1 q-mt-md q-mb-xs">
-          {{ user.nickname }}
-        </div>
+        <q-btn
+          :loading="uploading"
+          label="修改"
+          outline
+          class="full-width q-mt-md"
+          @click="onEditAvatarClick"
+        />
+
+        <input
+          ref="fileUpload"
+          type="file"
+          accept="image/*"
+          style="display:none"
+          @change="onAvatarFileUploadChange"
+        >
 
         <q-btn
           color="negative"
           label="注销"
           dense
-          class="full-width"
+          class="full-width q-mt-md"
           v-close-popup
           @click="onLogoutClick"
         />
@@ -25,8 +43,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import {
+  defineComponent, getCurrentInstance, reactive, ref,
+} from '@vue/composition-api';
+import { api } from 'src/boot/main';
 import UserAvatar from "src/user/components/UserAvatar.vue";
+import UploadAvatarRequest from 'src/online/user/UploadAvatarRequest';
+import User from 'src/user/User';
 
 export default defineComponent({
   components: { UserAvatar },
@@ -34,11 +57,42 @@ export default defineComponent({
     user: null,
   },
   setup(props, { emit }) {
+    const user = reactive<User>(props.user);
+
+    const ctx = getCurrentInstance() as Vue;
+
+    const uploading = ref(false);
+
     const onLogoutClick = () => {
       emit('logout-action');
     };
 
+    const onEditAvatarClick = () => {
+      // eslint-disable-next-line
+      (ctx.$refs.fileUpload as any).click();
+    };
+
+    const onAvatarFileUploadChange = () => {
+      // eslint-disable-next-line
+      const file = (ctx.$refs.fileUpload as any).files[0];
+
+      const req = new UploadAvatarRequest(file);
+      req.loading = uploading;
+      req.success = (res) => {
+        user.avatarUrl = res.url;
+        ctx.$q.notify({ type: 'positive', message: '修改成功' });
+      };
+      req.failure = () => {
+        ctx.$q.notify({ type: 'warning', message: '对不起，修改失败' });
+      };
+      api.perform(req);
+    };
+
     return {
+      user,
+      uploading,
+      onEditAvatarClick,
+      onAvatarFileUploadChange,
       onLogoutClick,
     };
   },

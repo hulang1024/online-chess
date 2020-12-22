@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.user.thirdparty;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import io.github.hulang1024.chinesechess.upload.AvatarService;
+import io.github.hulang1024.chinesechess.user.avatar.AvatarFileService;
 import io.github.hulang1024.chinesechess.user.*;
 import io.github.hulang1024.chinesechess.user.thirdparty.github.api.responses.GitHubUser;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +15,7 @@ public class ThirdpartyUserLoginService {
     @Autowired
     private UserManager userManager;
     @Autowired
-    private AvatarService avatarService;
+    private AvatarFileService avatarService;
 
     private static final long TOKEN_EXPIRES_IN_SECONDS = 24 * 60 * 60 * 7;
 
@@ -34,7 +34,7 @@ public class ThirdpartyUserLoginService {
         } else {
             // 新注册用户
             if (StringUtils.isNotEmpty(githubUser.getAvatarUrl())) {
-                githubUser.setAvatarUrl(avatarService.saveAvatarByUrl(githubUser.getAvatarUrl()));
+                githubUser.setAvatarUrl(avatarService.saveFileByUrl(githubUser.getAvatarUrl()));
             }
             UserRegisterParam registerParam = new UserRegisterParam();
             registerParam.setSource(1);
@@ -56,7 +56,7 @@ public class ThirdpartyUserLoginService {
 
     private void updateUser(User user, GitHubUser githubUser) {
         if (StringUtils.isNotEmpty(githubUser.getAvatarUrl())) {
-            user.setAvatarUrl(avatarService.saveAvatarByUrl(githubUser.getAvatarUrl()));
+            user.setAvatarUrl(avatarService.saveFileByUrl(githubUser.getAvatarUrl()));
             userDao.updateById(user);
         }
     }

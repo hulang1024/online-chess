@@ -3,11 +3,14 @@ package io.github.hulang1024.chinesechess.user;
 import io.github.hulang1024.chinesechess.http.GuestAPI;
 import io.github.hulang1024.chinesechess.http.params.PageParam;
 import io.github.hulang1024.chinesechess.http.results.PageRet;
+import io.github.hulang1024.chinesechess.user.avatar.AvatarService;
+import io.github.hulang1024.chinesechess.user.avatar.AvatarUploadResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
 
@@ -54,5 +57,15 @@ public class UserController {
         return new ResponseEntity(ret, ret.getCode() == 0
             ? HttpStatus.OK
             : HttpStatus.BAD_REQUEST);
+    }
+
+    @Autowired
+    private AvatarService avatarService;
+
+    @PostMapping("/avatar")
+    public ResponseEntity<AvatarUploadResult> uploadAvatar(
+        @RequestParam(name="file", required=true) MultipartFile file) {
+        AvatarUploadResult result = avatarService.update(UserUtils.get(), file);
+        return new ResponseEntity(result, result.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 }
