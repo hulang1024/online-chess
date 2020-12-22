@@ -8,7 +8,7 @@
     class="z-top"
     content-class="chat-overlay"
   >
-    <q-card">
+    <q-card>
       <q-tabs
         v-model="activeChannelTab"
         align="left"
