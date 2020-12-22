@@ -18,12 +18,6 @@ import { defineComponent } from "@vue/composition-api";
 import CircleTimer from "./CircleTimer";
 
 export default defineComponent({
-  props: {
-    totalSeconds: {
-      type: Number,
-      default: null,
-    },
-  },
   setup() {
     const timer = new CircleTimer();
 

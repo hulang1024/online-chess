@@ -1,11 +1,8 @@
 <template>
-  <div class="timer">
+  <div :class="['timer', `text-${color}`]">
     <span class="time">{{ displayMinutes }}</span>
     <span>:</span>
-    <span
-      class="time"
-      :class="`text-${secondsColor}`"
-    >{{ displaySeconds }}</span>
+    <span class="time">{{ displaySeconds }}</span>
   </div>
 </template>
 
@@ -20,21 +17,22 @@ function padZero(n: number) {
 export default defineComponent({
   setup(props, { emit }) {
     const timer = new Timer(emit);
+    const { totalSeconds, seconds } = timer;
     // 计算显示
-    const displayMinutes = computed(() => (timer.totalSeconds.value === null ? '--' : padZero(Math.floor(timer.seconds.value / 60))));
-    const displaySeconds = computed(() => (timer.totalSeconds.value === null ? '--' : padZero(timer.seconds.value % 60)));
-    const secondsColor = computed(() => {
-      const sec = timer.seconds.value;
+    const displayMinutes = computed(() => (totalSeconds.value === null ? '--' : padZero(Math.floor(seconds.value / 60))));
+    const displaySeconds = computed(() => (totalSeconds.value === null ? '--' : padZero(seconds.value % 60)));
+    const color = computed(() => {
+      const sec = seconds.value;
       if (!sec) return '';// 包括了0和null
-      if (sec < timer.totalSeconds.value / 4) return 'red';
-      if (sec < timer.totalSeconds.value / 2) return 'orange';
+      if (sec < totalSeconds.value / 4) return 'red';
+      if (sec < totalSeconds.value / 2) return 'orange';
       return '';
     });
 
     return {
       displayMinutes,
       displaySeconds,
-      secondsColor,
+      color,
 
       ready: timer.ready.bind(timer),
       start: timer.start.bind(timer),
