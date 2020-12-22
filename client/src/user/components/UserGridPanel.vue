@@ -84,7 +84,7 @@ export default defineComponent({
       },
       [UserStatus.SPECTATING]: {
         text: '正在旁观',
-        color: '#607d8b',
+        color: '#3f51b5',
       },
     };
 
