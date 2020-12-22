@@ -1,6 +1,4 @@
 import { onBeforeUnmount } from "@vue/composition-api";
-import { configManager } from "src/boot/main";
-import ConfigManager from "src/config/ConfigManager";
 import ResponseGameStates, { ResponseGameStateChess, ResponseGameStateChessAction } from "src/online/play/game_states_response";
 import Checkmate from "src/rule/Checkmate";
 import Chess from "src/rule/Chess";
@@ -8,7 +6,7 @@ import ChessK from "src/rule/chess/ChessK";
 import ChessAction from "src/rule/ChessAction";
 import ChessPos from "src/rule/ChessPos";
 import ChessHost from "src/rule/chess_host";
-import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList } from "src/rule/chess_map";
+import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList, chessClassToText } from "src/rule/chess_map";
 import Game from "src/rule/Game";
 import Bindable from "src/utils/bindables/Bindable";
 import Signal from "src/utils/signals/Signal";
@@ -29,8 +27,6 @@ export default class Player implements Game {
 
   public screen: any;
 
-  private configManager: ConfigManager;
-
   private viewChessHost: ChessHost;
 
   private lastViewChessHost: ChessHost;
@@ -43,12 +39,14 @@ export default class Player implements Game {
 
   private animationId: number;
 
-  constructor() {
-    this.configManager = configManager;
+  private textOverlay: any;
 
+  constructor(context: Vue) {
     onBeforeUnmount(() => {
       cancelAnimationFrame(this.animationId);
     });
+
+    this.textOverlay = context.$refs.textOverlay;
 
     this.startTween();
   }
@@ -200,7 +198,7 @@ export default class Player implements Game {
           if (targetChess != null && targetChess.is(ChessK)) {
             this.gameOver.dispatch(chess.getHost());
           } else {
-            //this.chessEatOverlayVisible.value = true;
+            this.showText(`吃!（${targetChess.getHost() == ChessHost.RED ? '红方' : '黑方'}的${chessClassToText(targetChess.chess)}被吃）`, 1000);
             this.checkCheckmate();
             this.turnActiveChessHost();
           }
@@ -335,7 +333,7 @@ export default class Player implements Game {
   private checkCheckmate() {
     // 判断将军
     if (this.checkmate.check(ChessHost.reverse(this.activeChessHost.value))) {
-      //this.checkmateShowChessHost.value = this.activeChessHost.value;
+      this.showText(`${this.activeChessHost.value == ChessHost.RED ? '红方' : '黑方'}将军!`, 2000);
     }
   }
 
@@ -350,6 +348,10 @@ export default class Player implements Game {
     }
   }
 
+  private showText(text: string, duration?: number) {
+    // eslint-disable-next-line
+    this.textOverlay.show(text, duration);
+  }
 
   private startTween() {
     const animate = (time: number) => {

@@ -57,7 +57,8 @@
           :status="viewUserStatus"
           :chess-host="viewChessHost"
           :active="activeChessHost == viewChessHost"
-          class="fixed-bottom-right"
+          reverse
+          class="fixed-bottom-right q-mr-xs"
         />
       </div>
     </template>
@@ -198,7 +199,7 @@ export default defineComponent({
       };
       const chessboard = new DrawableChessboard(recalcChessboardSize(), ctx.$q.screen);
       container.insertBefore(chessboard.el, container.firstChild);
-      spectate.player = new Player();
+      spectate.player = new Player(ctx);
       spectate.player.chessboard = chessboard;
       spectate.player.screen = ctx.$q.screen;
       spectate.playerLoaded.dispatch();

@@ -6,7 +6,10 @@
       `q-py-${$q.screen.name}`
     ]"
   >
-    <div class="row items-start">
+    <div
+      class="row items-start"
+      :class="{reverse}"
+    >
       <circle-timer
         ref="circleStepTimer"
         size="64px"
@@ -28,7 +31,8 @@
       </circle-timer>
       <div
         v-show="user"
-        class="q-ml-xs"
+        :class="`q-m${reverse ? 'r' : 'l'}-xs`"
+        :style="{textAlign: reverse && 'right'}"
       >
         <div class="nickname ellipsis">
           {{ user && user.nickname }}
@@ -67,6 +71,7 @@ export default defineComponent({
     status: Number as PropType<UserStatus>,
     chessHost: Number as PropType<ChessHost | undefined>,
     active: Boolean,
+    reverse: Boolean,
   },
   setup(props) {
     const ctx = getCurrentInstance() as Vue;
@@ -110,12 +115,12 @@ export default defineComponent({
 
 .time-panel
   .item
-    padding-right: 16px
     .label
       padding-right: 4px
       font-size: 0.9em
       &::after
         content: ':'
+
     .time
       font-size: 0.9em
       font-weight: 500

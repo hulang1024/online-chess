@@ -5,7 +5,7 @@
       size="28px"
       class="q-ml-xs"
     />
-    <span class="q-ml-xs">{{ nickname }}</span>
+    <span :class="`q-m${reverse ? 'r' : 'l'}-xs`">{{ nickname }}</span>
   </div>
 </template>
 

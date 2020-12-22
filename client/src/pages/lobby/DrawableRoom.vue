@@ -23,6 +23,7 @@
       <drawable-room-user
         v-if="blackChessUser"
         :user="blackChessUser"
+        reverse
       />
     </q-card-section>
   </q-card>
