@@ -110,17 +110,13 @@ export default class GamePlay {
     this.user = this.api.localUser;
     this.room = room || initialGameStates?.room as Room;
 
-    if (this.gameState.value != GameState.READY) {
-      const channel = new Channel();
-      channel.id = this.room.channelId;
-      this.channelManager.joinChannel(channel);
-    }
-
-    this.chessHost.addAndRunOnce((chessHost: ChessHost) => {
-      this.otherChessHost.value = ChessHost.reverse(chessHost);
-    });
-
     this.initListeners();
+
+    api.isLoggedIn.changed.add((isLoggedIn: boolean) => {
+      if (!isLoggedIn) {
+        this.exitScreen();
+      }
+    });
 
     this.playerLoaded.add(() => {
       this.player.gameOver.add(this.onGameOver, this);
@@ -132,14 +128,8 @@ export default class GamePlay {
       this.chessboard.clicked.add(this.onChessboardClick, this);
       this.chessboard.chessMoved.add(this.onInputChessMove, this);
 
-      this.gameState.addAndRunOnce(this.onGameStateChanged, this);
-
       if (initialGameStates) {
         this.player.startGame(this.chessHost.value, initialGameStates);
-      }
-
-      if (this.gameState.value == GameState.PAUSE) {
-        this.showText('游戏暂停中，等待对手回来继续');
       }
     });
 
@@ -165,11 +155,21 @@ export default class GamePlay {
 
       this.loadState(initialGameStates);
 
-      api.isLoggedIn.changed.add((isLoggedIn: boolean) => {
-        if (!isLoggedIn) {
-          this.exitScreen();
-        }
+      this.gameState.addAndRunOnce(this.onGameStateChanged, this);
+
+      this.chessHost.addAndRunOnce((chessHost: ChessHost) => {
+        this.otherChessHost.value = ChessHost.reverse(chessHost);
       });
+
+      if (this.gameState.value != GameState.READY) {
+        const channel = new Channel();
+        channel.id = this.room.channelId;
+        this.channelManager.joinChannel(channel);
+      }
+
+      if (this.gameState.value == GameState.PAUSE) {
+        this.showText('游戏暂停中，等待对手回来继续');
+      }
 
       this.isWaitingForOther.changed.add((value: number) => {
         if (value == 0) {
@@ -430,7 +430,7 @@ export default class GamePlay {
     this.otherOnline.value = true;
     if (msg.ok) {
       this.gameState.value = GameState.PLAYING;
-      this.showText('对手已回来', 3000);
+      this.showText('对手已回来，对局继续', 3000);
     } else {
       this.gameState.value = GameState.READY;
       this.otherUser.value = null;
@@ -482,7 +482,7 @@ export default class GamePlay {
       return;
     }
     this.otherOnline.value = true;
-    this.showText('对手已上线', 3000);
+    this.context.$q.notify('对手已上线');
   }
 
   private onUserStatusChangedEvent(msg: UserEvents.UserStatusChangedMsg) {
