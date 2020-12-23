@@ -251,21 +251,21 @@ public class RoomManager {
         if (room.getUserCount() == 1) {
             User otherUser = room.getOneUser();
             UserActivity otherUserStatus = userActivityService.getCurrentStatus(otherUser);
-            // 但是该用户未真正进入游戏
-            if (otherUserStatus != UserActivity.IN_ROOM) {
-                // 那么将此用户也从房间移除
-                partRoom(room, otherUser);
-                // 导致解散房间
-                if (room.getStatus() == RoomStatus.DISMISSED) {
-                    return 0;
-                }
-            } else {
+            // 该用户在房间/游戏中
+            if (otherUserStatus == UserActivity.IN_ROOM || otherUserStatus == UserActivity.PLAYING) {
                 // 如果是房主离开，转移房主引用
                 if (room.getOwner().equals(user)) {
                     room.setOwner(otherUser);
                     room.updateUserReadyState(room.getOwner(), true);
                 }
                 userActivityService.enter(otherUser, UserActivity.IN_ROOM);
+            } else {
+                // 不在游戏中则将此用户也从房间移除
+                partRoom(room, otherUser);
+                // 导致解散房间
+                if (room.getStatus() == RoomStatus.DISMISSED) {
+                    return 0;
+                }
             }
         }
 
