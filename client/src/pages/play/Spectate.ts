@@ -106,6 +106,7 @@ export default class Spectate {
           this.showText('对局暂停');
           break;
         case GameState.PLAYING:
+          this.showText('正在旁观中');
           break;
         default:
           break;
