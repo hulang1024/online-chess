@@ -79,7 +79,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         User user = chessPickMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
-        if (room.getGame().getState() != GameState.PLAYING) {
+        if (room.getGame() == null || room.getGame().getState() != GameState.PLAYING) {
             return;
         }
 
@@ -95,7 +95,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         User user = chessMoveMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
-        if (room.getGame().getState() != GameState.PLAYING) {
+        if (room.getGame() == null || room.getGame().getState() != GameState.PLAYING) {
             return;
         }
 
@@ -129,7 +129,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         User user = confirmRequestMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
-        if (room.getGame().getState() != GameState.PLAYING) {
+        if (room.getGame() == null || room.getGame().getState() != GameState.PLAYING) {
             return;
         }
 
@@ -144,7 +144,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         User user = confirmResponseMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
-        if (room.getGame().getState() != GameState.PLAYING) {
+        if (room.getGame() == null || room.getGame().getState() != GameState.PLAYING) {
             return;
         }
 

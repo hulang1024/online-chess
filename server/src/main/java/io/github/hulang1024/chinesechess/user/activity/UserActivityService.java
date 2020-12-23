@@ -18,9 +18,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class UserActivityService {
+    /** 记录 活动状态 -> 加入的用户 */
     private static Map<UserActivity, List<User>> activityUsersMap = new ConcurrentHashMap<>();
+
+    /** 记录用户最新活动状态，不包括AFK */
     private static Map<Long, UserActivity> userCurrentStatusMap = new ConcurrentHashMap<>();
-    private static Map<Long, UserActivity> userPreviousStatusMap = new ConcurrentHashMap<>();
+
+    /** 记录AFK的用户 */
+    private static Map<Long, User> userAFKStatusMap = new ConcurrentHashMap<>();
+
     @Autowired
     private RoomManager roomManager;
 
@@ -41,12 +47,10 @@ public class UserActivityService {
         if (user == null) {
             return null;
         }
-        UserActivity status = userCurrentStatusMap.get(user.getId());
-        return (ignoreAFK && status == UserActivity.AFK) ? getPreviousStatus(user) : status;
-    }
-
-    public UserActivity getPreviousStatus(User user) {
-        return userPreviousStatusMap.get(user.getId());
+        if (!ignoreAFK && userAFKStatusMap.containsKey(user.getId())) {
+            return UserActivity.AFK;
+        }
+        return userCurrentStatusMap.get(user.getId());
     }
 
     public void broadcast(UserActivity userActivity, ServerMessage message, User... excludes) {
@@ -73,11 +77,6 @@ public class UserActivityService {
             return;
         }
 
-        UserActivity prevStatus = getCurrentStatus(user, false);
-        if (prevStatus != null) {
-            userPreviousStatusMap.put(user.getId(), prevStatus);
-        }
-
         switch (nowStatus) {
             case IN_ROOM:
                 exit(user, UserActivity.IN_LOBBY, false);
@@ -94,7 +93,11 @@ public class UserActivityService {
                 break;
         }
 
-        userCurrentStatusMap.put(user.getId(), nowStatus);
+        if (nowStatus == UserActivity.AFK) {
+            userAFKStatusMap.put(user.getId() ,user);
+        } else {
+            userCurrentStatusMap.put(user.getId(), nowStatus);
+        }
 
         UserStatus newUserStatus =  activityToStatus(nowStatus);
         if (newUserStatus != null) {
@@ -108,24 +111,21 @@ public class UserActivityService {
 
     public void exit(User user, UserActivity activityToExit, boolean doBroadcast) {
         activityUsersMap.get(activityToExit).remove(user);
-        // 保留当前状态，直到下一个状态覆盖
 
         if (user instanceof GuestUser) {
             return;
         }
 
         if (activityToExit == UserActivity.AFK) {
-            UserActivity prevStatus = getPreviousStatus(user);
-            if (prevStatus != null) {
-                enter(user, prevStatus);
-            }
+            userAFKStatusMap.remove(user.getId());
+            enter(user, getCurrentStatus(user));
         }
     }
 
     public void removeUser(User user) {
         activityUsersMap.values().forEach(users -> users.remove(user));
         userCurrentStatusMap.remove(user.getId());
-        userPreviousStatusMap.remove(user.getId());
+        userAFKStatusMap.remove(user.getId());
     }
 
     public UserStatus activityToStatus(UserActivity activity) {
