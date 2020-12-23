@@ -26,6 +26,11 @@ public class UserSessionManager {
 
     public static final String USER_ID_KEY = "userId";
 
+    public boolean isConnected(User user) {
+        Session session = userSessionMap.get(user.getId());
+        return session != null && session.isOpen();
+    }
+
     public Session getSession(User user) {
         return userSessionMap.get(user.getId());
     }

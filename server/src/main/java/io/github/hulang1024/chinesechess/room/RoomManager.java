@@ -9,6 +9,7 @@ import io.github.hulang1024.chinesechess.room.ws.*;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
+import io.github.hulang1024.chinesechess.user.UserSessionManager;
 import io.github.hulang1024.chinesechess.user.UserUtils;
 import io.github.hulang1024.chinesechess.user.activity.UserActivity;
 import io.github.hulang1024.chinesechess.user.activity.UserActivityService;
@@ -41,6 +42,8 @@ public class RoomManager {
     private UserManager userManager;
     @Autowired
     private SpectatorManager spectatorManager;
+    @Autowired
+    private UserSessionManager userSessionManager;
     @Autowired
     private UserActivityService userActivityService;
 
@@ -98,6 +101,10 @@ public class RoomManager {
      */
     public Room createRoom(CreateRoomParam createRoomParam) {
         User creator = UserUtils.get();
+
+        if (!userSessionManager.isConnected(creator)) {
+            return null;
+        }
 
         if (getJoinedRoom(creator) != null) {
             return null;
@@ -159,6 +166,11 @@ public class RoomManager {
 
     public JoinRoomResult joinRoom(Room room, User user, JoinRoomParam joinRoomParam) {
         JoinRoomResult result = new JoinRoomResult();
+
+        if (!userSessionManager.isConnected(user)) {
+            result.setCode(2);
+            return result;
+        }
 
         Room joinedRoom = getJoinedRoom(user);
         if (joinedRoom != null) {

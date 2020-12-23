@@ -22,6 +22,7 @@ public class AvatarService {
         if (StringUtils.isEmpty(url)) {
             return AvatarUploadResult.fail();
         }
+        user.setAvatarUrl(url);
         boolean ok = userDao.update(
             null,
             new UpdateWrapper<User>()

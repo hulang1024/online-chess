@@ -96,7 +96,7 @@ public class UserManager {
             user.setIsOnline(isOnline(user.getId()));
 
             if (user.getIsOnline()) {
-                user.setStatus(userActivityService.activityToStatus(userActivityService.getCurrentStatus(user)));
+                user.setStatus(userActivityService.activityToStatus(userActivityService.getCurrentStatus(user, false)));
                 if (user.getStatus() == null) {
                     user.setStatus(UserStatus.ONLINE);
                 }

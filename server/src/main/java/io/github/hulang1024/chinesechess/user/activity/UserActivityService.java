@@ -34,8 +34,17 @@ public class UserActivityService {
     private WSMessageService wsMessageService;
 
     public UserActivity getCurrentStatus(User user) {
-        return user != null ? userCurrentStatusMap.get(user.getId()) : null;
+        return getCurrentStatus(user, true);
     }
+
+    public UserActivity getCurrentStatus(User user, boolean ignoreAFK) {
+        if (user == null) {
+            return null;
+        }
+        UserActivity status = userCurrentStatusMap.get(user.getId());
+        return (ignoreAFK && status == UserActivity.AFK) ? getPreviousStatus(user) : status;
+    }
+
     public UserActivity getPreviousStatus(User user) {
         return userPreviousStatusMap.get(user.getId());
     }
@@ -64,7 +73,7 @@ public class UserActivityService {
             return;
         }
 
-        UserActivity prevStatus = getCurrentStatus(user);
+        UserActivity prevStatus = getCurrentStatus(user, false);
         if (prevStatus != null) {
             userPreviousStatusMap.put(user.getId(), prevStatus);
         }
