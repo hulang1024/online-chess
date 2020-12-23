@@ -23,7 +23,7 @@
       <drawable-room-user
         v-if="blackChessUser"
         :user="blackChessUser"
-        reverse
+        :reverse="redChessUser && blackChessUser"
       />
     </q-card-section>
   </q-card>
@@ -88,13 +88,14 @@ export default defineComponent({
         };
         req.failure = (result) => {
           const codeMsgMap: { [code: number]: string } = {
-            2: '加入棋桌失败：该棋桌已不存在',
-            3: '加入棋桌失败：棋桌已满',
-            4: '加入棋桌失败：你已加入本棋桌',
-            5: '加入棋桌失败：你已加入其它棋桌',
-            6: '加入棋桌失败：密码错误',
+            2: '未连接到服务器',
+            3: '棋桌已满',
+            4: '你已加入本棋桌',
+            5: '你已加入其它棋桌',
+            6: '密码错误',
+            7: '该棋桌已不存在',
           };
-          $q.notify({ type: 'warning', message: codeMsgMap[result.code] });
+          $q.notify({ type: 'warning', message: `加入棋桌失败：${codeMsgMap[result.code]}` });
         };
         api.perform(req);
       } else {
