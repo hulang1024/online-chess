@@ -75,6 +75,7 @@
                   >
                     <q-item-section>查看详情</q-item-section>
                   </q-item>
+                  <q-separator />
                   <q-item
                     key="chat"
                     v-close-popup
@@ -121,7 +122,7 @@
         </template>
         <span
           v-else-if="!loading"
-          class="text-white absolute-center"
+          class="absolute-center"
         >未查询到用户:(</span>
       </div>
     </q-card>
