@@ -17,10 +17,10 @@ public class UserStatusChangedServerMsg extends ServerMessage {
     public UserStatusChangedServerMsg(User user, UserStatus status) {
         super("user.status_changed");
         this.uid = user.getId();
-        this.user = new SearchUserInfo();
-        this.user.setId(user.getId());
-        this.user.setNickname(user.getNickname());
-        this.user.setAvatarUrl(user.getAvatarUrl());
+        if (!(user instanceof SearchUserInfo)) {
+            user = new SearchUserInfo(user);
+        }
+        this.user = (SearchUserInfo)user;
         this.user.setStatus(status);
         this.status = status;
     }

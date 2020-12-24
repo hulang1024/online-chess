@@ -13,6 +13,14 @@ public class SearchUserInfo extends User {
     @JSONField(serialize = false)
     private UserStatus status;
 
+    private String loginDeviceOS;
+
+    public SearchUserInfo(User user) {
+        setId(user.getId());
+        setNickname(user.getNickname());
+        setAvatarUrl(user.getAvatarUrl());
+    }
+
     @JSONField(name = "status")
     public int getStatusCode() {
         return status == null ? -1 : status.getCode();

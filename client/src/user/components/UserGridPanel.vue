@@ -31,7 +31,11 @@
           {{ nickname }}
         </div>
         <div class="status-desc">
-          [{{ userStatusText }}]
+          <span>[{{ userStatusText }}]</span>
+          <span
+            v-if="userStatus != UserStatus.OFFLINE"
+            class="q-ml-xs"
+          >[使用{{ loginDeviceOS }}]</span>
         </div>
       </div>
     </div>
@@ -47,6 +51,17 @@ import UserAvatar from "src/user/components/UserAvatar.vue";
 import UserStatus from "src/user/UserStatus";
 import SearchUserInfo from 'src/online/user/SearchUserInfo';
 
+function translateDeviceOS(deviceOS: string | undefined): string | undefined {
+  const NAME_MAP: {[d: string]: string} = {
+    ios: '手机(iOS)',
+    iphone: '手机(iPhone)',
+    android: '手机(安卓)',
+    macos: '电脑(MacOS)',
+    windows: '电脑(Windows)',
+  };
+  return deviceOS && (NAME_MAP[deviceOS] || deviceOS);
+}
+
 export default defineComponent({
   components: { UserAvatar },
   props: {
@@ -55,6 +70,7 @@ export default defineComponent({
   setup(props) {
     const ctx = getCurrentInstance() as Vue;
     const userStatus = ref<UserStatus>(props.user?.status as UserStatus);
+    const loginDeviceOS = ref(translateDeviceOS(props.user?.loginDeviceOS));
     const isFriend = ref(props.user?.isFriend);
 
     const USER_STATUS_MAP = {
@@ -94,12 +110,16 @@ export default defineComponent({
     watch(props, () => {
       userStatus.value = props.user?.status as UserStatus;
       isFriend.value = props.user?.isFriend;
+      if (props.user?.loginDeviceOS) {
+        loginDeviceOS.value = translateDeviceOS(props.user?.loginDeviceOS);
+      }
     });
 
     return {
       UserStatus,
       ...props.user,
       userStatus,
+      loginDeviceOS,
       isFriend,
       userStatusText,
       backgroundColor,

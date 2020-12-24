@@ -53,17 +53,10 @@ public class UserActivityService {
         return userCurrentStatusMap.get(user.getId());
     }
 
-    public void broadcast(UserActivity userActivity, ServerMessage message, User... excludes) {
-        User exclude = excludes.length == 0 ? null : excludes[0];
-        activityUsersMap.get(userActivity).forEach(user -> {
-            if (user.equals(exclude)) {
-                return;
-            }
-            wsMessageService.send(message, user);
-        });
-    }
-
     public void enter(User user, UserActivity nowStatus) {
+        if (nowStatus == null) {
+            return;
+        }
         List<User> users = activityUsersMap.get(nowStatus);
         if (!users.contains(user)) {
             users.add(user);
@@ -155,6 +148,16 @@ public class UserActivityService {
         if (joinedRoom != null) {
             roomManager.broadcast(joinedRoom, msg, user);
         }
+    }
+
+    public void broadcast(UserActivity userActivity, ServerMessage message, User... excludes) {
+        User exclude = excludes.length == 0 ? null : excludes[0];
+        activityUsersMap.get(userActivity).forEach(user -> {
+            if (user.equals(exclude)) {
+                return;
+            }
+            wsMessageService.send(message, user);
+        });
     }
 
 }

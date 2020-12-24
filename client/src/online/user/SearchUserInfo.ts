@@ -12,4 +12,6 @@ export default class SearchUserInfo extends User {
   userStats: UserStats;
 
   status: UserStatus;
+
+  loginDeviceOS: string;
 }

@@ -247,6 +247,7 @@ export default defineComponent({
       if (found) {
         found.status = msg.status;
         found.isOnline = msg.status != UserStatus.OFFLINE;
+        Object.assign(found, msg.user);
       }
 
       users.value = users.value.sort((a, b) => (a.isOnline ? (b.isOnline ? 0 : -1) : +1));

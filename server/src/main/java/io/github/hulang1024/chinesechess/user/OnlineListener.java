@@ -29,8 +29,7 @@ public class OnlineListener {
                 wsMessageService.send(new UserOnlineServerMsg(user), userManager.getLoggedInUser(userId));
             }
         });
-        userActivityService.broadcast(
-            UserActivity.VIEW_ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.ONLINE));
+        broadcastUserOnlineStatus(user, true);
         sendOnlineStat();
     }
 
@@ -41,9 +40,7 @@ public class OnlineListener {
                 wsMessageService.send(new UserOfflineServerMsg(user), userManager.getLoggedInUser(userId));
             }
         });
-        userActivityService.broadcast(
-            UserActivity.VIEW_ONLINE_USER, new UserStatusChangedServerMsg(user, UserStatus.OFFLINE));
-
+        broadcastUserOnlineStatus(user, false);
         sendOnlineStat();
     }
 
@@ -52,6 +49,15 @@ public class OnlineListener {
         userActivityService.broadcast(
             UserActivity.VIEW_ONLINE_USER,
             new OnlineStatServerMsg(UserSessionManager.onlineUserCount));
+    }
+
+    private void broadcastUserOnlineStatus(User user, boolean isOnline) {
+        SearchUserInfo searchUserInfo = new SearchUserInfo(user);
+        searchUserInfo.setLoginDeviceOS(userManager.getUserDeviceInfo(user).getDeviceOS());
+        userActivityService.broadcast(
+            UserActivity.VIEW_ONLINE_USER,
+            new UserStatusChangedServerMsg(searchUserInfo,
+                isOnline ? UserStatus.ONLINE : UserStatus.OFFLINE));
     }
 
 }

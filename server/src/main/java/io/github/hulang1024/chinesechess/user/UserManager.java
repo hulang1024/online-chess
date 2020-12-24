@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 public class UserManager {
     private static Map<Long, GuestUser> guestUserMap = new ConcurrentHashMap<>();
     private static Map<Long, User> loggedInUserMap = new ConcurrentHashMap<>();
+    private static Map<Long, UserDeviceInfo> loggedInUserDeviceInfoMap = new ConcurrentHashMap<>();
+
     @Autowired
     private UserDao userDao;
     @Autowired
@@ -54,6 +56,11 @@ public class UserManager {
         return loggedInUserMap.get(userId);
     }
 
+    public UserDeviceInfo getUserDeviceInfo(User user) {
+        UserDeviceInfo deviceInfo = loggedInUserDeviceInfoMap.get(user.getId());
+        return deviceInfo != null ? deviceInfo : UserDeviceInfo.NULL;
+    }
+
     public GuestUser getGuestUser(long userId) {
         return guestUserMap.get(userId);
     }
@@ -74,13 +81,7 @@ public class UserManager {
             QueryWrapper query = new QueryWrapper<User>();
             query.orderByDesc("last_active_time");
             IPage<User> userPage = userDao.selectPage(new DaoPageParam(pageParam), query);
-            pageData = userPage.convert(u -> {
-                SearchUserInfo userInfo = new SearchUserInfo();
-                userInfo.setId(u.getId());
-                userInfo.setNickname(u.getNickname());
-                userInfo.setAvatarUrl(u.getAvatarUrl());
-                return userInfo;
-            });
+            pageData = userPage.convert(u -> new SearchUserInfo(u));
         }
 
         final List<Long> friendUserIds = new ArrayList<>();
@@ -96,13 +97,16 @@ public class UserManager {
             user.setIsOnline(isOnline(user.getId()));
 
             if (user.getIsOnline()) {
-                user.setStatus(userActivityService.activityToStatus(userActivityService.getCurrentStatus(user, false)));
+                user.setStatus(userActivityService.activityToStatus(
+                    userActivityService.getCurrentStatus(user, false)));
                 if (user.getStatus() == null) {
                     user.setStatus(UserStatus.ONLINE);
                 }
             } else {
                 user.setStatus(UserStatus.OFFLINE);
             }
+
+            user.setLoginDeviceOS(getUserDeviceInfo(user).getDeviceOS());
         });
         pageData.setRecords(
             pageData.getRecords().stream()
@@ -176,7 +180,17 @@ public class UserManager {
             }
         }
 
-        return login(user, 24 * 60 * 60);
+        LoginResult result = login(user, 24 * 60 * 60);
+
+        if (result.getCode() != 0) {
+            return result;
+        }
+
+        UserDeviceInfo userDeviceInfo = new UserDeviceInfo();
+        userDeviceInfo.setDeviceOS(param.getDeviceOS());
+        loggedInUserDeviceInfoMap.put(user.getId(), userDeviceInfo);
+
+        return result;
     }
 
     /**
@@ -192,7 +206,6 @@ public class UserManager {
         result.setUser(user);
         result.setAccessToken(TokenUtils.generateAccessToken(user.getId(), expiresInSeconds));
         loggedInUserMap.put(user.getId(), user);
-
         return result;
     }
 
@@ -205,6 +218,7 @@ public class UserManager {
             guestLogin(session);
         }
         loggedInUserMap.remove(user.getId());
+        loggedInUserDeviceInfoMap.remove(user.getId());
         return true;
     }
 

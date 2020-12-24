@@ -1,3 +1,4 @@
+import device from "current-device";
 import User from "../../user/User";
 import APILoginResult from './APILoginResult';
 import { APIRequest, HttpMethod } from './api_request';
@@ -14,5 +15,8 @@ export default class LoginRequest extends APIRequest<APILoginResult> {
       this.addParam('username', user.username);
       this.addParam('password', user.password);
     }
+
+    // eslint-disable-next-line
+    this.addParam('deviceOS', device.os);
   }
 }
