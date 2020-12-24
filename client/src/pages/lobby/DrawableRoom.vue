@@ -121,3 +121,8 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="sass" scoped>
+.q-card
+  width: 300px
+</style>

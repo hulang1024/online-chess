@@ -1,5 +1,5 @@
 <template>
-  <div class="rooms q-px-sm q-py-sm">
+  <div class="rooms q-px-sm q-py-sm q-gutter-sm scroll">
     <q-inner-loading
       :showing="spinnerShow"
       class="bg-transparent"
@@ -40,9 +40,13 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
-.rooms {
-  position: relative;
-  flex-grow: 1;
-}
+<style lang="sass" scoped>
+.rooms
+  display: flex
+  flex-wrap: wrap
+  justify-content: center
+  align-content: flex-start
+  align-items: flex-start
+  position: relative
+  flex-grow: 1
 </style>
