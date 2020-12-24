@@ -131,6 +131,8 @@ export default class GamePlay {
       if (initialGameStates) {
         this.player.startGame(this.chessHost.value, initialGameStates);
       }
+
+      this.gameState.addAndRunOnce(this.onGameStateChanged, this);
     });
 
     onMounted(() => {
@@ -154,8 +156,6 @@ export default class GamePlay {
         .$refs.circleStepTimer as unknown as CircleTimer).setSyncTimer(this.otherStepTimer);
 
       this.loadState(initialGameStates);
-
-      this.gameState.addAndRunOnce(this.onGameStateChanged, this);
 
       this.chessHost.addAndRunOnce((chessHost: ChessHost) => {
         this.otherChessHost.value = ChessHost.reverse(chessHost);
