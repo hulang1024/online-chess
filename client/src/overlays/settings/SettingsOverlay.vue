@@ -165,11 +165,12 @@ export default defineComponent({
   opacity: 0.78
 
   .section-row
+    margin-bottom: 8px
     &.toggle-row
       display: flex
       flex-direction: row
       justify-content: space-between
-
+      align-items: center
     .q-slider
       width: calc(100% - 16px)
 </style>
