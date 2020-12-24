@@ -1,9 +1,8 @@
 <template>
-  <div :class="['row', reverse && 'reverse']">
+  <div :class="['row items-center', reverse && 'reverse']">
     <user-avatar
       :user="user"
       size="28px"
-      class="q-ml-xs"
     />
     <span :class="`q-m${reverse ? 'r' : 'l'}-xs`">{{ nickname }}</span>
   </div>
