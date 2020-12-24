@@ -38,9 +38,9 @@ export function isInBoundary(game: Game, host: ChessHost, destPos: ChessPos) {
  */
 export function isInKingHome(chess: Chess, destPos: ChessPos, game: Game) {
   return (destPos.col >= 3 && destPos.col <= 5)
-  && (game.isHostAtChessboardTop(chess.getHost())
-    ? (destPos.row >= 0 && destPos.row <= 2)
-    : (destPos.row >= 0 && destPos.row <= 9));
+    && (game.isHostAtChessboardTop(chess.getHost())
+      ? (destPos.row >= 0 && destPos.row <= 2)
+      : (destPos.row >= 7 && destPos.row <= 9));
 }
 
 export function sign(n: number) {
