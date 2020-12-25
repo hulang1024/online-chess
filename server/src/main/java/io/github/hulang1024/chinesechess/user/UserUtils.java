@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.user;
 
 public class UserUtils {
-    private static final ThreadLocal<User> THREAD_LOCAL = ThreadLocal.withInitial(User::new);
+    private static final ThreadLocal<User> THREAD_LOCAL = new ThreadLocal();
 
     public static void set(User user) {
         if (user != null) {

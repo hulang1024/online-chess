@@ -5,6 +5,7 @@ import io.github.hulang1024.chinesechess.http.TokenUtils;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
 import io.github.hulang1024.chinesechess.user.UserSessionManager;
+import io.github.hulang1024.chinesechess.user.UserUtils;
 import io.github.hulang1024.chinesechess.user.ws.UserLoginClientMsg;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,8 @@ public class ClientMessageDispatcher {
             }
             message.setUser(user);
         }
+
+        UserUtils.set(user);
 
         emit(message.getClass(), message);
     }

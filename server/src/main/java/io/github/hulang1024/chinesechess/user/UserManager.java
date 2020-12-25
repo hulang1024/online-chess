@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.database.DaoPageParam;
+import io.github.hulang1024.chinesechess.friend.FriendRelation;
 import io.github.hulang1024.chinesechess.friend.FriendUserDao;
 import io.github.hulang1024.chinesechess.friend.FriendsManager;
 import io.github.hulang1024.chinesechess.http.TokenUtils;
@@ -16,9 +17,8 @@ import org.springframework.stereotype.Service;
 import org.yeauty.pojo.Session;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -49,7 +49,7 @@ public class UserManager {
 
     public boolean isOnline(long userId) {
         User user = loggedInUserMap.get(userId);
-        return user != null && userSessionManager.getSession(user) != null;
+        return user != null && userSessionManager.isConnected(userId);
     }
 
     public User getLoggedInUser(long userId) {
@@ -73,6 +73,9 @@ public class UserManager {
         User currentUser = UserUtils.get();
         IPage<SearchUserInfo> pageData;
         if (searchUserParam.getOnlyFriends()) {
+            if (currentUser == null || currentUser instanceof GuestUser) {
+                return new PageRet<>(null);
+            }
             pageData = friendUserDao.searchFriends(new DaoPageParam(pageParam),
                 new QueryWrapper<User>()
                     .eq("friends.user_id", currentUser.getId())
@@ -84,14 +87,12 @@ public class UserManager {
             pageData = userPage.convert(u -> new SearchUserInfo(u));
         }
 
-        final List<Long> friendUserIds = new ArrayList<>();
-        if (currentUser != null) {
-            friendUserIds.addAll( friendsManager.getFriendIds(currentUser) );
-        }
 
         pageData.getRecords().forEach(user -> {
-            if (currentUser != null) {
-                user.setIsFriend(friendUserIds.contains(user.getId()));
+            if (currentUser != null && !(currentUser instanceof GuestUser)) {
+                Optional<FriendRelation> relation = friendsManager.findUserFriendRelation(currentUser, user);
+                user.setIsFriend(relation.isPresent());
+                user.setIsMutual(relation.map(r -> r.getIsMutual()).orElse(false));
             }
 
             user.setIsOnline(isOnline(user.getId()));
