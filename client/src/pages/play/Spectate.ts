@@ -106,7 +106,7 @@ export default class Spectate {
           this.showText('对局暂停');
           break;
         case GameState.PLAYING:
-          this.showText('正在旁观中');
+          this.showText('正在旁观中', 3000);
           break;
         default:
           break;
@@ -249,6 +249,7 @@ export default class Spectate {
           this.blackGameTimer.resume();
           this.blackStepTimer.resume();
         }
+        this.onTurnActiveChessHost(this.activeChessHost.value || ChessHost.RED, true);
       }
       return;
     }
@@ -357,22 +358,24 @@ export default class Spectate {
     }
   }
 
-  private onTurnActiveChessHost(activeChessHost: ChessHost) {
+  private onTurnActiveChessHost(activeChessHost: ChessHost, isGameResume = false) {
     if (this.gameState.value != GameState.PLAYING) {
       return;
     }
     this.activeChessHost.value = activeChessHost;
 
-    if (activeChessHost == ChessHost.BLACK) {
-      this.redGameTimer.pause();
-      this.redStepTimer.stop();
-      this.blackGameTimer.resume();
-      this.blackStepTimer.start();
-    } else {
-      this.redGameTimer.resume();
-      this.redStepTimer.start();
-      this.blackGameTimer.pause();
-      this.blackStepTimer.stop();
+    if (!isGameResume) {
+      if (activeChessHost == ChessHost.BLACK) {
+        this.redGameTimer.pause();
+        this.redStepTimer.stop();
+        this.blackGameTimer.resume();
+        this.blackStepTimer.start();
+      } else {
+        this.redGameTimer.resume();
+        this.redStepTimer.start();
+        this.blackGameTimer.pause();
+        this.blackStepTimer.stop();
+      }
     }
   }
 
