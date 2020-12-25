@@ -102,7 +102,7 @@ public class RoomManager {
     public Room createRoom(CreateRoomParam createRoomParam) {
         User creator = UserUtils.get();
 
-        if (!userSessionManager.isConnected(creator)) {
+        if (!userManager.isOnline(creator)) {
             return null;
         }
 
@@ -167,7 +167,7 @@ public class RoomManager {
     public JoinRoomResult joinRoom(Room room, User user, JoinRoomParam joinRoomParam) {
         JoinRoomResult result = new JoinRoomResult();
 
-        if (!userSessionManager.isConnected(user)) {
+        if (!userManager.isOnline(user)) {
             result.setCode(2);
             return result;
         }

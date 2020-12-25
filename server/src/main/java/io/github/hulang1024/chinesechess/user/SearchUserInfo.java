@@ -15,6 +15,8 @@ public class SearchUserInfo extends User {
 
     private String loginDeviceOS;
 
+    public SearchUserInfo() {}
+
     public SearchUserInfo(User user) {
         setId(user.getId());
         setNickname(user.getNickname());

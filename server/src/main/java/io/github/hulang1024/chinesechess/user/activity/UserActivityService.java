@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 @Service
 public class UserActivityService {
@@ -93,9 +94,7 @@ public class UserActivityService {
         }
 
         UserStatus newUserStatus =  activityToStatus(nowStatus);
-        if (newUserStatus != null) {
-            broadcast(user, newUserStatus);
-        }
+        broadcast(user, newUserStatus != null ? newUserStatus : UserStatus.ONLINE);
     }
 
     public void exit(User user, UserActivity activityToExit) {
@@ -151,13 +150,15 @@ public class UserActivityService {
     }
 
     public void broadcast(UserActivity userActivity, ServerMessage message, User... excludes) {
-        User exclude = excludes.length == 0 ? null : excludes[0];
+        broadcast(userActivity, ($) -> message, excludes.length == 0 ? null : excludes[0]);
+    }
+
+    public void broadcast(UserActivity userActivity, Function<User, ServerMessage> messageBuilder, User exclude) {
         activityUsersMap.get(userActivity).forEach(user -> {
             if (user.equals(exclude)) {
                 return;
             }
-            wsMessageService.send(message, user);
+            wsMessageService.send(messageBuilder.apply(user), user);
         });
     }
-
 }
