@@ -40,7 +40,6 @@
   - 观看跟随另一个观看者
 
 
-
 ## 开发
 * 技术栈(主要)
   - Web客户端
@@ -60,6 +59,7 @@
     + RESTful
 * 开发工具
   - VSCode、IDEA
+
 
 ## 捐赠
 如果此项目对你有帮助，请[点击此处查看支付二维码](https://github.com/hulang1024/sponsorship)或点击此页面上方的Sponsor按钮，谢谢 ♪(･ω･)ﾉ。
