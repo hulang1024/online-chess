@@ -1,8 +1,8 @@
 import User from "../../user/User";
 import { APIRequest, HttpMethod } from "../api/api_request";
-import APIResult from "../api/APIResult";
+import AddFriendResponse from "./AddFriendResponse";
 
-export default class AddAsFriendRequest extends APIRequest<APIResult> {
+export default class AddFriendRequest extends APIRequest<AddFriendResponse> {
   private friend: User;
 
   constructor(friend: User) {
