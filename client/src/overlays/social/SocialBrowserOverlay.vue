@@ -135,7 +135,7 @@
 import {
   defineComponent, getCurrentInstance, ref, watch,
 } from '@vue/composition-api';
-import AddAsFriendRequest from 'src/online/friend/AddAsFriendRequest';
+import AddFriendRequest from 'src/online/friend/AddFriendRequest';
 import DeleteFriendRequest from 'src/online/friend/DeleteFriendRequest';
 import SpectateUserRequest from 'src/online/spectator/SpectateUserRequest';
 import GetUsersRequest from 'src/online/user/GetUsersRequest';
@@ -247,7 +247,7 @@ export default defineComponent({
       if (found) {
         found.status = msg.status;
         found.isOnline = msg.status != UserStatus.OFFLINE;
-        Object.assign(found, msg.user);
+        found.loginDeviceOS = msg.user?.loginDeviceOS;
       }
 
       users.value = users.value.sort((a, b) => (a.isOnline ? (b.isOnline ? 0 : -1) : +1));
@@ -310,9 +310,10 @@ export default defineComponent({
     };
 
     const onAddFriendClick = (user: SearchUserInfo) => {
-      const req = new AddAsFriendRequest(user);
-      req.success = () => {
+      const req = new AddFriendRequest(user);
+      req.success = (ret) => {
         user.isFriend = true;
+        user.isMutual = ret.isMutual;
         $q.notify({ type: 'positive', message: `已将${user.nickname}加为好友` });
       };
       api.perform(req);
@@ -322,6 +323,7 @@ export default defineComponent({
       const req = new DeleteFriendRequest(user);
       req.success = () => {
         user.isFriend = false;
+        user.isMutual = false;
         $q.notify({ type: 'positive', message: `已删除好友${user.nickname}` });
       };
       api.perform(req);
