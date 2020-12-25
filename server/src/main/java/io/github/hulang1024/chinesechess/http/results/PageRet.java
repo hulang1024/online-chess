@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -21,6 +22,10 @@ public class PageRet<T> {
     private List<T> records;
 
     public PageRet(IPage<T> page) {
+        if (page == null) {
+            records = new ArrayList<>();
+            return;
+        }
         this.total = page.getTotal();
         this.records = page.getRecords();
     }
