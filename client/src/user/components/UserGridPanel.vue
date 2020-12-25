@@ -31,11 +31,11 @@
           {{ nickname }}
         </div>
         <div class="status-desc">
-          <span>[{{ userStatusText }}]</span>
           <span
             v-if="userStatus != UserStatus.OFFLINE"
-            class="q-ml-xs"
-          >[使用{{ loginDeviceOS }}]</span>
+            class="q-mr-xs"
+          >[{{ loginDeviceOS }}在线]</span>
+          <span>[{{ userStatusText }}]</span>
         </div>
       </div>
     </div>
@@ -45,7 +45,7 @@
 
 <script lang="ts">
 import {
-  computed, defineComponent, PropType, watch, ref, getCurrentInstance,
+  computed, defineComponent, PropType, watch, getCurrentInstance, reactive, toRefs,
 } from "@vue/composition-api";
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import UserStatus from "src/user/UserStatus";
@@ -53,11 +53,11 @@ import SearchUserInfo from 'src/online/user/SearchUserInfo';
 
 function translateDeviceOS(deviceOS: string | undefined): string | undefined {
   const NAME_MAP: {[d: string]: string} = {
-    ios: '手机(iOS)',
-    iphone: '手机(iPhone)',
-    android: '手机(安卓)',
-    macos: '电脑(MacOS)',
-    windows: '电脑(Windows)',
+    ios: '手机iOS',
+    iphone: '手机iPhone',
+    android: '手机安卓',
+    macos: '电脑MacOS',
+    windows: '电脑Windows',
   };
   return deviceOS && (NAME_MAP[deviceOS] || deviceOS);
 }
@@ -69,9 +69,12 @@ export default defineComponent({
   },
   setup(props) {
     const ctx = getCurrentInstance() as Vue;
-    const userStatus = ref<UserStatus>(props.user?.status as UserStatus);
-    const loginDeviceOS = ref(translateDeviceOS(props.user?.loginDeviceOS));
-    const isFriend = ref(props.user?.isFriend);
+    const states = reactive({
+      userStatus: props.user?.status as UserStatus,
+      isFriend: props.user?.isFriend,
+      isMutual: props.user?.isMutual,
+      loginDeviceOS: translateDeviceOS(props.user?.loginDeviceOS),
+    });
 
     const USER_STATUS_MAP = {
       [UserStatus.OFFLINE]: {
@@ -79,7 +82,7 @@ export default defineComponent({
         color: ctx.$q.dark.isActive ? '#1f1f1f' : '#eee',
       },
       [UserStatus.ONLINE]: {
-        text: '在线空闲',
+        text: '现在空闲',
         color: '#8bc34a',
       },
       [UserStatus.AFK]: {
@@ -104,23 +107,26 @@ export default defineComponent({
       },
     };
 
-    const backgroundColor = computed(() => USER_STATUS_MAP[userStatus.value].color);
-    const userStatusText = computed(() => USER_STATUS_MAP[userStatus.value].text);
+    const backgroundColor = computed(() => USER_STATUS_MAP[states.userStatus].color);
+    const userStatusText = computed(() => USER_STATUS_MAP[states.userStatus].text);
 
     watch(props, () => {
-      userStatus.value = props.user?.status as UserStatus;
-      isFriend.value = props.user?.isFriend;
+      states.userStatus = props.user?.status as UserStatus;
+      if (props.user?.isFriend != null) {
+        states.isFriend = props.user?.isFriend;
+      }
+      if (props.user?.isMutual != null) {
+        states.isMutual = props.user?.isMutual;
+      }
       if (props.user?.loginDeviceOS) {
-        loginDeviceOS.value = translateDeviceOS(props.user?.loginDeviceOS);
+        states.loginDeviceOS = translateDeviceOS(props.user?.loginDeviceOS);
       }
     });
 
     return {
       UserStatus,
       ...props.user,
-      userStatus,
-      loginDeviceOS,
-      isFriend,
+      ...toRefs(states),
       userStatusText,
       backgroundColor,
     };
@@ -130,7 +136,7 @@ export default defineComponent({
 
 <style lang="sass" scoped>
 .list-user-card
-  width: 230px
+  width: 250px
   user-select: none
   cursor: pointer
   transition: all 0.2s ease-out
@@ -139,7 +145,7 @@ export default defineComponent({
   opacity: 1
 
 .nickname
-  width: 156px
+  width: 176px
   font-size: 1.2em
   font-weight: 500
 
