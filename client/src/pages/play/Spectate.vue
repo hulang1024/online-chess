@@ -11,10 +11,18 @@
           :active="activeChessHost == otherChessHost"
           class="q-py-sm q-ml-xs"
         />
-        <spectators-count-display
-          :count="spectatorCount"
-          class="absolute-top-right q-mt-sm q-mr-sm"
-        />
+        <div class="row absolute-top-right q-mt-sm q-mr-sm">
+          <spectators-count-display
+            :count="spectatorCount"
+            class="q-mr-sm"
+          />
+          <q-btn
+            outline
+            label="邀请"
+            color="orange"
+            @click.stop="onInviteClick"
+          />
+        </div>
         <player-container
           ref="playerContainer"
           class="absolute-center"
@@ -105,16 +113,21 @@
           flat
           class="q-px-sm q-py-sm"
         >
-          <div class="row q-gutter-x-sm">
-            <q-btn
-              label="离开"
-              color="negative"
-              @click="onQuitClick"
-            />
+          <div class="flex justify-center q-gutter-sm">
             <q-btn
               label="切换"
               color="warning"
               @click="onToggleViewClick"
+            />
+            <q-btn
+              label="邀请"
+              color="orange"
+              @click.stop="onInviteClick"
+            />
+            <q-btn
+              label="离开"
+              color="negative"
+              @click="onQuitClick"
             />
           </div>
         </q-card>
@@ -149,6 +162,13 @@ export default defineComponent({
     SpectatorsCountDisplay,
     ResultDialog,
     TextOverlay,
+  },
+  inject: ['reload'],
+  watch: {
+    $route() {
+      // eslint-disable-next-line
+      (this.reload as any)();
+    },
   },
   setup() {
     const ctx = getCurrentInstance() as Vue;
@@ -250,6 +270,7 @@ export default defineComponent({
       spectatorCount,
 
       onQuitClick: spectate.onQuitClick.bind(spectate),
+      onInviteClick: spectate.onInviteClick.bind(spectate),
       onToggleViewClick: spectate.onToggleViewClick.bind(spectate),
     };
   },
@@ -259,4 +280,6 @@ export default defineComponent({
 <style lang="sass" scoped>
 .q-page
   flex-wrap: nowrap
+.controls
+  width: 212px
 </style>

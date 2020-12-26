@@ -119,6 +119,7 @@ module.exports = configure((ctx) => ({
       'AppFullscreen',
       'Notify',
       'Loading',
+      'Dialog',
     ],
   },
 

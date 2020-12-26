@@ -10,13 +10,15 @@
     <chat-overlay ref="chatOverlay" />
 
     <q-page-container @click="onPageClick">
-      <router-view />
+      <router-view v-if="isViewAlive" />
     </q-page-container>
   </q-layout>
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance } from '@vue/composition-api';
+import {
+  defineComponent, getCurrentInstance, provide, ref,
+} from '@vue/composition-api';
 import SocialBrowserOverlay from 'src/overlays/social/SocialBrowserOverlay.vue';
 import RankingOverlay from 'src/overlays/ranking/RankingOverlay.vue';
 import SettingsOverlay from '../overlays/settings/SettingsOverlay.vue';
@@ -33,14 +35,26 @@ export default defineComponent({
     RankingOverlay,
   },
   setup() {
-    const { $refs } = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance() as Vue;
+    const { $refs } = ctx;
 
     const onPageClick = () => {
       // eslint-disable-next-line
       (<any>$refs.toolbar).exitActive();
     };
 
+    const isViewAlive = ref(true);
+
+    provide('reload', () => {
+      isViewAlive.value = false;
+      ctx.$nextTick(() => {
+        isViewAlive.value = true;
+      });
+    });
+
     return {
+      isViewAlive,
+
       onPageClick,
     };
   },

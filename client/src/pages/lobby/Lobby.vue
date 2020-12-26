@@ -46,8 +46,6 @@
       :loading="roomsLoading"
       :rooms="rooms"
     />
-
-    <confirm-dialog ref="confirmDialog" />
   </q-page>
 </template>
 
@@ -57,19 +55,23 @@ import {
 } from '@vue/composition-api';
 import CreateRoomRequest from 'src/online/room/CreateRoomRequest';
 import QuickStartRequest from 'src/online/room/QuickStartRequest';
+import ReplyInvitationRequest from 'src/online/invitation/ReplyInvitationRequest';
 import Room from 'src/online/room/Room';
 import RoomManager from 'src/online/room/RoomManager.ts';
 import * as GameEvents from 'src/online/ws/events/play';
+import * as InvitationEvents from "src/online/ws/events/invitation";
 import { api, socketService } from 'src/boot/main';
 import { RoomSettings } from 'src/online/room/RoomSettings';
+import { InvitationReplyServerMsg, InvitationServerMsg } from 'src/online/ws/events/invitation';
+import ResponseGameStates from 'src/online/play/game_states_response';
 import CreateRoomDialog from './CreateRoomDialog.vue';
 import RoomsPanel from './RoomsPanel.vue';
-import ConfirmDialog from '../play/ConfirmDialog.vue';
 
 export default defineComponent({
-  components: { CreateRoomDialog, RoomsPanel, ConfirmDialog },
+  components: { CreateRoomDialog, RoomsPanel },
   setup() {
-    const { $refs, $router, $q } = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance() as Vue;
+    const { $refs, $router, $q } = ctx;
     const roomManager = new RoomManager();
     const joining = ref(false);
 
@@ -81,6 +83,16 @@ export default defineComponent({
       roomManager.searchRooms({ status });
     };
 
+    const pushPlayPage = (room: Room | null, states?: ResponseGameStates) => (
+      $router.push({
+        name: 'play',
+        query: { id: room?.id as unknown as string },
+        params: {
+          room: room as unknown as string,
+          initialGameStates: states as unknown as string,
+        },
+      }));
+
     const onReconnected = () => {
       queryRooms();
       socketService.send('user_activity.enter', { code: 1 });
@@ -88,23 +100,91 @@ export default defineComponent({
     socketService.reconnected.add(onReconnected);
 
     const onGameContinue = () => {
-      // eslint-disable-next-line
-      (<any>$refs.confirmDialog).open({
-        yesText: '是',
-        noText: '否',
-        text: '是否返回到中途退出的游戏中？',
-        action: (isOk: boolean) => {
-          socketService.queue((send) => {
-            send('play.game_continue', { ok: isOk });
-          });
-          GameEvents.gameStates.addOnce((msg: GameEvents.GameStatesMsg) => {
-            // eslint-disable-next-line
-            $router.push({ name: 'play', params: { initialGameStates: msg.states as unknown as string } });
-          });
+      const onAction = (isOk: boolean) => {
+        socketService.queue((send) => {
+          send('play.game_continue', { ok: isOk });
+        });
+        GameEvents.gameStates.addOnce(async (msg: GameEvents.GameStatesMsg) => {
+          await pushPlayPage(msg.states.room, msg.states);
+        });
+      };
+      $q.dialog({
+        title: '继续游戏',
+        message: '是否返回到中途退出的游戏中？',
+        persistent: true,
+        ok: {
+          label: '是',
+          color: 'positive',
         },
-      });
+        cancel: {
+          label: '否',
+          color: 'negative',
+        },
+      }).onOk(() => onAction(true))
+        .onCancel(() => onAction(false));
     };
     GameEvents.gameContinue.add(onGameContinue);
+
+    const onNewInvitation = (msg: InvitationServerMsg) => {
+      const { invitation } = msg;
+
+      // eslint-disable-next-line
+      (ctx.$vnode.context?.$refs.toolbar as any).exitActive();
+      const onAction = (isAccept: boolean) => {
+        const req = new ReplyInvitationRequest(invitation.id, isAccept);
+        req.success = async (res) => {
+          if (res.playRoom) {
+            await pushPlayPage(res.playRoom);
+          }
+          if (res.spectateResponse) {
+            await $router.push({
+              name: 'spectate',
+              query: { id: res.spectateResponse.room.id as unknown as string },
+              params: { spectateResponse: res.spectateResponse as unknown as string },
+            });
+          }
+        };
+        req.failure = (res) => {
+          const codeMsgMap: {[code: number]: string} = {
+            1: '操作失败',
+            2: '邀请者现在不在线',
+            3: '邀请者当前不在游戏中',
+            4: '加入房间失败',
+            5: '被邀请者正在游戏中',
+          };
+          $q.notify({ type: 'warning', message: codeMsgMap[res.code] });
+        };
+        api.perform(req);
+      };
+      $q.dialog({
+        title: '邀请',
+        message: `${invitation.inviter.nickname}邀请你${invitation.subject == 'PLAY' ? '加入' : '观看'}游戏`,
+        persistent: true,
+        ok: {
+          label: '接受',
+          color: 'positive',
+        },
+        cancel: {
+          label: '拒绝',
+          color: 'negative',
+        },
+      }).onOk(() => onAction(true))
+        .onCancel(() => onAction(false));
+    };
+    if (InvitationEvents.invitation.getNumListeners() == 0) {
+      InvitationEvents.invitation.add(onNewInvitation);
+    }
+
+    const onInvitationReply = (msg: InvitationReplyServerMsg) => {
+      const { reply } = msg;
+      $q.notify({
+        type: 'warning',
+        message: `${reply.invitee.nickname}${reply.accept ? '接受' : '拒绝'}了你的邀请`,
+      });
+    };
+    if (InvitationEvents.reply.getNumListeners() == 0) {
+      InvitationEvents.reply.add(onInvitationReply);
+    }
 
     watch(roomStatusActiveTab, () => {
       queryRooms();
@@ -137,8 +217,7 @@ export default defineComponent({
       joining.value = true;
       const req = new QuickStartRequest();
       req.success = async (room) => {
-        // eslint-disable-next-line
-        await $router.push({name: 'play', params: { room: room as unknown as string }});
+        await pushPlayPage(room);
         joining.value = false;
       };
       req.failure = () => {
@@ -147,8 +226,7 @@ export default defineComponent({
         room.roomSettings = new RoomSettings();
         const createReq = new CreateRoomRequest(room);
         createReq.success = async (createdRoom) => {
-          // eslint-disable-next-line
-          await $router.push({name: 'play', params: { room: createdRoom as unknown as string }});
+          await pushPlayPage(createdRoom);
           joining.value = false;
         };
         createReq.failure = () => {
@@ -169,8 +247,7 @@ export default defineComponent({
         action: (room: Room, done: (success: boolean) => void) => {
           const req = roomManager.createRoom(room);
           req.success = async (createdRoom) => {
-            // eslint-disable-next-line
-            await $router.push({ name: 'play', params: { room: createdRoom as unknown as string } });
+            await pushPlayPage(createdRoom);
             done(true);
           };
           req.failure = () => done(false);

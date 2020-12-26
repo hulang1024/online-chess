@@ -83,8 +83,6 @@ export default class GamePlay {
 
   private lastSelected: DrawableChess | null;
 
-  private confirmDialog: any;
-
   private resultDialog: any;
 
   private textOverlay: any;
@@ -138,7 +136,6 @@ export default class GamePlay {
     onMounted(() => {
       const { $refs } = this.context;
 
-      this.confirmDialog = $refs.confirmDialog;
       this.resultDialog = $refs.resultDialog;
       this.textOverlay = $refs.textOverlay;
 
@@ -370,17 +367,24 @@ export default class GamePlay {
     }
 
     // 对方发送的请求
+    const onAction = (isOk: boolean) => {
+      this.socketService.send('play.confirm_response', { reqType: msg.reqType, ok: isOk });
+    };
     // 显示确认对话框
-    // eslint-disable-next-line
-    this.confirmDialog.open({
-      yesText: '同意',
-      noText: '不同意',
-      text: `对方想要${ConfirmRequest.toReadableText(msg.reqType)}`,
-      action: (isOk: boolean) => {
-        // 发送回应到服务器
-        this.socketService.send('play.confirm_response', { reqType: msg.reqType, ok: isOk });
+    this.context.$q.dialog({
+      title: '确认',
+      message: `对手想要${ConfirmRequest.toReadableText(msg.reqType)}`,
+      persistent: true,
+      ok: {
+        label: '同意',
+        color: 'positive',
       },
-    });
+      cancel: {
+        label: '不同意',
+        color: 'negative',
+      },
+    }).onOk(() => onAction(true))
+      .onCancel(() => onAction(false));
   }
 
   private onGameConfirmResponseEvent(msg: GameEvents.ConfirmResponseMsg) {
@@ -753,19 +757,28 @@ export default class GamePlay {
       if (this.gameState.value == GameState.PAUSE) {
         text = '游戏暂停中，是否解散棋局？<br>(你也可以退出登录，棋局将保留3小时)';
       }
-      // eslint-disable-next-line
-      this.confirmDialog.open({
-        yesText: '取消',
-        noText: isPlaying ? '离开' : '解散棋局',
-        text,
-        action: (cancel: boolean) => {
-          if (!cancel) {
-            this.gameState.value = GameState.END;
-            this.partRoom();
-          }
+      this.context.$q.dialog({
+        title: '确认',
+        message: text,
+        persistent: true,
+        ok: {
+          label: isPlaying ? '离开' : '解散棋局',
+          color: 'negative',
         },
+        cancel: {
+          label: '取消',
+          color: 'positive',
+        },
+      }).onOk(() => {
+        this.gameState.value = GameState.END;
+        this.partRoom();
       });
     }
+  }
+
+  public onInviteClick() {
+    // eslint-disable-next-line
+    (this.context.$vnode.context?.$refs.toolbar as any).toggle('socialBrowser');
   }
 
   private showText(text: string, duration?: number) {

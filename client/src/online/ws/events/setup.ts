@@ -7,6 +7,7 @@ import * as spectator from './spectator';
 import * as room from "./room";
 import * as stat from "./stat";
 import * as play from "./play";
+import * as invitation from "./invitation";
 
 export function setupEvents(socketService: SocketService) {
   [
@@ -40,6 +41,9 @@ export function setupEvents(socketService: SocketService) {
 
     ['spectator.join', spectator.joined],
     ['spectator.left', spectator.left],
+
+    ['invitation.new', invitation.invitation],
+    ['invitation.reply', invitation.reply],
 
     ['stat.online', stat.online],
 

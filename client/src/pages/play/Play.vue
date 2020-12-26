@@ -11,10 +11,18 @@
           :active="activeChessHost == otherChessHost"
           class="q-py-sm q-ml-xs"
         />
-        <spectators-count-display
-          :count="spectatorCount"
-          class="absolute-top-right q-mt-sm q-mr-sm"
-        />
+        <div class="row absolute-top-right q-mt-sm q-mr-sm">
+          <spectators-count-display
+            :count="spectatorCount"
+            class="q-mr-sm"
+          />
+          <q-btn
+            outline
+            label="邀请"
+            color="orange"
+            @click.stop="onInviteClick"
+          />
+        </div>
         <player-container
           ref="playerContainer"
           class="absolute-center"
@@ -27,7 +35,6 @@
             @ready-start="onReadyStartClick"
             class="absolute-center z-top"
           />
-          <confirm-dialog ref="confirmDialog" />
           <text-overlay
             ref="textOverlay"
             class="absolute-center"
@@ -104,7 +111,6 @@
           @ready-start="onReadyStartClick"
           class="absolute-center"
         />
-        <confirm-dialog ref="confirmDialog" />
         <text-overlay
           ref="textOverlay"
           class="absolute-center"
@@ -142,7 +148,7 @@
           flat
           class="q-px-sm q-py-sm"
         >
-          <div class="row q-gutter-x-sm">
+          <div class="flex justify-center q-gutter-sm">
             <q-btn
               label="悔棋"
               color="warning"
@@ -161,13 +167,17 @@
               :disable="!isPlaying"
               @click="onWhiteFlagClick"
             />
+            <q-btn
+              label="邀请"
+              color="orange"
+              @click.stop="onInviteClick"
+            />
+            <q-btn
+              label="离开"
+              color="negative"
+              @click="onQuitClick"
+            />
           </div>
-          <q-btn
-            label="离开"
-            color="negative"
-            class="q-mt-sm"
-            @click="onQuitClick"
-          />
         </q-card>
       </div>
     </template>
@@ -191,7 +201,6 @@ import PlayerContainer from './PlayerContainer.vue';
 import GameUserPanel from './GameUserPanel.vue';
 import SpectatorsCountDisplay from './SpectatorsCountDisplay.vue';
 import ReadyStartOverlay from './ReadyStartOverlay.vue';
-import ConfirmDialog from './ConfirmDialog.vue';
 import ResultDialog from './ResultDialog.vue';
 import TextOverlay from './TextOverlay.vue';
 import GamePlay from './Play';
@@ -203,9 +212,15 @@ export default defineComponent({
     GameUserPanel,
     SpectatorsCountDisplay,
     ReadyStartOverlay,
-    ConfirmDialog,
     ResultDialog,
     TextOverlay,
+  },
+  inject: ['reload'],
+  watch: {
+    $route() {
+      // eslint-disable-next-line
+      (this.reload as any)();
+    },
   },
   setup() {
     const ctx = getCurrentInstance() as Vue;
@@ -284,6 +299,7 @@ export default defineComponent({
 
       onReadyStartClick: gamePlay.onReadyStartClick.bind(gamePlay),
       onQuitClick: gamePlay.onQuitClick.bind(gamePlay),
+      onInviteClick: gamePlay.onInviteClick.bind(gamePlay),
       onWithdrawClick: gamePlay.onWithdrawClick.bind(gamePlay),
       onChessDrawClick: gamePlay.onChessDrawClick.bind(gamePlay),
       onWhiteFlagClick: gamePlay.onWhiteFlagClick.bind(gamePlay),
@@ -295,4 +311,6 @@ export default defineComponent({
 <style lang="sass" scoped>
 .q-page
   flex-wrap: nowrap
+.controls
+  width: 212px
 </style>

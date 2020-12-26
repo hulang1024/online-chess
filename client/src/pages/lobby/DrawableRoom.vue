@@ -82,9 +82,12 @@ export default defineComponent({
         }
 
         const req = new JoinRoomRequest(room);
-        req.success = (result) => {
-          // eslint-disable-next-line
-          $router.push({name: 'play', params: { room: result.room as unknown as string }});
+        req.success = async (result) => {
+          await $router.push({
+            name: 'play',
+            query: { id: result.room.id as unknown as string },
+            params: { room: result.room as unknown as string },
+          });
         };
         req.failure = (result) => {
           const codeMsgMap: { [code: number]: string } = {
@@ -103,6 +106,7 @@ export default defineComponent({
         req.success = async (spectateResponse: SpectateResponse) => {
           await $router.push({
             name: 'spectate',
+            query: { id: spectateResponse.room.id as unknown as string },
             params: { spectateResponse: spectateResponse as unknown as string },
           });
         };

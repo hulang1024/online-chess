@@ -146,6 +146,7 @@ export default defineComponent({
       isActive,
 
       exitActive,
+      toggle: excludeToggle,
 
       onActiveChange,
       onSettingButtonClick,

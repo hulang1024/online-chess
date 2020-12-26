@@ -477,6 +477,11 @@ export default class Spectate {
     this.exitScreen();
   }
 
+  public onInviteClick() {
+    // eslint-disable-next-line
+    (this.context.$vnode.context?.$refs.toolbar as any).toggle('socialBrowser');
+  }
+
   public onToggleViewClick() {
     this.swapTimers();
     this.viewChessHost.value = ChessHost.reverse(this.viewChessHost.value);
