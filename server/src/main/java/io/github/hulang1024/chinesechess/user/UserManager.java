@@ -2,7 +2,6 @@ package io.github.hulang1024.chinesechess.user;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.database.DaoPageParam;
 import io.github.hulang1024.chinesechess.friend.FriendRelation;
 import io.github.hulang1024.chinesechess.friend.FriendUserDao;
@@ -11,12 +10,15 @@ import io.github.hulang1024.chinesechess.http.TokenUtils;
 import io.github.hulang1024.chinesechess.http.params.PageParam;
 import io.github.hulang1024.chinesechess.http.results.PageRet;
 import io.github.hulang1024.chinesechess.user.activity.UserActivityService;
+import io.github.hulang1024.chinesechess.utils.IPUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.yeauty.pojo.Session;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +26,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserManager {
-    private static Map<Long, GuestUser> guestUserMap = new ConcurrentHashMap<>();
     private static Map<Long, User> loggedInUserMap = new ConcurrentHashMap<>();
     private static Map<Long, UserDeviceInfo> loggedInUserDeviceInfoMap = new ConcurrentHashMap<>();
 
@@ -35,13 +36,13 @@ public class UserManager {
     @Autowired
     private FriendUserDao friendUserDao;
     @Autowired
-    private ChannelManager channelManager;
-    @Autowired
     private UserSessionManager userSessionManager;
     @Autowired
     private UserSessionCloseListener sessionCloseListener;
     @Autowired
     private UserActivityService userActivityService;
+    @Autowired
+    private HttpServletRequest httpServletRequest;
 
     public boolean isOnline(User user) {
         return user != null && isOnline(user.getId());
@@ -59,10 +60,6 @@ public class UserManager {
     public UserDeviceInfo getUserDeviceInfo(User user) {
         UserDeviceInfo deviceInfo = loggedInUserDeviceInfoMap.get(user.getId());
         return deviceInfo != null ? deviceInfo : UserDeviceInfo.NULL;
-    }
-
-    public GuestUser getGuestUser(long userId) {
-        return guestUserMap.get(userId);
     }
 
     public User getDatabaseUser(long id) {
@@ -87,6 +84,11 @@ public class UserManager {
             pageData = userPage.convert(u -> new SearchUserInfo(u));
         }
 
+        List<SearchUserInfo> guestUsers = loggedInUserMap.values().stream()
+            .filter(user -> user instanceof GuestUser && isOnline(user))
+            .map(u -> new SearchUserInfo(u))
+            .collect(Collectors.toList());
+        pageData.getRecords().addAll(guestUsers);
 
         pageData.getRecords().forEach(user -> {
             if (currentUser != null && !(currentUser instanceof GuestUser)) {
@@ -109,6 +111,7 @@ public class UserManager {
 
             user.setLoginDeviceOS(getUserDeviceInfo(user).getDeviceOS());
         });
+
         pageData.setRecords(
             pageData.getRecords().stream()
                 .filter(user -> {
@@ -121,6 +124,9 @@ public class UserManager {
                 .sorted((a, b) -> a.getIsOnline() ? b.getIsOnline() ? 0 : -1 : +1)
                 .collect(Collectors.toList()));
 
+        pageData.setRecords(pageData.getRecords()
+            .subList(0, Math.min(pageData.getRecords().size(), pageParam.getSize())));
+
         return new PageRet<>(pageData);
     }
 
@@ -131,6 +137,10 @@ public class UserManager {
         }
         if (param.getSource() == 0 && param.getPassword().length() > 20) {
             return RegisterResult.fail(4);
+        }
+
+        if (param.getNickname().equalsIgnoreCase("guest")) {
+            return RegisterResult.fail(2);
         }
 
         User user = new User();
@@ -158,28 +168,36 @@ public class UserManager {
 
     public LoginResult login(UserLoginParam param) {
         User user;
-        if (StringUtils.isNotEmpty(param.getToken())) {
-            user = TokenUtils.verifyParseUserInfo(param.getToken());
-            if (user == null) {
-                return LoginResult.fail(3);
-            }
-            user = getDatabaseUser(user.getId());
-            if (user == null) {
-                return LoginResult.fail(1);
-            }
+        if ("guest".equalsIgnoreCase(param.getUsername())) {
+            GuestUser guestUser = new GuestUser();
+            long userId = -Long.parseLong(IPUtils.getIP(httpServletRequest).replaceAll("\\.", ""));
+            guestUser.setId(userId);
+            guestUser.setNickname("游客" + Long.toHexString(Math.abs(userId)).toUpperCase());
+            user = guestUser;
         } else {
-            user = userDao.selectOne(
-                new QueryWrapper<User>()
-                    .eq("nickname", param.getUsername()));
-            if (user == null) {
-                return LoginResult.fail(1);
-            }
-            if (!PasswordUtils.isRight(param.getPassword(), user.getPassword())) {
-                return LoginResult.fail(2);
+            if (StringUtils.isNotEmpty(param.getToken())) {
+                user = TokenUtils.verifyParseUserInfo(param.getToken());
+                if (user == null) {
+                    return LoginResult.fail(3);
+                }
+                user = getDatabaseUser(user.getId());
+                if (user == null) {
+                    return LoginResult.fail(1);
+                }
+            } else {
+                user = userDao.selectOne(
+                    new QueryWrapper<User>()
+                        .eq("nickname", param.getUsername()));
+                if (user == null) {
+                    return LoginResult.fail(1);
+                }
+                if (!PasswordUtils.isRight(param.getPassword(), user.getPassword())) {
+                    return LoginResult.fail(2);
+                }
             }
         }
 
-        LoginResult result = login(user, 24 * 60 * 60);
+        LoginResult result = login(user, null);
 
         if (!result.isOk()) {
             return result;
@@ -196,42 +214,32 @@ public class UserManager {
      * @param user 已验证/存在的用户
      * @return
      */
-    public LoginResult login(User user, long expiresInSeconds) {
-        user.setLastLoginTime(LocalDateTime.now());
-        user.setLastActiveTime(user.getLastLoginTime());
-        userDao.updateById(user);
+    public LoginResult login(User user, Long expiresInSeconds) {
+        if (!(user instanceof GuestUser)) {
+            user.setLastLoginTime(LocalDateTime.now());
+            user.setLastActiveTime(user.getLastLoginTime());
+            userDao.updateById(user);
+        }
 
         LoginResult result = LoginResult.ok();
         result.setUser(user);
-        result.setAccessToken(TokenUtils.generateAccessToken(user.getId(), expiresInSeconds));
+        result.setAccessToken(TokenUtils.generateAccessToken(
+            user.getId(), expiresInSeconds == null ? 24 * 60 * 60 : expiresInSeconds));
         loggedInUserMap.put(user.getId(), user);
         return result;
     }
 
-    public boolean logout(User user) {
+    public boolean logout(User user, boolean apiLogout) {
         Session session = userSessionManager.getSession(user);
         if (session != null) {
             // 并不真的关闭，走关闭的流程
             // TODO：未来onClose实现可能会变化
             sessionCloseListener.onClose(session);
-            guestLogin(session);
         }
-        loggedInUserMap.remove(user.getId());
-        loggedInUserDeviceInfoMap.remove(user.getId());
+        if (apiLogout) {
+            loggedInUserMap.remove(user.getId());
+            loggedInUserDeviceInfoMap.remove(user.getId());
+        }
         return true;
-    }
-
-    public GuestUser guestLogin(Session session) {
-        GuestUser guestUser = new GuestUser();
-        userSessionManager.setBinding(guestUser, session);
-        guestUserMap.put(guestUser.getId(), guestUser);
-        channelManager.joinDefaultChannels(guestUser);
-        return guestUser;
-    }
-
-    public void guestLogout(Session session, GuestUser guestUser) {
-        userSessionManager.removeBinding(guestUser);
-        guestUserMap.remove(guestUser.getId());
-        channelManager.leaveDefaultChannels(guestUser);
     }
 }

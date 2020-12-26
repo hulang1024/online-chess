@@ -98,9 +98,12 @@ export default class SocketService {
       return;
     }
     const isAPILoggedIn = this.api.isLoggedIn.value;
+    if (!isAPILoggedIn) {
+      return;
+    }
     this.queue((send) => {
       send('user.login', {
-        token: isAPILoggedIn ? this.api.accessToken?.accessToken : 'guest',
+        token: this.api.accessToken?.accessToken,
       });
     });
   }
@@ -211,7 +214,7 @@ export default class SocketService {
       for (let i = 0; i < this.serverMsgQueue.length; i += 1) {
         const element = this.serverMsgQueue[i];
         // 如果已经当前有监听
-        if (element.signal.getNumListeners() > 0) {
+        if (element.signal?.getNumListeners() > 0) {
           // 触发信号
           try {
             element.signal.dispatch(element.message);

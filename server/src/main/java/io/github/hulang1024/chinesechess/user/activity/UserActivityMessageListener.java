@@ -24,7 +24,9 @@ public class UserActivityMessageListener extends AbstractMessageListener {
 
             if (userActivity == UserActivity.VIEW_ONLINE_USER) {
                 wsMessageService.send(
-                    new OnlineStatServerMsg(UserSessionManager.onlineUserCount),
+                    new OnlineStatServerMsg(
+                        UserSessionManager.onlineUserCount,
+                        UserSessionManager.guestCount),
                     msg.getUser());
             }
         });

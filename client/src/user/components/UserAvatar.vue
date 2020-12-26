@@ -10,7 +10,9 @@
       :src="avatarUrl"
       style="object-fit: cover;"
     >
-    <span v-else class="text-white">{{ nickname ? nickname.substring(0,1) : '' }}</span>
+    <span v-else class="text-white">
+      {{ id && id > 0 ? (nickname ? nickname.substring(0,1) : '') : '' }}
+    </span>
   </q-avatar>
 </template>
 
@@ -45,8 +47,8 @@ export default defineComponent({
     });
 
     const backgroundColor = computed(() => (
-      (states.id && states.id > 0 && !states.avatarUrl)
-        ? `#${USERNAME_COLORS[states.id % USERNAME_COLORS.length].toString(16)}`
+      (states.id && !states.avatarUrl)
+        ? `#${USERNAME_COLORS[Math.abs(states.id) % USERNAME_COLORS.length].toString(16)}`
         : ''));
 
     watch(props, () => {

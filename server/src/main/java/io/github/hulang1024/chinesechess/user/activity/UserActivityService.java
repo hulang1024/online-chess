@@ -2,7 +2,6 @@ package io.github.hulang1024.chinesechess.user.activity;
 
 import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
-import io.github.hulang1024.chinesechess.user.GuestUser;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserStatus;
 import io.github.hulang1024.chinesechess.user.ws.UserStatusChangedServerMsg;
@@ -63,10 +62,6 @@ public class UserActivityService {
             users.add(user);
         }
 
-        if (user instanceof GuestUser) {
-            return;
-        }
-
         if (nowStatus == UserActivity.VIEW_ONLINE_USER) {
             return;
         }
@@ -103,10 +98,6 @@ public class UserActivityService {
 
     public void exit(User user, UserActivity activityToExit, boolean doBroadcast) {
         activityUsersMap.get(activityToExit).remove(user);
-
-        if (user instanceof GuestUser) {
-            return;
-        }
 
         if (activityToExit == UserActivity.AFK) {
             userAFKStatusMap.remove(user.getId());

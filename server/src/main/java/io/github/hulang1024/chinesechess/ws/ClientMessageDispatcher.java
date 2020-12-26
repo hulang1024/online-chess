@@ -46,23 +46,19 @@ public class ClientMessageDispatcher {
             UserLoginClientMsg clientLoginMsg = (UserLoginClientMsg)message;
             clientLoginMsg.setSession(session);
             // 验证token，并且从中解析出用户信息
-            if ("guest".equals(clientLoginMsg.getToken())) {
-                clientLoginMsg.setUserId(-1);
-            } else {
-                user = TokenUtils.verifyParseUserInfo(clientLoginMsg.getToken());
-                if (user == null) {
-                    wsMessageService.send(new ErrorMessage("token错误"), session);
-                    return;
-                }
-                clientLoginMsg.setUserId(user.getId());
+            user = TokenUtils.verifyParseUserInfo(clientLoginMsg.getToken());
+            if (user == null) {
+                wsMessageService.send(new ErrorMessage("token错误"), session);
+                return;
             }
+            clientLoginMsg.setUserId(user.getId());
         } else {
             // 获得登录正式/游客用户
             Long userId = userSessionManager.getBoundUserId(session);
             if (userId == null) {
                 return;
             }
-            user = userId > 0 ? userManager.getLoggedInUser(userId) : userManager.getGuestUser(userId);
+            user = userManager.getLoggedInUser(userId);
             if (user == null || user.getId() == null) {
                 wsMessageService.send(new ErrorMessage("用户未登录"), session);
                 return;

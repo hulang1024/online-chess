@@ -6,10 +6,10 @@
     class="toolbar-button q-px-sm"
     @click="onUserButtonClick"
   >
-    <span v-show="user.id > 0">{{ user.nickname }}</span>
-    <span v-show="user.id <= 0">登录</span>
+    <span v-show="user.id != -1">{{ user.nickname }}</span>
+    <span v-show="user.id == -1">登录</span>
     <user-avatar
-      v-show="user.id > 0"
+      v-show="user.id != -1"
       :user="user"
       size="28px"
       class="q-ml-xs"
@@ -50,7 +50,7 @@ export default defineComponent({
 
     const onUserButtonClick = () => {
       emit('click', props);
-      if (api.isLoggedIn.value) {
+      if (api.isLoggedIn.value && api.localUser.id > 0) {
         return;
       }
 

@@ -5,4 +5,5 @@ export const online = new Signal();
 
 export interface StatOnlineCountMsg extends ServerMsg {
   online: number;
+  guest: number;
 }

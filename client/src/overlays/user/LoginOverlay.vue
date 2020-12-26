@@ -48,6 +48,13 @@
             @click="onRegisterClick"
           />
           <q-btn
+            v-if="currentUser.id == -1"
+            label="游客登录"
+            color="orange"
+            class="full-width"
+            @click="onGuestLoginClick"
+          />
+          <q-btn
             outline
             label="GitHub登录"
             class="full-width"
@@ -66,8 +73,9 @@
 import {
   defineComponent, getCurrentInstance, reactive, Ref, ref, toRefs, watch,
 } from '@vue/composition-api';
-import { configManager } from 'src/boot/main';
+import { api, configManager } from 'src/boot/main';
 import { ConfigItem } from 'src/config/ConfigManager';
+import GuestUser from 'src/user/GuestUser';
 import User from 'src/user/User';
 import CreateUserOverlay from './CreateUserOverlay.vue';
 
@@ -75,7 +83,7 @@ export default defineComponent({
   components: { CreateUserOverlay },
   setup() {
     const { $refs } = getCurrentInstance() as Vue;
-
+    const currentUser = api.localUser;
     const form = reactive({
       username: configManager.get(ConfigItem.username) as string,
       password: configManager.get(ConfigItem.password) as string,
@@ -128,19 +136,27 @@ export default defineComponent({
       });
     };
 
+    const onGuestLoginClick = () => {
+      action(new GuestUser(), isLogging);
+    };
+
+    const onGitHubLoginClick = () => {
+      isGitHubLogging.value = true;
+      window.location.href = 'https://github.com/login/oauth/authorize?client_id=5176faf64742ae0bfe84';
+    };
+
     return {
       isOpen,
       show,
       hide,
       ...toRefs(form),
+      currentUser,
       isLogging,
       isGitHubLogging,
       onSubmit,
+      onGuestLoginClick,
       onRegisterClick,
-      onGitHubLoginClick: () => {
-        isGitHubLogging.value = true;
-        window.location.href = 'https://github.com/login/oauth/authorize?client_id=5176faf64742ae0bfe84';
-      },
+      onGitHubLoginClick,
     };
   },
 });

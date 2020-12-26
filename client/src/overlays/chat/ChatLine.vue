@@ -45,7 +45,7 @@ export default defineComponent({
     })(message?.timestamp);
 
     const nicknameColor = message.id > 0
-      ? USERNAME_COLORS[sender.id % USERNAME_COLORS.length]
+      ? USERNAME_COLORS[Math.abs(sender.id) % USERNAME_COLORS.length]
       : '';
 
     const color = ref<string>('');

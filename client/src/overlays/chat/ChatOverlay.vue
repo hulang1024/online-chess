@@ -112,7 +112,7 @@ export default defineComponent({
       }
       channel.newMessagesArrived.add((messages: Message[]) => {
         const last = messages[messages.length - 1];
-        if (last.sender.id > 0) {
+        if (last.sender.id != 0) {
           if (channel.type == ChannelType.PM) {
             // todo: 暂时不支持回显，而是绕一圈，这里判断不是自己
             if (last.sender.id != api.localUser.id) {

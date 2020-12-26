@@ -71,7 +71,7 @@ export default defineComponent({
 
     const onClick = () => {
       if (!api.isLoggedIn.value) {
-        $q.notify({ type: 'warning', message: '你现在是游客，请先登录' });
+        $q.notify({ type: 'warning', message: '请先登录' });
         return;
       }
       if (room.userCount == 1) {

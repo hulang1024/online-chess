@@ -45,7 +45,7 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<LoginResult> logout() {
-        boolean ok = userManager.logout(UserUtils.get());
+        boolean ok = userManager.logout(UserUtils.get(), true);
         return new ResponseEntity(ok ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 

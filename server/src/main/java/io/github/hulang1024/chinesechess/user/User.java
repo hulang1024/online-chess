@@ -43,10 +43,15 @@ public class User {
 
     public static User SYSTEM_USER;
     static {
-        User systemUser = new User();
-        systemUser.setId(0L);
+        User systemUser = new User(0);
         systemUser.setNickname("系统");
         SYSTEM_USER = systemUser;
+    }
+
+    public User() {}
+
+    public User(long id) {
+        this.id = id;
     }
 
     @Override

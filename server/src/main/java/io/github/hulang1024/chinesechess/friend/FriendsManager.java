@@ -64,7 +64,10 @@ public class FriendsManager {
         relation.setIsMutual(reverse != null);
 
         try {
-            friendRelationDao.insert(relation);
+            boolean ok = friendRelationDao.insert(relation) > 0;
+            if (!ok) {
+                return AddFriendResult.fail();
+            }
 
             if (userFriendRelationsCache.containsKey(userId)) {
                 userFriendRelationsCache.get(userId).add(relation);

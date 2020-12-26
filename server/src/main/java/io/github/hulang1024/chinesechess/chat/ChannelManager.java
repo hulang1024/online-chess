@@ -4,10 +4,11 @@ import io.github.hulang1024.chinesechess.chat.command.executors.WordsNotAllowedC
 import io.github.hulang1024.chinesechess.chat.ws.ChannelUserLeftServerMsg;
 import io.github.hulang1024.chinesechess.chat.ws.ChatMessageServerMsg;
 import io.github.hulang1024.chinesechess.chat.ws.ChatUpdatesServerMsg;
-import io.github.hulang1024.chinesechess.user.*;
+import io.github.hulang1024.chinesechess.user.User;
+import io.github.hulang1024.chinesechess.user.UserManager;
+import io.github.hulang1024.chinesechess.user.UserUtils;
 import io.github.hulang1024.chinesechess.utils.TimeUtils;
 import io.github.hulang1024.chinesechess.ws.WSMessageService;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -62,9 +63,7 @@ public class ChannelManager {
             return false;
         }
 
-        User user = userId < 0
-            ? userManager.getGuestUser(userId)
-            : userManager.getLoggedInUser(userId);
+        User user = userManager.getLoggedInUser(userId);
         if (user == null) {
             return false;
         }
@@ -73,12 +72,6 @@ public class ChannelManager {
     }
 
     public boolean joinChannel(Channel channel, User user) {
-        if (user instanceof GuestUser) {
-            if (!ArrayUtils.contains(defaultChannelIds, channel.getId())) {
-                return false;
-            }
-        }
-
         if (channel.getType() != ChannelType.PUBLIC && !userManager.isOnline(user)) {
             return false;
         }

@@ -7,6 +7,7 @@ import io.github.hulang1024.chinesechess.database.DaoPageParam;
 import io.github.hulang1024.chinesechess.http.params.PageParam;
 import io.github.hulang1024.chinesechess.http.results.PageRet;
 import io.github.hulang1024.chinesechess.play.rule.GameResult;
+import io.github.hulang1024.chinesechess.user.GuestUser;
 import io.github.hulang1024.chinesechess.user.SearchUserInfo;
 import io.github.hulang1024.chinesechess.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ public class UserStatsService {
     private UserStatsDao userStatsDao;
 
     public void updateUser(User user, GameResult result) {
+        if (user instanceof GuestUser) {
+            return;
+        }
         String updateField = new String[]{"draw_count", "win_count", "lose_count"}[result.getCode()];
         int rows = userStatsDao.update(null,
             new UpdateWrapper<UserStats>()

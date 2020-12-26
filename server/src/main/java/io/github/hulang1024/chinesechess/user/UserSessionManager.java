@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class UserSessionManager {
     public static int onlineUserCount = 0;
+    public static int guestCount = 0;
 
     @Autowired
     private OnlineListener onlineListener;
@@ -56,12 +57,12 @@ public class UserSessionManager {
         userSessionMap.put(user.getId(), session);
         sessionMap.put(session.id(), session);
 
-        // 是用户加入(非游客)
-        if (!(user instanceof GuestUser)) {
+        if (user instanceof GuestUser) {
+            guestCount++;
+        } else {
             onlineUserCount++;
-
-            onlineListener.onOnline(user);
         }
+        onlineListener.onOnline(user);
 
         return true;
     }
@@ -84,11 +85,11 @@ public class UserSessionManager {
         userSessionMap.remove(userId);
         sessionMap.remove(session.id());
 
-        // 是用户连接断开(非游客)
-        if (!(user instanceof GuestUser)) {
+        if (user instanceof GuestUser) {
+            guestCount--;
+        } else {
             onlineUserCount--;
-
-            onlineListener.onOffline(user);
         }
+        onlineListener.onOffline(user);
     }
 }

@@ -11,8 +11,9 @@ import VueRouter from 'vue-router';
 import User from 'src/user/User';
 import { configManager, api, socketService } from './boot/main';
 import { ConfigItem } from './config/ConfigManager';
+import GuestUser from './user/GuestUser';
 
-function start(router: VueRouter) {
+async function start(router: VueRouter) {
   if (window.location.hash.substring('#/?'.length)) {
     let matchRet = new RegExp('status=(\\d)').exec(window.location.hash);
     const status = matchRet ? matchRet[1] : 1;
@@ -39,14 +40,12 @@ function start(router: VueRouter) {
     user.password = configManager.get(ConfigItem.password) as string;
     const token = configManager.get(ConfigItem.token) as string;
     if ((user.username && user.password) || token) {
-      // eslint-disable-next-line
-      api.login(user, token);
-    } else {
-      socketService.doConnect();
+      await api.login(user, token);
+      return;
     }
-  } else {
-    socketService.doConnect();
   }
+
+  await api.login(new GuestUser());
 }
 
 export default defineComponent({
@@ -57,6 +56,7 @@ export default defineComponent({
     context.$q.dark.set(configManager.get(ConfigItem.theme) == 'dark');
 
     onMounted(() => {
+      // eslint-disable-next-line
       start(context.$router);
     });
     document.addEventListener('visibilitychange', () => {

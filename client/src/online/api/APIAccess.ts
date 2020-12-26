@@ -49,15 +49,17 @@ export default class APIAccess {
         this.localUser = ret.user;
         this.isLoggedIn.value = true;
 
-        this.configManager.set(ConfigItem.username, user?.username);
+        if (!(user instanceof GuestUser)) {
+          this.configManager.set(ConfigItem.username, user?.username);
 
-        if (this.configManager.get(ConfigItem.loginAuto)) {
-          if (token) {
-            this.configManager.set(ConfigItem.token, token);
-            this.configManager.set(ConfigItem.password, '');
-          } else {
-            this.configManager.set(ConfigItem.token, '');
-            this.configManager.set(ConfigItem.password, user?.password);
+          if (this.configManager.get(ConfigItem.loginAuto)) {
+            if (token) {
+              this.configManager.set(ConfigItem.token, token);
+              this.configManager.set(ConfigItem.password, '');
+            } else {
+              this.configManager.set(ConfigItem.token, '');
+              this.configManager.set(ConfigItem.password, user?.password);
+            }
           }
           this.configManager.save();
         }

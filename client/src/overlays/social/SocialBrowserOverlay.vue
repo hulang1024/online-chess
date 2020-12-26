@@ -12,7 +12,8 @@
       flat
       class="content-card q-px-sm"
     >
-      <span class="text-subtitle1">在线人数: {{ onlineCount }}</span>
+      <span class="text-subtitle1">在线用户数: {{ onlineCount }}</span>
+      <span class="q-ml-md text-subtitle1">游客用户数: {{ guestCount }}</span>
       <q-tabs
         v-model="activeTab"
         align="left"
@@ -178,6 +179,7 @@ export default defineComponent({
     const loading = ref(true);
     const users = ref<SearchUserInfo[]>([]);
     const onlineCount = ref<number>(0);
+    const guestCount = ref<number>(0);
 
     watch(isOpen, () => {
       emit('active', isOpen.value, props);
@@ -187,6 +189,9 @@ export default defineComponent({
       users.value = [];
       const searchParams = new SearchUserParams();
       searchParams.onlyFriends = activeTab.value == 'friends';
+      if (searchParams.onlyFriends && api.localUser.id < 0) {
+        return;
+      }
       if (activeTab.value == 'playing') {
         searchParams.status = UserStatus.PLAYING;
       } else if (activeTab.value == 'in_room') {
@@ -273,6 +278,7 @@ export default defineComponent({
 
     StatEvents.online.add((msg: StatEvents.StatOnlineCountMsg) => {
       onlineCount.value = msg.online;
+      guestCount.value = msg.guest;
     });
 
     const isShowInTab = (user: SearchUserInfo) => {
@@ -353,6 +359,10 @@ export default defineComponent({
     };
 
     const onAddFriendClick = (user: SearchUserInfo) => {
+      if (api.localUser.id < 0) {
+        $q.notify({ type: 'warning', message: '你现在是游客，无法添加其他人为好友' });
+        return;
+      }
       const req = new AddFriendRequest(user);
       req.success = (ret) => {
         user.isFriend = true;
@@ -392,6 +402,7 @@ export default defineComponent({
       isShowInTab,
       users,
       onlineCount,
+      guestCount,
       isLoggedIn,
       isMe: (user: SearchUserInfo) => user.id == api.localUser.id,
 

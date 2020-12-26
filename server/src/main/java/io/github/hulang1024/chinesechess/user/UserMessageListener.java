@@ -29,27 +29,12 @@ public class UserMessageListener extends AbstractMessageListener {
     @Autowired
     private RoomManager roomManager;
 
-
     @Override
     public void init() {
         addMessageHandler(UserLoginClientMsg.class, this::onLogin);
     }
 
     private void onLogin(UserLoginClientMsg loginMsg) {
-        // 如果是游客登录
-        if (loginMsg.getUserId() < 0) {
-            User user = userManager.guestLogin(loginMsg.getSession());
-            send(new UserLoginServerMsg(0), user);
-            return;
-        }
-
-        // 如果非游客登录，但是之前游客登录过
-        GuestUser guestUser = getGuestUser(loginMsg.getSession());
-        if (guestUser != null) {
-            // 登出游客
-            userManager.guestLogout(loginMsg.getSession(), guestUser);
-        }
-
         // 验证http api是否登录过
         User user = userManager.getLoggedInUser(loginMsg.getUserId());
         if (user == null) {
@@ -59,12 +44,18 @@ public class UserMessageListener extends AbstractMessageListener {
 
         // 验证别处websocket登录过
         Session otherSession = userSessionManager.getSession(user);
-        if (otherSession != null) {
+        if (otherSession != null && otherSession.id().compareTo(loginMsg.getSession().id()) != 0) {
             send(new UserLoginServerMsg(2), user);
-            // 让此session解除关联
-            userSessionManager.removeBinding(user);
-            // 此session游客登录
-            userManager.guestLogin(otherSession);
+            userManager.logout(user, false);
+        }
+
+        // 验证该session已绑定过其它用户(很可能是游客登录过）
+        Long boundOldUserId = userSessionManager.getBoundUserId(loginMsg.getSession());
+        if (boundOldUserId != null) {
+            User oldUser = userManager.getLoggedInUser(boundOldUserId);
+            if (oldUser != null) {
+                userManager.logout(oldUser, false);
+            }
         }
 
         // 绑定新session
@@ -89,14 +80,11 @@ public class UserMessageListener extends AbstractMessageListener {
 
         send(new UserLoginServerMsg(0), user);
 
-        userDao.update(null,
-            new UpdateWrapper<User>()
-                .set("last_active_time", LocalDateTime.now())
-                .eq("id", user.getId()));
-    }
-
-    public GuestUser getGuestUser(Session session) {
-        Long userId = userSessionManager.getBoundUserId(session);
-        return userId != null ? userManager.getGuestUser(userId) : null;
+        if (!(user instanceof GuestUser)) {
+            userDao.update(null,
+                new UpdateWrapper<User>()
+                    .set("last_active_time", LocalDateTime.now())
+                    .eq("id", user.getId()));
+        }
     }
 }
