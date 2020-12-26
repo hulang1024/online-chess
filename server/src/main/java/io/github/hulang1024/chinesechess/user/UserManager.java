@@ -153,9 +153,7 @@ public class UserManager {
             return RegisterResult.fail(2);
         }
 
-        RegisterResult result = RegisterResult.ok();
-        result.setUser(user);
-        return result;
+        return RegisterResult.ok(user);
     }
 
     public LoginResult login(UserLoginParam param) {
@@ -183,7 +181,7 @@ public class UserManager {
 
         LoginResult result = login(user, 24 * 60 * 60);
 
-        if (result.getCode() != 0) {
+        if (!result.isOk()) {
             return result;
         }
 

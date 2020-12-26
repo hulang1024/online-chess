@@ -154,9 +154,7 @@ public class RoomManager {
     public JoinRoomResult joinRoom(long roomId, long userId, JoinRoomParam joinRoomParam) {
         Room room = getRoom(roomId);
         if (room == null) {
-            JoinRoomResult result = new JoinRoomResult();
-            result.setCode(7);
-            return result;
+            return JoinRoomResult.fail(7);
         }
 
         User user = userManager.getLoggedInUser(userId);
@@ -165,11 +163,8 @@ public class RoomManager {
     }
 
     public JoinRoomResult joinRoom(Room room, User user, JoinRoomParam joinRoomParam) {
-        JoinRoomResult result = new JoinRoomResult();
-
         if (!userManager.isOnline(user)) {
-            result.setCode(2);
-            return result;
+            return JoinRoomResult.fail(2);
         }
 
         Room joinedRoom = getJoinedRoom(user);
@@ -179,8 +174,7 @@ public class RoomManager {
                 // 不在游戏中现在就退出
                 partRoom(joinedRoom, user);
             } else {
-                result.setCode(joinedRoom.getId().equals(room.getId()) ? 4 : 5);
-                return result;
+                return JoinRoomResult.fail(joinedRoom.getId().equals(room.getId()) ? 4 : 5);
             }
         }
 
@@ -190,18 +184,14 @@ public class RoomManager {
             spectatorManager.leaveRoom(user, spectatingRoom);
         }
 
-        result.setRoom(room);
-
         if (room.isFull()) {
-            result.setCode(3);
-            return result;
+            return JoinRoomResult.fail(3);
         }
 
         // 验证密码，如果有密码
         if (room.isLocked()) {
             if (joinRoomParam == null || !room.getPassword().equals(joinRoomParam.getPassword())) {
-                result.setCode(6);
-                return result;
+                return JoinRoomResult.fail(6);
             }
         }
 
@@ -221,7 +211,7 @@ public class RoomManager {
         chatUpdatesServerMsg.setRecentMessages(room.getChannel().getMessages());
         wsMessageService.send(chatUpdatesServerMsg, user);
 
-        return result;
+        return JoinRoomResult.ok(room);
     }
 
     /**

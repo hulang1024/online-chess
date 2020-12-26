@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserSessionManager;
+import io.netty.channel.ChannelFuture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yeauty.pojo.Session;
@@ -13,11 +14,11 @@ public class WSMessageService {
     @Autowired
     private UserSessionManager userSessionManager;
 
-    public void send(ServerMessage message, User user) {
+    public ChannelFuture send(ServerMessage message, User user) {
         if (user == null) {
-            return;
+            return null;
         }
-        send(message, userSessionManager.getSession(user));
+        return send(message, userSessionManager.getSession(user));
     }
 
     /**
@@ -25,13 +26,13 @@ public class WSMessageService {
      * @param message
      * @param session
      */
-    public void send(ServerMessage message, Session session) {
+    public ChannelFuture send(ServerMessage message, Session session) {
         if (message == null || session == null) {
-            return;
+            return null;
         }
         String messageJson = JSONObject.toJSONString(message,
             SerializerFeature.WriteMapNullValue,
             SerializerFeature.DisableCircularReferenceDetect);
-        session.sendText(messageJson);
+        return session.sendText(messageJson);
     }
 }

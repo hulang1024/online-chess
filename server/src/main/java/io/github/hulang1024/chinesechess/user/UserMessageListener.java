@@ -79,7 +79,8 @@ public class UserMessageListener extends AbstractMessageListener {
 
         // 之前进入过游戏但中途退出
         Room joinedRoom = roomManager.getJoinedRoom(user);
-        if (joinedRoom != null && joinedRoom.getGame().getState() == GameState.PAUSE) {
+        if (joinedRoom != null && joinedRoom.getGame() != null
+            && joinedRoom.getGame().getState() == GameState.PAUSE) {
             // 发送继续询问消息
             send(new GameContinueServerMsg(), user);
             // 通知房间内上线用户该用户已上线

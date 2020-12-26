@@ -53,9 +53,10 @@ public class SpectatorManager {
     public SpectateResponse spectateUser(long targetUserId, long spectatorId) {
         User targetUser = userManager.getLoggedInUser(targetUserId);
         if (targetUser == null) {
-            SpectateResponse response = new SpectateResponse();
-            response.setCode(2);
-            return response;
+            return SpectateResponse.fail(2);
+        }
+        if (targetUserId == spectatorId) {
+            return SpectateResponse.fail(6);
         }
 
         // 目标用户已在旁观（也已是观众），则跟随
@@ -68,19 +69,15 @@ public class SpectatorManager {
     }
 
     private SpectateResponse spectate(User targetUser, Long roomId, long spectatorId) {
-        SpectateResponse response = new SpectateResponse();
-
         User spectator = userManager.getLoggedInUser(spectatorId);
         if (spectator == null) {
-            response.setCode(1);
-            return response;
+            return SpectateResponse.fail(1);
         }
 
         // 房间不存在或者目标用户是否不在任何游戏房间中
         Room room = targetUser != null ? roomManager.getJoinedRoom(targetUser) : roomManager.getRoom(roomId);
         if (room == null) {
-            response.setCode(3);
-            return response;
+            return SpectateResponse.fail(3);
         }
 
         Room joinedRoom = roomManager.getJoinedRoom(spectator);
@@ -90,8 +87,7 @@ public class SpectatorManager {
                 // 不在游戏中现在就退出
                 roomManager.partRoom(joinedRoom, spectator);
             } else {
-                response.setCode(5);
-                return response;
+                return SpectateResponse.fail(5);
             }
         }
 
@@ -112,6 +108,7 @@ public class SpectatorManager {
 
         spectatorRoomMap.put(spectator.getId(), room);
 
+        SpectateResponse response = new SpectateResponse(0);
         if (room.getGame() != null) {
             response.setStates(room.getGame().buildGameStatesResponse());
             response.getStates().setRoom(null);

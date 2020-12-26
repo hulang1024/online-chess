@@ -3,6 +3,7 @@ package io.github.hulang1024.chinesechess.user;
 import io.github.hulang1024.chinesechess.http.GuestAPI;
 import io.github.hulang1024.chinesechess.http.params.PageParam;
 import io.github.hulang1024.chinesechess.http.results.PageRet;
+import io.github.hulang1024.chinesechess.http.results.Result;
 import io.github.hulang1024.chinesechess.user.avatar.AvatarService;
 import io.github.hulang1024.chinesechess.user.avatar.AvatarUploadResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,9 +40,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<LoginResult> login(@Validated @RequestBody UserLoginParam param) {
         LoginResult ret = userManager.login(param);
-        return new ResponseEntity(ret, ret.getCode() == 0
-            ? HttpStatus.OK
-            : HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(ret, ret.isOk() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping("/logout")
@@ -53,10 +52,8 @@ public class UserController {
     @GuestAPI
     @PostMapping
     public ResponseEntity<RegisterResult> register(@Validated @RequestBody UserRegisterParam param) {
-        RegisterResult ret = userManager.register(param);
-        return new ResponseEntity(ret, ret.getCode() == 0
-            ? HttpStatus.OK
-            : HttpStatus.BAD_REQUEST);
+        Result ret = userManager.register(param);
+        return new ResponseEntity(ret, ret.isOk() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 
     @Autowired

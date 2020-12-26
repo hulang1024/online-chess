@@ -21,7 +21,7 @@ public class SpectatorController {
         @NotNull @PathVariable("room_id") Long roomId,
         @NotNull @PathVariable("spectator_id") Long spectatorId) {
         SpectateResponse responseData = spectatorManager.spectateRoom(roomId, spectatorId);
-        return new ResponseEntity(responseData, responseData.getCode() == 0
+        return new ResponseEntity(responseData, responseData.isOk()
             ? HttpStatus.OK
             : HttpStatus.EXPECTATION_FAILED);
     }
@@ -31,7 +31,7 @@ public class SpectatorController {
         @NotNull @PathVariable("target_user_id") Long targetUserId,
         @NotNull @PathVariable("spectator_id") Long spectatorId) {
         SpectateResponse responseData = spectatorManager.spectateUser(targetUserId, spectatorId);
-        return new ResponseEntity(responseData, responseData.getCode() == 0
+        return new ResponseEntity(responseData, responseData.isOk()
             ? HttpStatus.OK
             : HttpStatus.EXPECTATION_FAILED);
     }

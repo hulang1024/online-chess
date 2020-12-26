@@ -63,7 +63,7 @@ public class RoomController {
         @NotNull @PathVariable("user_id") Long userId,
         @RequestBody JoinRoomParam param) {
         JoinRoomResult result = roomManager.joinRoom(roomId, userId, param);
-        return new ResponseEntity(result, result.getCode() == 0 ? HttpStatus.OK : HttpStatus.EXPECTATION_FAILED);
+        return new ResponseEntity(result, result.isOk() ? HttpStatus.OK : HttpStatus.EXPECTATION_FAILED);
     }
 
     @DeleteMapping("/{room_id}/users/{user_id}")

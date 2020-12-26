@@ -42,8 +42,8 @@ public class ThirdpartyUserLoginService {
             registerParam.setNickname(githubUser.getLogin());
             registerParam.setEmail(githubUser.getEmail());
             registerParam.setAvatarUrl(githubUser.getAvatarUrl());
-            RegisterResult ret = userManager.register(registerParam);
-            if (ret.getCode() == 0) {
+            RegisterResult ret = (RegisterResult) userManager.register(registerParam);
+            if (ret.isOk()) {
                 // 登录
                 result = userManager.login(ret.getUser(), TOKEN_EXPIRES_IN_SECONDS);
             } else {
