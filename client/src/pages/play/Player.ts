@@ -147,7 +147,7 @@ export default class Player implements Game {
     }
   }
 
-  public moveChess(fromPos: ChessPos, toPos: ChessPos, chessHost: ChessHost, isEat: boolean) {
+  public moveChess(fromPos: ChessPos, toPos: ChessPos, chessHost: ChessHost, moveType: number, duration = 200) {
     this.chessboard.getChessList().forEach((chess: DrawableChess) => {
       if (chess.lit) {
         chess.setLit(false);
@@ -156,7 +156,7 @@ export default class Player implements Game {
 
     // 被移动棋子
     let chess = this.chessboard.chessAt(this.convertViewPos(fromPos, chessHost)) as DrawableChess;
-    let targetChess: DrawableChess;
+    let targetChess: DrawableChess | null = null;
 
     // 记录动作
     let action = new ChessAction();
@@ -164,7 +164,7 @@ export default class Player implements Game {
     action.chessType = chess.constructor;
     action.fromPos = fromPos;
     action.toPos = toPos;
-    if (isEat) {
+    if (moveType == 2) {
       // 吃目标棋子
       targetChess = this.chessboard.chessAt(this.convertViewPos(toPos, chessHost)) as DrawableChess;
       action.eatenChess = targetChess;
@@ -175,37 +175,39 @@ export default class Player implements Game {
     // 被移动棋子选择状态置不选中
     chess.selected = false;
     toPos = this.convertViewPos(toPos, chessHost);
+
+    // 设置棋盘状态
+    this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = null;
+    this.chessboard.getChessArray()[toPos.row][toPos.col] = chess;
+    chess.setPos(toPos);
+
+    if (moveType == 2) {
+      // 判断胜负
+      if (targetChess != null && targetChess.is(ChessK)) {
+        this.gameOver.dispatch(chess.getHost());
+      } else {
+        const chessHostText = targetChess?.getHost() == ChessHost.RED ? '红方' : '黑方';
+        this.showText(`吃!（${chessHostText}的${chessClassToText((targetChess as DrawableChess).chess)}被吃）`, 1500);
+        this.checkCheckmate();
+        this.turnActiveChessHost();
+      }
+    } else {
+      this.checkCheckmate();
+      this.turnActiveChessHost();
+    }
+
     // 移动棋子动画
     const {x, y} = this.chessboard.calcChessDisplayPos(toPos);
     new TWEEN.Tween(chess)
-      .to({x, y}, 200)
+      .to({x, y}, duration)
       .easing(TWEEN.Easing.Circular.Out)
       .onComplete(() => {
         // 高亮被移动棋子
-        chess.setLit(true);
+        chess?.setLit(true);
         // 画移动源位置标记
         this.fromPosTargetDrawer.draw(this.convertViewPos(fromPos, chessHost));
         // 音效
         GameAudio.play('click');
-
-        // 设置棋盘状态
-        this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = null;
-        this.chessboard.getChessArray()[toPos.row][toPos.col] = chess;
-        chess.setPos(toPos);
-    
-        if (isEat) {
-          // 判断胜负
-          if (targetChess != null && targetChess.is(ChessK)) {
-            this.gameOver.dispatch(chess.getHost());
-          } else {
-            this.showText(`吃!（${targetChess.getHost() == ChessHost.RED ? '红方' : '黑方'}的${chessClassToText(targetChess.chess)}被吃）`, 1500);
-            this.checkCheckmate();
-            this.turnActiveChessHost();
-          }
-        } else {
-          this.checkCheckmate();
-          this.turnActiveChessHost();
-        }
       })
       .start();
   }

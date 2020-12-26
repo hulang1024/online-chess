@@ -347,16 +347,15 @@ export default class GamePlay {
   }
 
   private onGameChessMovedEvent(msg: GameEvents.ChessMoveMsg) {
-    if (msg.chessHost != this.chessHost.value) {
-      window.focus();
+    if (msg.chessHost == this.chessHost.value) {
+      return;
     }
-
-    this.canWithdraw.value = true;
+    window.focus();
 
     this.player.moveChess(
       ChessPos.make(msg.fromPos),
       ChessPos.make(msg.toPos),
-      msg.chessHost, msg.moveType == 2,
+      msg.chessHost, msg.moveType,
     );
   }
 
@@ -377,7 +376,7 @@ export default class GamePlay {
       persistent: true,
       ok: {
         label: '同意',
-        color: 'positive',
+        color: 'primary',
       },
       cancel: {
         label: '不同意',
@@ -451,7 +450,7 @@ export default class GamePlay {
     this.otherOnline.value = true;
     this.otherReadied.value = false;
     this.isWaitingForOther.value = 1;
-    this.context.$q.notify(`玩家[${this.otherUser.value.nickname}]已加入棋桌`);
+    this.context.$q.notify(`${this.otherUser.value.nickname} 加入棋桌`);
   }
 
   private onRoomUserLeftEvent(msg: RoomEvents.RoomUserLeftMsg) {
@@ -605,6 +604,8 @@ export default class GamePlay {
         this.otherStepTimer.start();
         this.otherGameTimer.resume();
       }
+
+      this.canWithdraw.value = true;
     }
 
     this.chessboard.enabled = this.activeChessHost.value == this.chessHost.value;
@@ -631,11 +632,7 @@ export default class GamePlay {
         const toPos = event.pos;
         const chess = this.chessboard.chessAt(fromPos);
         if (chess?.canGoTo(toPos, this.player)) {
-          this.socketService.send('play.chess_move', {
-            moveType: 1,
-            fromPos,
-            toPos,
-          });
+          this.onUserMoveChess(1, fromPos, toPos);
         }
       }
       return;
@@ -672,11 +669,7 @@ export default class GamePlay {
       const toPos = event.pos;
       const chess = this.chessboard.chessAt(fromPos);
       if (chess?.canGoTo(toPos, this.player)) {
-        this.socketService.send('play.chess_move', {
-          moveType: 2,
-          fromPos,
-          toPos,
-        });
+        this.onUserMoveChess(2, fromPos, toPos);
       }
     } else {
       // 选中了本方的，取消上个选中
@@ -694,23 +687,28 @@ export default class GamePlay {
     if (toPos.equals(chess.getPos())) {
       return;
     }
+    if (chess.getHost() != this.chessHost.value) {
+      return;
+    }
     if (this.lastSelected) {
       this.lastSelected.selected = false;
     }
     if (chess.canGoTo(toPos, this.player)) {
       const isMove = this.chessboard.isEmpty(toPos.row, toPos.col);
-      if (!isMove) {
-        // 杀自己人可还行
-        if (this.chessboard.chessAt(toPos)?.getHost() == chess.getHost()) {
-          return;
-        }
+      if (!isMove && this.chessboard.chessAt(toPos)?.getHost() == chess.getHost()) {
+        return;
       }
-      this.socketService.send('play.chess_move', {
-        moveType: isMove ? 1 : 2,
-        fromPos: chess.getPos(),
-        toPos,
-      });
+      this.onUserMoveChess(isMove ? 1 : 2, chess.getPos(), toPos, 0);
     }
+  }
+
+  private onUserMoveChess(moveType: number, fromPos: ChessPos, toPos: ChessPos, duration?: number) {
+    this.player.moveChess(fromPos, toPos, this.chessHost.value, moveType, duration);
+    this.socketService.send('play.chess_move', {
+      moveType,
+      fromPos,
+      toPos,
+    });
   }
 
   private onChessPickupOrDrop({ chess, isPickup } : {chess: DrawableChess, isPickup: boolean}) {
@@ -762,14 +760,14 @@ export default class GamePlay {
         message: text,
         persistent: true,
         ok: {
+          label: '取消',
+          color: 'primary',
+        },
+        cancel: {
           label: isPlaying ? '离开' : '解散棋局',
           color: 'negative',
         },
-        cancel: {
-          label: '取消',
-          color: 'positive',
-        },
-      }).onOk(() => {
+      }).onCancel(() => {
         this.gameState.value = GameState.END;
         this.partRoom();
       });

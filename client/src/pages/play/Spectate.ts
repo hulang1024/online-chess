@@ -157,7 +157,7 @@ export default class Spectate {
       this.player.moveChess(
         ChessPos.make(msg.fromPos),
         ChessPos.make(msg.toPos),
-        msg.chessHost, msg.moveType == 2,
+        msg.chessHost, msg.moveType,
       );
     }, this);
 
@@ -396,7 +396,7 @@ export default class Spectate {
       this.blackOnline.value = true;
       this.blackReadied.value = false;
     }
-    this.context.$q.notify(`${msg.user.nickname} 已加入棋桌`);
+    this.context.$q.notify(`${msg.user.nickname} 加入棋桌`);
   }
 
   private onRoomUserLeftEvent(msg: RoomEvents.RoomUserLeftMsg) {
@@ -418,7 +418,7 @@ export default class Spectate {
       this.blackReadied.value = false;
     }
 
-    this.context.$q.notify(`${leftUser?.nickname || '玩家'} 已离开棋桌`);
+    this.context.$q.notify(`${leftUser?.nickname || '玩家'} 离开棋桌`);
 
     if (this.redUser.value == null && this.blackUser.value == null) {
       this.context.$q.notify({ message: '你观看的棋桌已经解散' });
