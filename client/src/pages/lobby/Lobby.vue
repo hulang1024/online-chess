@@ -177,10 +177,7 @@ export default defineComponent({
 
     const onInvitationReply = (msg: InvitationReplyServerMsg) => {
       const { reply } = msg;
-      $q.notify({
-        type: 'warning',
-        message: `${reply.invitee.nickname}${reply.accept ? '接受' : '拒绝'}了你的邀请`,
-      });
+      $q.notify(`${reply.invitee.nickname}${reply.accept ? '接受' : '拒绝'}了你的邀请`);
     };
     if (InvitationEvents.reply.getNumListeners() == 0) {
       InvitationEvents.reply.add(onInvitationReply);
