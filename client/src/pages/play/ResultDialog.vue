@@ -8,7 +8,7 @@
         <span class="q-ml-sm">{{ displayText }}</span>
       </q-card-section>
 
-      <q-card-actions align="evenly">
+      <q-card-actions align="right">
         <q-btn
           label="退出"
           @click="() => onAction('quit')"

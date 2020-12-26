@@ -114,7 +114,7 @@ export default defineComponent({
         persistent: true,
         ok: {
           label: '是',
-          color: 'positive',
+          color: 'primary',
         },
         cancel: {
           label: '否',
@@ -162,7 +162,7 @@ export default defineComponent({
         persistent: true,
         ok: {
           label: '接受',
-          color: 'positive',
+          color: 'primary',
         },
         cancel: {
           label: '拒绝',
