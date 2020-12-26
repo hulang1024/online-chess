@@ -1,7 +1,7 @@
 package io.github.hulang1024.chinesechess.invitation;
 
-import io.github.hulang1024.chinesechess.invitation.ws.InvitationServerMsg;
 import io.github.hulang1024.chinesechess.invitation.ws.InvitationReplyServerMsg;
+import io.github.hulang1024.chinesechess.invitation.ws.InvitationServerMsg;
 import io.github.hulang1024.chinesechess.room.JoinRoomParam;
 import io.github.hulang1024.chinesechess.room.JoinRoomResult;
 import io.github.hulang1024.chinesechess.room.Room;
@@ -56,9 +56,14 @@ public class InvitationService {
     }
 
     public ReplyResult handleReply(Reply reply) {
-        ReplyResult result = new ReplyResult(1);
         Invitation invitation = invitationManager.get(reply.getInvitationId());
         User inviter = invitation.getInviter();
+
+        wsMessageService.send(new InvitationReplyServerMsg(reply), inviter);
+        invitationManager.remove(invitation);
+
+        ReplyResult result = new ReplyResult(1);
+
         if (reply.isAccept()) {
             if (!userManager.isOnline(inviter)) {
                 result.setCode(2);
@@ -77,9 +82,6 @@ public class InvitationService {
         } else {
             result.setCode(0);
         }
-
-        wsMessageService.send(new InvitationReplyServerMsg(reply), inviter);
-        invitationManager.remove(invitation);
 
         return result;
     }
