@@ -304,7 +304,7 @@ export default defineComponent({
       req.success = async (spectateResponse: SpectateResponse) => {
         isOpen.value = false;
         if (spectateResponse.isFollowedOtherSpectator) {
-          $q.loading.show({ message: `正在跟随${user.nickname}旁观` });
+          $q.loading.show({ message: `正在跟随${user.nickname}观看` });
         }
         await $router.push({
           name: 'spectate',
@@ -318,12 +318,12 @@ export default defineComponent({
         const codeMsgMap: {[code: number]: string} = {
           2: '该用户未在线',
           3: '该用户未加入游戏',
-          4: '不满足旁观条件',
+          4: '不满足观看条件',
           5: '你在游戏中不能观看其它游戏',
         };
         $q.notify({
           type: 'warning',
-          message: `旁观请求失败，${codeMsgMap[res.code] || '原因未知'}`,
+          message: codeMsgMap[res.code] || '原因未知',
         });
       };
       api.perform(req);
