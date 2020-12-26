@@ -6,7 +6,7 @@
     class="toolbar-button q-px-sm"
     @click="onUserButtonClick"
   >
-    <span v-show="user.id != -1">{{ user.nickname }}</span>
+    <span v-show="user.id != -1" class="nickname ellipsis">{{ user.nickname }}</span>
     <span v-show="user.id == -1">登录</span>
     <user-avatar
       v-show="user.id != -1"
@@ -32,6 +32,7 @@ import {
 import { ConfigItem } from 'src/config/ConfigManager';
 import LogoutRequest from 'src/online/api/LogoutRequest';
 import RegisterRequest from 'src/online/api/RegisterRequest';
+import APILoginResult from 'src/online/api/APILoginResult';
 import User from 'src/user/User';
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import { api, configManager } from 'src/boot/main';
@@ -58,10 +59,12 @@ export default defineComponent({
       (<any>$refs.loginOverlay).show({
         action: (loginUser: User, isLogging: Ref<boolean>) => {
           isLogging.value = true;
-          api.login(loginUser).then(() => {
+          api.login(loginUser).then((ret: APILoginResult) => {
             isLogging.value = false;
-            // eslint-disable-next-line
-            (<any>$refs.loginOverlay).hide();
+            if (ret.code == 0) {
+              // eslint-disable-next-line
+              (<any>$refs.loginOverlay).hide();
+            }
           }).catch(() => {
             isLogging.value = false;
           });
@@ -107,8 +110,9 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
-.q-btn {
-  min-width: 80px;
-}
+<style lang="sass" scoped>
+.q-btn
+  min-width: 80px
+.nickname
+  max-width: 120px
 </style>

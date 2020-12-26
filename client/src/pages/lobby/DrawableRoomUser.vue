@@ -4,7 +4,10 @@
       :user="user"
       size="28px"
     />
-    <span :class="`q-m${reverse ? 'r' : 'l'}-xs`">{{ nickname }}</span>
+    <span
+      class="nickname ellipsis"
+      :class="`q-m${reverse ? 'r' : 'l'}-xs`"
+    >{{ nickname }}</span>
   </div>
 </template>
 
@@ -26,3 +29,8 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="sass" scoped>
+.nickname
+  max-width: 110px
+</style>

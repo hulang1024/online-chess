@@ -14,7 +14,7 @@
       </q-tooltip>
     </q-btn>
 
-    <q-toolbar-title></q-toolbar-title>
+    <q-toolbar-title style="padding:0px"></q-toolbar-title>
 
     <q-btn
       flat
