@@ -12,6 +12,7 @@ import User from 'src/user/User';
 import { configManager, api, socketService } from './boot/main';
 import { ConfigItem } from './config/ConfigManager';
 import GuestUser from './user/GuestUser';
+import APILoginResult from './online/api/APILoginResult';
 
 async function start(router: VueRouter) {
   if (window.location.hash.substring('#/?'.length)) {
@@ -34,18 +35,21 @@ async function start(router: VueRouter) {
       Notify.create({ type: 'warning', message: '登录失败' });
     }
   }
+
+  let loginResult: APILoginResult | undefined;
   if (configManager.get(ConfigItem.loginAuto)) {
     const user = new User();
     user.username = configManager.get(ConfigItem.username) as string;
     user.password = configManager.get(ConfigItem.password) as string;
     const token = configManager.get(ConfigItem.token) as string;
     if ((user.username && user.password) || token) {
-      await api.login(user, token);
-      return;
+      loginResult = await api.login(user, token).catch(() => undefined);
     }
   }
 
-  await api.login(new GuestUser());
+  if (!loginResult || loginResult?.code != 0) {
+    await api.login(new GuestUser());
+  }
 }
 
 export default defineComponent({

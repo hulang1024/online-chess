@@ -72,11 +72,9 @@ export default class APIAccess {
           type: 'warning',
           message: (ret && ret.code != null) ? causeMap[ret.code] : '登录失败',
         });
-        if (ret && ret.code) {
-          this.configManager.set(ConfigItem.password, '');
-          this.configManager.set(ConfigItem.token, '');
-          this.configManager.save();
-        }
+        this.configManager.set(ConfigItem.password, '');
+        this.configManager.set(ConfigItem.token, '');
+        this.configManager.save();
         reject();
       };
       req.perform(this);
