@@ -13,7 +13,7 @@
       class="content-card q-px-sm"
     >
       <span class="text-subtitle1">在线用户数: {{ onlineCount }}</span>
-      <span class="q-ml-md text-subtitle1">游客用户数: {{ guestCount }}</span>
+      <span class="q-ml-lg text-subtitle1">游客用户数: {{ guestCount }}</span>
       <q-tabs
         v-model="activeTab"
         align="left"
@@ -235,9 +235,9 @@ export default defineComponent({
       }
     };
 
-    const isLoggedIn = ref<boolean>(api.isLoggedIn.value); // todo:全局加入响应式
-    api.isLoggedIn.changed.add((state: boolean) => {
-      isLoggedIn.value = state;
+    const isLoggedIn = ref<boolean>(api.isLoggedIn); // todo:全局加入响应式
+    api.state.changed.add(() => {
+      isLoggedIn.value = api.isLoggedIn;
     });
 
     UserEvents.statusChanged.add((msg: UserEvents.UserStatusChangedMsg) => {
