@@ -3,6 +3,7 @@
     flat
     dense
     no-caps
+    :loading="loading"
     class="toolbar-button q-px-sm"
     @click="onUserButtonClick"
   >
@@ -27,7 +28,7 @@
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, reactive, Ref,
+  defineComponent, getCurrentInstance, reactive, Ref, ref,
 } from '@vue/composition-api';
 import { ConfigItem } from 'src/config/ConfigManager';
 import LogoutRequest from 'src/online/api/LogoutRequest';
@@ -36,6 +37,7 @@ import APILoginResult from 'src/online/api/APILoginResult';
 import User from 'src/user/User';
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import { api, configManager } from 'src/boot/main';
+import { APIState } from 'src/online/api/APIAccess';
 import LoggedInUserOverlay from '../user/LoggedInUserOverlay.vue';
 import LoginOverlay from '../user/LoginOverlay.vue';
 
@@ -44,14 +46,16 @@ export default defineComponent({
   setup(props, { emit }) {
     const { $refs, $q } = getCurrentInstance() as Vue;
     const user = reactive(api.localUser);
+    const loading = ref(false);
 
-    api.isLoggedIn.changed.add(() => {
+    api.state.changed.add((state: APIState) => {
+      loading.value = state == APIState.connecting;
       Object.assign(user, api.localUser);
     });
 
     const onUserButtonClick = () => {
       emit('click', props);
-      if (api.isLoggedIn.value && api.localUser.id > 0) {
+      if (api.isLoggedIn && api.localUser.id > 0) {
         return;
       }
 
@@ -59,19 +63,37 @@ export default defineComponent({
       (<any>$refs.loginOverlay).show({
         action: (loginUser: User, isLogging: Ref<boolean>) => {
           isLogging.value = true;
-          api.login(loginUser).then((ret: APILoginResult) => {
-            isLogging.value = false;
-            if (ret.code == 0) {
-              // eslint-disable-next-line
-              (<any>$refs.loginOverlay).hide();
-            }
-          }).catch(() => {
-            isLogging.value = false;
-          });
+
+          const login = () => {
+            loading.value = true;
+            api.login(loginUser).then((ret: APILoginResult) => {
+              isLogging.value = false;
+              if (ret.code == 0) {
+                // eslint-disable-next-line
+                (<any>$refs.loginOverlay).hide();
+              }
+            }).catch(() => {
+              isLogging.value = false;
+            });
+          };
+
+          if (api.isLoggedIn) {
+            loading.value = true;
+            const req = new LogoutRequest();
+            const callback = () => {
+              api.logout();
+              login();
+            };
+            req.success = callback;
+            req.failure = callback;
+            api.perform(req);
+          } else {
+            login();
+          }
         },
-        registerAction: (newUser: User, loading: Ref<boolean>, isOpen: Ref<boolean>) => {
+        registerAction: (newUser: User, registerLoading: Ref<boolean>, isOpen: Ref<boolean>) => {
           const req = new RegisterRequest(newUser);
-          req.loading = loading;
+          req.loading = registerLoading;
           req.success = () => {
             $q.notify({ type: 'positive', message: '注册成功' });
             isOpen.value = false;
@@ -103,6 +125,7 @@ export default defineComponent({
 
     return {
       user,
+      loading,
       onUserButtonClick,
       onLogout,
     };
