@@ -159,7 +159,7 @@ export default class ChannelManager {
   public postMessage(text: string, isAction = false) {
     const target = this.currentChannel.value;
 
-    if (!this.api.isLoggedIn.value) {
+    if (!this.api.isLoggedIn) {
       target.addNewMessages(new ErrorMessage('请先登录以参与聊天'));
       return;
     }
@@ -258,15 +258,13 @@ export default class ChannelManager {
       this.api.queue(req);
     };
 
-    this.api.isLoggedIn.changed.add((isLoggedIn: boolean) => {
-      if (!isLoggedIn) {
-        return;
+    this.api.state.changed.add(() => {
+      if (this.api.isLoggedIn) {
+        listChannels();
       }
-
-      listChannels();
     });
 
-    if (this.api.isLoggedIn.value) {
+    if (this.api.isLoggedIn) {
       listChannels();
     }
   }

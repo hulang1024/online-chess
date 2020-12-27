@@ -1,6 +1,6 @@
 import { Notify } from "quasar";
 import Signal from "src/utils/signals/Signal";
-import APIAccess from "../api/APIAccess";
+import APIAccess, { APIState } from "../api/APIAccess";
 import ChannelManager from "../chat/ChannelManager";
 import { setupEvents } from './events/setup';
 import * as UserEvents from "./events/user";
@@ -23,7 +23,7 @@ export default class SocketService {
   public channelManager: ChannelManager;
 
   // 是否已成功游客或者正式登陆
-  private isLoggedIn = false;
+  private isWSLoggedIn = false;
 
   private socket: WebSocket;
 
@@ -47,18 +47,18 @@ export default class SocketService {
 
     setupEvents(this);
 
-    api.isLoggedIn.changed.add((isAPILoggedIn: boolean) => {
-      if (isAPILoggedIn) {
+    api.state.changed.add((state: APIState) => {
+      if (state == APIState.online) {
         // 当API登录成功，需要WS(重新)登录
-        this.isLoggedIn = false;
+        this.isWSLoggedIn = false;
         if (!this.connected) {
           this.doConnect();
         } else {
           this.login();
         }
-      } else {
+      } else if (state == APIState.offline) {
         // 注销时无需重新登录，服务器已保证游客身份
-        this.isLoggedIn = false;
+        this.isWSLoggedIn = false;
       }
     });
 
@@ -93,12 +93,8 @@ export default class SocketService {
     this.messageTypeBoundSignalMap[type] = signal;
   }
 
-  public login() {
-    if (this.isLoggedIn) {
-      return;
-    }
-    const isAPILoggedIn = this.api.isLoggedIn.value;
-    if (!isAPILoggedIn) {
+  private login() {
+    if (this.isWSLoggedIn) {
       return;
     }
     this.queue((send) => {
@@ -162,7 +158,7 @@ export default class SocketService {
       return;
     }
 
-    this.isLoggedIn = true;
+    this.isWSLoggedIn = true;
   }
 
   private onConnected() {
@@ -194,7 +190,7 @@ export default class SocketService {
 
   private onDisconnect() {
     this.disconnect.dispatch();
-    this.isLoggedIn = false;
+    this.isWSLoggedIn = false;
     this.serverMsgQueue = [];
 
     const tryTimeout = 3000;

@@ -24,7 +24,7 @@ export default route(({ Vue }) => {
 
   Router.beforeEach((to, from, next) => {
     if (to.path !== '/') {
-      if (!api.isLoggedIn.value) {
+      if (!api.isLoggedIn) {
         next({ path: '/' });
       } else {
         next();

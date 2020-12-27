@@ -70,7 +70,7 @@ export default defineComponent({
     });
 
     const onClick = () => {
-      if (!api.isLoggedIn.value) {
+      if (!api.isLoggedIn) {
         $q.notify({ type: 'warning', message: '请先登录' });
         return;
       }

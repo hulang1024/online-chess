@@ -1,4 +1,4 @@
-import APIAccess from 'src/online/api/APIAccess';
+import APIAccess, { APIState } from 'src/online/api/APIAccess';
 import Channel from 'src/online/chat/Channel';
 import ChannelManager from 'src/online/chat/ChannelManager';
 import GameState from 'src/online/play/GameState';
@@ -110,8 +110,8 @@ export default class GamePlay {
 
     this.initListeners();
 
-    api.isLoggedIn.changed.add((isLoggedIn: boolean) => {
-      if (!isLoggedIn) {
+    api.state.changed.add((state: APIState) => {
+      if (state == APIState.offline) {
         this.exitScreen();
       }
     });
@@ -758,6 +758,7 @@ export default class GamePlay {
       this.context.$q.dialog({
         title: '确认',
         message: text,
+        html: true,
         persistent: true,
         ok: {
           label: '取消',
