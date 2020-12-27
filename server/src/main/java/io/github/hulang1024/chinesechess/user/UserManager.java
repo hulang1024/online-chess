@@ -18,6 +18,7 @@ import org.yeauty.pojo.Session;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -170,9 +171,16 @@ public class UserManager {
         User user;
         if ("guest".equalsIgnoreCase(param.getUsername())) {
             GuestUser guestUser = new GuestUser();
-            long userId = -Long.parseLong(IPUtils.getIP(httpServletRequest).replaceAll("\\.", ""));
-            guestUser.setId(userId);
-            guestUser.setNickname("游客" + Long.toHexString(Math.abs(userId)).toUpperCase());
+            String hexString;
+            try {
+                hexString = Arrays.stream(IPUtils.getIP(httpServletRequest).split("\\."))
+                    .map(p -> Integer.toHexString(Integer.parseInt(p)))
+                    .collect(Collectors.joining(""));
+                guestUser.setId(-Long.parseLong(hexString, 16));
+            } catch (Exception e) {
+                hexString = Long.toHexString(guestUser.getId());
+            }
+            guestUser.setNickname("游客" + hexString);
             user = guestUser;
         } else {
             if (StringUtils.isNotEmpty(param.getToken())) {
