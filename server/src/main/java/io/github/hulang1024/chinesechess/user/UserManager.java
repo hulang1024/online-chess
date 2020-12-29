@@ -178,7 +178,7 @@ public class UserManager {
                     .collect(Collectors.joining(""));
                 guestUser.setId(-Long.parseLong(hexString, 16));
             } catch (Exception e) {
-                hexString = Long.toHexString(guestUser.getId());
+                hexString = Long.toHexString(Math.abs(guestUser.getId()));
             }
             guestUser.setNickname("游客" + hexString);
             user = guestUser;
