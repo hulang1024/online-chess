@@ -33,4 +33,5 @@ export default defineComponent({
 <style lang="sass" scoped>
 .nickname
   max-width: 110px
+  font-size: 1.1em
 </style>

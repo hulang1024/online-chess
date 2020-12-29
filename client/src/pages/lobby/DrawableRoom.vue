@@ -2,15 +2,16 @@
   <q-card
     v-ripple
     :style="{
-      borderLeft: `5px solid ${color}`,
+      borderLeft: `5px solid ${statusColor}`,
       cursor: 'pointer',
     }"
     @click="onClick"
   >
-    <q-card-section class="q-py-xs">
+    <q-card-section class="row justify-between items-center q-py-xs">
       <div class="text-body1">
         {{ name }}
       </div>
+      <div class="text-caption">{{ statusText }}</div>
     </q-card-section>
     <q-card-section
       horizontal
@@ -59,8 +60,24 @@ export default defineComponent({
       blackChessUser: room.blackChessUser,
     });
 
-    const STATUS_COLOR_MAP: { [i: number]: string } = { 1: '#22dd00', 2: '#af52c6', 3: '#ff9800' };
-    const color = computed(() => STATUS_COLOR_MAP[roomStates.status]);
+    const ROOM_STATUS_MAP: {
+      [n: number]: {text: string, color: string}
+    } = {
+      1: {
+        text: '可加入',
+        color: '#22dd00',
+      },
+      2: {
+        text: '即将开始(可旁观)',
+        color: '#af52c6',
+      },
+      3: {
+        text: '进行中(可旁观)',
+        color: '#ff9800',
+      },
+    };
+    const statusColor = computed(() => ROOM_STATUS_MAP[roomStates.status].color);
+    const statusText = computed(() => ROOM_STATUS_MAP[roomStates.status].text);
 
     watch(props, () => {
       roomStates.name = props.room.name;
@@ -74,13 +91,15 @@ export default defineComponent({
         $q.notify({ type: 'warning', message: '请先登录' });
         return;
       }
+
+      $q.loading.show();
+
       if (room.userCount == 1) {
         const paramRoom = new Room();
         paramRoom.id = room.id;
         if (room.locked) {
           // todo
         }
-
         const req = new JoinRoomRequest(room);
         req.success = async (result) => {
           await $router.push({
@@ -88,6 +107,7 @@ export default defineComponent({
             query: { id: result.room.id as unknown as string },
             params: { room: result.room as unknown as string },
           });
+          $q.loading.hide();
         };
         req.failure = (result) => {
           const codeMsgMap: { [code: number]: string } = {
@@ -99,6 +119,7 @@ export default defineComponent({
             7: '该棋桌已不存在',
           };
           $q.notify({ type: 'warning', message: `加入棋桌失败：${codeMsgMap[result.code]}` });
+          $q.loading.hide();
         };
         api.perform(req);
       } else {
@@ -109,9 +130,11 @@ export default defineComponent({
             query: { id: spectateResponse.room.id as unknown as string },
             params: { spectateResponse: spectateResponse as unknown as string },
           });
+          $q.loading.hide();
         };
         req.failure = () => {
           $q.notify({ type: 'error', message: '观看请求失败' });
+          $q.loading.hide();
         };
         api.perform(req);
       }
@@ -119,7 +142,8 @@ export default defineComponent({
 
     return {
       ...toRefs(roomStates),
-      color,
+      statusColor,
+      statusText,
       onClick,
     };
   },
