@@ -60,7 +60,7 @@ import Room from 'src/online/room/Room';
 import RoomManager from 'src/online/room/RoomManager.ts';
 import * as GameEvents from 'src/online/ws/events/play';
 import * as InvitationEvents from "src/online/ws/events/invitation";
-import { api, socketService } from 'src/boot/main';
+import { api, channelManager, socketService } from 'src/boot/main';
 import { RoomSettings } from 'src/online/room/RoomSettings';
 import { InvitationReplyServerMsg, InvitationServerMsg } from 'src/online/ws/events/invitation';
 import ResponseGameStates from 'src/online/play/game_states_response';
@@ -83,15 +83,18 @@ export default defineComponent({
       roomManager.searchRooms({ status });
     };
 
-    const pushPlayPage = (room: Room | null, states?: ResponseGameStates) => (
-      $router.push({
+    const pushPlayPage = async (room: Room | null, states?: ResponseGameStates) => {
+      $q.loading.show();
+      await $router.push({
         name: 'play',
         query: { id: room?.id as unknown as string },
         params: {
           room: room as unknown as string,
           initialGameStates: states as unknown as string,
         },
-      }));
+      });
+      $q.loading.hide();
+    };
 
     const onReconnected = () => {
       queryRooms();
@@ -190,12 +193,18 @@ export default defineComponent({
     onMounted(() => {
       socketService.queue((send) => send('user_activity.enter', { code: 1 }));
       queryRooms();
+
+      // eslint-disable-next-line
+      (ctx.$vnode.context?.$refs.toolbar as any).toggle('chat');
+      channelManager.openChannel(1);
     });
 
     onUnmounted(() => {
       socketService.reconnected.remove(onReconnected);
       roomManager.removeListeners();
       GameEvents.gameContinue.remove(onGameContinue);
+      // eslint-disable-next-line
+      (ctx.$vnode.context?.$refs.toolbar as any).exitActive();
     });
 
     const checkNotLoggedIn = (): boolean => {
