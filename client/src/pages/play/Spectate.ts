@@ -100,13 +100,16 @@ export default class Spectate {
       }
       switch (this.gameState.value) {
         case GameState.READY:
-          this.showText('等待对局开始');
+          this.showText('你正在旁观中，请等待游戏开始');
           break;
         case GameState.PAUSE:
-          this.showText('对局暂停');
+          this.showText('你正在旁观中，游戏暂停，请等待游戏继续');
           break;
         case GameState.PLAYING:
-          this.showText('正在旁观中', 3000);
+          this.showText('你正在旁观中', 3000);
+          break;
+        case GameState.END:
+          this.showText('你正在旁观中，对局已经结束，请等待新对局开始');
           break;
         default:
           break;
