@@ -107,7 +107,7 @@ export default defineComponent({
       if (!api.isLoggedIn) {
         return;
       }
-      socketService.send('user_activity.enter', { code: 1 });
+      socketService.queue((send) => send('user_activity.enter', { code: 1 }));
     };
     api.state.changed.add(onLoggedIn);
 
@@ -200,7 +200,7 @@ export default defineComponent({
     });
 
     onMounted(() => {
-      socketService.queue((send) => send('user_activity.enter', { code: 1 }));
+      onLoggedIn();
       queryRooms();
 
       // eslint-disable-next-line
