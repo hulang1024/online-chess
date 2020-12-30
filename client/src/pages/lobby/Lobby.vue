@@ -100,7 +100,16 @@ export default defineComponent({
       queryRooms();
       socketService.send('user_activity.enter', { code: 1 });
     };
+
     socketService.reconnected.add(onReconnected);
+
+    const onLoggedIn = () => {
+      if (!api.isLoggedIn) {
+        return;
+      }
+      socketService.send('user_activity.enter', { code: 1 });
+    };
+    api.state.changed.add(onLoggedIn);
 
     const onGameContinue = () => {
       const onAction = (isOk: boolean) => {
@@ -201,6 +210,7 @@ export default defineComponent({
 
     onUnmounted(() => {
       socketService.reconnected.remove(onReconnected);
+      api.state.changed.remove(onLoggedIn);
       roomManager.removeListeners();
       GameEvents.gameContinue.remove(onGameContinue);
       // eslint-disable-next-line
