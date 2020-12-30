@@ -57,10 +57,9 @@ public class UserSessionManager {
         userSessionMap.put(user.getId(), session);
         sessionMap.put(session.id(), session);
 
+        onlineUserCount++;
         if (user instanceof GuestUser) {
             guestCount++;
-        } else {
-            onlineUserCount++;
         }
         onlineListener.onOnline(user);
 
@@ -85,10 +84,9 @@ public class UserSessionManager {
         userSessionMap.remove(userId);
         sessionMap.remove(session.id());
 
+        onlineUserCount--;
         if (user instanceof GuestUser) {
             guestCount--;
-        } else {
-            onlineUserCount--;
         }
         onlineListener.onOffline(user);
     }
