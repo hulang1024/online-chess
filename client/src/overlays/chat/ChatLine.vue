@@ -74,32 +74,31 @@ export default defineComponent({
   .row > div {
     font-size: 1em;
   }
-
   .nickname {
-    width: 90px !important;
+    width: 94px !important;
   }
   .content {
-    padding-left: 8px !important;
+    padding-left: 4px !important;
   }
 }
 
-.time {
+.row > .time {
   width: 54px;
-  font-size: 0.9em !important;
+  font-size: 0.9em;
   user-select: none;
 }
 
-.nickname {
+.row > .nickname {
   width: 110px;
   text-align: right;
   font-weight: 600;
 }
 
-.colon {
+.row > .colon {
   font-weight: 600;
 }
 
-.content {
+.row > .content {
   padding-left: 12px;
 }
 </style>

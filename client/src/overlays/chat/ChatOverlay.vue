@@ -204,7 +204,7 @@ export default defineComponent({
     background-color: rgba(255, 255, 255, 0.9);
 
     & .q-tab-panels {
-      height: 180px;
+      height: calc(100vh / 2.3 - 92px);
       background: transparent;
       .q-tab-panel {
         padding: 4px 4px;
