@@ -6,6 +6,7 @@
     :value="current"
     track-color="transparent"
     :thickness="0.1"
+    reverse
     v-bind="$attrs"
     class="circle-timer"
   >
