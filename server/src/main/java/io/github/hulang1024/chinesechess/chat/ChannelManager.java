@@ -1,5 +1,6 @@
 package io.github.hulang1024.chinesechess.chat;
 
+import io.github.hulang1024.chinesechess.chat.command.CommandService;
 import io.github.hulang1024.chinesechess.chat.command.executors.WordsNotAllowedCommandExecutor;
 import io.github.hulang1024.chinesechess.chat.ws.ChannelUserLeftServerMsg;
 import io.github.hulang1024.chinesechess.chat.ws.ChatMessageServerMsg;
@@ -28,11 +29,12 @@ public class ChannelManager {
     /**  用户id -> 已加入频道 */
     private static Map<Long, List<UserChannel>> userJoinedChannelsMap = new ConcurrentHashMap<>();
 
-
     @Autowired
     private UserManager userManager;
     @Autowired
     private WSMessageService wsMessageService;
+    @Autowired
+    private CommandService commandService;
     @Autowired
     private WordsNotAllowedCommandExecutor wordsNotAllowedCommandExecutor;
 
@@ -116,7 +118,7 @@ public class ChannelManager {
 
     public boolean leaveChannels(User user) {
         List<UserChannel> userChannels = userJoinedChannelsMap.get(user.getId());
-        if (userChannels == null) {
+        if (userChannels == null || userChannels.isEmpty()) {
             return true;
         }
 
@@ -156,6 +158,12 @@ public class ChannelManager {
     }
 
     public CreateNewPMRet createNewPrivateMessage(@NotNull CreateNewPMParam param) {
+        User sender = UserUtils.get();
+
+        if (!wordsNotAllowedCommandExecutor.isCanWords(param.getSender(), null)) {
+            return CreateNewPMRet.fail();
+        }
+
         if (!userManager.isOnline(param.getTargetId()) ||
             param.getTargetId().equals(UserUtils.get().getId())) {
             return CreateNewPMRet.fail();
@@ -181,18 +189,38 @@ public class ChannelManager {
 
         Message message = param;
         message.setTimestamp(TimeUtils.nowTimestamp());
-        message.setSender(UserUtils.get());
+        message.setSender(sender);
         message.setChannelId(channel.getId());
         broadcast(channelMap.get(channel.getId()), message);
         return new CreateNewPMRet(true, channel.getId());
     }
 
-    public boolean broadcast(Channel channel, Message message, User... excludes) {
-        if (!wordsNotAllowedCommandExecutor.isCanWords(message.getSender(), channel)) {
-            sendSystemMessageToUser(new InfoMessage("你被禁言中，消息发送失败", channel), message.getSender());
-            return true;
+    public boolean postMessage(Long channelId, PostMessageParam param) {
+        Channel channel = getChannelById(channelId);
+        if (channel == null) {
+            return false;
         }
 
+        User sender = UserUtils.get();
+
+        if (!wordsNotAllowedCommandExecutor.isCanWords(sender, channel)) {
+            return false;
+        }
+        Message message = new Message();
+        message.setChannelId(channel.getId());
+        message.setTimestamp(TimeUtils.nowTimestamp());
+        message.setSender(sender);
+        message.setContent(param.getContent());
+
+        if (param.isAction()) {
+            commandService.execute(message, channel);
+            return true;
+        } else {
+            return broadcast(channel, message);
+        }
+    }
+
+    public boolean broadcast(Channel channel, Message message, User... excludes) {
         message.setChannelId(channel.getId());
 
         if (channel.getType() == ChannelType.PM) {

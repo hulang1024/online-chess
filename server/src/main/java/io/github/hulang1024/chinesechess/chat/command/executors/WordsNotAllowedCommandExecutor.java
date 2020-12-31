@@ -5,8 +5,11 @@ import io.github.hulang1024.chinesechess.chat.ChannelManager;
 import io.github.hulang1024.chinesechess.chat.InfoMessage;
 import io.github.hulang1024.chinesechess.chat.Message;
 import io.github.hulang1024.chinesechess.chat.command.CommandExecutor;
+import io.github.hulang1024.chinesechess.chat.ws.ChatWordsEnableServerMsg;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
+import io.github.hulang1024.chinesechess.utils.RegExStrings;
+import io.github.hulang1024.chinesechess.ws.WSMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +23,8 @@ public class WordsNotAllowedCommandExecutor implements CommandExecutor {
     private ChannelManager channelManager;
     @Autowired
     private UserManager userManager;
+    @Autowired
+    private WSMessageService wsMessageService;
 
     private static Map<Long, WordsNotAllowedUser> wordsNotAllowedUsers = new ConcurrentHashMap();
 
@@ -36,7 +41,7 @@ public class WordsNotAllowedCommandExecutor implements CommandExecutor {
         Boolean isOff = null;
         int minutes = 0;
 
-        if (cmdParams[0].matches("^\\d+$")) {
+        if (cmdParams[0].matches(RegExStrings.USER_ID)) {
             userId = Long.parseLong(cmdParams[0]);
         }
         if (cmdParams[1].matches("^on$|^off$")) {
@@ -45,10 +50,24 @@ public class WordsNotAllowedCommandExecutor implements CommandExecutor {
         if (userId == null || isOff == null) {
             return;
         }
-
         if (isOff) {
-            if (cmdParams.length == 3 && cmdParams[2].matches("^\\d+$")) {
-                minutes = Integer.parseInt(cmdParams[2]);
+            if (cmdParams.length == 3) {
+                String durationExp = cmdParams[2];
+                if (durationExp.matches("^\\d+[MmHhDd]$")) {
+                    int duration = Integer.parseInt(durationExp.substring(0, durationExp.length() - 1));
+                    String unit = durationExp.substring(durationExp.length() - 1).toLowerCase();
+                    switch (unit) {
+                        case "m":
+                            minutes = duration;
+                            break;
+                        case "h":
+                            minutes = duration * 60;
+                            break;
+                        case "d":
+                            minutes = duration * 60 * 24;
+                            break;
+                    }
+                }
             } else {
                 return;
             }
@@ -65,6 +84,7 @@ public class WordsNotAllowedCommandExecutor implements CommandExecutor {
                 new InfoMessage(String.format("%s 已被禁言%s分钟!", user.getNickname(), minutes)));
             channelManager.sendSystemMessageToUser(
                 new InfoMessage(String.format("你已被禁言%s分钟", minutes), channel), user);
+            wsMessageService.send(new ChatWordsEnableServerMsg(false), user);
         } else {
             removeWordsNotAllowedUser(user, channel);
         }
@@ -84,8 +104,11 @@ public class WordsNotAllowedCommandExecutor implements CommandExecutor {
 
     private void removeWordsNotAllowedUser(User user, Channel channel) {
         wordsNotAllowedUsers.remove(user.getId());
-        channelManager.broadcast(channel, new InfoMessage(user.getNickname() + " 已被解除禁言"));
+        if (channel != null) {
+            channelManager.broadcast(channel, new InfoMessage(user.getNickname() + " 已被解除禁言"));
+        }
         channelManager.sendSystemMessageToUser(
             new InfoMessage("你已被解除禁言", channel), user);
+        wsMessageService.send(new ChatWordsEnableServerMsg(true), user);
     }
 }

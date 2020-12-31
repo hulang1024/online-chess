@@ -1,8 +1,6 @@
 package io.github.hulang1024.chinesechess.chat.command;
 
-import io.github.hulang1024.chinesechess.chat.command.executors.RecallCommandExecutor;
-import io.github.hulang1024.chinesechess.chat.command.executors.RollCommandExecutor;
-import io.github.hulang1024.chinesechess.chat.command.executors.WordsNotAllowedCommandExecutor;
+import io.github.hulang1024.chinesechess.chat.command.executors.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -16,6 +14,12 @@ public class CommandExecutorFactory {
         switch (name) {
             case "words":
                 return applicationContext.getBean(WordsNotAllowedCommandExecutor.class);
+            case "ban":
+                return applicationContext.getBean(BanCommandExecutor.class);
+            case "cancel-ban":
+                return applicationContext.getBean(CancelBanCommandExecutor.class);
+            case "logout":
+                return applicationContext.getBean(LogoutCommandExecutor.class);
             case "recall":
                 return applicationContext.getBean(RecallCommandExecutor.class);
             case "roll":

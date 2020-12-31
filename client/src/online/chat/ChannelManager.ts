@@ -214,6 +214,9 @@ export default class ChannelManager {
 
     switch (command) {
       case 'words':
+      case 'ban':
+      case 'cancel-ban':
+      case 'logout':
       case 'recall':
       case 'roll':
         this.postMessage(text, true);
@@ -233,9 +236,9 @@ export default class ChannelManager {
     }
   }
 
-  public initializeChannels() {
+  public initializeChannels(): boolean {
     if (this.channelsInitialised) {
-      return;
+      return false;
     }
 
     this.channelsInitialised = true;
@@ -266,6 +269,15 @@ export default class ChannelManager {
 
     if (this.api.isLoggedIn) {
       listChannels();
+    }
+
+    return true;
+  }
+
+  public addInfoMessage(channelId: number, msg: Message) {
+    const channel = this.getChannel(channelId);
+    if (channel) {
+      channel.addNewMessages(msg);
     }
   }
 

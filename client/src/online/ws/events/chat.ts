@@ -8,6 +8,7 @@ export const message = new Signal();
 export const presence = new Signal();
 export const channelUserLeft = new Signal();
 export const messageRecalled = new Signal();
+export const wordsEnabled = new Signal();
 
 export interface ChatMessageMsg extends ServerMsg {
   id: number;
@@ -37,4 +38,8 @@ export interface ChatChannelUserLeftMsg extends ServerMsg {
 export interface ChatRecallMessageMsg extends ServerMsg {
   channelId: number;
   messageId: number;
+}
+
+export interface WordsEnableMsg extends ServerMsg {
+  enabled: boolean;
 }

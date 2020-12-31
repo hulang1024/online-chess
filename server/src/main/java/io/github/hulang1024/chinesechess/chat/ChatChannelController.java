@@ -1,10 +1,7 @@
 package io.github.hulang1024.chinesechess.chat;
 
-import io.github.hulang1024.chinesechess.chat.command.CommandService;
 import io.github.hulang1024.chinesechess.http.GuestAPI;
-import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserUtils;
-import io.github.hulang1024.chinesechess.utils.TimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +18,6 @@ import java.util.List;
 public class ChatChannelController {
     @Autowired
     private ChannelManager channelManager;
-    @Autowired
-    private CommandService commandService;
 
     @PostMapping("/new")
     public ResponseEntity<CreateNewPMRet> createNewPrivateMessage(
@@ -91,25 +86,7 @@ public class ChatChannelController {
         @NotNull @PathVariable("channel_id") Long channelId,
         @Validated @RequestBody PostMessageParam param) {
 
-        Channel channel = channelManager.getChannelById(channelId);
-        if (channel == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        User sender = UserUtils.get();
-
-        Message message = new Message();
-        message.setChannelId(channel.getId());
-        message.setTimestamp(TimeUtils.nowTimestamp());
-        message.setSender(sender);
-        message.setContent(param.getContent());
-
-        if (param.isAction()) {
-            commandService.execute(message, channel);
-            return ResponseEntity.ok().build();
-        } else {
-            boolean ok = channelManager.broadcast(channel, message);
-            return new ResponseEntity(message.getId(), ok ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
-        }
+        boolean ok = channelManager.postMessage(channelId, param);
+        return new ResponseEntity(ok ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 }

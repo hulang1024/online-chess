@@ -48,6 +48,7 @@
           :standout="$q.dark.isActive"
           dense
           placeholder="键入你的消息"
+          :disable="!inputEnabled"
           class="message-input"
           @keydown.enter="onSend"
         />
@@ -74,6 +75,7 @@ import ChannelType from 'src/online/chat/ChannelType';
 import InfoMessage from 'src/online/chat/InfoMessage';
 import Message from 'src/online/chat/Message';
 import User from 'src/user/User';
+import * as ChatEvents from 'src/online/ws/events/chat';
 import DrawableChannel from './DrawableChannel.vue';
 
 export default defineComponent({
@@ -87,6 +89,7 @@ export default defineComponent({
     const activeChannelTab = ref('#象棋');
     const channels = ref<Channel[]>([]);
     const messageText = ref('');
+    const inputEnabled = ref(true);
 
     const getChannelTabName = (channel: Channel) => (
       channel.type == ChannelType.PM
@@ -107,9 +110,6 @@ export default defineComponent({
 
     channelManager.joinedChannels.added.add((channel: Channel) => {
       channels.value.push(channel);
-      if (channel.id == 1) {
-        channel.addNewMessages(new InfoMessage('欢迎来到在线象棋'));
-      }
       channel.newMessagesArrived.add((messages: Message[]) => {
         const last = messages[messages.length - 1];
         if (last.sender.id != 0) {
@@ -147,8 +147,13 @@ export default defineComponent({
       channelManager.openChannel(1);
     };
 
+    ChatEvents.wordsEnabled.add((msg: ChatEvents.WordsEnableMsg) => {
+      inputEnabled.value = msg.enabled;
+    });
+
     channelManager.initializeChannels();
     channelManager.openChannel(1);
+    channelManager.addInfoMessage(1, new InfoMessage('欢迎来到在线象棋'));
 
     const toggle = () => {
       isOpen.value = !isOpen.value;
@@ -192,6 +197,7 @@ export default defineComponent({
       getChannelTabName,
       channels,
       messageText,
+      inputEnabled,
       onSend,
     };
   },

@@ -24,6 +24,7 @@ export function setupEvents(socketService: SocketService) {
     ['chat.presence', chat.presence],
     ['chat.user_left', chat.channelUserLeft],
     ['chat.recall_message', chat.messageRecalled],
+    ['chat.words_enable', chat.wordsEnabled],
 
     ['room.user_join', room.userJoined],
     ['room.user_left', room.userLeft],

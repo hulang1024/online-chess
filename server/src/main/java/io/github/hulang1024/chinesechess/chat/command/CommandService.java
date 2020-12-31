@@ -11,11 +11,12 @@ public class CommandService {
     private CommandExecutorFactory commandExecutorFactory;
 
     public void execute(Message message, Channel channel) {
-        String[] tokens = message.getContent().substring(1).split(" ");
-        String command = tokens[0];
+        String[] tokens = message.getContent().substring(1).split("\\s+");
+        String command = tokens[0].trim();
         String[] commandParams = new String[tokens.length - 1];
-        System.arraycopy(tokens, 1,commandParams, 0, commandParams.length);
-
+        for (int i = 0; i < commandParams.length; i++) {
+            commandParams[i] = tokens[i + 1].trim();
+        }
         CommandExecutor commandExecutor = commandExecutorFactory.create(command);
         commandExecutor.execute(commandParams, message, channel);
     }

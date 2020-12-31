@@ -4,10 +4,10 @@ import io.github.hulang1024.chinesechess.ws.ServerMessage;
 import lombok.Data;
 
 @Data
-public class ChatWordsOnOffServerMsg extends ServerMessage {
-    private boolean isOn;
-    public ChatWordsOnOffServerMsg(boolean isOn) {
-        super("chat.words_off");
-        this.isOn = isOn;
+public class ChatWordsEnableServerMsg extends ServerMessage {
+    private boolean enabled;
+    public ChatWordsEnableServerMsg(boolean enabled) {
+        super("chat.words_enable");
+        this.enabled = enabled;
     }
 }
