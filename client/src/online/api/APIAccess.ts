@@ -86,9 +86,14 @@ export default class APIAccess {
         resolve(ret);
       };
       req.failure = (ret) => {
-        const causeMap: {[n: number]: string} = { 1: '用户不存在', 2: '密码错误', 3: '第三方用户登录失败' };
+        const causeMap: {[n: number]: string} = {
+          1: '用户不存在',
+          2: '密码错误',
+          3: '第三方用户登录失败',
+          100: '已被禁止登陆',
+        };
         Notify.create({
-          type: 'warning',
+          type: (ret && ret.code == 100) ? 'negative' : 'warning',
           message: (ret && ret.code != null) ? causeMap[ret.code] : '登录失败',
         });
         this.configManager.set(ConfigItem.password, '');

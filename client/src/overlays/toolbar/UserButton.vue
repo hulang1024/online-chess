@@ -104,8 +104,12 @@ export default defineComponent({
               2: '用户名已被使用',
               3: '用户名格式错误（允许1到20个字符）',
               4: '密码格式错误（允许至多20位）',
+              100: '该主机已被禁止注册',
             };
-            $q.notify({ type: 'warning', message: ret ? codeMsgMap[ret.code] : '注册失败' });
+            $q.notify({
+              type: (ret && ret.code == 100) ? 'negative' : 'warning',
+              message: ret ? codeMsgMap[ret.code] : '注册失败',
+            });
           };
           api.perform(req);
         },

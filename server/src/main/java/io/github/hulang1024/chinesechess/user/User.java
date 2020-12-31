@@ -41,6 +41,13 @@ public class User {
 
     private LocalDateTime lastActiveTime;
 
+    private String userIp;
+
+    /**
+     * 1=banned
+     */
+    private Integer userType;
+
     public static User SYSTEM_USER;
     static {
         User systemUser = new User(0);

@@ -11,7 +11,7 @@ public class LoginResult extends Result {
 
     /**
      *
-     * @param code 0=成功，1=用户不存在，2=密码错误，3=第三方用户登录失败
+     * @param code 0=成功，1=用户不存在，2=密码错误，3=第三方用户登录失败，100=已被ban
      */
     private LoginResult(int code) {
         super(code);

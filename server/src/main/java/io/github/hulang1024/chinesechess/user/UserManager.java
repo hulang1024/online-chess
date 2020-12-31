@@ -2,6 +2,8 @@ package io.github.hulang1024.chinesechess.user;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import io.github.hulang1024.chinesechess.ban.BanUserManager;
+import io.github.hulang1024.chinesechess.ban.IpBanManager;
 import io.github.hulang1024.chinesechess.database.DaoPageParam;
 import io.github.hulang1024.chinesechess.friend.FriendRelation;
 import io.github.hulang1024.chinesechess.friend.FriendUserDao;
@@ -36,6 +38,10 @@ public class UserManager {
     private FriendsManager friendsManager;
     @Autowired
     private FriendUserDao friendUserDao;
+    @Autowired
+    private IpBanManager ipBanManager;
+    @Autowired
+    private BanUserManager banUserManager;
     @Autowired
     private UserSessionManager userSessionManager;
     @Autowired
@@ -132,6 +138,11 @@ public class UserManager {
     }
 
     public RegisterResult register(UserRegisterParam param) {
+        String ip = IPUtils.getIP(httpServletRequest);
+        if (ipBanManager.isBanned(ip)) {
+            return RegisterResult.fail(100);
+        }
+
         long length = param.getNickname().trim().length();
         if (!(1 <= length && length <= 20)) {
             return RegisterResult.fail(3);
@@ -154,6 +165,8 @@ public class UserManager {
         user.setEmail(param.getEmail());
         user.setAvatarUrl(param.getAvatarUrl());
         user.setRegisterTime(LocalDateTime.now());
+        user.setUserType(0);
+        user.setUserIp(ip);
 
         try {
             boolean ok = userDao.insert(user) > 0;
@@ -171,12 +184,15 @@ public class UserManager {
         User user;
         if ("guest".equalsIgnoreCase(param.getUsername())) {
             GuestUser guestUser = new GuestUser();
-            String hexString;
+            String hexString = null;
             try {
-                hexString = Arrays.stream(IPUtils.getIP(httpServletRequest).split("\\."))
-                    .map(p -> Integer.toHexString(Integer.parseInt(p)))
-                    .collect(Collectors.joining(""));
-                guestUser.setId(-Long.parseLong(hexString, 16));
+                String ip = IPUtils.getIP(httpServletRequest);
+                if (ip != null) {
+                    hexString = Arrays.stream(ip.split("\\."))
+                        .map(p -> Integer.toHexString(Integer.parseInt(p)))
+                        .collect(Collectors.joining(""));
+                    guestUser.setId(-Long.parseLong(hexString, 16));
+                }
             } catch (Exception e) {
                 hexString = Long.toHexString(Math.abs(guestUser.getId()));
             }
@@ -223,9 +239,21 @@ public class UserManager {
      * @return
      */
     public LoginResult login(User user, Long expiresInSeconds) {
+        if (banUserManager.isBanned(user)) {
+            return LoginResult.fail(100);
+        }
+
+        String ip = IPUtils.getIP(httpServletRequest);
+
+        if (ipBanManager.isBanned(ip)) {
+            return LoginResult.fail(100);
+        }
+
+        user.setUserIp(ip);
+        user.setLastLoginTime(LocalDateTime.now());
+        user.setLastActiveTime(user.getLastLoginTime());
+
         if (!(user instanceof GuestUser)) {
-            user.setLastLoginTime(LocalDateTime.now());
-            user.setLastActiveTime(user.getLastLoginTime());
             userDao.updateById(user);
         }
 

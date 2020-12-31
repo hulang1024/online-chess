@@ -11,7 +11,7 @@ public class RegisterResult extends Result {
 
     /**
      *
-     * @param code 0=成功，1=失败，2=昵称已被使用，3=用户名格式错误，4=密码格式错误
+     * @param code 0=成功，1=失败，2=昵称已被使用，3=用户名格式错误，4=密码格式错误，100=ip已被Ban
      */
     public RegisterResult(int code) {
         super(code);
