@@ -20,6 +20,8 @@ export default class SocketService {
 
   public readonly reconnected = new Signal();
 
+  public readonly loggedIn = new Signal();
+
   public channelManager: ChannelManager;
 
   // 是否已成功游客或者正式登陆
@@ -143,6 +145,7 @@ export default class SocketService {
       switch (msg.code) {
         case 1:
           Notify.create({ type: 'error', message: '未知原因登录失败' });
+          this.api.logout();
           break;
         case 2:
           Notify.create({ type: 'error', message: '你的账号已在别处登录' });
@@ -150,15 +153,16 @@ export default class SocketService {
           break;
         case 3:
           Notify.create({ type: 'error', message: '你还未登录' });
+          this.api.logout();
           break;
         default:
           break;
       }
-      this.api.logout();
       return;
     }
 
     this.isWSLoggedIn = true;
+    this.loggedIn.dispatch();
   }
 
   private onConnected() {
