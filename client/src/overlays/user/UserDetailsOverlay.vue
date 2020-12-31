@@ -8,7 +8,7 @@
   >
     <q-card
       flat
-      class="q-px-sm bg-white full-width"
+      class="q-px-sm full-width"
     >
       <div v-if="user">
         <span>ID: </span>
