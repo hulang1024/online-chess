@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/chat")
@@ -67,12 +68,19 @@ public class ChatChannelController {
     @GuestAPI
     @GetMapping("/channels/{channel_id}/messages")
     public ResponseEntity<Collection<Message>> fetchMessages(
-        @NotNull @PathVariable("channel_id") Long channelId) {
+        @NotNull @PathVariable("channel_id") Long channelId,
+        Long startMessageId) {
         Channel channel = channelManager.getChannelById(channelId);
         if (channel == null) {
             return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(channel.getMessages());
+        List<Message> messages = channel.getMessages();
+        if (startMessageId != null) {
+            messages = messages.stream()
+                .filter(m -> m.getId() > startMessageId)
+                .collect(Collectors.toList());
+        }
+        return ResponseEntity.ok(messages);
     }
 
     /**

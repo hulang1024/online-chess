@@ -318,10 +318,16 @@ export default class ChannelManager {
     });
 
     this.socketService.reconnected.add(() => {
-      if (!this.currentChannel.value) {
+      if (!this.api.isLoggedIn) {
         return;
       }
-      this.fetchInitalMessages(this.currentChannel.value);
+      this.joinedChannels.value.forEach((ch) => {
+        const req = new GetMessagesRequest(ch);
+        req.success = (msgs) => {
+          this.handleChannelMessages(msgs.map((mg) => Message.from(mg)));
+        };
+        this.api.queue(req);
+      });
     });
   }
 

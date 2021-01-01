@@ -21,6 +21,8 @@ export default class Channel {
 
   public messageRemoved: Signal = new Signal();
 
+  public lastMessageId: number;
+
   public readonly joined: BindableBool = new BindableBool(false);
 
   constructor(user?: User) {
@@ -45,7 +47,10 @@ export default class Channel {
     if (messages.length == 0) {
       return;
     }
-
+    const maxMessageId = messages.reduce((max, m) => Math.max(m.id, max), 0);
+    if (maxMessageId > this.lastMessageId) {
+      this.lastMessageId = maxMessageId;
+    }
     this.messages = this.messages.concat(messages);
 
     this.newMessagesArrived.dispatch(messages);

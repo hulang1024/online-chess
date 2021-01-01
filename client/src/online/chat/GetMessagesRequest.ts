@@ -7,5 +7,8 @@ export default class GetMessagesRequest extends APIRequest<Message[]> {
     super();
     this.method = HttpMethod.GET;
     this.path = `chat/channels/${channel.id}/messages`;
+    if (channel.lastMessageId) {
+      this.addParam('startMessageId', channel.lastMessageId);
+    }
   }
 }
