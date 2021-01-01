@@ -160,7 +160,7 @@ public class ChannelManager {
     public CreateNewPMRet createNewPrivateMessage(@NotNull CreateNewPMParam param) {
         User sender = UserUtils.get();
 
-        if (!wordsNotAllowedCommandExecutor.isCanWords(param.getSender(), null)) {
+        if (!wordsNotAllowedCommandExecutor.isCanWords(sender, null)) {
             return CreateNewPMRet.fail();
         }
 
