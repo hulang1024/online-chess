@@ -264,15 +264,15 @@ export default class Spectate {
         }
         this.onTurnActiveChessHost(this.activeChessHost.value || ChessHost.RED, true);
       }
-      return;
+    } else {
+      // 当游戏暂停或结束，暂停计时器
+      [
+        this.redGameTimer, this.redStepTimer,
+        this.blackGameTimer, this.blackStepTimer,
+      ].forEach((timer) => {
+        timer.pause();
+      });
     }
-    // 当游戏暂停或结束，暂停计时器
-    [
-      this.redGameTimer, this.redStepTimer,
-      this.blackGameTimer, this.blackStepTimer,
-    ].forEach((timer) => {
-      timer.pause();
-    });
   }
 
   private onGameStartedEvent(msg: GameEvents.GameStartedMsg) {
@@ -447,10 +447,6 @@ export default class Spectate {
   }
 
   private onUserOfflineEvent(msg: UserEvents.UserOfflineMsg) {
-    if (!(this.blackUser.value && this.blackUser.value.id == msg.uid)) {
-      return;
-    }
-    this.gameState.value = GameState.PAUSE;
     let who: string | null = null;
     if (this.redUser.value && msg.uid == this.redUser.value.id) {
       who = '红方';
@@ -463,13 +459,11 @@ export default class Spectate {
     if (!who) {
       return;
     }
+    this.gameState.value = GameState.PAUSE;
     this.showText(`${who}已下线或掉线，可等待回来继续`);
   }
 
   private onUserOnlineEvent(msg: UserEvents.UserOnlineMsg) {
-    if (!(this.blackUser.value && this.blackUser.value.id == msg.uid)) {
-      return;
-    }
     let who: string | null = null;
     if (this.redUser.value && msg.uid == this.redUser.value.id) {
       who = '红方';
