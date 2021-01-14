@@ -5,12 +5,14 @@
       <q-btn
         color="primary"
         label="创建房间"
+        unelevated
         class="col float-right q-mt-sm"
         @click="onCreateRoomClick"
       />
       <q-btn
         color="green"
         label="快速加入"
+        unelevated
         class="col float-right q-mt-sm"
         :loading="joining"
         @click="onQuickJoinClick"
@@ -20,8 +22,7 @@
     <q-tabs
       v-model="roomStatusActiveTab"
       dense
-      indicator-color="yellow"
-      :class="['row', 'bg-grey-4', $q.dark.isActive && 'text-black']"
+      :class="['row', $q.dark.isActive && 'text-white']"
     >
       <q-tab
         :name="0"

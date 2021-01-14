@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh lpR lFf">
-    <q-header elevated>
+    <q-header>
       <toolbar ref="toolbar" />
     </q-header>
 
