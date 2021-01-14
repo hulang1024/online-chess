@@ -6,14 +6,18 @@ import Game from './Game';
  * 棋子
  */
 export default interface Chess {
-  canGoTo: (destPos: ChessPos, game: Game) => boolean;
+  canGoTo(destPos: ChessPos, game: Game): boolean;
 
-  getPos: () => ChessPos;
+  getPos(): ChessPos;
 
-  setPos: (pos: ChessPos) => void;
+  setPos(pos: ChessPos): void;
 
-  getHost: () => ChessHost;
+  getHost(): ChessHost;
+
+  setFront(b: boolean): void;
+
+  isFront(): boolean;
 
   // instanceof有问题，代替
-  is: (chessClass: any) => boolean
+  is(chessClass: any): boolean
 }

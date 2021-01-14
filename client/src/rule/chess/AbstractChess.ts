@@ -13,6 +13,9 @@ export default abstract class AbstractChess implements Chess {
   /** 所属棋方 */
   protected host: ChessHost;
 
+  /** 是否是正面 */
+  protected front = true;
+
   constructor(pos: ChessPos, host: ChessHost) {
     this.pos = pos;
     this.host = host;
@@ -30,6 +33,14 @@ export default abstract class AbstractChess implements Chess {
 
   getHost() {
     return this.host;
+  }
+
+  setFront(b: boolean) {
+    this.front = b;
+  }
+
+  isFront() {
+    return this.front;
   }
 
   is(chessClass: any) {

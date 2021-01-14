@@ -49,8 +49,7 @@ export default class DrawableChess implements Chess {
     el.style.fontWeight = 'bolder';
     el.style.textAlign = 'center';
     el.style.lineHeight = `${this.radius * 2}px`;
-    el.innerText = chessClassToText(this.chess);
-
+    this.setFront(this.chess.isFront());
     el.onmouseenter = () => {
       if (!this.enabled || this.lit || this.selected) return;
       el.style.outline = '1px solid #fff';
@@ -97,6 +96,10 @@ export default class DrawableChess implements Chess {
     el.style.borderRadius = `${radius}px`;
     el.style.fontSize = `${radius + 3}px`;
     this.radius = radius;
+  }
+
+  public flip() {
+    this.setFront(!this.chess.isFront());
   }
 
   public set x(val: number) {
@@ -147,6 +150,15 @@ export default class DrawableChess implements Chess {
 
   public getHost() {
     return this.chess.getHost();
+  }
+
+  public setFront(b: boolean) {
+    this.chess.setFront(b);
+    this.el.innerText = this.chess.isFront() ? chessClassToText(this.chess) : '';
+  }
+
+  public isFront() {
+    return this.chess.isFront();
   }
 
   public is(chessClass: unknown) {
