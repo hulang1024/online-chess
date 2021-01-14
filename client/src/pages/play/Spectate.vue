@@ -195,8 +195,8 @@ export default defineComponent({
     spectate.viewChessHost.addAndRunOnce((chessHost: ChessHost) => {
       otherChessHost.value = ChessHost.reverse(chessHost);
       [
-        spectate.blackUser, spectate.redUserStatus, spectate.blackOnline, spectate.blackReadied,
-        spectate.redUser, spectate.blackUserStatus, spectate.redOnline, spectate.redReadied,
+        spectate.blackUser, spectate.blackUserStatus, spectate.blackOnline, spectate.blackReadied,
+        spectate.redUser, spectate.redUserStatus, spectate.redOnline, spectate.redReadied,
       ].forEach((bindable) => {
         bindable.changed.removeAll(); // todo: 这里假设只有这里增加了绑定
       });

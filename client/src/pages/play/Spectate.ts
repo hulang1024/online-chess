@@ -93,8 +93,10 @@ export default class Spectate {
 
     this.playerLoaded.add(() => {
       this.player.gameOver.add(this.onGameOver, this);
-      this.player.activeChessHost.changed.add(this.onTurnActiveChessHost, this);
-      this.gameState.addAndRunOnce(this.onGameStateChanged, this);
+      this.player.activeChessHost.changed.add(
+        (h: ChessHost) => this.onTurnActiveChessHost(h, false),
+        this,
+      );
       if (spectateResponse.states) {
         this.player.startGame(this.viewChessHost.value, spectateResponse.states);
       }
@@ -121,9 +123,11 @@ export default class Spectate {
 
       this.textOverlay = $refs.textOverlay;
 
-      this.swapTimers(true);
-
       this.loadState(spectateResponse);
+
+      this.initTimers(spectateResponse);
+
+      this.gameState.addAndRunOnce(this.onGameStateChanged, this);
     });
 
     onBeforeUnmount(() => {
@@ -194,12 +198,6 @@ export default class Spectate {
     this.blackOnline.value = room.blackOnline;
     this.blackReadied.value = room.blackReadied;
 
-    const { roomSettings } = room;
-    this.redGameTimer.setTotalSeconds(roomSettings.gameDuration);
-    this.redStepTimer.setTotalSeconds(roomSettings.stepDuration);
-    this.blackGameTimer.setTotalSeconds(roomSettings.gameDuration);
-    this.blackStepTimer.setTotalSeconds(roomSettings.stepDuration);
-
     if (spectateResponse.targetUserId != null) {
       // 如果是观看用户
       this.targetUserId = spectateResponse.targetUserId;
@@ -211,6 +209,20 @@ export default class Spectate {
     } else {
       this.viewChessHost.value = Math.random() > 0.5 ? ChessHost.BLACK : ChessHost.RED;
     }
+
+    this.spectatorCount.value = this.room.spectatorCount;
+  }
+
+  private initTimers(spectateResponse: SpectateResponse) {
+    const { room } = spectateResponse;
+    const { roomSettings } = room;
+
+    this.swapTimers(true);
+
+    this.redGameTimer.setTotalSeconds(roomSettings.gameDuration);
+    this.redStepTimer.setTotalSeconds(roomSettings.stepDuration);
+    this.blackGameTimer.setTotalSeconds(roomSettings.gameDuration);
+    this.blackStepTimer.setTotalSeconds(roomSettings.stepDuration);
 
     if (spectateResponse.states) {
       const { states: { redTimer, blackTimer } } = spectateResponse;
@@ -224,8 +236,6 @@ export default class Spectate {
       this.blackGameTimer.ready();
       this.blackStepTimer.ready();
     }
-
-    this.spectatorCount.value = this.room.spectatorCount;
   }
 
   private onUserStatusChangedEvent(msg: UserEvents.UserStatusChangedMsg) {
@@ -362,10 +372,11 @@ export default class Spectate {
   }
 
   private onTurnActiveChessHost(activeChessHost: ChessHost, isGameResume = false) {
+    this.activeChessHost.value = activeChessHost;
+
     if (this.gameState.value != GameState.PLAYING) {
       return;
     }
-    this.activeChessHost.value = activeChessHost;
 
     if (!isGameResume) {
       if (activeChessHost == ChessHost.BLACK) {
@@ -486,12 +497,14 @@ export default class Spectate {
   }
 
   public onToggleViewClick() {
-    this.swapTimers();
     this.viewChessHost.value = ChessHost.reverse(this.viewChessHost.value);
+    this.swapTimers();
     this.player.reverseChessLayoutView();
   }
 
   private swapTimers(isInit = false) {
+    // assert this.viewChessHost.value  && this.gameState.value
+
     const { $refs } = this.context;
 
     if (!isInit) {
