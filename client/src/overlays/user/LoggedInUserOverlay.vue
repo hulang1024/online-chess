@@ -6,10 +6,10 @@
     >
       <div class="column items-center">
         <div class="text-subtitle1 q-mb-sm">
-          {{ user.nickname }}
+          {{ _user.nickname }}
         </div>
         <user-avatar
-          :user="user"
+          :user="_user"
           size="72px"
         />
 
@@ -89,7 +89,7 @@ export default defineComponent({
     };
 
     return {
-      user,
+      _user: user,
       uploading,
       onEditAvatarClick,
       onAvatarFileUploadChange,

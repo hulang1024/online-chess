@@ -24,7 +24,7 @@
       <drawable-room-user
         v-if="blackChessUser"
         :user="blackChessUser"
-        :reverse="redChessUser && blackChessUser"
+        :reverse="!!(redChessUser && blackChessUser)"
       />
     </q-card-section>
   </q-card>
