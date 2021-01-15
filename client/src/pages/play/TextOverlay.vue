@@ -46,4 +46,7 @@ export default defineComponent({
   background: rgba(0,0,0,0.5)
   color: white
   text-align: center
+
+  span
+    font-weight: bold
 </style>

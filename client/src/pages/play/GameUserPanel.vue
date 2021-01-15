@@ -19,7 +19,8 @@
         <user-avatar
           :user="user"
           :online="online"
-          :class="[{afk: user && (status == UserStatus.AFK)}]"
+          class=""
+          :class="[{afk: user && (status == UserStatus.AFK), 'shadow-2': !!user}]"
           size="60px"
           @click="onUserAvatarClick"
         />
