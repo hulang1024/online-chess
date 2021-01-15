@@ -6,6 +6,7 @@
     <div
       class="nickname ellipsis"
       :style="{color: nicknameColor}"
+      @click="onNicknameClick"
     >
       {{ nickname }}
     </div>
@@ -22,7 +23,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from "@vue/composition-api";
+import {
+  defineComponent, getCurrentInstance, PropType, ref,
+} from "@vue/composition-api";
 import ErrorMessage from "src/online/chat/ErrorMessage";
 import Message from "src/online/chat/Message";
 import { USERNAME_COLORS } from 'src/user/components/colors';
@@ -34,7 +37,9 @@ export default defineComponent({
       require: true,
     },
   },
+  inject: ['showUserDetails'],
   setup(props) {
+    const context = getCurrentInstance() as Vue;
     const message = props.message as Message;
     const sender = message?.sender;
 
@@ -53,12 +58,22 @@ export default defineComponent({
       color.value = 'pink';
     }
 
+    const onNicknameClick = () => {
+      if (sender.id == 0) {
+        return;
+      }
+      // eslint-disable-next-line
+      (context as any).showUserDetails(sender);
+    };
+
     return {
       timeText,
       nickname: sender.nickname,
       nicknameColor: `#${(nicknameColor).toString(16)}`,
       content: message.content,
       color,
+
+      onNicknameClick,
     };
   },
 });
@@ -92,6 +107,10 @@ export default defineComponent({
   width: 110px;
   text-align: right;
   font-weight: 600;
+  user-select: none;
+}
+.row > .nickname:hover {
+  opacity: 0.6;
 }
 
 .row > .colon {
