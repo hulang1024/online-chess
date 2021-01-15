@@ -187,11 +187,16 @@ public class ChannelManager {
             channel = channelMap.get(created.getChannelId());
         }
 
-        Message message = param;
+        Message message = new Message();
         message.setTimestamp(TimeUtils.nowTimestamp());
         message.setSender(sender);
+        message.setContent(param.getContent());
         message.setChannelId(channel.getId());
-        broadcast(channelMap.get(channel.getId()), message);
+        if (param.isAction()) {
+            commandService.execute(message, channel);
+        } else {
+            broadcast(channelMap.get(channel.getId()), message);
+        }
         return new CreateNewPMRet(true, channel.getId());
     }
 
