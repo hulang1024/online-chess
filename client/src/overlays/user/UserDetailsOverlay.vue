@@ -9,59 +9,44 @@
     <q-card
       flat
       class="q-px-md q-py-md full-width"
+      style="max-width: 340px;"
     >
       <div v-if="user">
-        <div class="row justify-between">
-          <div class="row">
-            <user-avatar :user="user" rounded size="100px" />
-            <div class="nickname">{{ user.nickname }}</div>
+        <div class="column items-center">
+          <user-avatar
+            :user="user"
+            :size="$q.screen.xs ? '80px' : '100px'"
+            class="shadow-5"
+          />
+          <div class="nickname">{{ user.nickname }}</div>
+        </div>
+        <div
+          v-if="user.id > 0 && user.userStats"
+          class="column items-center q-mt-sm"
+        >
+          <q-separator />
+          <div class="text-h6">表现</div>
+          <div class="count-row">
+            <label>胜率</label>
+            <div class="count">{{ user.userStats.winRate.toFixed(2) }}%</div>
           </div>
-          <div v-if="user.id > 0 && user.userStats">
-            <div class="count-row">
-              <label>胜率</label>
-              <div class="count">{{ user.userStats.winRate.toFixed(2) }}%</div>
-            </div>
-            <div class="count-row">
-              <label>局数</label>
-              <div class="count">{{ user.userStats.playCount }}</div>
-            </div>
-            <div class="count-row">
-              <label>胜</label>
-              <div class="count">{{ user.userStats.winCount }}</div>
-            </div>
-            <div class="count-row">
-              <label>负</label>
-              <div class="count">{{ user.userStats.loseCount }}</div>
-            </div>
-            <div class="count-row">
-              <label>和</label>
-              <div class="count">{{ user.userStats.drawCount }}</div>
-            </div>
+          <div class="count-row">
+            <label>局数</label>
+            <div class="count">{{ user.userStats.playCount }}</div>
+          </div>
+          <div class="count-row">
+            <label>胜</label>
+            <div class="count">{{ user.userStats.winCount }}</div>
+          </div>
+          <div class="count-row">
+            <label>负</label>
+            <div class="count">{{ user.userStats.loseCount }}</div>
+          </div>
+          <div class="count-row">
+            <label>和</label>
+            <div class="count">{{ user.userStats.drawCount }}</div>
           </div>
         </div>
-        <template v-if="localUser.id != user.id">
-        <q-separator class="q-my-sm" />
-          <q-btn
-            dense
-            outline
-            unelevated
-            icon="message"
-            class="q-px-sm"
-            @click="onChatClick"
-          >
-            <q-tooltip content-class="bg-black">聊天</q-tooltip>
-          </q-btn>
-          <q-btn
-            v-if="user.id > 0 && !user.isFriend"
-            dense
-            outline
-            unelevated
-            icon="favorite"
-            class="q-ml-sm q-px-sm"
-            label="加为好友"
-            @click="onAddFriendClick"
-          />
-        </template>
         <q-separator class="q-my-sm" />
         <div class="other-info">
           <div v-if="user.id > 0 && user.loginDeviceOS">
@@ -85,6 +70,30 @@
             <span>{{ user.userIp }}</span>
           </div>
         </div>
+        <template v-if="localUser.id != user.id">
+          <q-separator class="q-my-sm" />
+          <div class="row justify-evenly q-mt-md">
+            <q-btn
+              dense
+              outline
+              unelevated
+              icon="message"
+              class="q-px-sm"
+              @click="onChatClick"
+              label="发送私信"
+            />
+            <q-btn
+              v-if="user.id > 0 && !user.isFriend"
+              dense
+              outline
+              unelevated
+              icon="favorite"
+              class="q-ml-sm q-px-sm"
+              label="加为好友"
+              @click="onAddFriendClick"
+            />
+          </div>
+        </template>
       </div>
     </q-card>
   </q-dialog>
@@ -184,9 +193,9 @@ export default defineComponent({
 
 <style lang="sass" scoped>
 .nickname
-  margin-left: 8px
-  font-size: 1.1em
-  font-weight: bold
+  padding-top: 8px
+  font-size: 1.3em
+  font-weight: bolder
 
 .other-info
   label
@@ -198,8 +207,9 @@ export default defineComponent({
   label
     display: inline-block
     width: 40px
+    text-align: left
   .count
-    flex-grow: 1
+    width: 50px
     font-weight: bold
     text-align: right
 </style>
