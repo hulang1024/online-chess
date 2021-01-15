@@ -6,4 +6,6 @@ export default class UserStats {
   loseCount: number;
 
   drawCount: number;
+
+  winRate: number;
 }

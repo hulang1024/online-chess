@@ -1,5 +1,5 @@
 <template>
-  <q-menu>
+  <q-menu z-top>
     <div
       class="column items-center q-py-lg"
       style="min-width: 140px"
@@ -11,6 +11,7 @@
         <user-avatar
           :user="_user"
           size="72px"
+          @click="onAvatarClick"
         />
 
         <q-btn
@@ -53,6 +54,7 @@ import User from 'src/user/User';
 
 export default defineComponent({
   components: { UserAvatar },
+  inject: ['showUserDetails'],
   props: {
     user: null,
   },
@@ -62,6 +64,11 @@ export default defineComponent({
     const ctx = getCurrentInstance() as Vue;
 
     const uploading = ref(false);
+
+    const onAvatarClick = () => {
+      // eslint-disable-next-line
+      (ctx as any).showUserDetails(props.user);
+    };
 
     const onLogoutClick = () => {
       emit('logout-action');
@@ -91,6 +98,7 @@ export default defineComponent({
     return {
       _user: user,
       uploading,
+      onAvatarClick,
       onEditAvatarClick,
       onAvatarFileUploadChange,
       onLogoutClick,

@@ -32,7 +32,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUser(@NotNull @PathVariable("id") Long id) {
-        User user = userManager.getDatabaseUser(id);
+        User user = userManager.queryUser(id);
         return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
     }
 

@@ -1,9 +1,11 @@
 <template>
   <q-avatar
+    v-ripple
     v-bind="$attrs"
     class="user-avatar"
     :class="{offline}"
     :style="{backgroundColor}"
+    @click.stop="$emit('click')"
   >
     <img
       v-if="avatarUrl"

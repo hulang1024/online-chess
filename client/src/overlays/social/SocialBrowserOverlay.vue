@@ -12,8 +12,8 @@
       flat
       class="content-card q-px-sm"
     >
-      <span class="text-subtitle1">在线用户数: {{ onlineCount }}</span>
-      <span class="q-ml-lg text-subtitle1">游客用户数: {{ guestCount }}</span>
+      <span class="text-subtitle1">在线用户数<span class="count">{{ onlineCount }}</span></span>
+      <span class="q-ml-lg text-subtitle1">游客<span class="count">{{ guestCount }}</span></span>
       <q-tabs
         v-model="activeTab"
         align="left"
@@ -61,6 +61,7 @@
               v-if="isShowInTab(user)"
               :key="user.id"
               :user="user"
+              @user-avatar-click="onUserAvatarClick(user)"
             >
               <q-menu
                 v-if="isLoggedIn && !isMe(user)"
@@ -111,17 +112,6 @@
                   >
                     <q-item-section>邀请观看游戏</q-item-section>
                   </q-item>
-                  <template v-if="!user.isFriend">
-                    <q-separator />
-                    <q-item
-                      key="addFriend"
-                      v-close-popup
-                      clickable
-                      @click="onAddFriendClick(user)"
-                    >
-                      <q-item-section>加为好友</q-item-section>
-                    </q-item>
-                  </template>
                   <template v-if="user.isFriend">
                     <q-separator />
                     <q-item
@@ -145,7 +135,6 @@
       </div>
     </q-card>
 
-    <user-details-overlay ref="userDetailsOverlay" />
   </q-dialog>
 </template>
 
@@ -153,7 +142,6 @@
 import {
   defineComponent, getCurrentInstance, ref, watch,
 } from '@vue/composition-api';
-import AddFriendRequest from 'src/online/friend/AddFriendRequest';
 import DeleteFriendRequest from 'src/online/friend/DeleteFriendRequest';
 import SpectateUserRequest from 'src/online/spectator/SpectateUserRequest';
 import GetUsersRequest from 'src/online/user/GetUsersRequest';
@@ -167,12 +155,13 @@ import UserStatus from 'src/user/UserStatus';
 import APIPageResponse from 'src/online/api/APIPageResponse';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import UserGridPanel from 'src/user/components/UserGridPanel.vue';
-import UserDetailsOverlay from '../user/UserDetailsOverlay.vue';
 
 export default defineComponent({
-  components: { UserGridPanel, UserDetailsOverlay },
+  components: { UserGridPanel },
+  inject: ['showUserDetails'],
   setup(props, { emit }) {
-    const { $refs, $router, $q } = getCurrentInstance() as Vue;
+    const context = getCurrentInstance() as Vue;
+    const { $router, $q } = context;
 
     const isOpen = ref(false);
     const activeTab = ref('all');
@@ -294,9 +283,14 @@ export default defineComponent({
       return true;
     };
 
+    const onUserAvatarClick = (user: SearchUserInfo) => {
+      // eslint-disable-next-line
+      (context as any).showUserDetails(user);
+    };
+
     const onUserDetailsClick = (user: SearchUserInfo) => {
       // eslint-disable-next-line
-      (<any>$refs.userDetailsOverlay).show(user);
+      (context as any).showUserDetails(user);
     };
 
     const onChatClick = (user: SearchUserInfo) => {
@@ -358,20 +352,6 @@ export default defineComponent({
       api.perform(req);
     };
 
-    const onAddFriendClick = (user: SearchUserInfo) => {
-      if (api.localUser.id < 0) {
-        $q.notify({ type: 'warning', message: '你现在是游客，无法添加其他人为好友' });
-        return;
-      }
-      const req = new AddFriendRequest(user);
-      req.success = (ret) => {
-        user.isFriend = true;
-        user.isMutual = ret.isMutual;
-        $q.notify({ type: 'positive', message: `已将${user.nickname}加为好友` });
-      };
-      api.perform(req);
-    };
-
     const onDeleteFriendClick = (user: SearchUserInfo) => {
       const req = new DeleteFriendRequest(user);
       req.success = () => {
@@ -406,11 +386,11 @@ export default defineComponent({
       isLoggedIn,
       isMe: (user: SearchUserInfo) => user.id == api.localUser.id,
 
+      onUserAvatarClick,
       onUserDetailsClick,
       onChatClick,
       onSpectateClick,
       onInviteClick,
-      onAddFriendClick,
       onDeleteFriendClick,
     };
   },
@@ -436,6 +416,12 @@ export default defineComponent({
       min-height: calc(100% - 112px);
       padding-bottom: 50px;
     }
+  }
+
+  .count {
+    padding-left: 4px;
+    font-weight: 1.1em;
+    font-weight: bold;
   }
 }
 </style>

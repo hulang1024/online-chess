@@ -11,6 +11,7 @@
         :online="userStatus != UserStatus.OFFLINE"
         rounded
         :size="$q.screen.xs ? '48px' : '56px'"
+        @click="$emit('user-avatar-click')"
       />
       <q-icon
         v-if="isFriend"
@@ -50,17 +51,7 @@ import {
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import UserStatus from "src/user/UserStatus";
 import SearchUserInfo from 'src/online/user/SearchUserInfo';
-
-function translateDeviceOS(deviceOS: string | undefined): string | undefined {
-  const NAME_MAP: {[d: string]: string} = {
-    ios: '手机iOS',
-    iphone: '手机iPhone',
-    android: '手机安卓',
-    macos: '电脑MacOS',
-    windows: '电脑Windows',
-  };
-  return deviceOS && (NAME_MAP[deviceOS] || deviceOS);
-}
+import { translateDeviceOS } from "src/user/device.ts";
 
 export default defineComponent({
   components: { UserAvatar },

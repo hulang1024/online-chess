@@ -15,7 +15,13 @@ export default class User {
 
   isOnline: boolean;
 
+  registerTime: string;
+
   lastLoginTime: string;
+
+  lastActiveTime: string;
+
+  userIp: string;
 
   static SYSTEM: User;
 

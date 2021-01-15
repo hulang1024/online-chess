@@ -21,6 +21,17 @@ public class SearchUserInfo extends User {
         setId(user.getId());
         setNickname(user.getNickname());
         setAvatarUrl(user.getAvatarUrl());
+        setLastLoginTime(user.getLastLoginTime());
+        setLastActiveTime(user.getLastActiveTime());
+        setRegisterTime(user.getRegisterTime());
+        setSource(user.getSource());
+        setUserIp(user.getUserIp());
+    }
+
+    public void setUserDeviceInfo(UserDeviceInfo userDeviceInfo) {
+        if (userDeviceInfo != null) {
+            this.setLoginDeviceOS(userDeviceInfo.getDeviceOS());
+        }
     }
 
     @JSONField(name = "status")

@@ -28,13 +28,11 @@ public class User {
     @JSONField(name = "isAdmin")
     private boolean isAdmin;
 
-    @JSONField(serialize = false)
     private int source;
 
     @JSONField(serialize = false)
     private String openId;
 
-    @JSONField(serialize = false)
     private LocalDateTime registerTime;
 
     private LocalDateTime lastLoginTime;

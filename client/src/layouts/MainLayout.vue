@@ -9,6 +9,8 @@
     <ranking-overlay ref="rankingOverlay" />
     <chat-overlay ref="chatOverlay" />
 
+    <user-details-overlay ref="userDetailsOverlay" />
+
     <q-page-container @click="onPageClick">
       <router-view v-if="isViewAlive" />
     </q-page-container>
@@ -19,8 +21,10 @@
 import {
   defineComponent, getCurrentInstance, provide, ref,
 } from '@vue/composition-api';
+import User from 'src/user/User';
 import SocialBrowserOverlay from 'src/overlays/social/SocialBrowserOverlay.vue';
 import RankingOverlay from 'src/overlays/ranking/RankingOverlay.vue';
+import UserDetailsOverlay from 'src/overlays/user/UserDetailsOverlay.vue';
 import SettingsOverlay from '../overlays/settings/SettingsOverlay.vue';
 import ChatOverlay from '../overlays/chat/ChatOverlay.vue';
 import Toolbar from '../overlays/toolbar/Toolbar.vue';
@@ -33,6 +37,7 @@ export default defineComponent({
     ChatOverlay,
     SocialBrowserOverlay,
     RankingOverlay,
+    UserDetailsOverlay,
   },
   setup() {
     const ctx = getCurrentInstance() as Vue;
@@ -50,6 +55,11 @@ export default defineComponent({
       ctx.$nextTick(() => {
         isViewAlive.value = true;
       });
+    });
+
+    provide('showUserDetails', (user: User) => {
+      // eslint-disable-next-line
+      (ctx.$refs.userDetailsOverlay as any).show(user);
     });
 
     return {

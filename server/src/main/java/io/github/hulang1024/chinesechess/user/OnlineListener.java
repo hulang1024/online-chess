@@ -52,7 +52,7 @@ public class OnlineListener {
 
         SearchUserInfo userInfo = new SearchUserInfo(user);
         userInfo.setIsOnline(isOnline);
-        userInfo.setLoginDeviceOS(userManager.getUserDeviceInfo(user).getDeviceOS());
+        userInfo.setUserDeviceInfo(userManager.getUserDeviceInfo(user));
 
         userActivityService.broadcast(
             UserActivity.VIEW_ONLINE_USER,

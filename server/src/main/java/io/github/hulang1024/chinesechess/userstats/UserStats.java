@@ -9,6 +9,8 @@ import lombok.Data;
 @Data
 @TableName("user_stats")
 public class UserStats {
+    public static final UserStats NULL = new UserStats();
+
     @JSONField(serialize = false)
     @TableId(type = IdType.INPUT)
     private Long userId;
@@ -20,4 +22,8 @@ public class UserStats {
     private long drawCount;
 
     private long loseCount;
+
+    public float getWinRate() {
+        return playCount > 0 ? (float)winCount / playCount * 100 : 0;
+    }
 }

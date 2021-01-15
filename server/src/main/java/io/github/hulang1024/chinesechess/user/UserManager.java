@@ -12,6 +12,8 @@ import io.github.hulang1024.chinesechess.http.TokenUtils;
 import io.github.hulang1024.chinesechess.http.params.PageParam;
 import io.github.hulang1024.chinesechess.http.results.PageRet;
 import io.github.hulang1024.chinesechess.user.activity.UserActivityService;
+import io.github.hulang1024.chinesechess.userstats.UserStats;
+import io.github.hulang1024.chinesechess.userstats.UserStatsDao;
 import io.github.hulang1024.chinesechess.utils.IPUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,8 @@ public class UserManager {
 
     @Autowired
     private UserDao userDao;
+    @Autowired
+    private UserStatsDao userStatsDao;
     @Autowired
     private FriendsManager friendsManager;
     @Autowired
@@ -116,7 +120,7 @@ public class UserManager {
                 user.setStatus(UserStatus.OFFLINE);
             }
 
-            user.setLoginDeviceOS(getUserDeviceInfo(user).getDeviceOS());
+            user.setUserDeviceInfo(getUserDeviceInfo(user));
         });
 
         pageData.setRecords(
@@ -135,6 +139,28 @@ public class UserManager {
             .subList(0, Math.min(pageData.getRecords().size(), pageParam.getSize())));
 
         return new PageRet<>(pageData);
+    }
+
+    public SearchUserInfo queryUser(long id) {
+        User user = getLoggedInUser(id);
+        if (user != null) {
+            SearchUserInfo userInfo = new SearchUserInfo(user);
+            userInfo.setUserDeviceInfo(getUserDeviceInfo(user));
+            user = userInfo;
+        } else if (id > 0) {
+            user = new SearchUserInfo(getDatabaseUser(id));
+        }
+
+        if (user != null) {
+            SearchUserInfo userInfo = (SearchUserInfo)user;
+            UserStats userStats = userStatsDao.selectById(id);
+            userInfo.setUserStats(userStats != null ? userStats : UserStats.NULL);
+            Optional<FriendRelation> relation = friendsManager.findUserFriendRelation(UserUtils.get(), user);
+            userInfo.setIsFriend(relation.isPresent());
+            userInfo.setIsMutual(relation.map(r -> r.getIsMutual()).orElse(false));
+        }
+
+        return (SearchUserInfo)user;
     }
 
     public RegisterResult register(UserRegisterParam param) {

@@ -21,9 +21,10 @@
           :online="online"
           :class="[{afk: user && (status == UserStatus.AFK)}]"
           size="60px"
+          @click="onUserAvatarClick"
         />
         <div
-          v-show="user && (status == UserStatus.AFK)"
+          v-show="user && (status == UserStatus.AFK || !online)"
           class="absolute-bottom-right user-status"
         >
           <span>({{ online ? '离开' : '离线' }})</span>
@@ -73,16 +74,24 @@ export default defineComponent({
     active: Boolean,
     reverse: Boolean,
   },
+  inject: ['showUserDetails'],
   setup(props) {
-    const ctx = getCurrentInstance() as Vue;
+    const context = getCurrentInstance() as Vue;
 
     const color = computed(() => ((props.user && props.active)
-      ? (props.chessHost == ChessHost.RED ? 'red' : ctx.$q.dark.isActive ? 'grey-2' : 'black')
+      ? (props.chessHost == ChessHost.RED ? 'red' : context.$q.dark.isActive ? 'grey-2' : 'black')
       : 'transparent'));
+
+    const onUserAvatarClick = () => {
+      // eslint-disable-next-line
+      (context as any).showUserDetails(props.user);
+    };
 
     return {
       UserStatus,
       color,
+
+      onUserAvatarClick,
     };
   },
 });
