@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yeauty.pojo.Session;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,7 @@ public class ClientMessageDispatcher {
             message.setUser(user);
         }
 
+        user.setLastActiveTime(LocalDateTime.now());
         UserUtils.set(user);
 
         emit(message.getClass(), message);

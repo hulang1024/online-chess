@@ -80,10 +80,11 @@ public class UserMessageListener extends AbstractMessageListener {
 
         send(new UserLoginServerMsg(0), user);
 
+        user.setLastActiveTime(LocalDateTime.now());
         if (!(user instanceof GuestUser)) {
             userDao.update(null,
                 new UpdateWrapper<User>()
-                    .set("last_active_time", LocalDateTime.now())
+                    .set("last_active_time", user.getLastActiveTime())
                     .eq("id", user.getId()));
         }
     }

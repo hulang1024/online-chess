@@ -13,6 +13,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
 
 @Component
 @Order(1)
@@ -46,6 +47,10 @@ public class AuthenticationWebInterceptor implements HandlerInterceptor {
             if ((user == null || user.getId() == null) && !isGuestAPI) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 return false;
+            }
+
+            if (user != null) {
+                user.setLastActiveTime(LocalDateTime.now());
             }
 
             UserUtils.set(user);
