@@ -1,6 +1,7 @@
 <template>
   <q-dialog
     v-model="isOpen"
+    @keydown.enter="onSubmit"
   >
     <q-card
       class="q-px-lg q-py-lg"
