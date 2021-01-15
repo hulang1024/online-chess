@@ -205,7 +205,7 @@ export default defineComponent({
       queryRooms();
 
       // eslint-disable-next-line
-      (ctx.$vnode.context?.$refs.toolbar as any).toggle('chat');
+      (ctx.$vnode.context?.$refs.toolbar as any).excludeToggle('chat', true);
       channelManager.openChannel(1);
     });
 

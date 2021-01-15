@@ -144,7 +144,7 @@ export default defineComponent({
     const onChatClick = () => {
       hide();
       // eslint-disable-next-line
-      (context.$vnode.context?.$refs.toolbar as any).toggle('chat');
+      (context.$vnode.context?.$refs.toolbar as any).excludeToggle('chat', true);
       channelManager.openPrivateChannel(_user.value as User);
     };
 

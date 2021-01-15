@@ -101,7 +101,7 @@ export default defineComponent({
       }
     };
 
-    const excludeToggle = (name: string) => {
+    const excludeToggle = (name: string, active?: boolean) => {
       if (!isActive(name)) {
         actives.value.forEach((s) => {
           if (s != name) {
@@ -109,7 +109,7 @@ export default defineComponent({
           }
         });
       }
-      toggleActive(name);
+      toggleActive(name, active);
     };
 
     const exitActive = () => {
@@ -147,6 +147,7 @@ export default defineComponent({
 
       exitActive,
       toggle: excludeToggle,
+      excludeToggle,
 
       onActiveChange,
       onSettingButtonClick,
