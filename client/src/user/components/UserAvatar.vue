@@ -3,7 +3,7 @@
     v-ripple
     v-bind="$attrs"
     class="user-avatar"
-    :class="{offline}"
+    :class="{offline, clickable}"
     :style="{backgroundColor}"
     @click="onClick"
   >
@@ -24,7 +24,7 @@
 <script lang="ts">
 import {
   computed,
-  defineComponent, PropType, reactive, toRefs, watch,
+  defineComponent, PropType, reactive, toRefs, watch, ref,
 } from "@vue/composition-api";
 import User from "src/user/User";
 import { USERNAME_COLORS } from './colors';
@@ -56,6 +56,8 @@ export default defineComponent({
         ? `#${USERNAME_COLORS[Math.abs(states.id) % USERNAME_COLORS.length].toString(16)}`
         : ''));
 
+    const clickable = ref(listeners.click != null);
+
     watch(props, () => {
       Object.assign(states, props.user || NULL_USER);
       states.offline = !props.online;
@@ -70,6 +72,7 @@ export default defineComponent({
 
     return {
       backgroundColor,
+      clickable,
       ...toRefs(states),
 
       onClick,
@@ -82,6 +85,9 @@ export default defineComponent({
 .user-avatar
   transition: all 0.2s ease-out
 
-.user-avatar.offline
-  opacity: 0.2
+  &.offline
+    opacity: 0.2
+
+  &.clickable
+    cursor: pointer
 </style>
