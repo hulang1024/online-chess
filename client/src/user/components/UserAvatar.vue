@@ -5,14 +5,17 @@
     class="user-avatar"
     :class="{offline}"
     :style="{backgroundColor}"
-    @click.stop="$emit('click')"
+    @click="onClick"
   >
     <img
       v-if="avatarUrl"
       :src="avatarUrl"
       style="object-fit: cover;"
     >
-    <span v-else class="text-white">
+    <span
+      v-else
+      class="text-white"
+    >
       {{ id && id > 0 ? (nickname ? nickname.substring(0,1) : '') : '' }}
     </span>
   </q-avatar>
@@ -34,7 +37,7 @@ export default defineComponent({
       default: true,
     },
   },
-  setup(props) {
+  setup(props, { emit, listeners }) {
     const NULL_USER = {
       id: null,
       nickname: '',
@@ -58,9 +61,18 @@ export default defineComponent({
       states.offline = !props.online;
     });
 
+    const onClick = (event: Event) => {
+      if (listeners.click) {
+        event.stopPropagation();
+      }
+      emit('click');
+    };
+
     return {
       backgroundColor,
       ...toRefs(states),
+
+      onClick,
     };
   },
 });
