@@ -34,7 +34,7 @@
           <span
             v-if="userStatus != UserStatus.OFFLINE"
             class="q-mr-xs"
-          >[{{ loginDeviceOS }}在线]</span>
+          >[{{ loginDeviceOS != 'unknown' ? loginDeviceOS : '' }}在线]</span>
           <span>[{{ userStatusText }}]</span>
         </div>
       </div>
