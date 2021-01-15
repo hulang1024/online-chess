@@ -65,7 +65,7 @@
               {{ props.row.nickname }}
             </q-td>
             <q-td key="winRate" :props="props" class="count win-rate">
-              {{ props.row.winRate }}%
+              {{ props.row.userStats.winRate.toFixed(2) }}%
             </q-td>
             <q-td key="playCount" :props="props" class="count">
               {{ props.row.userStats.playCount }}
@@ -133,11 +133,8 @@ export default defineComponent({
       req.loading = loading;
       req.success = (userPage: APIPageResponse<SearchUserInfo>) => {
         users.value = userPage.records.map((user, index) => {
-          const { playCount, winCount } = user.userStats;
           // eslint-disable-next-line
           (<any>user).rank = index + 1;
-          // eslint-disable-next-line
-          (<any>user).winRate = (playCount ? winCount / playCount * 100 : 100).toFixed(2);
           return user;
         });
       };
