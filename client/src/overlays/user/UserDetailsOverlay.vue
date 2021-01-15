@@ -49,8 +49,8 @@
         </div>
         <q-separator class="q-my-sm" />
         <div class="other-info">
-          <div v-if="user.id > 0 && user.loginDeviceOS">
-            <label>最后登录设备: </label>
+          <div v-if="user.loginDeviceOS">
+            <label>登录设备: </label>
             <span>{{ translateDeviceOS(user.loginDeviceOS) }}</span>
           </div>
           <div>
