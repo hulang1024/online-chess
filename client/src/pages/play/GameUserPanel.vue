@@ -83,6 +83,9 @@ export default defineComponent({
       : 'transparent'));
 
     const onUserAvatarClick = () => {
+      if (!props.user) {
+        return;
+      }
       // eslint-disable-next-line
       (context as any).showUserDetails(props.user);
     };
