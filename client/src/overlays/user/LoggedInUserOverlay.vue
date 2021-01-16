@@ -11,6 +11,7 @@
         <user-avatar
           :user="_user"
           size="72px"
+          class="shadow-2"
           @click="onAvatarClick"
         />
 
