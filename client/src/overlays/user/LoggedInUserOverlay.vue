@@ -88,6 +88,9 @@ export default defineComponent({
       req.loading = uploading;
       req.success = (res) => {
         user.avatarUrl = res.url;
+        if (user.id > 0 && user.id == api.localUser.id) {
+          api.localUser.avatarUrl = user.avatarUrl;
+        }
         ctx.$q.notify({ type: 'positive', message: '修改成功' });
       };
       req.failure = () => {
