@@ -121,7 +121,7 @@ export default defineComponent({
               isOpen.value = true;
               channelManager.openPrivateChannel(last.sender);
             }
-          } else if (channel.type == ChannelType.ROOM) {
+          } else if (channel.type == ChannelType.ROOM && ctx.$q.screen.xs) {
             isOpen.value = true;
             channelManager.openChannel(channel.id);
           }
@@ -222,6 +222,7 @@ export default defineComponent({
   & .q-card.q-dark {
     background-color: rgba(0, 0, 0, 0.9);
   }
+
   .message-input {
     float: right;
     margin-right: 8px;
