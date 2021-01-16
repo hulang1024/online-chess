@@ -18,7 +18,7 @@
             :size="$q.screen.xs ? '80px' : '100px'"
             class="shadow-5"
           />
-          <div class="nickname">{{ user.nickname }}</div>
+          <div class="nickname text-h5">{{ user.nickname }}</div>
         </div>
         <div
           v-if="user.id > 0 && user.userStats"
@@ -194,8 +194,6 @@ export default defineComponent({
 <style lang="sass" scoped>
 .nickname
   padding-top: 8px
-  font-size: 1.3em
-  font-weight: bolder
 
 .other-info
   label
