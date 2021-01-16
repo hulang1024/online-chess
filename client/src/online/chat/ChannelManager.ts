@@ -248,6 +248,7 @@ export default class ChannelManager {
       channel.id = <number>id;
       channel.type = ChannelType.PUBLIC;
       channel.name = <string>name;
+      this.getChannel(channel, true);
       this.joinChannel(channel);
     });
 
