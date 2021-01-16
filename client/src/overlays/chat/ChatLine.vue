@@ -1,17 +1,18 @@
 <template>
-  <div class="row">
+  <div class="row" :class="{small}">
     <div class="time">
       {{ timeText }}
     </div>
     <div
       class="nickname ellipsis"
+      :class="{'right-align': rightAlign}"
       :style="{color: nicknameColor}"
       @click="onNicknameClick"
     >
       {{ nickname }}
     </div>
     <div
-      class="colon"
+      class="content-colon"
       :style="{color: nicknameColor}"
     >
       <span>:</span>
@@ -36,6 +37,14 @@ export default defineComponent({
       type: Object as PropType<Message>,
       require: true,
     },
+    rightAlign: {
+      type: Boolean,
+      default: true
+    },
+    small: {
+      type: Boolean,
+      default: false
+    }
   },
   inject: ['showUserDetails'],
   setup(props) {
@@ -84,6 +93,9 @@ export default defineComponent({
   line-height: 20px;
   font-size: 1.1em;
 }
+.row.small > div {
+  font-size: 1em;
+}
 
 @media (max-width: $breakpoint-xs-max) {
   .row > div {
@@ -92,8 +104,8 @@ export default defineComponent({
   .nickname {
     width: 94px !important;
   }
-  .content {
-    padding-left: 4px !important;
+  .content-colon {
+    padding-right: 4px !important;
   }
 }
 
@@ -104,20 +116,22 @@ export default defineComponent({
 }
 
 .row > .nickname {
-  width: 110px;
-  text-align: right;
   font-weight: 600;
   user-select: none;
+}
+.row > .nickname.right-align {
+  width: 110px;
+  text-align: right;
+}
+.row > .nickname:not(.right-align) {
+  padding-left: 4px;
 }
 .row > .nickname:hover {
   opacity: 0.6;
 }
 
-.row > .colon {
+.row > .content-colon {
+  padding-right: 12px;
   font-weight: 600;
-}
-
-.row > .content {
-  padding-left: 12px;
 }
 </style>

@@ -7,14 +7,15 @@
       borderRadius: '6px',
       backgroundColor: '#eee',
       width: '6px',
-      opacity: 0.6
+      opacity: 0.8
     }"
-    style="height: 100%; width: 100%;"
+    class="channel"
   >
     <chat-line
       v-for="msg in messages"
       :key="msg.id"
       :message="msg"
+      v-bind="chatLineProps"
     />
   </q-scroll-area>
 </template>
@@ -34,6 +35,7 @@ export default defineComponent({
       type: Object as PropType<Channel>,
       require: true,
     },
+    chatLineProps: Object
   },
   setup(props) {
     const ctx = getCurrentInstance() as Vue;
@@ -71,3 +73,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="sass" scoped>
+.channel
+  width: 100%
+  height: 100%
+</style>
