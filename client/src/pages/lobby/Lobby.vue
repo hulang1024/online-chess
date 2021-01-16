@@ -10,7 +10,7 @@
         @click="onCreateRoomClick"
       />
       <q-btn
-        color="green"
+        color="light-green"
         label="快速加入"
         unelevated
         class="col float-right q-mt-sm"

@@ -70,12 +70,15 @@
           <q-btn
             label="创建"
             color="primary"
+            unelevated
             class="full-width"
             :loading="createLoading"
             @click="onSubmit"
           />
           <q-btn
             label="取消"
+            unelevated
+            outline
             class="full-width"
             @click="isOpen = false"
           />

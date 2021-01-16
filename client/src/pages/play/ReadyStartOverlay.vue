@@ -6,7 +6,6 @@
     <q-btn
       :label="label"
       :color="color"
-      style="width: 100px"
       @click="onReadyStart"
     />
   </div>
@@ -72,4 +71,10 @@ export default defineComponent({
 .ready-start
   width: 100%
   background-color: rgba(0, 0, 0, 0.2)
+
+  .q-btn
+    width: 100px
+    font-weight: bold
+    letter-spacing: 1px
+
 </style>

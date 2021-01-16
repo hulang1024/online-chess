@@ -84,10 +84,14 @@ export default defineComponent({
 <style lang="sass" scoped>
 .user-avatar
   transition: all 0.2s ease-out
+  user-select: none
 
   &.offline
     opacity: 0.2
 
   &.clickable
     cursor: pointer
+
+  &.clickable:active
+    box-shadow: none
 </style>

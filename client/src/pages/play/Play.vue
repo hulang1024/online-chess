@@ -255,7 +255,7 @@ export default defineComponent({
       const pageEl = ctx.$el as HTMLElement;
       const container = (ctx.$refs.playerContainer as Vue).$el as HTMLDivElement;
       const recalcChessboardSize = () => {
-        const CONTROLS_WIDTH = 212 + 8;
+        const CONTROLS_WIDTH = 214 + 8;
         const width = (pageEl?.offsetWidth || 0);
         return isXSScreen ? width : width - CONTROLS_WIDTH;
       };

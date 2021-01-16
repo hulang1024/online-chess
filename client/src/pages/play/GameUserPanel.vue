@@ -12,7 +12,7 @@
     >
       <circle-timer
         ref="circleStepTimer"
-        size="64px"
+        size="66px"
         class="user-avatar-frame"
         :color="color"
       >
@@ -20,7 +20,7 @@
           :user="user"
           :online="online"
           class=""
-          :class="[{afk: user && (status == UserStatus.AFK), 'shadow-2': !!user}]"
+          :class="[{afk: user && (status == UserStatus.AFK), 'shadow-1': !!user}]"
           size="60px"
           @click="onUserAvatarClick"
         />
@@ -103,7 +103,7 @@ export default defineComponent({
 
 <style lang="sass" scoped>
 .game-user-panel
-  width: 192px
+  width: 194px
   background: transparent
 
 .nickname

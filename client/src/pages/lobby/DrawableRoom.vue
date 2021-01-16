@@ -153,4 +153,7 @@ export default defineComponent({
 <style lang="sass" scoped>
 .q-card
   width: 320px
+
+  &:active
+    box-shadow: none
 </style>
