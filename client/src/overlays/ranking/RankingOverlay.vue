@@ -55,12 +55,17 @@
               #{{ props.row.rank }}
             </q-td>
             <q-td key="avatarUrl" :props="props" class="avatar">
-              <user-avatar :user="props.row" size="30px" />
+              <user-avatar
+                :user="props.row"
+                size="30px"
+                @click="onUserClick(props.row)"
+              />
             </q-td>
             <q-td
               key="nickname" :props="props"
               class="nickname ellipsis"
               :title="props.row.nickname"
+              @click="onUserClick(props.row)"
             >
               {{ props.row.nickname }}
             </q-td>
@@ -94,7 +99,7 @@
 
 <script lang="ts">
 import {
-  defineComponent, ref, watch,
+  defineComponent, getCurrentInstance, ref, watch,
 } from '@vue/composition-api';
 import GetRankingRequest from 'src/online/ranking/GetRankingRequest';
 import SearchUserInfo from 'src/online/user/SearchUserInfo';
@@ -102,10 +107,13 @@ import { api } from 'src/boot/main';
 import SearchRankingParams from 'src/online/ranking/SearchRankingParams';
 import APIPageResponse from 'src/online/api/APIPageResponse';
 import UserAvatar from 'src/user/components/UserAvatar.vue';
+import User from 'src/user/User';
 
 export default defineComponent({
   components: { UserAvatar },
+  inject: ['showUserDetails'],
   setup() {
+    const context = getCurrentInstance() as Vue;
     const isOpen = ref(false);
     const activeTab = ref(1);
     const loading = ref(true);
@@ -165,6 +173,11 @@ export default defineComponent({
       queryRankingUsers();
     });
 
+    const onUserClick = (u: User) => {
+      // eslint-disable-next-line
+      (context as any).showUserDetails(u);
+    };
+
     return {
       isOpen,
       toggle,
@@ -175,6 +188,8 @@ export default defineComponent({
       loading,
       columns,
       users,
+
+      onUserClick,
     };
   },
 });
@@ -213,6 +228,8 @@ export default defineComponent({
           padding-left: 0px;
           max-width: 90px;
           color: $primary;
+          user-select: none;
+          cursor: pointer;
         }
 
         .count {
