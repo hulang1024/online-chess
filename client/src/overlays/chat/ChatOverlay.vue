@@ -56,6 +56,8 @@
           class="btn-send"
           color="primary"
           rounded
+          dense
+          unelevated
           padding="sm"
           label="发送"
           @click="onSend"
