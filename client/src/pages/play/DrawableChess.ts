@@ -37,7 +37,7 @@ export default class DrawableChess implements Chess {
   private load() {
     const el = document.createElement('div');
     this._el = el;
-    el.className = 'chess shadow-3';
+    el.className = 'chess shadow-2';
     el.style.position = 'absolute';
     el.style.display = 'flex';
     el.style.justifyContent = 'center';
