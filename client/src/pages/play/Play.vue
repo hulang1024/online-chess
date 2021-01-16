@@ -261,10 +261,11 @@ export default defineComponent({
       const container = (ctx.$refs.playerContainer as Vue).$el as HTMLDivElement;
       const recalcChessboardSize = () => {
         const width = (pageEl?.offsetWidth || 0);
-        const height = parseInt(pageEl?.style.minHeight) - 74 || 0;
+        const height = parseInt(pageEl?.style.minHeight, 10) - 74 || 0;
         return {
-          width: isXSScreen ? width : width - ctx.$refs.controls.offsetWidth + 8,
-          height
+          // eslint-disable-next-line
+          width: isXSScreen ? width : width - (ctx.$refs.controls as any).offsetWidth + 8,
+          height,
         };
       };
       const chessboard = new DrawableChessboard(recalcChessboardSize(), ctx.$q.screen);

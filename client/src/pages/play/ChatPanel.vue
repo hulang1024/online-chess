@@ -29,7 +29,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance, onMounted, onUnmounted, PropType, Ref, ref } from '@vue/composition-api'
+import {
+  defineComponent, getCurrentInstance, onMounted, ref,
+} from '@vue/composition-api'
 import { channelManager } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
 import * as ChatEvents from 'src/online/ws/events/chat';
@@ -37,11 +39,13 @@ import DrawableChannel from 'src/overlays/chat/DrawableChannel.vue';
 
 export default defineComponent({
   components: { DrawableChannel },
-  setup(props) {
+  setup() {
     const context = getCurrentInstance() as Vue;
+    // eslint-disable-next-line
+    const notify = context.$q.notify;
     const messageText = ref('');
     const inputEnabled = ref(true);
-    const channel = ref<Channel>(null);
+    const channel = ref<Channel | null>(null);
     const channelHeight = ref<number>(0);
 
     onMounted(() => {
@@ -51,7 +55,7 @@ export default defineComponent({
     ChatEvents.wordsEnabled.add((msg: ChatEvents.WordsEnableMsg) => {
       inputEnabled.value = msg.enabled;
     });
-    
+
     const loadChannel = (ch: Channel) => {
       channel.value = ch;
     };

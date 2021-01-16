@@ -39,12 +39,12 @@ export default defineComponent({
     },
     rightAlign: {
       type: Boolean,
-      default: true
+      default: true,
     },
     small: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   inject: ['showUserDetails'],
   setup(props) {

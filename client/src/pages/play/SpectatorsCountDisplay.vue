@@ -16,8 +16,8 @@ export default defineComponent({
     count: Number,
     showAlways: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
 })
 </script>

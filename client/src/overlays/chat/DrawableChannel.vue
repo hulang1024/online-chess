@@ -35,7 +35,7 @@ export default defineComponent({
       type: Object as PropType<Channel>,
       require: true,
     },
-    chatLineProps: Object
+    chatLineProps: Object,
   },
   setup(props) {
     const ctx = getCurrentInstance() as Vue;
