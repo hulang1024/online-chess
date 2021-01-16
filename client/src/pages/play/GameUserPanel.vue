@@ -1,10 +1,7 @@
 <template>
   <q-card
     flat
-    :class="[
-      'game-user-panel',
-      `q-py-${$q.screen.name}`
-    ]"
+    class="game-user-panel"
   >
     <div
       class="row items-start"
@@ -109,7 +106,7 @@ export default defineComponent({
 .nickname
   width: 124px
   font-size: 1.1em
-  font-weight: 500
+  font-weight: bold
 
 .chess-host
   &::before

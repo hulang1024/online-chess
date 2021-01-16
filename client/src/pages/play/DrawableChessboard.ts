@@ -27,7 +27,7 @@ export default class DrawableChessboard implements Chessboard {
 
   private chessArray: Array<Array<DrawableChess | null>>;
 
-  constructor(stageWidth: number, screen: any) {
+  constructor(stage: {width: number, height: number}, screen: any) {
     // eslint-disable-next-line
     this.chessArray = new Array(10);
     for (let row = 0; row < 10; row++) {
@@ -39,10 +39,10 @@ export default class DrawableChessboard implements Chessboard {
       }
     }
 
-    this.load(stageWidth, screen);
+    this.load(stage, screen);
   }
 
-  private load(stageWidth: number, screen: any) {
+  private load(stage: {width: number, height: number}, screen: any) {
     const el = document.createElement('div');
     this._el = el;
     el.className = 'chessboard';
@@ -58,11 +58,11 @@ export default class DrawableChessboard implements Chessboard {
     this.canvas = canvas;
     el.appendChild(canvas);
 
-    this.resizeAndDraw(stageWidth, screen);
+    this.resizeAndDraw(stage, screen);
   }
 
-  public resizeAndDraw(stageWidth: number, screen: any) {
-    this.calcBounds(stageWidth, screen);
+  public resizeAndDraw(stage: {width: number, height: number}, screen: any) {
+    this.calcBounds(stage, screen);
 
     const el = this._el;
     const { width, height } = this.bounds.canvas;
@@ -157,6 +157,7 @@ export default class DrawableChessboard implements Chessboard {
     const { grid } = this.bounds;
 
     const pixelRatio = (() => {
+      // eslint-disable-next-line
       const ctx: any = context;
       // eslint-disable-next-line
       const backingStore = ctx.backingStorePixelRatio ||
@@ -268,12 +269,13 @@ export default class DrawableChessboard implements Chessboard {
     })();
   }
 
-  private calcBounds(stageWidth: number, screen: any) {
+  private calcBounds(stage: {width: number, height: number}, screen: any) {
     const MIN_WIDTH = 240;
     const MAX_WIDTH = 540;
 
     // 计算匹配屏幕的画布的宽度
-    let width = stageWidth - this.padding * 2;
+    const wide = Math.min(stage.width, stage.height);
+    let width = wide - this.padding * 2;
     if (width > MAX_WIDTH) {
       width = MAX_WIDTH;
     }
@@ -302,9 +304,9 @@ export default class DrawableChessboard implements Chessboard {
       grid: {
         x: gridMargin,
         y: gridMargin,
-        width: Math.round(gap * 8),
-        height: Math.round(gap * (5 - 1)),
-        gap: Math.round(gap),
+        width: Math.floor(gap * 8),
+        height: Math.floor(gap * (5 - 1)),
+        gap: Math.floor(gap),
       },
       chessRadius: Math.round(chessSize / 2),
     };

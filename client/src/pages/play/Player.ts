@@ -343,8 +343,8 @@ export default class Player implements Game {
     return new DrawableChess(chess, this.chessboard.bounds.chessRadius);
   }
 
-  public resize(stageWidth: number) {
-    this.chessboard.resizeAndDraw(stageWidth, this.screen);
+  public resize(stage: {width: number, height: number}) {
+    this.chessboard.resizeAndDraw(stage, this.screen);
     if (this.fromPosTargetDrawer?.getSavePos()) {
       this.fromPosTargetDrawer.draw(this.fromPosTargetDrawer.getSavePos());
     }

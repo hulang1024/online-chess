@@ -158,11 +158,12 @@ export default class GamePlay {
         this.otherChessHost.value = ChessHost.reverse(chessHost);
       });
 
-      if (this.gameState.value != GameState.READY) {
-        const channel = new Channel();
-        channel.id = this.room.channelId;
-        this.channelManager.joinChannel(channel);
-      }
+      let channel = new Channel();
+      channel.name = '#当前房间';
+      channel.id = this.room.channelId;
+      channel = this.channelManager.joinChannel(channel);
+      // eslint-disable-next-line
+      ($refs.chatPanel as any).loadChannel(channel);
 
       if (this.gameState.value == GameState.PAUSE) {
         this.showText('游戏暂停中，等待对手回来继续');

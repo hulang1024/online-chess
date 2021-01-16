@@ -22,6 +22,7 @@ import UserStatus from "src/user/UserStatus";
 import Player from "./Player";
 import Timer from "./timer/Timer";
 import CircleTimer from "./timer/CircleTimer";
+import Channel from "src/online/chat/Channel";
 
 export default class Spectate {
   public gameState = new Bindable<GameState>(GameState.READY);
@@ -128,6 +129,11 @@ export default class Spectate {
       this.initTimers(spectateResponse);
 
       this.gameState.addAndRunOnce(this.onGameStateChanged, this);
+
+      const channel = new Channel();
+      channel.id = this.room.channelId;
+      // eslint-disable-next-line
+      ($refs.chatPanel as any).loadChannel( this.channelManager.joinChannel(channel) );
     });
 
     onBeforeUnmount(() => {

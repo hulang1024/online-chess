@@ -1,5 +1,5 @@
 <template>
-  <q-page :class="[!isXSScreen && 'row items-center q-px-sm q-py-sm']">
+  <q-page :class="[!isXSScreen && 'row items-center q-pl-sm']">
     <template v-if="isXSScreen">
       <div>
         <game-user-panel
@@ -9,7 +9,7 @@
           :status="otherUserStatus"
           :chess-host="otherChessHost"
           :active="activeChessHost == otherChessHost"
-          class="q-py-sm q-ml-xs"
+          class="q-mt-xs q-ml-xs"
         />
         <div class="row absolute-top-right q-mt-sm q-mr-sm">
           <spectators-count-display
@@ -97,7 +97,7 @@
           :chess-host="chessHost"
           :active="activeChessHost == chessHost"
           reverse
-          class="fixed-bottom-right q-mr-xs"
+          class="fixed-bottom-right q-mr-xs q-mb-xs"
         />
       </div>
     </template>
@@ -117,15 +117,16 @@
         />
         <result-dialog ref="resultDialog" />
       </player-container>
-      <div class="controls">
+      <div ref="controls" class="controls">
         <spectators-count-display
+          show-always
           :count="spectatorCount"
-          class="q-mb-sm"
+          class="q-mb-xs"
           style="text-align: right"
         />
         <q-card
           flat
-          class="q-mb-sm q-px-sm q-py-sm"
+          class="q-mb-xs q-px-sm q-py-sm"
         >
           <game-user-panel
             ref="otherGameUserPanel"
@@ -135,7 +136,7 @@
             :chess-host="otherChessHost"
             :active="activeChessHost == otherChessHost"
           />
-          <q-separator />
+          <q-separator class="q-my-sm" />
           <game-user-panel
             ref="gameUserPanel"
             :user="user"
@@ -146,7 +147,7 @@
         </q-card>
         <q-card
           flat
-          class="q-px-sm q-py-sm"
+          class="q-mb-xs q-px-xs q-py-sm"
         >
           <div class="flex justify-center q-gutter-sm">
             <q-btn
@@ -179,6 +180,8 @@
             />
           </div>
         </q-card>
+
+        <chat-panel ref="chatPanel" />
       </div>
     </template>
   </q-page>
@@ -205,6 +208,7 @@ import ResultDialog from './ResultDialog.vue';
 import TextOverlay from './TextOverlay.vue';
 import GamePlay from './Play';
 import Player from './Player';
+import ChatPanel from './ChatPanel.vue';
 
 export default defineComponent({
   components: {
@@ -214,6 +218,7 @@ export default defineComponent({
     ReadyStartOverlay,
     ResultDialog,
     TextOverlay,
+    ChatPanel,
   },
   inject: ['reload'],
   watch: {
@@ -255,9 +260,12 @@ export default defineComponent({
       const pageEl = ctx.$el as HTMLElement;
       const container = (ctx.$refs.playerContainer as Vue).$el as HTMLDivElement;
       const recalcChessboardSize = () => {
-        const CONTROLS_WIDTH = 214 + 8;
         const width = (pageEl?.offsetWidth || 0);
-        return isXSScreen ? width : width - CONTROLS_WIDTH;
+        const height = parseInt(pageEl?.style.minHeight) - 74 || 0;
+        return {
+          width: isXSScreen ? width : width - ctx.$refs.controls.offsetWidth + 8,
+          height
+        };
       };
       const chessboard = new DrawableChessboard(recalcChessboardSize(), ctx.$q.screen);
       // eslint-disable-next-line
@@ -312,5 +320,12 @@ export default defineComponent({
 .q-page
   flex-wrap: nowrap
 .controls
-  width: 212px
+  padding: 8px
+  width: 310px
+  display: flex
+  flex-direction: column
+  min-height: inherit
+
+  .chat-panel
+    flex-grow: 1
 </style>

@@ -9,6 +9,7 @@
 <style lang="sass" scoped>
 .player
   flex-grow: 1
+  padding: 8px 0px
 </style>
 
 <script lang="ts">

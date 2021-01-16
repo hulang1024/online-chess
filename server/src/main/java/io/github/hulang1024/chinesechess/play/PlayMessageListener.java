@@ -1,5 +1,7 @@
 package io.github.hulang1024.chinesechess.play;
 
+import io.github.hulang1024.chinesechess.chat.ChannelManager;
+import io.github.hulang1024.chinesechess.chat.InfoMessage;
 import io.github.hulang1024.chinesechess.play.rule.ChessboardState;
 import io.github.hulang1024.chinesechess.play.rule.ConfirmRequestType;
 import io.github.hulang1024.chinesechess.play.rule.GameResult;
@@ -30,6 +32,8 @@ public class PlayMessageListener extends AbstractMessageListener {
     private SpectatorManager spectatorManager;
     @Autowired
     private UserStatsService userStatsService;
+    @Autowired
+    private ChannelManager channelManager;
 
     @Override
     public void init() {
@@ -114,7 +118,7 @@ public class PlayMessageListener extends AbstractMessageListener {
 
         chessboardState.moveChess(
             chessMoveMsg.getFromPos(), chessMoveMsg.getToPos(), room.getChessHost(user));
-        
+
         room.getGame().turnActiveChessHost();
 
         ChessMoveServerMsg result = new ChessMoveServerMsg();
@@ -155,7 +159,8 @@ public class PlayMessageListener extends AbstractMessageListener {
 
         if (confirmResponseMsg.isOk()) {
             if (confirmResponseMsg.getReqType() == ConfirmRequestType.WHITE_FLAG.code()) {
-                //todo something
+                User reqUser = room.getOtherUser(user);
+                channelManager.broadcast(room.getChannel(), new InfoMessage(reqUser.getNickname() + " 认输"));
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.DRAW.code()) {
                 //todo something
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.WITHDRAW.code()) {
@@ -201,7 +206,7 @@ public class PlayMessageListener extends AbstractMessageListener {
 
         roomManager.broadcast(room, new GameStartServerMsg(room.getRedChessUser(), room.getBlackChessUser()));
         userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
-
+        channelManager.broadcast(room.getChannel(), new InfoMessage("对局开始"));
     }
 
     private void onGameContinue(GameContinueMsg clientMsg) {
@@ -259,11 +264,13 @@ public class PlayMessageListener extends AbstractMessageListener {
 
         room.updateUserReadyState(room.getOtherUser(room.getOwner()), false);
 
+
+        User winUser = null;
         if (msg.getWinUserId() != null) {
             Optional<User> winUserOpt = room.getUsers().stream()
                 .filter(user -> user.getId().equals(msg.getWinUserId()))
                 .findAny();
-            User winUser = winUserOpt.get();
+            winUser = winUserOpt.get();
             User loseUser = room.getOtherUser(winUser);
             userStatsService.updateUser(winUser, GameResult.WIN);
             userStatsService.updateUser(loseUser, GameResult.LOSE);
@@ -277,5 +284,9 @@ public class PlayMessageListener extends AbstractMessageListener {
         room.getUsers().forEach(user -> {
             userActivityService.enter(user, UserActivity.IN_ROOM);
         });
+        channelManager.broadcast(room.getChannel(),
+            new InfoMessage(winUser == null
+                ? "平局"
+                : winUser.getNickname() + " 胜"));
     }
 }
