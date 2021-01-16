@@ -181,10 +181,15 @@ export default class DrawableChessboard implements Chessboard {
     context.scale(pixelRatio, pixelRatio);
 
     /// 画棋盘网格
-    const strokeLine = (x1: number, y1: number, x2: number, y2: number, color?: string) => {
+    const strokeLine = (
+      x1: number, y1: number,
+      x2: number, y2: number,
+      color?: string,
+      lineWidth?: number,
+    ) => {
       context.beginPath();
       // eslint-disable-next-line
-      context.lineWidth = screen.xs ? 1 : 2;
+      context.lineWidth = lineWidth || (screen.xs ? 1 : 2);
       context.moveTo(x1, y1);
       context.lineTo(x2, y2);
       context.closePath();
@@ -220,6 +225,47 @@ export default class DrawableChessboard implements Chessboard {
       const baseY = grid.y + grid.height;
       strokeLine(x, baseY, x, baseY + grid.gap);
     }
+
+    // 画十字
+    (() => {
+      /**
+       * 画一个十字
+       * @param cx 中心点x
+       * @param cy 中心点y
+       * @param indexs 十字图形索引，0到3分别表示左上,右上,右下,左下
+       */
+      const drawCross = (cx: number, cy: number, indexs: number[] = [0, 1, 2, 3]) => {
+        // eslint-disable-next-line
+        const m = screen.xs ? 2 : 4; // 距离中心点
+        const l = 4; // 十字长度
+        const dt = [[-1, -1], [+1, -1], [+1, +1], [-1, +1]];
+        indexs.forEach((i) => {
+          const [xf, yf] = dt[i];
+          const x = cx + m * xf;
+          const y = cy + m * yf;
+          // eslint-disable-next-line
+          const lineWidth = screen.xs ? 1 : 1.5;
+          strokeLine(x, y, x + l * xf, y, undefined, lineWidth);
+          strokeLine(x, y, x, y + l * yf, undefined, lineWidth);
+        });
+      };
+      const drawCrossAt = (row: number, col: number, indexs?: number[]) => {
+        drawCross(grid.x + grid.gap * col, grid.y + grid.gap * row, indexs);
+      };
+
+      drawCrossAt(2, 1);
+      drawCrossAt(2, 7);
+      drawCrossAt(7, 1);
+      drawCrossAt(7, 7);
+      for (let p = 0; p < 2; p++) {
+        const row = 3 + p * 3;
+        drawCrossAt(row, 0, [1, 2]);
+        drawCrossAt(row, 2);
+        drawCrossAt(row, 4);
+        drawCrossAt(row, 6);
+        drawCrossAt(row, 8, [0, 3]);
+      }
+    })();
   }
 
   private calcBounds(stageWidth: number, screen: any) {
