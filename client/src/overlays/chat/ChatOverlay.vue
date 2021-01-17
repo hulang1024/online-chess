@@ -4,7 +4,7 @@
     position="bottom"
     full-width
     maximized
-    seamless
+    :seamless="seamless"
     class="z-top"
     content-class="chat-overlay"
   >
@@ -92,6 +92,7 @@ export default defineComponent({
     const channels = ref<Channel[]>([]);
     const messageText = ref('');
     const inputEnabled = ref(true);
+    const seamless = ref(true);
 
     const getChannelTabName = (channel: Channel) => (
       channel.type == ChannelType.PM
@@ -122,6 +123,9 @@ export default defineComponent({
               channelManager.openPrivateChannel(last.sender);
             }
           } else if (channel.type == ChannelType.ROOM && ctx.$q.screen.xs) {
+            // 解决当弹出窗口之后，当棋盘已有选中棋子点击棋盘误触移动的问题
+            seamless.value = false;
+
             isOpen.value = true;
             channelManager.openChannel(channel.id);
           }
@@ -167,6 +171,9 @@ export default defineComponent({
 
     const hide = () => {
       isOpen.value = false;
+      ctx.$nextTick(() => {
+        seamless.value = true;
+      });
     };
 
     const onSend = () => {
@@ -200,6 +207,7 @@ export default defineComponent({
       channels,
       messageText,
       inputEnabled,
+      seamless,
       onSend,
     };
   },
