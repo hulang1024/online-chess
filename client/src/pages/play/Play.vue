@@ -260,8 +260,8 @@ export default defineComponent({
       const pageEl = ctx.$el as HTMLElement;
       const container = (ctx.$refs.playerContainer as Vue).$el as HTMLDivElement;
       const recalcChessboardSize = () => {
-        const width = (pageEl?.offsetWidth || 0);
-        const height = parseInt(pageEl?.style.minHeight, 10) - 74 || 0;
+        const width = pageEl?.offsetWidth || 0;
+        const height = (pageEl?.parentElement?.offsetHeight || 0) - 40 - 16 || 0;
         return {
           // eslint-disable-next-line
           width: isXSScreen ? width : width - (ctx.$refs.controls as any).offsetWidth + 8,
@@ -277,6 +277,9 @@ export default defineComponent({
       gamePlay.playerLoaded.dispatch();
 
       window.addEventListener('resize', onReisze = () => {
+        if (isXSScreen) {
+          return;
+        }
         gamePlay.player.resize(recalcChessboardSize());
       });
     });
