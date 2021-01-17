@@ -115,20 +115,25 @@ export default defineComponent({
       channels.value.push(channel);
       channel.newMessagesArrived.add((messages: Message[]) => {
         const last = messages[messages.length - 1];
-        if (last.sender.id != 0) {
-          if (channel.type == ChannelType.PM) {
-            // todo: 暂时不支持回显，而是绕一圈，这里判断不是自己
-            if (last.sender.id != api.localUser.id) {
-              isOpen.value = true;
-              channelManager.openPrivateChannel(last.sender);
-            }
-          } else if (channel.type == ChannelType.ROOM && ctx.$q.screen.xs) {
-            // 解决当弹出窗口之后，当棋盘已有选中棋子点击棋盘误触移动的问题
-            seamless.value = false;
+        if (last.sender.id <= 0) {
+          return;
+        }
+        // 解决当弹出窗口之后，当棋盘已有选中棋子点击棋盘误触移动的问题
+        // 不是自己发的，并且游戏中
+        if (last.sender.id != api.localUser.id && ctx.$router.currentRoute.name == 'play') {
+          // 使用遮罩
+          seamless.value = false;
+        }
 
+        if (channel.type == ChannelType.PM) {
+          // todo: 暂时不支持回显，而是绕一圈，这里判断不是自己
+          if (last.sender.id != api.localUser.id) {
             isOpen.value = true;
-            channelManager.openChannel(channel.id);
+            channelManager.openPrivateChannel(last.sender);
           }
+        } else if (channel.type == ChannelType.ROOM && ctx.$q.screen.xs) {
+          isOpen.value = true;
+          channelManager.openChannel(channel.id);
         }
       });
     });
@@ -162,18 +167,19 @@ export default defineComponent({
     channelManager.addInfoMessage(1, new InfoMessage('欢迎来到在线象棋'));
 
     const toggle = () => {
+      if (!isOpen.value) {
+        seamless.value = true;
+      }
       isOpen.value = !isOpen.value;
     };
 
     const show = () => {
+      seamless.value = true;
       isOpen.value = true;
     };
 
     const hide = () => {
       isOpen.value = false;
-      ctx.$nextTick(() => {
-        seamless.value = true;
-      });
     };
 
     const onSend = () => {
