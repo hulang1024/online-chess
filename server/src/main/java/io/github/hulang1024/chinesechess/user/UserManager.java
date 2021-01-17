@@ -73,6 +73,24 @@ public class UserManager {
         return deviceInfo != null ? deviceInfo : UserDeviceInfo.NULL;
     }
 
+    public UserStatus getUserStatus(User user, boolean isOnline) {
+        UserStatus userStatus;
+        if (isOnline) {
+            userStatus = userActivityService.activityToStatus(
+                userActivityService.getCurrentStatus(user, false));
+            if (userStatus == null) {
+                userStatus = UserStatus.ONLINE;
+            }
+        } else {
+            userStatus = UserStatus.OFFLINE;
+        }
+        return userStatus;
+    }
+
+    public UserStatus getUserStatus(User user) {
+        return getUserStatus(user, isOnline(user.getId()));
+    }
+
     public User getDatabaseUser(long id) {
         return userDao.selectById(id);
     }
@@ -109,17 +127,7 @@ public class UserManager {
             }
 
             user.setIsOnline(isOnline(user.getId()));
-
-            if (user.getIsOnline()) {
-                user.setStatus(userActivityService.activityToStatus(
-                    userActivityService.getCurrentStatus(user, false)));
-                if (user.getStatus() == null) {
-                    user.setStatus(UserStatus.ONLINE);
-                }
-            } else {
-                user.setStatus(UserStatus.OFFLINE);
-            }
-
+            user.setStatus(getUserStatus(user, user.getIsOnline()));
             user.setUserDeviceInfo(getUserDeviceInfo(user));
         });
 
@@ -220,7 +228,8 @@ public class UserManager {
                         .collect(Collectors.joining(""));
                     guestUser.setId(-Long.parseLong(hexString, 16));
                 }
-            } catch (Exception e) {
+            } catch (Exception e) { }
+            if (hexString == null) {
                 hexString = Long.toHexString(Math.abs(guestUser.getId()));
             }
             guestUser.setNickname("游客" + hexString);
