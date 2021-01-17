@@ -163,7 +163,7 @@ export default class GamePlay {
       channel.id = this.room.channelId;
       channel = this.channelManager.joinChannel(channel);
       // eslint-disable-next-line
-      ($refs.chatPanel as any).loadChannel(channel);
+      ($refs.chatPanel as any)?.loadChannel(channel);
 
       if (this.gameState.value == GameState.PAUSE) {
         this.showText('游戏暂停中，等待对手回来继续');

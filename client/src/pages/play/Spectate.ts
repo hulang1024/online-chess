@@ -133,7 +133,7 @@ export default class Spectate {
       const channel = new Channel();
       channel.id = this.room.channelId;
       // eslint-disable-next-line
-      ($refs.chatPanel as any).loadChannel( this.channelManager.joinChannel(channel) );
+      ($refs.chatPanel as any)?.loadChannel( this.channelManager.joinChannel(channel) );
     });
 
     onBeforeUnmount(() => {
