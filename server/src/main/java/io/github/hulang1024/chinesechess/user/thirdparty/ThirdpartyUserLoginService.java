@@ -4,11 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.github.hulang1024.chinesechess.user.avatar.AvatarFileService;
 import io.github.hulang1024.chinesechess.user.*;
 import io.github.hulang1024.chinesechess.user.thirdparty.github.api.responses.GitHubUser;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class ThirdpartyUserLoginService {
     @Autowired
     private UserDao userDao;
@@ -47,6 +49,7 @@ public class ThirdpartyUserLoginService {
                 // 登录
                 result = userManager.login(ret.getUser(), TOKEN_EXPIRES_IN_SECONDS);
             } else {
+                log.info("RegisterResult code = {}", ret.getCode());
                 result = LoginResult.fail(3);
             }
         }

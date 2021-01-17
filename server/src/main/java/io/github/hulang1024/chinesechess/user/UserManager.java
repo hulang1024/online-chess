@@ -200,6 +200,7 @@ public class UserManager {
                 return RegisterResult.fail(1);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return RegisterResult.fail(2);
         }
 

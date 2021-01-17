@@ -5,6 +5,7 @@ import io.github.hulang1024.chinesechess.user.LoginResult;
 import io.github.hulang1024.chinesechess.user.thirdparty.ThirdpartyUserLoginService;
 import io.github.hulang1024.chinesechess.user.thirdparty.github.api.requests.GetUserRequest;
 import io.github.hulang1024.chinesechess.user.thirdparty.github.api.responses.GitHubUser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ import java.io.IOException;
 @GuestAPI
 @Controller
 @RequestMapping("/oauth_callback/github")
+@Slf4j
 public class GitHubOAuthCallbackController {
     @Autowired
     @Qualifier("github-api-access")
@@ -47,6 +49,10 @@ public class GitHubOAuthCallbackController {
             req.onSuccess = (GitHubUser githubUser) -> {
                 LoginResult result = thirdpartyUserLoginService.login(githubUser);
                 try {
+                    if (!result.isOk()) {
+                        log.info("LoginResult code = {}", result.getCode());
+                        return;
+                    }
                     response.sendRedirect(appUrl
                         + "#/?status=0&token=" + result.getAccessToken().getAccessToken());
                 } catch (Exception e) { e.printStackTrace(); }
