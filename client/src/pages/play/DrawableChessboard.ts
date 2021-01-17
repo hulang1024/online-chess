@@ -181,8 +181,8 @@ export default class DrawableChessboard implements Chessboard {
     canvas.height = canvasBounds.height * pixelRatio;
     context.scale(pixelRatio, pixelRatio);
 
-    /// 画棋盘网格
-    const strokeLine = (
+    /// 画棋盘网格线
+    const drawLine = (
       x1: number, y1: number,
       x2: number, y2: number,
       color?: string,
@@ -191,41 +191,47 @@ export default class DrawableChessboard implements Chessboard {
       context.beginPath();
       // eslint-disable-next-line
       context.lineWidth = lineWidth || (screen.xs ? 1 : 2);
-      context.moveTo(x1, y1);
-      context.lineTo(x2, y2);
+      context.moveTo(grid.x + x1, grid.y + y1);
+      context.lineTo(grid.x + x2, grid.y + y2);
       context.closePath();
       context.strokeStyle = color || '#946830';
       context.stroke();
     };
 
-    // 画内部格子
-    for (let p = 0; p < 2; p++) {
-      // 画横线
-      for (let row = 0; row <= 5; row++) {
-        const y = p * grid.height + grid.y + row * grid.gap;
-        strokeLine(grid.x, y, grid.x + grid.width, y);
-      }
+    const drawXLine = (baseRow: number, startCol: number, endCol: number) => {
+      const y = baseRow * grid.gap;
+      const startX = startCol * grid.gap;
+      const endX = endCol * grid.gap;
+      drawLine(startX, y, endX, y);
+    };
 
-      // 画竖线
-      for (let col = 0; col < 9; col++) {
-        const x = grid.x + col * grid.gap;
-        const baseY = p * grid.height + p * grid.gap;
-        strokeLine(x, baseY + grid.y, x, baseY + grid.y + grid.height);
-      }
+    const drawYLine = (baseCol: number, startRow: number, endRow: number) => {
+      const x = baseCol * grid.gap;
+      const startY = startRow * grid.gap;
+      const endY = endRow * grid.gap;
+      drawLine(x, startY, x, endY);
+    };
 
-      // 画中间九宫的斜线
-      const x1 = grid.x + 3 * grid.gap;
-      const x2 = grid.x + 5 * grid.gap;
-      const baseY = p * grid.height + p * 3 * grid.gap;
-      strokeLine(x1, baseY + grid.y, x2, baseY + grid.y + 2 * grid.gap);
-      strokeLine(x1, baseY + grid.y + 2 * grid.gap, x2, baseY + grid.y);
+    drawYLine(0, 0, 9);
+    drawYLine(8, 0, 9);
+    for (let col = 1; col < 8; col++) {
+      drawYLine(col, 0, 4);
+      drawYLine(col, 5, 9);
     }
-    // 画竖线
-    for (let s = 0; s < 2; s++) {
-      const x = grid.x + s * grid.gap * 8;
-      const baseY = grid.y + grid.height;
-      strokeLine(x, baseY, x, baseY + grid.gap);
+    for (let row = 0; row < 10; row++) {
+      drawXLine(row, 0, 8);
     }
+
+    // 画中间九宫的斜线
+    const drawXGraph = (row: number) => {
+      const x1 = 3 * grid.gap;
+      const x2 = 5 * grid.gap;
+      const baseY = grid.gap * row;
+      drawLine(x1, baseY, x2, baseY + 2 * grid.gap);
+      drawLine(x1, baseY + 2 * grid.gap, x2, baseY);
+    };
+    drawXGraph(0);
+    drawXGraph(7);
 
     // 画十字
     (() => {
@@ -246,12 +252,12 @@ export default class DrawableChessboard implements Chessboard {
           const y = cy + m * yf;
           // eslint-disable-next-line
           const lineWidth = screen.xs ? 1 : 1.5;
-          strokeLine(x, y, x + l * xf, y, undefined, lineWidth);
-          strokeLine(x, y, x, y + l * yf, undefined, lineWidth);
+          drawLine(x, y, x + l * xf, y, undefined, lineWidth);
+          drawLine(x, y, x, y + l * yf, undefined, lineWidth);
         });
       };
       const drawCrossAt = (row: number, col: number, indexs?: number[]) => {
-        drawCross(grid.x + grid.gap * col, grid.y + grid.gap * row, indexs);
+        drawCross(grid.gap * col, grid.gap * row, indexs);
       };
 
       drawCrossAt(2, 1);
@@ -270,31 +276,28 @@ export default class DrawableChessboard implements Chessboard {
   }
 
   private calcBounds(stage: {width: number, height: number}, screen: any) {
-    const MIN_WIDTH = 240;
-    const MAX_WIDTH = 540;
+    const MIN_SIZE = 240;
+    const MAX_SIZE = 800;
 
     // 计算匹配屏幕的画布的宽度
-    const wide = Math.min(stage.width, stage.height);
-    let width = wide - this.padding * 2;
-    if (width > MAX_WIDTH) {
-      width = MAX_WIDTH;
+    let narrow = Math.min(stage.width, stage.height);
+    narrow -= this.padding * 2;
+    if (narrow > MAX_SIZE) {
+      narrow = MAX_SIZE;
     }
-    if (width < MIN_WIDTH) {
-      width = MIN_WIDTH;
+    if (narrow < MIN_SIZE) {
+      narrow = MIN_SIZE;
     }
-
-    const canvasWidth = width;
 
     // 根据网格宽度计算交叉点之间的距离
-    const gap = canvasWidth / 9;
+    const gap = narrow / (stage.height < stage.width ? 10 : 9);
     // 棋子宽度稍小于交叉点距离
     // eslint-disable-next-line
     const chessSize = gap - (screen.xs ? 4 : 12);
-
-    const gridMargin = Math.round(gap / 2);// 最侧边的棋子需要占据半个位置
-
-    // 高度有相同的交叉点距离
-    const canvasHeight = Math.floor(gap * (10 - 1) + gridMargin * 2);
+    // 最侧边的棋子需要占据半个位置
+    const gridMargin = gap / 2;
+    const canvasWidth = Math.floor(gap * 8 + gridMargin * 2);
+    const canvasHeight = Math.floor(gap * 9 + gridMargin * 2);
 
     this._bounds = {
       canvas: {
@@ -302,11 +305,9 @@ export default class DrawableChessboard implements Chessboard {
         height: canvasHeight,
       },
       grid: {
-        x: gridMargin,
-        y: gridMargin,
-        width: Math.floor(gap * 8),
-        height: Math.floor(gap * (5 - 1)),
-        gap: Math.floor(gap),
+        x: Math.round(gridMargin),
+        y: Math.round(gridMargin),
+        gap: Math.round(gap),
       },
       chessRadius: Math.round(chessSize / 2),
     };
@@ -378,8 +379,6 @@ interface ChessboardBounds {
   grid: {
     x: number,
     y: number,
-    width: number,
-    height: number,
     gap: number
   },
   chessRadius: number,
