@@ -21,6 +21,7 @@ public class SearchUserInfo extends User {
         setId(user.getId());
         setNickname(user.getNickname());
         setAvatarUrl(user.getAvatarUrl());
+        setEmail(user.getEmail());
         setLastLoginTime(user.getLastLoginTime());
         setLastActiveTime(user.getLastActiveTime());
         setRegisterTime(user.getRegisterTime());
