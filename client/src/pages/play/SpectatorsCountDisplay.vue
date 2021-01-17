@@ -4,7 +4,7 @@
     flat
     class="q-px-sm q-py-sm"
   >
-    <label>旁观(<span class="text-subtitle1">{{ count }}</span>)</label>
+    <label>旁观(<span class="count" :class="{gtzero: count}">{{ count }}</span>)</label>
   </q-card>
 </template>
 
@@ -13,7 +13,10 @@ import { defineComponent } from '@vue/composition-api'
 
 export default defineComponent({
   props: {
-    count: Number,
+    count: {
+      type: Number,
+      default: 0,
+    },
     showAlways: {
       type: Boolean,
       default: false,
@@ -21,3 +24,9 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="sass" scoped>
+.count
+  &.gtzero
+    color: darkorange
+</style>
