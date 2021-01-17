@@ -199,6 +199,7 @@ export default class GamePlay {
       redChessUser, blackChessUser,
       redReadied, blackReadied,
       redOnline, blackOnline,
+      redUserStatus, blackUserStatus,
     } = this.room;
 
     this.gameTimer.setTotalSeconds(roomSettings.gameDuration);
@@ -219,6 +220,7 @@ export default class GamePlay {
       this.chessHost.value = ChessHost.RED;
       this.otherUser.value = blackChessUser;
       this.otherOnline.value = blackOnline;
+      this.otherUserStatus.value = blackUserStatus;
       this.otherReadied.value = blackReadied;
       this.gameTimer.ready(redTimer?.gameTime);
       this.stepTimer.ready(redTimer?.stepTime);
@@ -231,6 +233,7 @@ export default class GamePlay {
       this.chessHost.value = ChessHost.BLACK;
       this.otherUser.value = redChessUser;
       this.otherOnline.value = redOnline;
+      this.otherUserStatus.value = redUserStatus;
       this.otherReadied.value = redReadied;
       this.gameTimer.ready(blackTimer?.gameTime);
       this.stepTimer.ready(blackTimer?.stepTime);
@@ -490,8 +493,7 @@ export default class GamePlay {
   }
 
   private onUserStatusChangedEvent(msg: UserEvents.UserStatusChangedMsg) {
-    if (this.gameState.value == GameState.READY
-      || !(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
+    if (!(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
       return;
     }
     this.otherUserStatus.value = msg.status;

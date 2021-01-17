@@ -8,6 +8,7 @@ import io.github.hulang1024.chinesechess.play.GameState;
 import io.github.hulang1024.chinesechess.play.rule.ChessHost;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserManager;
+import io.github.hulang1024.chinesechess.user.UserStatus;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -212,17 +213,33 @@ public class Room {
     }
 
     public boolean getRedOnline() {
-        if (this.redChessUser != null) {
+        if (redChessUser != null) {
             return userManager.isOnline(redChessUser);
         }
         return false;
     }
 
     public boolean getBlackOnline() {
-        if (this.blackChessUser != null) {
+        if (blackChessUser != null) {
             return userManager.isOnline(blackChessUser);
         }
         return false;
+    }
+
+    public Integer getRedUserStatus() {
+        UserStatus userStatus = null;
+        if (redChessUser != null) {
+            userStatus = userManager.getUserStatus(redChessUser);
+        }
+        return userStatus != null ? userStatus.getCode() : null;
+    }
+
+    public Integer getBlackUserStatus() {
+        UserStatus userStatus = null;
+        if (blackChessUser != null) {
+            userStatus = userManager.getUserStatus(blackChessUser);
+        }
+        return userStatus != null ? userStatus.getCode() : null;
     }
 
     public int getSpectatorCount() {

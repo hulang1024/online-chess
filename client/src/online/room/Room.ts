@@ -37,5 +37,9 @@ export default class Room {
 
   blackOnline: boolean;
 
+  redUserStatus: number;
+
+  blackUserStatus: number;
+
   spectatorCount: number;
 }

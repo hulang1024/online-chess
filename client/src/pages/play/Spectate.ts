@@ -199,9 +199,11 @@ export default class Spectate {
 
     this.redUser.value = room.redChessUser;
     this.redOnline.value = room.redOnline;
+    this.redUserStatus.value = room.redUserStatus;
     this.redReadied.value = room.redReadied;
     this.blackUser.value = room.blackChessUser;
     this.blackOnline.value = room.blackOnline;
+    this.blackUserStatus.value = room.blackUserStatus;
     this.blackReadied.value = room.blackReadied;
 
     if (spectateResponse.targetUserId != null) {
