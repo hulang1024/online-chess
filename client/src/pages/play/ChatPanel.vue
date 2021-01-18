@@ -61,6 +61,9 @@ export default defineComponent({
     };
 
     const onSend = () => {
+      if (!channel.value) {
+        return;
+      }
       const text = messageText.value.trim();
       if (!text) {
         return;
@@ -71,9 +74,9 @@ export default defineComponent({
       }
 
       if (text[0] == '/' && text.length > 1) {
-        channelManager.postCommand(text);
+        channelManager.postCommand(text, channel.value as Channel);
       } else {
-        channelManager.postMessage(text);
+        channelManager.postMessage(text, false, channel.value as Channel);
       }
 
       messageText.value = '';

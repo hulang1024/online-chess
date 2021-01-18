@@ -156,8 +156,8 @@ export default class ChannelManager {
     }
   }
 
-  public postMessage(text: string, isAction = false) {
-    const target = this.currentChannel.value;
+  public postMessage(text: string, isAction = false, channel?: Channel) {
+    const target = channel || this.currentChannel.value;
 
     if (!this.api.isLoggedIn) {
       target.addNewMessages(new ErrorMessage('请先登录以参与聊天'));
@@ -202,8 +202,8 @@ export default class ChannelManager {
     this.api.queue(postMessagesRequest);
   }
 
-  public postCommand(text: string) {
-    const target = this.currentChannel.value;
+  public postCommand(text: string, channel?: Channel) {
+    const target = channel || this.currentChannel.value;
 
     if (target == null) {
       return;
@@ -219,7 +219,7 @@ export default class ChannelManager {
       case 'logout':
       case 'recall':
       case 'roll':
-        this.postMessage(text, true);
+        this.postMessage(text, true, channel);
         break;
       case 'help': {
         const helpText = '可用命令：摇骰子：/roll [最大点]';
@@ -232,7 +232,7 @@ export default class ChannelManager {
         }
         break;
       default:
-        this.postMessage(text);
+        this.postMessage(text, false, channel);
     }
   }
 
