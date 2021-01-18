@@ -1,5 +1,5 @@
 import { api, channelManager, socketService } from "src/boot/main";
-import APIAccess from "src/online/api/APIAccess";
+import APIAccess, { APIState } from "src/online/api/APIAccess";
 import ChannelManager from "src/online/chat/ChannelManager";
 import GameState from "src/online/play/GameState";
 import Room from "src/online/room/Room";
@@ -189,6 +189,12 @@ export default class Spectate {
     this.socketService.disconnect.add(this.disconnectHandler = () => {
       this.exitScreen();
     }, this);
+
+    api.state.changed.addOnce((state: APIState) => {
+      if (state == APIState.offline) {
+        this.exitScreen();
+      }
+    });
   }
 
   private loadState(spectateResponse: SpectateResponse) {
