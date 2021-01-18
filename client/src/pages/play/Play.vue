@@ -9,7 +9,7 @@
           :status="otherUserStatus"
           :chess-host="otherChessHost"
           :active="activeChessHost == otherChessHost"
-          class="q-mt-xs q-ml-xs"
+          class="q-pt-sm q-ml-sm"
         />
         <div class="row absolute-top-right q-mt-sm q-mr-sm">
           <spectators-count-display
@@ -97,7 +97,7 @@
           :chess-host="chessHost"
           :active="activeChessHost == chessHost"
           reverse
-          class="fixed-bottom-right q-mr-xs q-mb-xs"
+          class="fixed-bottom-right q-mr-sm q-mb-sm"
         />
       </div>
     </template>
