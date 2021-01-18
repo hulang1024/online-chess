@@ -75,9 +75,11 @@ import {
   defineComponent, getCurrentInstance, reactive, Ref, ref, toRefs, watch,
 } from '@vue/composition-api';
 import { api, configManager } from 'src/boot/main';
+import { githubOAuthUrl } from 'src/online/api/oauth';
 import { ConfigItem } from 'src/config/ConfigManager';
 import GuestUser from 'src/user/GuestUser';
 import User from 'src/user/User';
+import LogoutRequest from 'src/online/api/LogoutRequest';
 import CreateUserOverlay from './CreateUserOverlay.vue';
 
 export default defineComponent({
@@ -143,7 +145,18 @@ export default defineComponent({
 
     const onGitHubLoginClick = () => {
       isGitHubLogging.value = true;
-      window.location.href = 'https://github.com/login/oauth/authorize?client_id=5176faf64742ae0bfe84';
+      const callback = () => {
+        api.logout();
+        window.location.href = githubOAuthUrl;
+      };
+      if (!api.isLoggedIn) {
+        callback();
+        return;
+      }
+      const req = new LogoutRequest();
+      req.success = callback;
+      req.failure = callback;
+      api.perform(req);
     };
 
     return {

@@ -41,6 +41,7 @@
             outline
             label="GitHub注册"
             class="full-width"
+            :loading="loading"
             @click="onGitHubLoginClick"
           />
         </div>
@@ -54,6 +55,9 @@ import {
   defineComponent, getCurrentInstance, reactive, Ref, ref, toRefs,
 } from '@vue/composition-api';
 import User from 'src/user/User';
+import { githubOAuthUrl } from 'src/online/api/oauth';
+import { api } from 'src/boot/main';
+import LogoutRequest from 'src/online/api/LogoutRequest';
 
 export default defineComponent({
   setup() {
@@ -78,6 +82,22 @@ export default defineComponent({
       isOpen.value = false;
     };
 
+    const onGitHubLoginClick = () => {
+      loading.value = true;
+      const callback = () => {
+        api.logout();
+        window.location.href = githubOAuthUrl;
+      };
+      if (!api.isLoggedIn) {
+        callback();
+        return;
+      }
+      const req = new LogoutRequest();
+      req.success = callback;
+      req.failure = callback;
+      api.perform(req);
+    };
+
     const onSubmit = () => {
       // eslint-disable-next-line
       (<any>ctx?.$refs.form).validate().then((valid: boolean) => {
@@ -96,9 +116,7 @@ export default defineComponent({
       ...toRefs(form),
       loading,
       onSubmit,
-      onGitHubLoginClick: () => {
-        window.location.href = 'https://github.com/login/oauth/authorize?client_id=5176faf64742ae0bfe84';
-      },
+      onGitHubLoginClick,
     };
   },
 });
