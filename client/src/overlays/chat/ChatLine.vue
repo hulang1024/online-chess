@@ -91,11 +91,9 @@ export default defineComponent({
 <style lang="scss" scoped>
 .row > div {
   line-height: 20px;
-}
-
-.row:not(.row.small) > div {
   font-size: 1.1em;
 }
+
 .row.small > div {
   font-size: 1em;
 }
