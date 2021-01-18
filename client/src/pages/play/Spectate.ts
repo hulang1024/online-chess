@@ -424,10 +424,12 @@ export default class Spectate {
     if (this.redUser.value == null) {
       this.redUser.value = msg.user;
       this.redOnline.value = true;
+      this.redUserStatus.value = UserStatus.ONLINE;
       this.redReadied.value = false;
     } else {
       this.blackUser.value = msg.user;
       this.blackOnline.value = true;
+      this.blackUserStatus.value = UserStatus.ONLINE;
       this.blackReadied.value = false;
     }
     this.context.$q.notify(`${msg.user.nickname} 加入棋桌`);

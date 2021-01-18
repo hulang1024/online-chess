@@ -458,6 +458,7 @@ export default class GamePlay {
     window.focus();
     this.otherUser.value = msg.user;
     this.otherOnline.value = true;
+    this.otherUserStatus.value = UserStatus.ONLINE;
     this.otherReadied.value = false;
     this.isWaitingForOther.value = 1;
     this.context.$q.notify(`${this.otherUser.value.nickname} 加入棋桌`);
