@@ -195,17 +195,17 @@ export default class GamePlay {
 
     // 初始双方游戏状态和持棋方
     const {
-      roomSettings,
+      roomSettings: { gameDuration, stepDuration },
       redChessUser, blackChessUser,
       redReadied, blackReadied,
       redOnline, blackOnline,
       redUserStatus, blackUserStatus,
     } = this.room;
 
-    this.gameTimer.setTotalSeconds(roomSettings.gameDuration);
-    this.stepTimer.setTotalSeconds(roomSettings.stepDuration);
-    this.otherGameTimer.setTotalSeconds(roomSettings.gameDuration);
-    this.otherStepTimer.setTotalSeconds(roomSettings.stepDuration);
+    this.gameTimer.setTotalSeconds(gameDuration);
+    this.stepTimer.setTotalSeconds(stepDuration);
+    this.otherGameTimer.setTotalSeconds(gameDuration);
+    this.otherStepTimer.setTotalSeconds(stepDuration);
 
     let redTimer: ResponseGameStateTimer | null = null;
     let blackTimer: ResponseGameStateTimer | null = null;
@@ -331,10 +331,16 @@ export default class GamePlay {
 
     this.gameState.value = GameState.PLAYING;
 
+    const { roomSettings: { gameDuration, stepDuration } } = this.room;
+    this.gameTimer.setTotalSeconds(gameDuration);
+    this.stepTimer.setTotalSeconds(stepDuration);
+    this.otherGameTimer.setTotalSeconds(gameDuration);
+    this.otherStepTimer.setTotalSeconds(stepDuration);
     this.gameTimer.ready();
     this.stepTimer.ready();
     this.otherGameTimer.ready();
     this.otherStepTimer.ready();
+
     this.player.startGame(this.chessHost.value);
     // 因为activeChessHost一般一直是红方，值相同将不能触发，这里手动触发一次
     this.onTurnActiveChessHost(this.activeChessHost.value);
@@ -464,6 +470,14 @@ export default class GamePlay {
     this.otherReadied.value = false;
     this.otherOnline.value = false;
     this.gameState.value = GameState.READY;
+    this.otherStepTimer.stop();
+    this.otherGameTimer.stop();
+    const { roomSettings: { gameDuration, stepDuration } } = this.room;
+    this.otherGameTimer.setTotalSeconds(gameDuration);
+    this.otherStepTimer.setTotalSeconds(stepDuration);
+    this.otherStepTimer.ready();
+    this.otherGameTimer.ready();
+
     this.isWaitingForOther.value = 2;
     this.context.$q.notify('对手已离开棋桌');
     if (!this.isRoomOwner.value) {

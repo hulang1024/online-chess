@@ -223,14 +223,14 @@ export default class Spectate {
 
   private initTimers(spectateResponse: SpectateResponse) {
     const { room } = spectateResponse;
-    const { roomSettings } = room;
+    const { roomSettings: { gameDuration, stepDuration } } = room;
 
     this.swapTimers(true);
 
-    this.redGameTimer.setTotalSeconds(roomSettings.gameDuration);
-    this.redStepTimer.setTotalSeconds(roomSettings.stepDuration);
-    this.blackGameTimer.setTotalSeconds(roomSettings.gameDuration);
-    this.blackStepTimer.setTotalSeconds(roomSettings.stepDuration);
+    this.redGameTimer.setTotalSeconds(gameDuration);
+    this.redStepTimer.setTotalSeconds(stepDuration);
+    this.blackGameTimer.setTotalSeconds(gameDuration);
+    this.blackStepTimer.setTotalSeconds(stepDuration);
 
     if (spectateResponse.states) {
       const { states: { redTimer, blackTimer } } = spectateResponse;
@@ -305,10 +305,16 @@ export default class Spectate {
 
     this.gameState.value = GameState.PLAYING;
 
+    const { roomSettings: { gameDuration, stepDuration } } = this.room;
+    this.redGameTimer.setTotalSeconds(gameDuration);
+    this.redStepTimer.setTotalSeconds(stepDuration);
+    this.blackGameTimer.setTotalSeconds(gameDuration);
+    this.blackStepTimer.setTotalSeconds(stepDuration);
     this.redGameTimer.ready();
     this.redStepTimer.ready();
     this.blackGameTimer.ready();
     this.blackStepTimer.ready();
+
     this.player.startGame(this.viewChessHost.value);
     this.onTurnActiveChessHost(ChessHost.RED);
     this.showText(`开始对局`, 1000);
@@ -423,6 +429,8 @@ export default class Spectate {
 
   private onRoomUserLeftEvent(msg: RoomEvents.RoomUserLeftMsg) {
     let leftUser: User | null;
+    let leftUserStepTimer: Timer | null;
+    let leftUserGameTimer: Timer | null;
 
     if (msg.uid == this.targetUserId) {
       this.targetUserId = null;
@@ -430,28 +438,38 @@ export default class Spectate {
 
     if (msg.uid == this.redUser.value?.id) {
       leftUser = this.redUser.value;
+      leftUserStepTimer = this.redStepTimer;
+      leftUserGameTimer = this.redGameTimer;
       this.redUser.value = null;
       this.redOnline.value = false;
       this.redReadied.value = false;
     } else {
       leftUser = this.blackUser.value;
+      leftUserStepTimer = this.blackStepTimer;
+      leftUserGameTimer = this.blackGameTimer;
       this.blackUser.value = null;
       this.blackOnline.value = false;
       this.blackReadied.value = false;
     }
+
+    if (this.gameState.value != GameState.END) {
+      this.gameState.value = GameState.READY;
+    }
+    leftUserStepTimer.stop();
+    leftUserGameTimer.stop();
+    const { roomSettings: { gameDuration, stepDuration } } = this.room;
+    leftUserGameTimer.setTotalSeconds(gameDuration);
+    leftUserStepTimer.setTotalSeconds(stepDuration);
+    leftUserGameTimer.ready();
+    leftUserStepTimer.ready();
+    this.activeChessHost.value = null;
 
     this.context.$q.notify(`${leftUser?.nickname || '玩家'} 离开棋桌`);
 
     if (this.redUser.value == null && this.blackUser.value == null) {
       this.context.$q.notify({ message: '你观看的棋桌已经解散' });
       this.exitScreen();
-      return;
     }
-
-    if (this.gameState.value != GameState.END) {
-      this.gameState.value = GameState.READY;
-    }
-    this.activeChessHost.value = null;
   }
 
   private onUserOfflineEvent(msg: UserEvents.UserOfflineMsg) {
