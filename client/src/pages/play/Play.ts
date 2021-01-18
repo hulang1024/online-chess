@@ -110,12 +110,6 @@ export default class GamePlay {
 
     this.initListeners();
 
-    api.state.changed.add((state: APIState) => {
-      if (state == APIState.offline) {
-        this.exitScreen();
-      }
-    });
-
     this.playerLoaded.add(() => {
       this.player.gameOver.add(this.onGameOver, this);
       this.player.activeChessHost.changed.add(
@@ -304,6 +298,12 @@ export default class GamePlay {
       this.gameState.value = GameState.PAUSE;
       this.online.value = false;
     }, this);
+
+    api.state.changed.addOnce((state: APIState) => {
+      if (state == APIState.offline) {
+        this.exitScreen();
+      }
+    });
   }
 
   private onGameReadyEvent(msg: GameEvents.GameReadyMsg) {
