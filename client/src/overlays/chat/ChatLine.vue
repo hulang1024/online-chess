@@ -4,8 +4,8 @@
       {{ timeText }}
     </div>
     <div
-      class="nickname ellipsis"
-      :class="{'right-align': rightAlign}"
+      class="nickname"
+      :class="{'right-align': rightAlign, 'ellipsis': rightAlign}"
       :style="{color: nicknameColor}"
       @click="onNicknameClick"
     >
@@ -91,6 +91,9 @@ export default defineComponent({
 <style lang="scss" scoped>
 .row > div {
   line-height: 20px;
+}
+
+.row:not(.row.small) > div {
   font-size: 1.1em;
 }
 .row.small > div {
@@ -133,5 +136,9 @@ export default defineComponent({
 .row > .content-colon {
   padding-right: 12px;
   font-weight: 600;
+}
+
+.row.small > .content-colon {
+  padding-right: 4px;
 }
 </style>
