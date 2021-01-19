@@ -57,7 +57,7 @@ public class ChannelManager {
     /**
      *
      * @param channel
-     * @param userId 小于0表示游客
+     * @param userId
      * @return
      */
     public boolean joinChannel(Channel channel, long userId) {
