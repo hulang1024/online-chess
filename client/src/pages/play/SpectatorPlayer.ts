@@ -20,11 +20,11 @@ import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
 import Signal from "src/utils/signals/Signal";
 import UserStatus from "src/user/UserStatus";
 import Channel from "src/online/chat/Channel";
-import Player from "./Player";
+import Playfield from "./Playfield";
 import Timer from "./timer/Timer";
 import CircleTimer from "./timer/CircleTimer";
 
-export default class Spectate {
+export default class Spectator {
   public gameState = new Bindable<GameState>(GameState.READY);
 
   public activeChessHost = new Bindable<ChessHost | null>();
@@ -51,9 +51,9 @@ export default class Spectate {
 
   public spectatorCount = new Bindable<number>(0);
 
-  public player: Player;
+  public playfield: Playfield;
 
-  public playerLoaded = new Signal();
+  public playfieldLoaded = new Signal();
 
   private redGameTimer: Timer;
 
@@ -92,14 +92,14 @@ export default class Spectate {
 
     this.initListeners();
 
-    this.playerLoaded.add(() => {
-      this.player.gameOver.add(this.onGameOver, this);
-      this.player.activeChessHost.changed.add(
+    this.playfieldLoaded.add(() => {
+      this.playfield.gameOver.add(this.onGameOver, this);
+      this.playfield.activeChessHost.changed.add(
         (h: ChessHost) => this.onTurnActiveChessHost(h, false),
         this,
       );
       if (spectateResponse.states) {
-        this.player.startGame(this.viewChessHost.value, spectateResponse.states);
+        this.playfield.startGame(this.viewChessHost.value, spectateResponse.states);
       }
       switch (this.gameState.value) {
         case GameState.READY:
@@ -163,11 +163,11 @@ export default class Spectate {
     });
 
     GameEvents.chessPickup.add((msg: GameEvents.ChessPickUpMsg) => {
-      this.player.pickChess(msg.pickup, ChessPos.make(msg.pos), msg.chessHost);
+      this.playfield.pickChess(msg.pickup, ChessPos.make(msg.pos), msg.chessHost);
     }, this);
 
     GameEvents.chessMoved.add((msg: GameEvents.ChessMoveMsg) => {
-      this.player.moveChess(
+      this.playfield.moveChess(
         ChessPos.make(msg.fromPos),
         ChessPos.make(msg.toPos),
         msg.chessHost, msg.moveType,
@@ -321,7 +321,7 @@ export default class Spectate {
     this.blackGameTimer.ready();
     this.blackStepTimer.ready();
 
-    this.player.startGame(this.viewChessHost.value);
+    this.playfield.startGame(this.viewChessHost.value);
     this.onTurnActiveChessHost(ChessHost.RED);
     this.showText(`开始对局`, 1000);
   }
@@ -347,7 +347,7 @@ export default class Spectate {
         this.onGameOver(null);
         break;
       case ConfirmRequest.Type.WITHDRAW: {
-        this.player.withdraw();
+        this.playfield.withdraw();
         break;
       }
       default:
@@ -527,7 +527,7 @@ export default class Spectate {
   public onToggleViewClick() {
     this.viewChessHost.value = ChessHost.reverse(this.viewChessHost.value);
     this.swapTimers();
-    this.player.reverseChessLayoutView();
+    this.playfield.reverseChessLayoutView();
   }
 
   private swapTimers(isInit = false) {

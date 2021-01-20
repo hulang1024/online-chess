@@ -18,4 +18,8 @@ export default class SampleStore {
       this.sampleCache[name].volume = volume;
     });
   }
+
+  private loadAll() {
+    ['click']
+  }
 }

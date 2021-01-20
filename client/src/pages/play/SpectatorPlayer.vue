@@ -23,15 +23,15 @@
             @click.stop="onInviteClick"
           />
         </div>
-        <player-container
-          ref="playerContainer"
+        <playfield
+          ref="playfield"
           class="absolute-center"
         >
           <text-overlay
             ref="textOverlay"
             class="absolute-center"
           />
-        </player-container>
+        </playfield>
         <q-btn
           color="orange"
           label="菜单"
@@ -75,12 +75,12 @@
       </div>
     </template>
     <template v-else>
-      <player-container ref="playerContainer">
+      <playfield ref="playfield">
         <text-overlay
           ref="textOverlay"
           class="absolute-center"
         />
-      </player-container>
+      </playfield>
       <div ref="controls" class="controls">
         <spectators-count-display
           show-always
@@ -150,18 +150,18 @@ import { binableBindToRef, createBoundRef } from 'src/utils/vue/vue_ref_utils';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import UserStatus from 'src/user/UserStatus';
 import DrawableChessboard from './DrawableChessboard';
-import PlayerContainer from './PlayerContainer.vue';
+import SpectatorPlayer from './SpectatorPlayer';
+import Playfield from './Playfield';
+import PlayfieldView from './Playfield.vue';
 import GameUserPanel from './GameUserPanel.vue';
 import SpectatorsCountDisplay from './SpectatorsCountDisplay.vue';
 import ResultDialog from './ResultDialog.vue';
 import TextOverlay from './TextOverlay.vue';
-import Spectate from './Spectate';
-import Player from './Player';
 import ChatPanel from './ChatPanel.vue';
 
 export default defineComponent({
   components: {
-    PlayerContainer,
+    Playfield: PlayfieldView,
     GameUserPanel,
     SpectatorsCountDisplay,
     ResultDialog,
@@ -180,12 +180,12 @@ export default defineComponent({
     const { $route } = ctx;
     const { spectateResponse } = $route.params;
 
-    const spectate = new Spectate(ctx, spectateResponse as unknown as SpectateResponse);
-    const gameState: Ref<GameState> = createBoundRef(spectate.gameState);
+    const player = new SpectatorPlayer(ctx, spectateResponse as unknown as SpectateResponse);
+    const gameState: Ref<GameState> = createBoundRef(player.gameState);
     const isPlaying = computed(() => gameState.value == GameState.PLAYING);
-    const activeChessHost: Ref<ChessHost | null> = createBoundRef(spectate.activeChessHost);
-    const viewChessHost: Ref<ChessHost> = createBoundRef(spectate.viewChessHost);
-    const spectatorCount: Ref<number> = createBoundRef(spectate.spectatorCount);
+    const activeChessHost: Ref<ChessHost | null> = createBoundRef(player.activeChessHost);
+    const viewChessHost: Ref<ChessHost> = createBoundRef(player.viewChessHost);
+    const spectatorCount: Ref<number> = createBoundRef(player.spectatorCount);
 
     const otherChessHost: Ref<ChessHost | null> = ref(null);
     const viewUser: Ref<User | null> = ref(null);
@@ -197,32 +197,34 @@ export default defineComponent({
     const otherOnline: Ref<boolean> = ref(false);
     const otherReadied: Ref<boolean> = ref(false);
 
-    spectate.viewChessHost.addAndRunOnce((chessHost: ChessHost) => {
+    player.viewChessHost.addAndRunOnce((chessHost: ChessHost) => {
       otherChessHost.value = ChessHost.reverse(chessHost);
       [
-        spectate.blackUser, spectate.blackUserStatus, spectate.blackOnline, spectate.blackReadied,
-        spectate.redUser, spectate.redUserStatus, spectate.redOnline, spectate.redReadied,
+        player.blackUser, player.blackUserStatus,
+        player.blackOnline, player.blackReadied,
+        player.redUser, player.redUserStatus,
+        player.redOnline, player.redReadied,
       ].forEach((bindable) => {
         bindable.changed.removeAll(); // todo: 这里假设只有这里增加了绑定
       });
       if (chessHost == ChessHost.BLACK) {
-        binableBindToRef(spectate.blackUser, viewUser);
-        binableBindToRef(spectate.blackUserStatus, viewUserStatus);
-        binableBindToRef(spectate.blackOnline, viewOnline);
-        binableBindToRef(spectate.blackReadied, viewReadied);
-        binableBindToRef(spectate.redUser, otherUser);
-        binableBindToRef(spectate.redUserStatus, otherUserStatus);
-        binableBindToRef(spectate.redOnline, otherOnline);
-        binableBindToRef(spectate.redReadied, otherReadied);
+        binableBindToRef(player.blackUser, viewUser);
+        binableBindToRef(player.blackUserStatus, viewUserStatus);
+        binableBindToRef(player.blackOnline, viewOnline);
+        binableBindToRef(player.blackReadied, viewReadied);
+        binableBindToRef(player.redUser, otherUser);
+        binableBindToRef(player.redUserStatus, otherUserStatus);
+        binableBindToRef(player.redOnline, otherOnline);
+        binableBindToRef(player.redReadied, otherReadied);
       } else {
-        binableBindToRef(spectate.blackUser, otherUser);
-        binableBindToRef(spectate.blackUserStatus, otherUserStatus);
-        binableBindToRef(spectate.blackOnline, otherOnline);
-        binableBindToRef(spectate.blackReadied, otherReadied);
-        binableBindToRef(spectate.redUser, viewUser);
-        binableBindToRef(spectate.redUserStatus, viewUserStatus);
-        binableBindToRef(spectate.redOnline, viewOnline);
-        binableBindToRef(spectate.redReadied, viewReadied);
+        binableBindToRef(player.blackUser, otherUser);
+        binableBindToRef(player.blackUserStatus, otherUserStatus);
+        binableBindToRef(player.blackOnline, otherOnline);
+        binableBindToRef(player.blackReadied, otherReadied);
+        binableBindToRef(player.redUser, viewUser);
+        binableBindToRef(player.redUserStatus, viewUserStatus);
+        binableBindToRef(player.redOnline, viewOnline);
+        binableBindToRef(player.redReadied, viewReadied);
       }
     });
 
@@ -232,7 +234,7 @@ export default defineComponent({
     let onReisze: () => void;
     onMounted(() => {
       const pageEl = ctx.$el as HTMLElement;
-      const container = (ctx.$refs.playerContainer as Vue).$el as HTMLDivElement;
+      const playfieldEl = (ctx.$refs.playfield as Vue).$el as HTMLDivElement;
       const recalcChessboardSize = () => {
         const width = pageEl?.offsetWidth || 0;
         const height = (pageEl?.parentElement?.offsetHeight || 0) - 40 - 16 || 0;
@@ -243,17 +245,17 @@ export default defineComponent({
         };
       };
       const chessboard = new DrawableChessboard(recalcChessboardSize(), ctx.$q.screen);
-      container.insertBefore(chessboard.el, container.firstChild);
-      spectate.player = new Player(ctx);
-      spectate.player.chessboard = chessboard;
-      spectate.player.screen = ctx.$q.screen;
-      spectate.playerLoaded.dispatch();
+      playfieldEl.insertBefore(chessboard.el, playfieldEl.firstChild);
+      player.playfield = new Playfield(ctx);
+      player.playfield.chessboard = chessboard;
+      player.playfield.screen = ctx.$q.screen;
+      player.playfieldLoaded.dispatch();
 
       window.addEventListener('resize', onReisze = () => {
         if (isXSScreen) {
           return;
         }
-        spectate.player.resize(recalcChessboardSize());
+        player.playfield.resize(recalcChessboardSize());
       });
     });
     onBeforeUnmount(() => {
@@ -281,9 +283,9 @@ export default defineComponent({
 
       spectatorCount,
 
-      onQuitClick: spectate.onQuitClick.bind(spectate),
-      onInviteClick: spectate.onInviteClick.bind(spectate),
-      onToggleViewClick: spectate.onToggleViewClick.bind(spectate),
+      onQuitClick: player.onQuitClick.bind(spectator),
+      onInviteClick: player.onInviteClick.bind(spectator),
+      onToggleViewClick: player.onToggleViewClick.bind(spectator),
     };
   },
 });

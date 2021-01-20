@@ -23,8 +23,8 @@
             @click.stop="onInviteClick"
           />
         </div>
-        <player-container
-          ref="playerContainer"
+        <playfield
+          ref="playfield"
           class="absolute-center"
         >
           <ready-start-overlay
@@ -40,7 +40,7 @@
             class="absolute-center"
           />
           <result-dialog ref="resultDialog" />
-        </player-container>
+        </playfield>
         <q-btn
           color="orange"
           label="菜单"
@@ -102,7 +102,7 @@
       </div>
     </template>
     <template v-else>
-      <player-container ref="playerContainer">
+      <playfield ref="playfield">
         <ready-start-overlay
           :readied="readied"
           :other-readied="otherReadied"
@@ -116,7 +116,7 @@
           class="absolute-center"
         />
         <result-dialog ref="resultDialog" />
-      </player-container>
+      </playfield>
       <div ref="controls" class="controls">
         <spectators-count-display
           show-always
@@ -200,19 +200,19 @@ import Room from 'src/online/room/Room';
 import ResponseGameStates from 'src/online/play/game_states_response';
 import UserStatus from 'src/user/UserStatus';
 import DrawableChessboard from './DrawableChessboard';
-import PlayerContainer from './PlayerContainer.vue';
+import Playfield from './Playfield';
+import PlayfieldView from './Playfield.vue';
 import GameUserPanel from './GameUserPanel.vue';
 import SpectatorsCountDisplay from './SpectatorsCountDisplay.vue';
 import ReadyStartOverlay from './ReadyStartOverlay.vue';
 import ResultDialog from './ResultDialog.vue';
 import TextOverlay from './TextOverlay.vue';
-import GamePlay from './Play';
 import Player from './Player';
 import ChatPanel from './ChatPanel.vue';
 
 export default defineComponent({
   components: {
-    PlayerContainer,
+    Playfield: PlayfieldView,
     GameUserPanel,
     SpectatorsCountDisplay,
     ReadyStartOverlay,
@@ -233,24 +233,24 @@ export default defineComponent({
 
     const { room, initialGameStates } = $route.params;
 
-    const gamePlay = new GamePlay(ctx,
+    const player = new Player(ctx,
       room as unknown as Room,
       initialGameStates as unknown as ResponseGameStates);
-    const gameState: Ref<GameState> = createBoundRef(gamePlay.gameState);
+    const gameState: Ref<GameState> = createBoundRef(player.gameState);
     const isPlaying = computed(() => gameState.value == GameState.PLAYING);
-    const activeChessHost: Ref<ChessHost> = createBoundRef(gamePlay.activeChessHost);
-    const canWithdraw: Ref<boolean> = createBoundRef(gamePlay.canWithdraw);
+    const activeChessHost: Ref<ChessHost> = createBoundRef(player.activeChessHost);
+    const canWithdraw: Ref<boolean> = createBoundRef(player.canWithdraw);
     const user: Ref<User> = ref<User>(api.localUser);
-    const online: Ref<boolean> = createBoundRef(gamePlay.online);
-    const readied: Ref<boolean> = createBoundRef(gamePlay.readied);
-    const chessHost: Ref<ChessHost> = createBoundRef(gamePlay.chessHost);
-    const isRoomOwner: Ref<boolean> = createBoundRef(gamePlay.isRoomOwner);
-    const otherUser: Ref<User | null> = createBoundRef(gamePlay.otherUser);
-    const otherUserStatus: Ref<UserStatus> = createBoundRef(gamePlay.otherUserStatus);
-    const otherOnline: Ref<boolean> = createBoundRef(gamePlay.otherOnline);
-    const otherReadied: Ref<boolean> = createBoundRef(gamePlay.otherReadied);
-    const otherChessHost: Ref<ChessHost> = createBoundRef(gamePlay.otherChessHost);
-    const spectatorCount: Ref<number> = createBoundRef(gamePlay.spectatorCount);
+    const online: Ref<boolean> = createBoundRef(player.online);
+    const readied: Ref<boolean> = createBoundRef(player.readied);
+    const chessHost: Ref<ChessHost> = createBoundRef(player.chessHost);
+    const isRoomOwner: Ref<boolean> = createBoundRef(player.isRoomOwner);
+    const otherUser: Ref<User | null> = createBoundRef(player.otherUser);
+    const otherUserStatus: Ref<UserStatus> = createBoundRef(player.otherUserStatus);
+    const otherOnline: Ref<boolean> = createBoundRef(player.otherOnline);
+    const otherReadied: Ref<boolean> = createBoundRef(player.otherReadied);
+    const otherChessHost: Ref<ChessHost> = createBoundRef(player.otherChessHost);
+    const spectatorCount: Ref<number> = createBoundRef(player.spectatorCount);
 
     // 有些元素随窗口尺寸变化无法实现，因此在初始时就确定屏幕大小
     const isXSScreen = ctx.$q.screen.xs;
@@ -258,7 +258,7 @@ export default defineComponent({
     let onReisze: () => void;
     onMounted(() => {
       const pageEl = ctx.$el as HTMLElement;
-      const container = (ctx.$refs.playerContainer as Vue).$el as HTMLDivElement;
+      const playfieldEl = (ctx.$refs.playfield as Vue).$el as HTMLDivElement;
       const recalcChessboardSize = () => {
         const width = pageEl?.offsetWidth || 0;
         const height = (pageEl?.parentElement?.offsetHeight || 0) - 40 - 16 || 0;
@@ -270,17 +270,17 @@ export default defineComponent({
       };
       const chessboard = new DrawableChessboard(recalcChessboardSize(), ctx.$q.screen);
       // eslint-disable-next-line
-      container.insertBefore(chessboard.el, container.firstChild);
-      gamePlay.player = new Player(ctx);
-      gamePlay.player.chessboard = chessboard;
-      gamePlay.player.screen = ctx.$q.screen;
-      gamePlay.playerLoaded.dispatch();
+      playfieldEl.insertBefore(chessboard.el, playfieldEl.firstChild);
+      player.playfield = new Playfield(ctx);
+      player.playfield.chessboard = chessboard;
+      player.playfield.screen = ctx.$q.screen;
+      player.playfieldLoaded.dispatch();
 
       window.addEventListener('resize', onReisze = () => {
         if (isXSScreen) {
           return;
         }
-        gamePlay.player.resize(recalcChessboardSize());
+        player.playfield.resize(recalcChessboardSize());
       });
     });
     onBeforeUnmount(() => {
@@ -309,12 +309,12 @@ export default defineComponent({
 
       spectatorCount,
 
-      onReadyStartClick: gamePlay.onReadyStartClick.bind(gamePlay),
-      onQuitClick: gamePlay.onQuitClick.bind(gamePlay),
-      onInviteClick: gamePlay.onInviteClick.bind(gamePlay),
-      onWithdrawClick: gamePlay.onWithdrawClick.bind(gamePlay),
-      onChessDrawClick: gamePlay.onChessDrawClick.bind(gamePlay),
-      onWhiteFlagClick: gamePlay.onWhiteFlagClick.bind(gamePlay),
+      onReadyStartClick: player.onReadyStartClick.bind(player),
+      onQuitClick: player.onQuitClick.bind(player),
+      onInviteClick: player.onInviteClick.bind(player),
+      onWithdrawClick: player.onWithdrawClick.bind(player),
+      onChessDrawClick: player.onChessDrawClick.bind(player),
+      onWhiteFlagClick: player.onWhiteFlagClick.bind(player),
     };
   },
 });
