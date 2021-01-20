@@ -6,10 +6,7 @@ export default class GameAudio {
     if (!configManager.get(ConfigItem.audioGameEnabled)) {
       return;
     }
-    const audio = audioManager.samples.get(`game/${name}`);
-    if (!audio.src) {
-      audio.src = `/chinesechess/themes/default/audio/${name}.wav`;
-    }
+    const audio = audioManager.samples.get(name);
     // eslint-disable-next-line
     audio.play();
   }
