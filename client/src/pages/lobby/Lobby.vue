@@ -60,7 +60,9 @@ import Room from 'src/online/room/Room';
 import RoomManager from 'src/online/room/RoomManager.ts';
 import * as GameEvents from 'src/online/ws/events/play';
 import * as InvitationEvents from "src/online/ws/events/invitation";
-import { api, audioManager, channelManager, socketService } from 'src/boot/main';
+import {
+  api, audioManager, channelManager, socketService,
+} from 'src/boot/main';
 import { RoomSettings } from 'src/online/room/RoomSettings';
 import { InvitationReplyServerMsg, InvitationServerMsg } from 'src/online/ws/events/invitation';
 import ResponseGameStates from 'src/online/play/game_states_response';
@@ -139,9 +141,9 @@ export default defineComponent({
 
     const onNewInvitation = (msg: InvitationServerMsg) => {
       const { invitation } = msg;
-
       // eslint-disable-next-line
       (ctx.$vnode.context?.$refs.toolbar as any).exitActive();
+      // eslint-disable-next-line
       audioManager.samples.get('new_invitation').play();
       const onAction = (isAccept: boolean) => {
         const req = new ReplyInvitationRequest(invitation.id, isAccept);
