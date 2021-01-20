@@ -62,7 +62,7 @@ export default class ConfigManager {
     this.set(ConfigItem.password, '');
     this.set(ConfigItem.token, '');
     this.set(ConfigItem.loginAuto, true);
-    this.set(ConfigItem.audioVolume, 0.1);
+    this.set(ConfigItem.audioVolume, 0.2);
     this.set(ConfigItem.audioGameEnabled, true);
     this.set(ConfigItem.theme, 'default');
   }
