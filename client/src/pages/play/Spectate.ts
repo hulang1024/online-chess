@@ -23,6 +23,7 @@ import Channel from "src/online/chat/Channel";
 import Player from "./Player";
 import Timer from "./timer/Timer";
 import CircleTimer from "./timer/CircleTimer";
+import GameAudio from "./GameAudio";
 
 export default class Spectate {
   public gameState = new Bindable<GameState>(GameState.READY);
@@ -235,8 +236,10 @@ export default class Spectate {
 
     this.redGameTimer.setTotalSeconds(gameDuration);
     this.redStepTimer.setTotalSeconds(stepDuration);
+    this.redStepTimer.setSoundEnabled(true);
     this.blackGameTimer.setTotalSeconds(gameDuration);
     this.blackStepTimer.setTotalSeconds(stepDuration);
+    this.blackStepTimer.setSoundEnabled(true);
 
     if (spectateResponse.states) {
       const { states: { redTimer, blackTimer } } = spectateResponse;
@@ -433,6 +436,7 @@ export default class Spectate {
       this.blackReadied.value = false;
     }
     this.context.$q.notify(`${msg.user.nickname} 加入棋桌`);
+    GameAudio.play('room/user_join');
   }
 
   private onRoomUserLeftEvent(msg: RoomEvents.RoomUserLeftMsg) {
@@ -473,6 +477,7 @@ export default class Spectate {
     this.activeChessHost.value = null;
 
     this.context.$q.notify(`${leftUser?.nickname || '玩家'} 离开棋桌`);
+    GameAudio.play('room/user_left');
 
     if (this.redUser.value == null && this.blackUser.value == null) {
       this.context.$q.notify({ message: '你观看的棋桌已经解散' });
