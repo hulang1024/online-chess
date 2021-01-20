@@ -112,9 +112,9 @@
         </q-card>
         <q-card
           flat
-          class="q-mb-xs q-px-xs q-py-sm"
+          class="q-mb-xs q-py-sm"
         >
-          <div class="flex justify-center q-gutter-sm">
+          <div class="flex justify-evenly q-gutter-y-sm">
             <u-button
               label="切换"
               color="warning"
