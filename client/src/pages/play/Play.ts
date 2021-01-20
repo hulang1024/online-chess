@@ -135,6 +135,7 @@ export default class GamePlay {
 
       this.gameTimer = ($refs.gameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
       this.stepTimer = ($refs.gameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
+      this.stepTimer.setSoundEnabled(true);
       this.otherGameTimer = ($refs.otherGameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
       this.otherStepTimer = ($refs.otherGameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
       (this.gameTimer as unknown as Vue).$on('ended', () => this.onTimerEnd(true, true));

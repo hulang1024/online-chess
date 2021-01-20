@@ -1,4 +1,5 @@
 import { onUnmounted, ref } from "@vue/composition-api";
+import GameAudio from "../GameAudio";
 
 export enum TimerState {
   TICKING,
@@ -18,6 +19,8 @@ export default class Timer {
   private timer: NodeJS.Timeout;
 
   private starts = 0; // 启动次数
+
+  private soundEnabled = false;
 
   private emit: (event: string, ...args: any[]) => void;
 
@@ -74,6 +77,10 @@ export default class Timer {
     this.seconds.value = time;
   }
 
+  public setSoundEnabled(b: boolean) {
+    this.soundEnabled = b;
+  }
+
   /** 暂停计时 */
   public pause() {
     if (this.timerState === TimerState.PAUSED) {
@@ -111,6 +118,14 @@ export default class Timer {
         return;
       }
       this.seconds.value--;
+
+      // 声音
+      if (this.soundEnabled && this.seconds.value <= 10) {
+        const soundStart = Math.ceil(this.totalSeconds.value / 3);
+        if (this.seconds.value <= soundStart) {
+          GameAudio.play(`count/${this.seconds.value}`);
+        }
+      }
     }, 1000);
   }
 }

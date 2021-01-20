@@ -44,6 +44,7 @@ export default defineComponent({
       getTotalSeconds: timer.getTotalSeconds.bind(timer),
       setCurrent: timer.setCurrent.bind(timer),
       getCurrent: timer.getCurrent.bind(timer),
+      setSoundEnabled: timer.setSoundEnabled.bind(timer),
     };
   },
 });
