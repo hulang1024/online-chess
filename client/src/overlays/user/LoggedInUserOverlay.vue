@@ -15,7 +15,7 @@
           @click="onAvatarClick"
         />
 
-        <q-btn
+        <u-button
           :loading="uploading"
           label="修改"
           outline
@@ -31,7 +31,7 @@
           @change="onAvatarFileUploadChange"
         >
 
-        <q-btn
+        <u-button
           color="negative"
           label="注销"
           dense

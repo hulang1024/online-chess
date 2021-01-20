@@ -35,27 +35,27 @@
         />
 
         <div class="q-gutter-y-md">
-          <q-btn
+          <u-button
             label="登录"
             color="primary"
             class="full-width"
             :loading="isLogging"
             @click="onSubmit"
           />
-          <q-btn
+          <u-button
             label="注册"
             color="positive"
             class="full-width"
             @click="onRegisterClick"
           />
-          <q-btn
+          <u-button
             v-if="currentUser.id == -1"
             label="游客登录"
             color="orange"
             class="full-width"
             @click="onGuestLoginClick"
           />
-          <q-btn
+          <u-button
             outline
             label="GitHub登录"
             class="full-width"

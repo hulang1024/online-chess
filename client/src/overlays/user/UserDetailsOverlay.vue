@@ -73,20 +73,18 @@
         <template v-if="localUser.id != user.id">
           <q-separator class="q-my-sm" />
           <div class="row justify-evenly q-mt-md">
-            <q-btn
+            <u-button
               dense
               outline
-              unelevated
               icon="message"
               class="q-px-sm"
               @click="onChatClick"
               label="发送私信"
             />
-            <q-btn
+            <u-button
               v-if="user.id > 0 && !user.isFriend"
               dense
               outline
-              unelevated
               icon="favorite"
               class="q-ml-sm q-px-sm"
               label="加为好友"

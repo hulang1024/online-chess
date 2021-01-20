@@ -207,7 +207,7 @@ export default class Player implements Game {
         // 画移动源位置标记
         this.fromPosTargetDrawer.draw(this.convertViewPos(fromPos, chessHost));
         // 音效
-        GameAudio.play('click');
+        GameAudio.play('gameplay/chess_move');
       })
       .start();
   }

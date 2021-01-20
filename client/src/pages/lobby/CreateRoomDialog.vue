@@ -67,17 +67,15 @@
         />
 
         <div class="q-gutter-y-md">
-          <q-btn
+          <u-button
             label="创建"
             color="primary"
-            unelevated
             class="full-width"
             :loading="createLoading"
             @click="onSubmit"
           />
-          <q-btn
+          <u-button
             label="取消"
-            unelevated
             outline
             class="full-width"
             @click="isOpen = false"

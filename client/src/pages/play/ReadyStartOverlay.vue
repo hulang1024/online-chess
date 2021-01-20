@@ -1,14 +1,16 @@
 <template>
-  <div
+  <q-card
     v-show="visible"
+    transition-show="fade"
+    transition-hide="fade"
     class="ready-start row justify-evenly text-white q-py-lg"
   >
-    <q-btn
+    <u-button
       :label="label"
       :color="color"
       @click="onReadyStart"
     />
-  </div>
+  </q-card>
 </template>
 
 <script lang="ts">
@@ -69,8 +71,7 @@ export default defineComponent({
 
 <style lang="sass" scoped>
 .ready-start
-  width: 100%
-  background-color: rgba(0, 0, 0, 0.2)
+  width: 200px
 
   .q-btn
     width: 100px

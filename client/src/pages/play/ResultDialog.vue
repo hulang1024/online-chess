@@ -9,13 +9,13 @@
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn
+        <u-button
           label="退出"
           @click="() => onAction('quit')"
           color="negative"
           v-close-popup
         />
-        <q-btn
+        <u-button
           label="再来"
           @click="() => onAction('again')"
           color="primary"

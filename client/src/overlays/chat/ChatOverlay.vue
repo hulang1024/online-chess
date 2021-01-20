@@ -52,12 +52,11 @@
           class="message-input"
           @keydown.enter="onSend"
         />
-        <q-btn
+        <u-button
           class="btn-send"
           color="primary"
           rounded
           dense
-          unelevated
           padding="sm"
           label="发送"
           @click="onSend"

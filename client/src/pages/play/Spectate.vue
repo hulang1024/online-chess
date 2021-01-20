@@ -16,7 +16,7 @@
             :count="spectatorCount"
             class="q-mr-sm"
           />
-          <q-btn
+          <u-button
             outline
             label="邀请"
             color="orange"
@@ -115,17 +115,17 @@
           class="q-mb-xs q-px-xs q-py-sm"
         >
           <div class="flex justify-center q-gutter-sm">
-            <q-btn
+            <u-button
               label="切换"
               color="warning"
               @click="onToggleViewClick"
             />
-            <q-btn
+            <u-button
               label="邀请"
               color="orange"
               @click.stop="onInviteClick"
             />
-            <q-btn
+            <u-button
               label="离开"
               color="negative"
               @click="onQuitClick"

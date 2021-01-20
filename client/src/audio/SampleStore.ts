@@ -14,7 +14,7 @@ export default class SampleStore {
     }
 
     audio = new Audio();
-    audio.src = `/chinesechess/themes/default/audio/${name}.wav`;
+    audio.src = `/audio/${name}.wav`;
     audio.load();
 
     this.sampleCache[name] = audio;
@@ -29,9 +29,13 @@ export default class SampleStore {
   }
 
   private loadAll() {
+    const names = ['room/user_join', 'room/user_left', 'new_invitation', 'gameplay/chess_move'];
     for (let count = 1; count <= 10; count++) {
-      this.get(`count/${count}`);
+      names.push(`gameplay/count/${count}`);
     }
-    this.get('click');
+
+    names.forEach((name) => {
+      this.get(name);
+    });
   }
 }

@@ -2,14 +2,13 @@
   <q-page class="column">
     <!-- 头部 -->
     <div class="row justify-evenly q-gutter-x-sm q-px-sm q-mb-sm">
-      <q-btn
+      <u-button
         color="primary"
         label="创建房间"
-        unelevated
         class="col float-right q-mt-sm"
         @click="onCreateRoomClick"
       />
-      <q-btn
+      <u-button
         color="light-green"
         label="快速加入"
         unelevated
@@ -61,7 +60,7 @@ import Room from 'src/online/room/Room';
 import RoomManager from 'src/online/room/RoomManager.ts';
 import * as GameEvents from 'src/online/ws/events/play';
 import * as InvitationEvents from "src/online/ws/events/invitation";
-import { api, channelManager, socketService } from 'src/boot/main';
+import { api, audioManager, channelManager, socketService } from 'src/boot/main';
 import { RoomSettings } from 'src/online/room/RoomSettings';
 import { InvitationReplyServerMsg, InvitationServerMsg } from 'src/online/ws/events/invitation';
 import ResponseGameStates from 'src/online/play/game_states_response';
@@ -143,6 +142,7 @@ export default defineComponent({
 
       // eslint-disable-next-line
       (ctx.$vnode.context?.$refs.toolbar as any).exitActive();
+      audioManager.samples.get('new_invitation').play();
       const onAction = (isAccept: boolean) => {
         const req = new ReplyInvitationRequest(invitation.id, isAccept);
         req.success = async (res) => {

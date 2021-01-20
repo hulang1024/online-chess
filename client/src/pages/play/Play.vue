@@ -16,7 +16,7 @@
             :count="spectatorCount"
             class="q-mr-sm"
           />
-          <q-btn
+          <u-button
             outline
             label="邀请"
             color="orange"
@@ -150,30 +150,30 @@
           class="q-mb-xs q-px-xs q-py-sm"
         >
           <div class="flex justify-center q-gutter-sm">
-            <q-btn
+            <u-button
               label="悔棋"
               color="warning"
               :disable="!(isPlaying && canWithdraw)"
               @click="onWithdrawClick"
             />
-            <q-btn
+            <u-button
               label="求和"
               color="warning"
               :disable="!isPlaying"
               @click="onChessDrawClick"
             />
-            <q-btn
+            <u-button
               label="认输"
               color="warning"
               :disable="!isPlaying"
               @click="onWhiteFlagClick"
             />
-            <q-btn
+            <u-button
               label="邀请"
               color="orange"
               @click.stop="onInviteClick"
             />
-            <q-btn
+            <u-button
               label="离开"
               color="negative"
               @click="onQuitClick"

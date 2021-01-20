@@ -27,6 +27,7 @@ module.exports = configure((ctx) => ({
   // https://quasar.dev/quasar-cli/boot-files
   boot: [
     'composition-api',
+    'component',
     'main',
   ],
 

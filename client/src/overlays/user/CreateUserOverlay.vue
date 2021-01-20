@@ -30,14 +30,14 @@
         />
 
         <div class="q-gutter-y-md">
-          <q-btn
+          <u-button
             label="注册"
             color="positive"
             class="full-width"
             :loading="loading"
             @click="onSubmit"
           />
-          <q-btn
+          <u-button
             outline
             label="GitHub注册"
             class="full-width"

@@ -25,6 +25,7 @@ import DrawableChess from './DrawableChess';
 import DrawableChessboard from './DrawableChessboard';
 import Player from './Player';
 import CircleTimer from './timer/CircleTimer';
+import GameAudio from './GameAudio';
 
 export default class GamePlay {
   public gameState = new Bindable<GameState>(GameState.READY);
@@ -463,6 +464,7 @@ export default class GamePlay {
     this.otherReadied.value = false;
     this.isWaitingForOther.value = 1;
     this.context.$q.notify(`${this.otherUser.value.nickname} 加入棋桌`);
+    GameAudio.play('room/user_join');
   }
 
   private onRoomUserLeftEvent(msg: RoomEvents.RoomUserLeftMsg) {
@@ -482,6 +484,7 @@ export default class GamePlay {
 
     this.isWaitingForOther.value = 2;
     this.context.$q.notify('对手已离开棋桌');
+    GameAudio.play('room/user_left');
     if (!this.isRoomOwner.value) {
       this.isRoomOwner.value = true;
       this.context.$q.notify('你成为了房主');
