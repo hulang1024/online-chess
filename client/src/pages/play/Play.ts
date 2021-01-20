@@ -743,6 +743,10 @@ export default class GamePlay {
   public onReadyStartClick() {
     if (this.isRoomOwner.value) {
       if (this.readied && this.otherReadied) {
+        if (this.otherUserStatus.value == UserStatus.AFK) {
+          this.context.$q.notify('对方现在是离开状态，不能开始，请等待对方回来');
+          return;
+        }
         this.socketService.send('play.start_game');
       }
     } else {

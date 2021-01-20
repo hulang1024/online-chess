@@ -13,6 +13,7 @@ import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.room.ws.LobbyRoomUpdateServerMsg;
 import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.User;
+import io.github.hulang1024.chinesechess.user.UserStatus;
 import io.github.hulang1024.chinesechess.user.activity.UserActivity;
 import io.github.hulang1024.chinesechess.user.activity.UserActivityService;
 import io.github.hulang1024.chinesechess.userstats.UserStatsService;
@@ -74,8 +75,13 @@ public class PlayMessageListener extends AbstractMessageListener {
 
         boolean isAllReadied = room.getStatus() == RoomStatus.BEGINNING
             && room.getUsers().stream().allMatch(u -> room.getUserReadied(u));
+        // 全部准备好
         if (isAllReadied) {
-            startGame(room);
+            // 确保其中一个不是离开状态
+            if (room.getRedUserStatus() == UserStatus.IN_ROOM.getCode() &&
+                room.getBlackUserStatus() == UserStatus.IN_ROOM.getCode()) {
+                startGame(room);
+            }
         }
     }
 
