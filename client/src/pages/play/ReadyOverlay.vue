@@ -1,19 +1,30 @@
 <template>
   <div
     v-show="visible"
-    class="ready-start row justify-evenly text-white q-py-lg"
+    class="ready-overlay row justify-center text-white q-py-lg"
   >
+    <q-btn
+      label="邀请"
+      color="light-green"
+      @click.stop="onInviteClick"
+    />
     <q-btn
       :label="label"
       :color="color"
+      :disable="disable"
       @click="onReadyStart"
+    />
+    <q-btn
+      label="离开"
+      color="warning"
+      @click="onQuitClick"
     />
   </div>
 </template>
 
 <script lang="ts">
 import {
-  defineComponent, PropType, ref, watch,
+  defineComponent, getCurrentInstance, PropType, ref, watch,
 } from '@vue/composition-api';
 import GameState from 'src/online/play/GameState';
 
@@ -25,9 +36,10 @@ export default defineComponent({
     gameState: Number as PropType<GameState>,
   },
   setup(props, { emit }) {
-    const visible = ref<boolean>(false);
+    const visible = ref<boolean>(true);
     const label = ref<string>('');
     const color = ref<string>('');
+    const disable = ref(true);
 
     let onPropsChange;
     watch(props, onPropsChange = () => {
@@ -36,16 +48,13 @@ export default defineComponent({
       } = props;
       if (gameState == GameState.READY) {
         if (isRoomOwner) {
-          if (otherReadied) {
-            label.value = '开始!';
-            color.value = 'deep-orange';
-            visible.value = true;
-          } else {
-            visible.value = false;
-          }
+          label.value = '开始!';
+          color.value = 'primary';
+          disable.value = !otherReadied;
         } else {
           label.value = readied ? '取消准备' : '准备!';
-          color.value = readied ? 'negative' : 'positive';
+          color.value = readied ? 'info' : 'primary';
+          disable.value = false;
           visible.value = true;
         }
       } else {
@@ -59,8 +68,15 @@ export default defineComponent({
       visible,
       label,
       color,
+      disable,
       onReadyStart: () => {
         emit('ready-start');
+      },
+      onInviteClick() {
+        emit('invite');
+      },
+      onQuitClick() {
+        emit('quit');
       },
     };
   },
@@ -68,12 +84,12 @@ export default defineComponent({
 </script>
 
 <style lang="sass" scoped>
-.ready-start
+.ready-overlay
   width: 100%
-  background-color: rgba(0, 0, 0, 0.2)
 
   .q-btn
-    width: 100px
+    margin: 0px 4px
+    width: 92px
     font-weight: bold
     letter-spacing: 1px
 

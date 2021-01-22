@@ -4,11 +4,7 @@
       <div>
         <game-user-panel
           ref="otherGameUserPanel"
-          :user="otherUser"
-          :online="otherOnline"
-          :status="otherUserStatus"
-          :chess-host="otherChessHost"
-          :active="activeChessHost == otherChessHost"
+          v-bind="otherUser"
           class="q-pt-sm q-ml-sm"
         />
         <div class="row absolute-top-right q-mt-sm q-mr-sm">
@@ -16,23 +12,19 @@
             :count="spectatorCount"
             class="q-mr-sm"
           />
-          <q-btn
-            outline
-            label="邀请"
-            color="orange"
-            @click.stop="onInviteClick"
-          />
         </div>
         <playfield
           ref="playfield"
           class="absolute-center"
         >
-          <ready-start-overlay
-            :readied="readied"
-            :other-readied="otherReadied"
-            :is-room-owner="isRoomOwner"
+          <ready-overlay
+            :readied="viewUser.readied"
+            :other-readied="otherUser.readied"
+            :is-room-owner="viewUser.isRoomOwner"
             :game-state="gameState"
+            @invite="onInviteClick"
             @ready-start="onReadyStartClick"
+            @quit="onQuitClick"
             class="absolute-center z-top"
           />
           <text-overlay
@@ -41,61 +33,68 @@
           />
           <result-dialog ref="resultDialog" />
         </playfield>
-        <q-btn
-          color="orange"
-          label="菜单"
-          class="fixed-bottom-left q-mb-sm q-ml-sm"
+        <div
+          class="fixed-bottom-left"
+          style="padding-left: 12px; padding-bottom: 12px"
         >
-          <q-menu
-            transition-show="jump-up"
-            transition-hide="jump-down"
-            :offset="[0, 8]"
-            auto-close
+          <q-btn
+            color="orange"
+            label="菜单"
           >
-            <q-list style="min-width: 100px">
-              <q-item
-                clickable
-                v-close-popup
-                :disable="!(isPlaying && canWithdraw)"
-                @click="onWithdrawClick"
-              >
-                <q-item-section>悔棋</q-item-section>
-              </q-item>
-              <q-separator />
-              <q-item
-                clickable
-                v-close-popup
-                :disable="!isPlaying"
-                @click="onChessDrawClick"
-              >
-                <q-item-section>求和</q-item-section>
-              </q-item>
-              <q-separator />
-              <q-item
-                clickable
-                v-close-popup
-                :disable="!isPlaying"
-                @click="onWhiteFlagClick"
-              >
-                <q-item-section>认输</q-item-section>
-              </q-item>
-              <q-separator />
-              <q-item
-                clickable
-                v-close-popup
-                @click="onQuitClick"
-              >
-                <q-item-section>离开</q-item-section>
-              </q-item>
-            </q-list>
-          </q-menu>
-        </q-btn>
+            <q-menu
+              transition-show="jump-up"
+              transition-hide="jump-down"
+              :offset="[0, 8]"
+              auto-close
+            >
+              <q-list style="min-width: 100px">
+                <q-item
+                  clickable
+                  v-close-popup
+                  :disable="!(isPlaying && canWithdraw)"
+                  @click="onWithdrawClick"
+                >
+                  <q-item-section>悔棋</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item
+                  clickable
+                  v-close-popup
+                  :disable="!isPlaying"
+                  @click="onChessDrawClick"
+                >
+                  <q-item-section>求和</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item
+                  clickable
+                  v-close-popup
+                  :disable="!isPlaying"
+                  @click="onWhiteFlagClick"
+                >
+                  <q-item-section>认输</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item
+                  clickable
+                  v-close-popup
+                  @click="onQuitClick"
+                >
+                  <q-item-section>离开</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
+          <q-btn
+            label="聊天"
+            color="primary"
+            @click.stop="onChatClick"
+            class="q-ml-md"
+          />
+        </div>
         <game-user-panel
-          ref="gameUserPanel"
-          :user="user"
-          :online="online"
-          :chess-host="chessHost"
-          :active="activeChessHost == chessHost"
+          ref="viewGameUserPanel"
+          v-bind="viewUser"
           reverse
           class="fixed-bottom-right q-mr-sm q-mb-sm"
         />
@@ -103,12 +102,14 @@
     </template>
     <template v-else>
       <playfield ref="playfield">
-        <ready-start-overlay
-          :readied="readied"
-          :other-readied="otherReadied"
-          :is-room-owner="isRoomOwner"
+        <ready-overlay
+          :readied="viewUser.readied"
+          :other-readied="otherUser.readied"
+          :is-room-owner="viewUser.isRoomOwner"
           :game-state="gameState"
+          @invite="onInviteClick"
           @ready-start="onReadyStartClick"
+          @quit="onQuitClick"
           class="absolute-center"
         />
         <text-overlay
@@ -130,19 +131,12 @@
         >
           <game-user-panel
             ref="otherGameUserPanel"
-            :user="otherUser"
-            :online="otherOnline"
-            :status="otherUserStatus"
-            :chess-host="otherChessHost"
-            :active="activeChessHost == otherChessHost"
+            v-bind="otherUser"
           />
           <q-separator class="q-my-sm" />
           <game-user-panel
-            ref="gameUserPanel"
-            :user="user"
-            :online="online"
-            :chess-host="chessHost"
-            :active="activeChessHost == chessHost"
+            ref="viewGameUserPanel"
+            v-bind="viewUser"
           />
         </q-card>
         <q-card
@@ -150,29 +144,26 @@
           class="q-mb-xs q-px-xs q-py-sm"
         >
           <div class="flex justify-center q-gutter-sm">
-            <q-btn
-              label="悔棋"
-              color="warning"
-              :disable="!(isPlaying && canWithdraw)"
-              @click="onWithdrawClick"
-            />
-            <q-btn
-              label="求和"
-              color="warning"
-              :disable="!isPlaying"
-              @click="onChessDrawClick"
-            />
-            <q-btn
-              label="认输"
-              color="warning"
-              :disable="!isPlaying"
-              @click="onWhiteFlagClick"
-            />
-            <q-btn
-              label="邀请"
-              color="orange"
-              @click.stop="onInviteClick"
-            />
+            <template v-if="true">
+              <q-btn
+                label="悔棋"
+                color="warning"
+                :disable="!(isPlaying && canWithdraw)"
+                @click="onWithdrawClick"
+              />
+              <q-btn
+                label="求和"
+                color="warning"
+                :disable="!isPlaying"
+                @click="onChessDrawClick"
+              />
+              <q-btn
+                label="认输"
+                color="warning"
+                :disable="!isPlaying"
+                @click="onWhiteFlagClick"
+              />
+            </template>
             <q-btn
               label="离开"
               color="negative"
@@ -189,7 +180,7 @@
 
 <script lang="ts">
 import {
-  computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, Ref, ref,
+  computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, reactive, Ref, ref, watch,
 } from '@vue/composition-api';
 import GameState from 'src/online/play/GameState';
 import ChessHost from 'src/rule/chess_host';
@@ -204,18 +195,19 @@ import Playfield from './Playfield';
 import PlayfieldView from './Playfield.vue';
 import GameUserPanel from './GameUserPanel.vue';
 import SpectatorsCountDisplay from './SpectatorsCountDisplay.vue';
-import ReadyStartOverlay from './ReadyStartOverlay.vue';
+import ReadyOverlay from './ReadyOverlay.vue';
 import ResultDialog from './ResultDialog.vue';
 import TextOverlay from './TextOverlay.vue';
 import Player from './Player';
 import ChatPanel from './ChatPanel.vue';
+import GameUser from './GameUser';
 
 export default defineComponent({
   components: {
     Playfield: PlayfieldView,
     GameUserPanel,
     SpectatorsCountDisplay,
-    ReadyStartOverlay,
+    ReadyOverlay,
     ResultDialog,
     TextOverlay,
     ChatPanel,
@@ -228,52 +220,66 @@ export default defineComponent({
     },
   },
   setup() {
-    const ctx = getCurrentInstance() as Vue;
-    const { $route } = ctx;
+    const context = getCurrentInstance() as Vue;
 
-    const { room, initialGameStates } = $route.params;
+    const { room, initialGameStates } = context.$route.params;
 
-    const player = new Player(ctx,
+    const player = new Player(context,
       room as unknown as Room,
       initialGameStates as unknown as ResponseGameStates);
+    
     const gameState: Ref<GameState> = createBoundRef(player.gameState);
+
+    const toReactive = (user: GameUser) => {
+      return reactive({
+        user: createBoundRef(user.bindable),
+        online: createBoundRef(user.online),
+        status: createBoundRef(user.status),
+        readied: createBoundRef(user.readied),
+        chessHost: createBoundRef(user.chessHostBindable),
+        isRoomOwner: createBoundRef(user.isRoomOwner),
+        active: false,
+      });
+    };
+    const viewUser = toReactive(player.localUser);
+    const otherUser = toReactive(player.otherUser);
+
     const isPlaying = computed(() => gameState.value == GameState.PLAYING);
-    const activeChessHost: Ref<ChessHost> = createBoundRef(player.activeChessHost);
+    
+    const activeChessHost: Ref<ChessHost | null> = createBoundRef(player.activeChessHost);
+
+    watch(activeChessHost, () => {
+      // activeChessHost.value可能为空
+      viewUser.active = activeChessHost.value == viewUser.chessHost;
+      otherUser.active = activeChessHost.value == otherUser.chessHost;
+    });
+
     const canWithdraw: Ref<boolean> = createBoundRef(player.canWithdraw);
-    const user: Ref<User> = ref<User>(api.localUser);
-    const online: Ref<boolean> = createBoundRef(player.online);
-    const readied: Ref<boolean> = createBoundRef(player.readied);
-    const chessHost: Ref<ChessHost> = createBoundRef(player.chessHost);
-    const isRoomOwner: Ref<boolean> = createBoundRef(player.isRoomOwner);
-    const otherUser: Ref<User | null> = createBoundRef(player.otherUser);
-    const otherUserStatus: Ref<UserStatus> = createBoundRef(player.otherUserStatus);
-    const otherOnline: Ref<boolean> = createBoundRef(player.otherOnline);
-    const otherReadied: Ref<boolean> = createBoundRef(player.otherReadied);
-    const otherChessHost: Ref<ChessHost> = createBoundRef(player.otherChessHost);
+
     const spectatorCount: Ref<number> = createBoundRef(player.spectatorCount);
 
     // 有些元素随窗口尺寸变化无法实现，因此在初始时就确定屏幕大小
-    const isXSScreen = ctx.$q.screen.xs;
+    const isXSScreen = context.$q.screen.xs;
 
     let onReisze: () => void;
     onMounted(() => {
-      const pageEl = ctx.$el as HTMLElement;
-      const playfieldEl = (ctx.$refs.playfield as Vue).$el as HTMLDivElement;
+      const pageEl = context.$el as HTMLElement;
+      const playfieldEl = (context.$refs.playfield as Vue).$el as HTMLDivElement;
       const recalcChessboardSize = () => {
         const width = pageEl?.offsetWidth || 0;
         const height = (pageEl?.parentElement?.offsetHeight || 0) - 40 - 16 || 0;
         return {
           // eslint-disable-next-line
-          width: isXSScreen ? width : width - (ctx.$refs.controls as any).offsetWidth + 8,
+          width: isXSScreen ? width : width - (context.$refs.controls as any).offsetWidth + 8,
           height,
         };
       };
-      const chessboard = new DrawableChessboard(recalcChessboardSize(), ctx.$q.screen);
+      const chessboard = new DrawableChessboard(recalcChessboardSize(), context.$q.screen);
       // eslint-disable-next-line
       playfieldEl.insertBefore(chessboard.el, playfieldEl.firstChild);
-      player.playfield = new Playfield(ctx);
+      player.playfield = new Playfield(context);
       player.playfield.chessboard = chessboard;
-      player.playfield.screen = ctx.$q.screen;
+      player.playfield.screen = context.$q.screen;
       player.playfieldLoaded.dispatch();
 
       window.addEventListener('resize', onReisze = () => {
@@ -295,23 +301,20 @@ export default defineComponent({
       activeChessHost,
       canWithdraw,
 
-      user,
-      online,
-      readied,
-      chessHost,
-      isRoomOwner,
-
+      viewUser,
       otherUser,
-      otherOnline,
-      otherUserStatus,
-      otherReadied,
-      otherChessHost,
-
       spectatorCount,
 
+      onInviteClick: () => {
+        // eslint-disable-next-line
+        (context.$vnode.context?.$refs.toolbar as any).toggle('socialBrowser');
+      },
+      onChatClick: () => {
+        // eslint-disable-next-line
+        (context.$vnode.context?.$refs.toolbar as any).toggle('chat');
+      },
       onReadyStartClick: player.onReadyStartClick.bind(player),
       onQuitClick: player.onQuitClick.bind(player),
-      onInviteClick: player.onInviteClick.bind(player),
       onWithdrawClick: player.onWithdrawClick.bind(player),
       onChessDrawClick: player.onChessDrawClick.bind(player),
       onWhiteFlagClick: player.onWhiteFlagClick.bind(player),

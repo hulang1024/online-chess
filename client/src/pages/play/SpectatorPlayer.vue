@@ -146,7 +146,7 @@ import {
 import GameState from 'src/online/play/GameState';
 import ChessHost from 'src/rule/chess_host';
 import User from 'src/user/User';
-import { binableBindToRef, createBoundRef } from 'src/utils/vue/vue_ref_utils';
+import { bindableBindToRef, createBoundRef } from 'src/utils/vue/vue_ref_utils';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import UserStatus from 'src/user/UserStatus';
 import DrawableChessboard from './DrawableChessboard';
@@ -176,6 +176,7 @@ export default defineComponent({
     },
   },
   setup() {
+    /*
     const ctx = getCurrentInstance() as Vue;
     const { $route } = ctx;
     const { spectateResponse } = $route.params;
@@ -208,23 +209,23 @@ export default defineComponent({
         bindable.changed.removeAll(); // todo: 这里假设只有这里增加了绑定
       });
       if (chessHost == ChessHost.BLACK) {
-        binableBindToRef(player.blackUser, viewUser);
-        binableBindToRef(player.blackUserStatus, viewUserStatus);
-        binableBindToRef(player.blackOnline, viewOnline);
-        binableBindToRef(player.blackReadied, viewReadied);
-        binableBindToRef(player.redUser, otherUser);
-        binableBindToRef(player.redUserStatus, otherUserStatus);
-        binableBindToRef(player.redOnline, otherOnline);
-        binableBindToRef(player.redReadied, otherReadied);
+        bindableBindToRef(player.blackUser, viewUser);
+        bindableBindToRef(player.blackUserStatus, viewUserStatus);
+        bindableBindToRef(player.blackOnline, viewOnline);
+        bindableBindToRef(player.blackReadied, viewReadied);
+        bindableBindToRef(player.redUser, otherUser);
+        bindableBindToRef(player.redUserStatus, otherUserStatus);
+        bindableBindToRef(player.redOnline, otherOnline);
+        bindableBindToRef(player.redReadied, otherReadied);
       } else {
-        binableBindToRef(player.blackUser, otherUser);
-        binableBindToRef(player.blackUserStatus, otherUserStatus);
-        binableBindToRef(player.blackOnline, otherOnline);
-        binableBindToRef(player.blackReadied, otherReadied);
-        binableBindToRef(player.redUser, viewUser);
-        binableBindToRef(player.redUserStatus, viewUserStatus);
-        binableBindToRef(player.redOnline, viewOnline);
-        binableBindToRef(player.redReadied, viewReadied);
+        bindableBindToRef(player.blackUser, otherUser);
+        bindableBindToRef(player.blackUserStatus, otherUserStatus);
+        bindableBindToRef(player.blackOnline, otherOnline);
+        bindableBindToRef(player.blackReadied, otherReadied);
+        bindableBindToRef(player.redUser, viewUser);
+        bindableBindToRef(player.redUserStatus, viewUserStatus);
+        bindableBindToRef(player.redOnline, viewOnline);
+        bindableBindToRef(player.redReadied, viewReadied);
       }
     });
 
@@ -287,6 +288,7 @@ export default defineComponent({
       onInviteClick: player.onInviteClick.bind(spectator),
       onToggleViewClick: player.onToggleViewClick.bind(spectator),
     };
+    */
   },
 });
 </script>

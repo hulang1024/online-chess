@@ -1,51 +1,26 @@
-import { api, channelManager, socketService } from "src/boot/main";
-import APIAccess, { APIState } from "src/online/api/APIAccess";
+// import { api, channelManager, socketService } from "src/boot/main";
+import APIAccess from "src/online/api/APIAccess";
 import ChannelManager from "src/online/chat/ChannelManager";
 import GameState from "src/online/play/GameState";
 import Room from "src/online/room/Room";
-import User from "src/user/User";
-import * as UserEvents from 'src/online/ws/events/user';
-import * as GameEvents from 'src/online/ws/events/play';
-import * as SpectatorEvents from 'src/online/ws/events/spectator';
-import * as RoomEvents from 'src/online/ws/events/room';
+// import * as GameEvents from 'src/online/ws/events/play';
+// import * as SpectatorEvents from 'src/online/ws/events/spectator';
+// import * as RoomEvents from 'src/online/ws/events/room';
 import SocketService from "src/online/ws/SocketService";
 import ChessHost from "src/rule/chess_host";
 import Bindable from "src/utils/bindables/Bindable";
-import BindableBool from "src/utils/bindables/BindableBool";
-import SpectateResponse from 'src/online/spectator/APISpectateResponse';
-import { onBeforeUnmount, onMounted } from "@vue/composition-api";
-import ConfirmRequest from "src/rule/confirm_request";
-import ChessPos from "src/rule/ChessPos";
-import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
+// import SpectateResponse from 'src/online/spectator/APISpectateResponse';
+// import { onBeforeUnmount, onMounted } from "@vue/composition-api";
+// import ConfirmRequest from "src/rule/confirm_request";
+// import ChessPos from "src/rule/ChessPos";
+// import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
 import Signal from "src/utils/signals/Signal";
-import UserStatus from "src/user/UserStatus";
-import Channel from "src/online/chat/Channel";
 import Playfield from "./Playfield";
-import Timer from "./timer/Timer";
-import CircleTimer from "./timer/CircleTimer";
 
 export default class Spectator {
   public gameState = new Bindable<GameState>(GameState.READY);
 
   public activeChessHost = new Bindable<ChessHost | null>();
-
-  public viewChessHost = new Bindable<ChessHost>();
-
-  public redUser = new Bindable<User | null>();
-
-  public redOnline = new BindableBool();
-
-  public redUserStatus = new Bindable<UserStatus>();
-
-  public redReadied = new BindableBool();
-
-  public blackUser = new Bindable<User | null>();
-
-  public blackOnline = new BindableBool();
-
-  public blackUserStatus = new Bindable<UserStatus>();
-
-  public blackReadied = new BindableBool();
 
   public otherChessHost = new Bindable<ChessHost>();
 
@@ -54,14 +29,6 @@ export default class Spectator {
   public playfield: Playfield;
 
   public playfieldLoaded = new Signal();
-
-  private redGameTimer: Timer;
-
-  private redStepTimer: Timer;
-
-  private blackGameTimer: Timer;
-
-  private blackStepTimer: Timer;
 
   private room: Room;
 
@@ -78,7 +45,7 @@ export default class Spectator {
   private textOverlay: any;
 
   private context: Vue;
-
+/*
   constructor(context: Vue, spectateResponse: SpectateResponse) {
     this.context = context;
     this.api = api;
@@ -93,14 +60,6 @@ export default class Spectator {
     this.initListeners();
 
     this.playfieldLoaded.add(() => {
-      this.playfield.gameOver.add(this.onGameOver, this);
-      this.playfield.activeChessHost.changed.add(
-        (h: ChessHost) => this.onTurnActiveChessHost(h, false),
-        this,
-      );
-      if (spectateResponse.states) {
-        this.playfield.startGame(this.viewChessHost.value, spectateResponse.states);
-      }
       switch (this.gameState.value) {
         case GameState.READY:
           this.showText('你正在旁观中，请等待游戏开始');
@@ -124,16 +83,21 @@ export default class Spectator {
 
       this.textOverlay = $refs.textOverlay;
 
-      this.loadState(spectateResponse);
+      if (spectateResponse.targetUserId != null) {
+        // 如果是观看用户
+        this.targetUserId = spectateResponse.targetUserId;
+        if (this.room.redChessUser && this.room.redChessUser.id == spectateResponse.targetUserId) {
+          this.viewChessHost.value = ChessHost.RED;
+        } else {
+          this.viewChessHost.value = ChessHost.BLACK;
+        }
+      } else {
+        this.viewChessHost.value = Math.random() > 0.5 ? ChessHost.BLACK : ChessHost.RED;
+      }
 
       this.initTimers(spectateResponse);
 
       this.gameState.addAndRunOnce(this.onGameStateChanged, this);
-
-      const channel = new Channel();
-      channel.id = this.room.channelId;
-      // eslint-disable-next-line
-      ($refs.chatPanel as any)?.loadChannel( this.channelManager.joinChannel(channel) );
     });
 
     onBeforeUnmount(() => {
@@ -142,11 +106,7 @@ export default class Spectator {
   }
 
   private initListeners() {
-    RoomEvents.userJoined.add(this.onRoomUserJoinedEvent, this);
     RoomEvents.userLeft.add(this.onRoomUserLeftEvent, this);
-    UserEvents.offline.add(this.onUserOfflineEvent, this);
-    UserEvents.online.add(this.onUserOnlineEvent, this);
-    UserEvents.statusChanged.add(this.onUserStatusChangedEvent, this);
 
     GameEvents.readied.add((msg: GameEvents.GameReadyMsg) => {
       if (msg.uid == this.redUser.value?.id) {
@@ -197,220 +157,10 @@ export default class Spectator {
     });
   }
 
-  private loadState(spectateResponse: SpectateResponse) {
-    const { room } = spectateResponse;
-    this.room = room;
-
-    this.gameState.value = room.gameStatus || GameState.READY;
-
-    this.redUser.value = room.redChessUser;
-    this.redOnline.value = room.redOnline;
-    this.redUserStatus.value = room.redUserStatus;
-    this.redReadied.value = room.redReadied;
-    this.blackUser.value = room.blackChessUser;
-    this.blackOnline.value = room.blackOnline;
-    this.blackUserStatus.value = room.blackUserStatus;
-    this.blackReadied.value = room.blackReadied;
-
-    if (spectateResponse.targetUserId != null) {
-      // 如果是观看用户
-      this.targetUserId = spectateResponse.targetUserId;
-      if (this.room.redChessUser && this.room.redChessUser.id == spectateResponse.targetUserId) {
-        this.viewChessHost.value = ChessHost.RED;
-      } else {
-        this.viewChessHost.value = ChessHost.BLACK;
-      }
-    } else {
-      this.viewChessHost.value = Math.random() > 0.5 ? ChessHost.BLACK : ChessHost.RED;
-    }
-
-    this.spectatorCount.value = this.room.spectatorCount;
-  }
-
-  private initTimers(spectateResponse: SpectateResponse) {
-    const { room } = spectateResponse;
-    const { roomSettings: { gameDuration, stepDuration } } = room;
-
-    this.swapTimers(true);
-
-    this.redGameTimer.setTotalSeconds(gameDuration);
-    this.redStepTimer.setTotalSeconds(stepDuration);
-    this.blackGameTimer.setTotalSeconds(gameDuration);
-    this.blackStepTimer.setTotalSeconds(stepDuration);
-
-    if (spectateResponse.states) {
-      const { states: { redTimer, blackTimer } } = spectateResponse;
-      this.redGameTimer.ready(redTimer?.gameTime);
-      this.redStepTimer.ready(redTimer?.stepTime);
-      this.blackGameTimer.ready(blackTimer?.gameTime);
-      this.blackStepTimer.ready(blackTimer?.stepTime);
-    } else {
-      this.redGameTimer.ready();
-      this.redStepTimer.ready();
-      this.blackGameTimer.ready();
-      this.blackStepTimer.ready();
-    }
-  }
-
-  private onUserStatusChangedEvent(msg: UserEvents.UserStatusChangedMsg) {
-    let bindable: Bindable<UserStatus> | null = null;
-    if (this.redUser.value && msg.uid == this.redUser.value.id) {
-      bindable = this.redUserStatus;
-    }
-    if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
-      bindable = this.blackUserStatus;
-    }
-    if (bindable) {
-      bindable.value = msg.status;
-    }
-  }
-
-  private onGameStateChanged(gameState: GameState, prevGameState: GameState) {
-    if (gameState == GameState.PLAYING) {
-      if (prevGameState == GameState.PAUSE) {
-        // 之前离线暂停，现在恢复
-        if (this.activeChessHost.value == ChessHost.RED) {
-          this.redGameTimer.resume();
-          this.redStepTimer.resume();
-        } else {
-          this.blackGameTimer.resume();
-          this.blackStepTimer.resume();
-        }
-        this.onTurnActiveChessHost(this.activeChessHost.value || ChessHost.RED, true);
-      }
-    } else {
-      // 当游戏暂停或结束，暂停计时器
-      [
-        this.redGameTimer, this.redStepTimer,
-        this.blackGameTimer, this.blackStepTimer,
-      ].forEach((timer) => {
-        timer.pause();
-      });
-    }
-  }
-
-  private onGameStartedEvent(msg: GameEvents.GameStartedMsg) {
-    // 新对局可能交换棋方，找出新的红方用户和黑方用户
-    let redUser: User = this.redUser.value as User;
-    let blackUser: User = this.blackUser.value as User;
-    [this.redUser.value, this.blackUser.value].forEach((user) => {
-      if (user?.id == msg.redChessUid) {
-        redUser = user;
-      } else {
-        blackUser = user as User;
-      }
-    });
-    this.redUser.value = redUser;
-    this.blackUser.value = blackUser;
-
-    // 跟随观看目标用户视角
-    if (this.targetUserId) {
-      this.viewChessHost.value = this.targetUserId == redUser.id
-        ? ChessHost.RED : ChessHost.BLACK;
-    }
-
-    this.gameState.value = GameState.PLAYING;
-
-    const { roomSettings: { gameDuration, stepDuration } } = this.room;
-    this.redGameTimer.setTotalSeconds(gameDuration);
-    this.redStepTimer.setTotalSeconds(stepDuration);
-    this.blackGameTimer.setTotalSeconds(gameDuration);
-    this.blackStepTimer.setTotalSeconds(stepDuration);
-    this.redGameTimer.ready();
-    this.redStepTimer.ready();
-    this.blackGameTimer.ready();
-    this.blackStepTimer.ready();
-
-    this.playfield.startGame(this.viewChessHost.value);
-    this.onTurnActiveChessHost(ChessHost.RED);
-    this.showText(`开始对局`, 1000);
-  }
-
   private onGameConfirmRequestEvent(msg: GameEvents.ConfirmRequestMsg) {
     let text = msg.chessHost == ChessHost.BLACK ? '黑方' : '红方';
     text += `请求${ConfirmRequest.toReadableText(msg.reqType)}`;
     this.showText(text);
-  }
-
-  private onGameConfirmResponseEvent(msg: GameEvents.ConfirmResponseMsg) {
-    let text = '';
-    text += msg.chessHost == ChessHost.BLACK ? '黑方' : '红方';
-    text += msg.ok ? '同意' : '不同意';
-    text += ConfirmRequest.toReadableText(msg.reqType);
-    this.showText(text, 2000);
-
-    switch (msg.reqType) {
-      case ConfirmRequest.Type.WHITE_FLAG:
-        this.onGameOver(msg.chessHost);
-        break;
-      case ConfirmRequest.Type.DRAW:
-        this.onGameOver(null);
-        break;
-      case ConfirmRequest.Type.WITHDRAW: {
-        this.playfield.withdraw();
-        break;
-      }
-      default:
-        break;
-    }
-  }
-
-  private onGameContinueResponseEvent(msg: GameEvents.GameContinueResponseMsg) {
-    let who = '玩家';
-    if (this.redUser.value && msg.uid == this.redUser.value.id) {
-      who = '红方';
-      if (msg.ok) {
-        this.redOnline.value = true;
-      }
-    }
-    if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
-      who = '黑方';
-      if (msg.ok) {
-        this.blackOnline.value = true;
-      }
-    }
-    if (msg.ok) {
-      this.showText(`${who}已回来`, 2000);
-    } else {
-      this.showText(`${who}已选择不继续对局`);
-    }
-    if (this.redOnline.value && this.blackOnline.value) {
-      this.gameState.value = GameState.PLAYING;
-    }
-  }
-
-  public onTimerEnd(isGameTimer: boolean, chessHost: ChessHost) {
-    if (isGameTimer) {
-      // 如果局时用完，步时计时器用作读秒计数器
-      const { roomSettings } = this.room;
-      if (chessHost == ChessHost.RED) {
-        this.redStepTimer.setTotalSeconds(roomSettings.secondsCountdown);
-      } else {
-        this.blackStepTimer.setTotalSeconds(roomSettings.secondsCountdown);
-      }
-    }
-  }
-
-  private onTurnActiveChessHost(activeChessHost: ChessHost, isGameResume = false) {
-    this.activeChessHost.value = activeChessHost;
-
-    if (this.gameState.value != GameState.PLAYING) {
-      return;
-    }
-
-    if (!isGameResume) {
-      if (activeChessHost == ChessHost.BLACK) {
-        this.redGameTimer.pause();
-        this.redStepTimer.stop();
-        this.blackGameTimer.resume();
-        this.blackStepTimer.start();
-      } else {
-        this.redGameTimer.resume();
-        this.redStepTimer.start();
-        this.blackGameTimer.pause();
-        this.blackStepTimer.stop();
-      }
-    }
   }
 
   private onGameOver(winChessHost: ChessHost | null) {
@@ -420,97 +170,14 @@ export default class Spectator {
       : `${winChessHost == ChessHost.RED ? '红方' : '黑方'}赢！`);
   }
 
-  private onRoomUserJoinedEvent(msg: RoomEvents.RoomUserJoinedMsg) {
-    if (this.redUser.value == null) {
-      this.redUser.value = msg.user;
-      this.redOnline.value = true;
-      this.redUserStatus.value = UserStatus.ONLINE;
-      this.redReadied.value = false;
-    } else {
-      this.blackUser.value = msg.user;
-      this.blackOnline.value = true;
-      this.blackUserStatus.value = UserStatus.ONLINE;
-      this.blackReadied.value = false;
-    }
-    this.context.$q.notify(`${msg.user.nickname} 加入棋桌`);
-  }
-
   private onRoomUserLeftEvent(msg: RoomEvents.RoomUserLeftMsg) {
-    let leftUser: User | null;
-    let leftUserStepTimer: Timer | null;
-    let leftUserGameTimer: Timer | null;
-
     if (msg.uid == this.targetUserId) {
       this.targetUserId = null;
     }
-
-    if (msg.uid == this.redUser.value?.id) {
-      leftUser = this.redUser.value;
-      leftUserStepTimer = this.redStepTimer;
-      leftUserGameTimer = this.redGameTimer;
-      this.redUser.value = null;
-      this.redOnline.value = false;
-      this.redReadied.value = false;
-    } else {
-      leftUser = this.blackUser.value;
-      leftUserStepTimer = this.blackStepTimer;
-      leftUserGameTimer = this.blackGameTimer;
-      this.blackUser.value = null;
-      this.blackOnline.value = false;
-      this.blackReadied.value = false;
-    }
-
-    if (this.gameState.value != GameState.END) {
-      this.gameState.value = GameState.READY;
-    }
-    leftUserStepTimer.stop();
-    leftUserGameTimer.stop();
-    const { roomSettings: { gameDuration, stepDuration } } = this.room;
-    leftUserGameTimer.setTotalSeconds(gameDuration);
-    leftUserStepTimer.setTotalSeconds(stepDuration);
-    leftUserGameTimer.ready();
-    leftUserStepTimer.ready();
-    this.activeChessHost.value = null;
-
-    this.context.$q.notify(`${leftUser?.nickname || '玩家'} 离开棋桌`);
-
     if (this.redUser.value == null && this.blackUser.value == null) {
       this.context.$q.notify({ message: '你观看的棋桌已经解散' });
       this.exitScreen();
     }
-  }
-
-  private onUserOfflineEvent(msg: UserEvents.UserOfflineMsg) {
-    let who: string | null = null;
-    if (this.redUser.value && msg.uid == this.redUser.value.id) {
-      who = '红方';
-      this.redOnline.value = false;
-    }
-    if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
-      who = '黑方';
-      this.blackOnline.value = false;
-    }
-    if (!who) {
-      return;
-    }
-    this.gameState.value = GameState.PAUSE;
-    this.showText(`${who}已下线或掉线，可等待回来继续`);
-  }
-
-  private onUserOnlineEvent(msg: UserEvents.UserOnlineMsg) {
-    let who: string | null = null;
-    if (this.redUser.value && msg.uid == this.redUser.value.id) {
-      who = '红方';
-      this.redOnline.value = true;
-    }
-    if (this.blackUser.value && msg.uid == this.blackUser.value.id) {
-      who = '黑方';
-      this.blackOnline.value = true;
-    }
-    if (!who) {
-      return;
-    }
-    this.showText(`${who}已上线`);
   }
 
   public onQuitClick() {
@@ -530,70 +197,6 @@ export default class Spectator {
     this.playfield.reverseChessLayoutView();
   }
 
-  private swapTimers(isInit = false) {
-    // assert this.viewChessHost.value  && this.gameState.value
-
-    const { $refs } = this.context;
-
-    if (!isInit) {
-      if (this.gameState.value == GameState.PLAYING) {
-        if (this.activeChessHost.value == ChessHost.RED) {
-          this.redGameTimer.pause();
-          this.redStepTimer.pause();
-        } else {
-          this.blackGameTimer.pause();
-          this.blackStepTimer.pause();
-        }
-      }
-
-      // 交换时间
-      const t1 = this.redGameTimer.getCurrent();
-      this.redGameTimer.setCurrent(this.blackGameTimer.getCurrent());
-      this.blackGameTimer.setCurrent(t1);
-      const t2 = this.redStepTimer.getCurrent();
-      this.redStepTimer.setCurrent(this.blackStepTimer.getCurrent());
-      this.blackStepTimer.setCurrent(t2);
-    }
-
-    // 重新设置引用
-    if (this.viewChessHost.value == ChessHost.RED) {
-      this.redGameTimer = ($refs.viewGameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
-      this.redStepTimer = ($refs.viewGameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
-      this.blackGameTimer = ($refs.otherGameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
-      this.blackStepTimer = ($refs.otherGameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
-      (($refs.viewGameUserPanel as Vue).$refs.circleStepTimer as unknown as CircleTimer)
-        .setSyncTimer(this.redStepTimer);
-      (($refs.otherGameUserPanel as Vue).$refs.circleStepTimer as unknown as CircleTimer)
-        .setSyncTimer(this.blackStepTimer);
-    } else {
-      this.redGameTimer = ($refs.otherGameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
-      this.redStepTimer = ($refs.otherGameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
-      this.blackGameTimer = ($refs.viewGameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
-      this.blackStepTimer = ($refs.viewGameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
-      (($refs.viewGameUserPanel as Vue).$refs.circleStepTimer as unknown as CircleTimer)
-        .setSyncTimer(this.blackStepTimer);
-      (($refs.otherGameUserPanel as Vue).$refs.circleStepTimer as unknown as CircleTimer)
-        .setSyncTimer(this.redStepTimer);
-    }
-    (this.redGameTimer as unknown as Vue).$off('ended').$on('ended', () => this.onTimerEnd(true, ChessHost.RED));
-    (this.redStepTimer as unknown as Vue).$off('ended').$on('ended', () => this.onTimerEnd(false, ChessHost.RED));
-    (this.blackGameTimer as unknown as Vue).$off('ended').$on('ended', () => this.onTimerEnd(true, ChessHost.BLACK));
-    (this.blackStepTimer as unknown as Vue).$off('ended').$on('ended', () => this.onTimerEnd(false, ChessHost.BLACK));
-
-    if (!isInit) {
-      // 恢复之前的状态
-      if (this.gameState.value == GameState.PLAYING) {
-        if (this.activeChessHost.value == ChessHost.RED) {
-          this.redGameTimer.resume();
-          this.redStepTimer.resume();
-        } else {
-          this.blackGameTimer.resume();
-          this.blackStepTimer.resume();
-        }
-      }
-    }
-  }
-
   private onQuit() {
     [
       GameEvents.readied,
@@ -608,12 +211,7 @@ export default class Spectator {
       event.removeAll();
     });
 
-    RoomEvents.userJoined.remove(this.onRoomUserJoinedEvent, this);
     RoomEvents.userLeft.remove(this.onRoomUserLeftEvent, this);
-    UserEvents.offline.remove(this.onUserOfflineEvent, this);
-    UserEvents.online.remove(this.onUserOnlineEvent, this);
-    UserEvents.statusChanged.remove(this.onUserStatusChangedEvent, this);
-    GameEvents.gameContinueResponse.remove(this.onGameContinueResponseEvent, this);
     this.socketService.disconnect.remove(this.disconnectHandler);
 
     this.channelManager.leaveChannel(this.room.channelId);
@@ -628,4 +226,5 @@ export default class Spectator {
     // eslint-disable-next-line
     this.textOverlay.show(text, duration);
   }
+  */
 }

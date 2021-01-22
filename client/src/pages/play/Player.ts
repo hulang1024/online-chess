@@ -4,12 +4,11 @@ import ChannelManager from 'src/online/chat/ChannelManager';
 import GameState from 'src/online/play/GameState';
 import PartRoomRequest from 'src/online/room/PartRoomRequest';
 import Room from 'src/online/room/Room';
-import User from 'src/user/User';
 import * as UserEvents from 'src/online/ws/events/user';
 import * as GameEvents from 'src/online/ws/events/play';
 import * as SpectatorEvents from 'src/online/ws/events/spectator';
 import * as RoomEvents from 'src/online/ws/events/room';
-import ResponseGameStates, { ResponseGameStateTimer } from 'src/online/play/game_states_response';
+import ResponseGameStates from 'src/online/play/game_states_response';
 import SocketService from 'src/online/ws/SocketService';
 import ChessHost from 'src/rule/chess_host';
 import Bindable from 'src/utils/bindables/Bindable';
@@ -20,54 +19,30 @@ import { api, channelManager, socketService } from 'src/boot/main';
 import ConfirmRequest from 'src/rule/confirm_request';
 import Signal from 'src/utils/signals/Signal';
 import UserStatus from 'src/user/UserStatus';
+import User from 'src/user/User';
 import Timer from './timer/Timer';
 import DrawableChess from './DrawableChess';
 import DrawableChessboard from './DrawableChessboard';
 import Playfield from './Playfield';
 import CircleTimer from './timer/CircleTimer';
+import GameUser from './GameUser';
 
 export default class Player {
   public gameState = new Bindable<GameState>(GameState.READY);
 
-  public activeChessHost = new Bindable<ChessHost>();
+  public activeChessHost = new Bindable<ChessHost | null>();
 
   public canWithdraw = new BindableBool();
 
-  public user: User;
+  public localUser = new GameUser();
 
-  public online = new BindableBool();
-
-  public readied = new BindableBool();
-
-  public chessHost = new Bindable<ChessHost>();
-
-  public isRoomOwner = new BindableBool();
-
-  public otherUser = new Bindable<User | null>();
-
-  public otherOnline = new BindableBool();
-
-  public otherUserStatus = new Bindable<UserStatus>();
-
-  public otherReadied = new BindableBool();
-
-  public otherChessHost = new Bindable<ChessHost>();
+  public otherUser = new GameUser();
 
   public spectatorCount = new Bindable<number>(0);
-
-  public isWaitingForOther = new Bindable<number>();
 
   public playfield: Playfield;
 
   public playfieldLoaded = new Signal();
-
-  private gameTimer: Timer;
-
-  private stepTimer: Timer;
-
-  private otherGameTimer: Timer;
-
-  private otherStepTimer: Timer;
 
   private disconnectHandler: () => void;
 
@@ -82,6 +57,8 @@ export default class Player {
   private room: Room;
 
   private lastSelected: DrawableChess | null;
+
+  private useView3: boolean;
 
   private resultDialog: any;
 
@@ -105,13 +82,16 @@ export default class Player {
       return;
     }
 
-    this.user = this.api.localUser;
+    this.localUser.bindable.value = this.api.localUser;
     this.room = room || initialGameStates?.room as Room;
 
     this.initListeners();
 
     this.playfieldLoaded.add(() => {
-      this.playfield.gameOver.add(this.onGameOver, this);
+      this.playfield.gameOver.add((winChessHost: ChessHost) => {
+        const gameUser = this.localUser.chessHost == winChessHost ? this.localUser : this.otherUser;
+        this.socketService.send('play.game_over', { winUserId: gameUser.id });
+      }, this);
       this.playfield.activeChessHost.changed.add(
         (v: ChessHost) => this.onTurnActiveChessHost(v, false), this,
       );
@@ -121,7 +101,7 @@ export default class Player {
       this.chessboard.chessMoved.add(this.onInputChessMove, this);
 
       if (initialGameStates) {
-        this.playfield.startGame(this.chessHost.value, initialGameStates);
+        this.playfield.startGame(this.localUser.chessHost, initialGameStates);
       }
 
       this.gameState.addAndRunOnce(this.onGameStateChanged, this);
@@ -133,23 +113,11 @@ export default class Player {
       this.resultDialog = $refs.resultDialog;
       this.textOverlay = $refs.textOverlay;
 
-      this.gameTimer = ($refs.gameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
-      this.stepTimer = ($refs.gameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
-      this.otherGameTimer = ($refs.otherGameUserPanel as Vue).$refs.gameTimer as unknown as Timer;
-      this.otherStepTimer = ($refs.otherGameUserPanel as Vue).$refs.stepTimer as unknown as Timer;
-      (this.gameTimer as unknown as Vue).$on('ended', () => this.onTimerEnd(true, true));
-      (this.stepTimer as unknown as Vue).$on('ended', () => this.onTimerEnd(false, true));
-      (this.otherGameTimer as unknown as Vue).$on('ended', () => this.onTimerEnd(true, false));
-      (this.otherStepTimer as unknown as Vue).$on('ended', () => this.onTimerEnd(false, false));
-      (($refs.gameUserPanel as Vue)
-        .$refs.circleStepTimer as unknown as CircleTimer).setSyncTimer(this.stepTimer);
-      (($refs.otherGameUserPanel as Vue)
-        .$refs.circleStepTimer as unknown as CircleTimer).setSyncTimer(this.otherStepTimer);
-
+      this.initTimers();
       this.loadState(initialGameStates);
 
-      this.chessHost.addAndRunOnce((chessHost: ChessHost) => {
-        this.otherChessHost.value = ChessHost.reverse(chessHost);
+      this.localUser.chessHostBindable.addAndRunOnce((chessHost: ChessHost) => {
+        this.otherUser.chessHostBindable.value = ChessHost.reverse(chessHost);
       });
 
       let channel = new Channel();
@@ -162,20 +130,6 @@ export default class Player {
       if (this.gameState.value == GameState.PAUSE) {
         this.showText('游戏暂停中，等待对手回来继续');
       }
-
-      this.isWaitingForOther.changed.add((value: number) => {
-        if (value == 0) {
-          // eslint-disable-next-line
-          this.textOverlay.hide();
-          return;
-        }
-        const textMap: {[k: number]: string} = { 1: '等待玩家准备', 2: '等待玩家加入' };
-        this.showText(textMap[value]);
-      });
-
-      if (this.gameState.value == GameState.READY && this.isRoomOwner.value) {
-        this.isWaitingForOther.value = this.otherUser.value ? (this.otherReadied ? 1 : 0) : 2;
-      }
     });
 
     onBeforeUnmount(() => {
@@ -185,65 +139,79 @@ export default class Player {
 
   private loadState(initialGameStates?: ResponseGameStates | undefined) {
     this.gameState.value = this.room.gameStatus || GameState.READY;
-    this.isRoomOwner.value = this.room.owner.id == this.user.id;
 
     // 初始双方游戏状态和持棋方
-    const {
-      roomSettings: { gameDuration, stepDuration },
-      redChessUser, blackChessUser,
-      redReadied, blackReadied,
-      redOnline, blackOnline,
-      redUserStatus, blackUserStatus,
-    } = this.room;
-
-    this.gameTimer.setTotalSeconds(gameDuration);
-    this.stepTimer.setTotalSeconds(stepDuration);
-    this.otherGameTimer.setTotalSeconds(gameDuration);
-    this.otherStepTimer.setTotalSeconds(stepDuration);
-
-    let redTimer: ResponseGameStateTimer | null = null;
-    let blackTimer: ResponseGameStateTimer | null = null;
-    if (initialGameStates) {
-      redTimer = initialGameStates.redTimer;
-      blackTimer = initialGameStates.blackTimer;
+    if (this.localUser.id == this.room.redChessUser?.id) {
+      this.localUser.chessHostBindable.value = ChessHost.RED;
+      this.otherUser.chessHostBindable.value = ChessHost.BLACK;
+    }
+    if (this.localUser.id == this.room.blackChessUser?.id) {
+      this.localUser.chessHostBindable.value = ChessHost.BLACK;
+      this.otherUser.chessHostBindable.value = ChessHost.RED;
     }
 
-    if (redChessUser && this.user.id == redChessUser.id) {
-      this.online.value = redOnline;
-      this.readied.value = redReadied;
-      this.chessHost.value = ChessHost.RED;
-      this.otherUser.value = blackChessUser;
-      this.otherOnline.value = blackOnline;
-      this.otherUserStatus.value = blackUserStatus;
-      this.otherReadied.value = blackReadied;
-      this.gameTimer.ready(redTimer?.gameTime);
-      this.stepTimer.ready(redTimer?.stepTime);
-      this.otherGameTimer.ready(blackTimer?.gameTime);
-      this.otherStepTimer.ready(blackTimer?.stepTime);
-    }
-    if (blackChessUser && this.user.id == blackChessUser.id) {
-      this.online.value = blackOnline;
-      this.readied.value = blackReadied;
-      this.chessHost.value = ChessHost.BLACK;
-      this.otherUser.value = redChessUser;
-      this.otherOnline.value = redOnline;
-      this.otherUserStatus.value = redUserStatus;
-      this.otherReadied.value = redReadied;
-      this.gameTimer.ready(blackTimer?.gameTime);
-      this.stepTimer.ready(blackTimer?.stepTime);
-      this.otherGameTimer.ready(redTimer?.gameTime);
-      this.otherStepTimer.ready(redTimer?.stepTime);
-    }
+    const setGameUser = (gameUser: GameUser) => {
+      const data = this.room as {[k: string]: any };
+      const keyP = ChessHost.RED == gameUser.chessHost ? 'red' : 'black';
+      gameUser.bindable.value = data[`${keyP}ChessUser`] as User;
+      gameUser.online.value = data[`${keyP}Online`] as boolean;
+      gameUser.status.value = data[`${keyP}UserStatus`] as number;
+      gameUser.readied.value = data[`${keyP}Readied`] as boolean;
+
+      const { roomSettings } = this.room;
+      const { gameTimer, stepTimer } = gameUser;
+      gameTimer.setTotalSeconds(roomSettings.gameDuration);
+      stepTimer.setTotalSeconds(roomSettings.stepDuration);
+      if (initialGameStates) {
+        const timerState = {
+          red: initialGameStates.redTimer,
+          black: initialGameStates?.blackTimer,
+        }[keyP];
+        gameTimer.ready(timerState.gameTime);
+        stepTimer.ready(timerState.stepTime);
+      } else {
+        gameTimer.ready();
+        stepTimer.ready();
+      }
+    };
+
+    setGameUser(this.localUser);
+    setGameUser(this.otherUser);
+
+    this.localUser.isRoomOwner.value = this.room.owner.id == this.localUser.id;
 
     this.spectatorCount.value = this.room.spectatorCount;
   }
 
+  private initTimers() {
+    const viewGameUserPanelRefs = (this.context.$refs.viewGameUserPanel as Vue).$refs;
+    const otherGameUserPanelRefs = (this.context.$refs.otherGameUserPanel as Vue).$refs;
+    this.localUser.gameTimer = viewGameUserPanelRefs.gameTimer as unknown as Timer;
+    (this.localUser.gameTimer as unknown as Vue).$on('ended',
+      () => this.onTimerEnd(true, this.localUser));
+    this.localUser.stepTimer = viewGameUserPanelRefs.stepTimer as unknown as Timer;
+    (this.localUser.stepTimer as unknown as Vue).$on('ended',
+      () => this.onTimerEnd(false, this.localUser));
+    this.otherUser.gameTimer = otherGameUserPanelRefs.gameTimer as unknown as Timer;
+    (this.otherUser.gameTimer as unknown as Vue).$on('ended',
+      () => this.onTimerEnd(true, this.otherUser));
+    this.otherUser.stepTimer = otherGameUserPanelRefs.stepTimer as unknown as Timer;
+    (this.otherUser.stepTimer as unknown as Vue).$on('ended',
+      () => this.onTimerEnd(false, this.otherUser));
+    (viewGameUserPanelRefs.circleStepTimer as unknown as CircleTimer)
+      .setSyncTimer(this.localUser.stepTimer);
+    (otherGameUserPanelRefs.circleStepTimer as unknown as CircleTimer)
+      .setSyncTimer(this.otherUser.stepTimer);
+  }
+
   private onQuit() {
     [
-      GameEvents.readied,
       GameEvents.chessPickup,
       GameEvents.chessMoved,
+      GameEvents.chessWithdraw,
+      GameEvents.readied,
       GameEvents.gameStarted,
+      GameEvents.gameOver,
       GameEvents.confirmRequest,
       GameEvents.confirmResponse,
       SpectatorEvents.joined,
@@ -274,8 +242,10 @@ export default class Player {
 
     GameEvents.readied.add(this.onGameReadyEvent, this);
     GameEvents.gameStarted.add(this.onGameStartedEvent, this);
+    GameEvents.gameOver.add(this.onGameOverEvent, this);
     GameEvents.chessPickup.add(this.onGameChessPickupEvent, this);
     GameEvents.chessMoved.add(this.onGameChessMovedEvent, this);
+    GameEvents.chessWithdraw.add(this.onGameChessWithdrawEvent, this);
     GameEvents.confirmRequest.add(this.onGameConfirmRequestEvent, this);
     GameEvents.confirmResponse.add(this.onGameConfirmResponseEvent, this);
     GameEvents.gameContinue.add(this.onGameContinueEvent, this);
@@ -296,7 +266,7 @@ export default class Player {
       }
 
       this.gameState.value = GameState.PAUSE;
-      this.online.value = false;
+      this.localUser.online.value = false;
     }, this);
 
     api.state.changed.addOnce((state: APIState) => {
@@ -307,74 +277,80 @@ export default class Player {
   }
 
   private onGameReadyEvent(msg: GameEvents.GameReadyMsg) {
-    if (msg.uid == this.user.id) {
-      this.readied.value = msg.readied;
-    } else {
-      this.otherReadied.value = msg.readied;
-    }
-
-    if (this.isRoomOwner.value) {
-      if (this.otherUser.value && !this.otherReadied.value) {
-        this.isWaitingForOther.value = 1;
-      } else {
-        this.isWaitingForOther.value = 0;
-      }
-    }
+    const gameUser = this.getGameUserByUserId(msg.uid) as GameUser;
+    gameUser.readied.value = msg.readied;
   }
 
   private onGameStartedEvent(msg: GameEvents.GameStartedMsg) {
-    this.chessHost.value = msg.redChessUid == this.user.id
-      ? ChessHost.RED
-      : ChessHost.BLACK;
+    const redGameUser = this.getGameUserByUserId(msg.redChessUid) as GameUser;
+    const blackGameUser = this.getGameUserByUserId(msg.blackChessUid) as GameUser;
+    redGameUser.chessHostBindable.value = ChessHost.RED;
+    blackGameUser.chessHostBindable.value = ChessHost.BLACK;
 
     this.lastSelected = null;
-
+    this.canWithdraw.value = false;
     this.gameState.value = GameState.PLAYING;
 
     const { roomSettings: { gameDuration, stepDuration } } = this.room;
-    this.gameTimer.setTotalSeconds(gameDuration);
-    this.stepTimer.setTotalSeconds(stepDuration);
-    this.otherGameTimer.setTotalSeconds(gameDuration);
-    this.otherStepTimer.setTotalSeconds(stepDuration);
-    this.gameTimer.ready();
-    this.stepTimer.ready();
-    this.otherGameTimer.ready();
-    this.otherStepTimer.ready();
 
-    this.playfield.startGame(this.chessHost.value);
+    [redGameUser, blackGameUser].forEach(({ gameTimer, stepTimer }) => {
+      gameTimer.setTotalSeconds(gameDuration);
+      stepTimer.setTotalSeconds(stepDuration);
+      gameTimer.ready();
+      stepTimer.ready();
+    });
+
+    this.playfield.startGame(this.localUser.chessHost);
     // 因为activeChessHost一般一直是红方，值相同将不能触发，这里手动触发一次
-    this.onTurnActiveChessHost(this.activeChessHost.value);
+    this.onTurnActiveChessHost(this.activeChessHost.value as ChessHost);
     this.showText(`开始对局`, 1000);
   }
 
-  private onGameChessPickupEvent(msg: GameEvents.ChessPickUpMsg) {
-    if (msg.chessHost == this.chessHost.value) {
-      return;
-    }
-    window.focus();
+  private onGameOverEvent(msg: GameEvents.GameOverMsg) {
+    this.gameState.value = GameState.END;
 
+    if (this.localUser.isRoomOwner.value) {
+      this.otherUser.readied.value = false;
+    }
+
+    const result = msg.winUserId ? (this.localUser.id == msg.winUserId ? 1 : 2) : 0;
+
+    // eslint-disable-next-line
+    this.resultDialog.open({
+      result,
+      isTimeout: msg.timeout,
+      action: (option: string) => {
+        if (option == 'again') {
+          if (!this.localUser.isRoomOwner.value) {
+            this.socketService.send('play.ready', { readied: true });
+          }
+          this.gameState.value = GameState.READY;
+        } else {
+          this.partRoom();
+        }
+      },
+    });
+  }
+
+  private onGameChessPickupEvent(msg: GameEvents.ChessPickUpMsg) {
     this.playfield.pickChess(msg.pickup, ChessPos.make(msg.pos), msg.chessHost);
   }
 
   private onGameChessMovedEvent(msg: GameEvents.ChessMoveMsg) {
-    if (msg.chessHost == this.chessHost.value) {
-      return;
-    }
-    window.focus();
-
     this.playfield.moveChess(
       ChessPos.make(msg.fromPos),
       ChessPos.make(msg.toPos),
       msg.chessHost, msg.moveType,
     );
+    this.canWithdraw.value = true;
+  }
+
+  private onGameChessWithdrawEvent() {
+    const canWithdraw = this.playfield.withdraw();
+    this.canWithdraw.value = canWithdraw;
   }
 
   private onGameConfirmRequestEvent(msg: GameEvents.ConfirmRequestMsg) {
-    // 如果是自己发送的请求
-    if (msg.chessHost == this.chessHost.value) {
-      return;
-    }
-
     // 对方发送的请求
     const onAction = (isOk: boolean) => {
       this.socketService.send('play.confirm_response', { reqType: msg.reqType, ok: isOk });
@@ -382,7 +358,7 @@ export default class Player {
     // 显示确认对话框
     this.context.$q.dialog({
       title: '确认',
-      message: `对手想要${ConfirmRequest.toReadableText(msg.reqType)}`,
+      message: `对方想要${ConfirmRequest.toReadableText(msg.reqType)}`,
       persistent: true,
       ok: {
         label: '同意',
@@ -397,121 +373,113 @@ export default class Player {
   }
 
   private onGameConfirmResponseEvent(msg: GameEvents.ConfirmResponseMsg) {
-    // 如果同意
-    if (!msg.ok) {
-      // 对方发送的回应
-      if (msg.chessHost != this.chessHost.value) {
-        this.showText(`对方不同意${ConfirmRequest.toReadableText(msg.reqType)}`, 1000);
-      }
-      return;
-    }
-
-    // 如果不同意
-    if (msg.chessHost != this.chessHost.value) {
-      this.showText(`对方同意${ConfirmRequest.toReadableText(msg.reqType)}`, 1000);
-    }
-
-    switch (msg.reqType) {
-      case ConfirmRequest.Type.WHITE_FLAG:
-        this.onGameOver(msg.chessHost);
-        break;
-      case ConfirmRequest.Type.DRAW:
-        this.onGameOver(null);
-        break;
-      case ConfirmRequest.Type.WITHDRAW: {
-        const canWithdraw = this.playfield.withdraw();
-        this.canWithdraw.value = canWithdraw;
-        break;
-      }
-      default:
-        break;
-    }
+    const title = this.useView3 ? (ChessHost.BLACK ? '黑方' : '红方') : '对方';
+    this.showText(`${title}${msg.ok ? '同意' : '不同意'}${ConfirmRequest.toReadableText(msg.reqType)}`, 1000);
   }
 
   private onGameContinueEvent() {
-    this.online.value = true;
-    if (this.online.value && this.otherOnline.value) {
+    this.localUser.online.value = true;
+    if (this.localUser.online.value && this.otherUser.online.value) {
       this.gameState.value = GameState.PLAYING;
     }
     this.socketService.send('play.game_continue', { ok: true });
   }
 
   private onGameContinueResponseEvent(msg: GameEvents.GameContinueResponseMsg) {
-    if (this.user.id == msg.uid) {
-      return;
-    }
-    this.otherOnline.value = true;
+    this.otherUser.online.value = true;
+
     if (msg.ok) {
-      this.gameState.value = GameState.PLAYING;
+      if (this.localUser.online.value && this.otherUser.online.value) {
+        this.gameState.value = GameState.PLAYING;
+      }
       this.showText('对手已回来，对局继续', 3000);
     } else {
       this.gameState.value = GameState.READY;
-      this.otherUser.value = null;
+      this.otherUser.bindable.value = null;
       this.showText('对手已选择不继续对局', 2000);
-      setTimeout(() => {
-        this.isWaitingForOther.value = 1;
-      }, 2000);
     }
   }
 
   private onRoomUserJoinedEvent(msg: RoomEvents.RoomUserJoinedMsg) {
-    window.focus();
-    this.otherUser.value = msg.user;
-    this.otherOnline.value = true;
-    this.otherUserStatus.value = UserStatus.ONLINE;
-    this.otherReadied.value = false;
-    this.isWaitingForOther.value = 1;
-    this.context.$q.notify(`${this.otherUser.value.nickname} 加入棋桌`);
+    const gameUser = msg.user.id == this.localUser.id
+      ? this.localUser
+      : this.otherUser;
+
+    gameUser.bindable.value = msg.user;
+    gameUser.online.value = true;
+    gameUser.status.value = UserStatus.ONLINE;
+    gameUser.readied.value = false;
+
+    this.context.$q.notify(`${msg.user.nickname} 加入`);
   }
 
   private onRoomUserLeftEvent(msg: RoomEvents.RoomUserLeftMsg) {
-    if (msg.uid == this.user.id) return;
-
-    this.otherUser.value = null;
-    this.otherReadied.value = false;
-    this.otherOnline.value = false;
     this.gameState.value = GameState.READY;
-    this.otherStepTimer.stop();
-    this.otherGameTimer.stop();
-    const { roomSettings: { gameDuration, stepDuration } } = this.room;
-    this.otherGameTimer.setTotalSeconds(gameDuration);
-    this.otherStepTimer.setTotalSeconds(stepDuration);
-    this.otherStepTimer.ready();
-    this.otherGameTimer.ready();
 
-    this.isWaitingForOther.value = 2;
-    this.context.$q.notify('对手已离开棋桌');
-    if (!this.isRoomOwner.value) {
-      this.isRoomOwner.value = true;
+    const gameUser = msg.uid == this.localUser.id
+      ? this.localUser
+      : this.otherUser;
+    const leftUser = gameUser.bindable.value as unknown as User;
+    const { gameTimer, stepTimer } = gameUser;
+    const { roomSettings: { gameDuration, stepDuration } } = this.room;
+
+    gameUser.bindable.value = null;
+    gameUser.readied.value = false;
+    gameUser.online.value = false;
+
+    gameTimer.stop();
+    stepTimer.stop();
+    gameTimer.setTotalSeconds(gameDuration);
+    stepTimer.setTotalSeconds(stepDuration);
+    stepTimer.ready();
+    gameTimer.ready();
+
+    this.activeChessHost.value = null;
+
+    this.context.$q.notify(`${leftUser.nickname} 离开房间`);
+
+    if (!this.localUser.isRoomOwner.value) {
+      this.localUser.isRoomOwner.value = true;
       this.context.$q.notify('你成为了房主');
     }
   }
 
   private onUserOfflineEvent(msg: UserEvents.UserOfflineMsg) {
-    if (this.gameState.value == GameState.READY
-      || !(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
+    const gameUser = this.getGameUserByUserId(msg.uid);
+    if (!gameUser) {
       return;
     }
-    this.otherOnline.value = false;
+    gameUser.online.value = false;
     this.gameState.value = GameState.PAUSE;
-    this.showText('对手已下线/掉线，你可以等待对方回来继续');
+    this.showText(`${msg.nickname}已下线/掉线，你可以等待对方回来继续`);
   }
 
   private onUserOnlineEvent(msg: UserEvents.UserOnlineMsg) {
-    // 判断是否原来就没加入过房间
-    if (this.gameState.value == GameState.READY
-      || !(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
+    const gameUser = this.getGameUserByUserId(msg.uid);
+    if (!gameUser) {
       return;
     }
-    this.otherOnline.value = true;
-    this.context.$q.notify('对手已上线');
+    gameUser.online.value = true;
+    this.context.$q.notify(`${msg.nickname}已上线`);
   }
 
   private onUserStatusChangedEvent(msg: UserEvents.UserStatusChangedMsg) {
-    if (!(this.otherUser.value && this.otherUser.value.id == msg.uid)) {
+    const gameUser = this.getGameUserByUserId(msg.uid);
+    if (!gameUser) {
       return;
     }
-    this.otherUserStatus.value = msg.status;
+    gameUser.status.value = msg.status;
+  }
+
+  private getGameUserByUserId(id: number): GameUser | null {
+    let gameUser: GameUser | null = null;
+    if (id == this.localUser.id) {
+      gameUser = this.localUser;
+    }
+    if (id == this.otherUser.id) {
+      gameUser = this.otherUser;
+    }
+    return gameUser;
   }
 
   private onGameStateChanged(gameState: GameState, prevGameState: GameState) {
@@ -519,14 +487,15 @@ export default class Player {
       case GameState.PLAYING: {
         if (prevGameState == GameState.PAUSE) {
           // 之前离线暂停，现在恢复
-          if (this.activeChessHost.value == this.chessHost.value) {
-            this.gameTimer.resume();
-            this.stepTimer.resume();
+          let activeGameUser: GameUser;
+          if (this.activeChessHost.value == this.localUser.chessHost) {
+            activeGameUser = this.localUser;
             this.onTurnActiveChessHost(this.activeChessHost.value, true);
           } else {
-            this.otherGameTimer.resume();
-            this.otherStepTimer.resume();
+            activeGameUser = this.otherUser;
           }
+          activeGameUser.gameTimer.resume();
+          activeGameUser.stepTimer.resume();
           this.showText('游戏继续', 1000);
         }
         break;
@@ -541,8 +510,8 @@ export default class Player {
         });
         // 当游戏暂停或结束，暂停计时器
         [
-          this.gameTimer, this.stepTimer,
-          this.otherGameTimer, this.otherStepTimer,
+          this.localUser.gameTimer, this.localUser.stepTimer,
+          this.otherUser.gameTimer, this.otherUser.stepTimer,
         ].forEach((timer) => {
           timer.pause();
         });
@@ -553,53 +522,13 @@ export default class Player {
     }
   }
 
-  private onGameOver(winChessHost: ChessHost | null, isTimeout?: boolean) {
-    this.gameState.value = GameState.END;
-
-    const winUserId = winChessHost == null
-      ? undefined
-      : (winChessHost == this.chessHost.value
-        ? this.user.id
-        : this.otherUser.value?.id);
-    if (this.isRoomOwner.value) {
-      this.socketService.send('play.game_over', { winUserId });
-      this.otherReadied.value = false;
-    }
-
-    // eslint-disable-next-line
-    this.resultDialog.open({
-      result: winChessHost == null ? 0 : winChessHost == this.chessHost.value ? 1 : 2,
-      isTimeout,
-      action: (option: string) => {
-        if (option == 'again') {
-          if (this.isRoomOwner.value) {
-            if (!this.otherReadied.value) {
-              this.isWaitingForOther.value = 1;
-            }
-          } else {
-            this.socketService.send('play.ready', { readied: true });
-          }
-          this.gameState.value = GameState.READY;
-        } else {
-          this.partRoom();
-        }
-      },
-    });
-  }
-
-  public onTimerEnd(isGameTimer: boolean, isThisUser: boolean) {
+  public onTimerEnd(isGameTimer: boolean, gameUser: GameUser) {
     if (isGameTimer) {
       // 如果局时用完，步时计时器用作读秒计数器
-      const { roomSettings } = this.room;
-      if (isThisUser) {
-        this.stepTimer.setTotalSeconds(roomSettings.secondsCountdown);
-      } else {
-        this.otherStepTimer.setTotalSeconds(roomSettings.secondsCountdown);
-      }
+      gameUser.stepTimer.setTotalSeconds(this.room.roomSettings.secondsCountdown);
     } else {
       // 如果步时/读秒时间用完
-      const winChessHost = isThisUser ? this.otherChessHost.value : this.chessHost.value;
-      this.onGameOver(winChessHost, true);
+      this.socketService.send('play.game_over', { winUserId: gameUser.id, timeout: true });
     }
   }
 
@@ -611,26 +540,26 @@ export default class Player {
     }
 
     if (!isGameResume) {
-      if (activeChessHost == this.chessHost.value) {
-        this.stepTimer.start();
-        this.gameTimer.resume();
-        this.otherStepTimer.stop();
-        this.otherGameTimer.pause();
+      let activeGameUser: GameUser;
+      let inactiveGameUser: GameUser;
+      if (this.activeChessHost.value == this.localUser.chessHost) {
+        activeGameUser = this.localUser;
+        inactiveGameUser = this.otherUser;
       } else {
-        this.stepTimer.stop();
-        this.gameTimer.pause();
-        this.otherStepTimer.start();
-        this.otherGameTimer.resume();
+        activeGameUser = this.otherUser;
+        inactiveGameUser = this.localUser;
       }
-
-      this.canWithdraw.value = true;
+      activeGameUser.stepTimer.start();
+      activeGameUser.gameTimer.resume();
+      inactiveGameUser.stepTimer.stop();
+      inactiveGameUser.gameTimer.pause();
     }
 
-    this.chessboard.enabled = this.activeChessHost.value == this.chessHost.value;
+    this.chessboard.enabled = this.activeChessHost.value == this.localUser.chessHost;
     this.chessboard.getChessList().forEach((chess) => {
       // 如果当前是本方走，将敌方棋子禁用；否则，全部禁用
-      chess.enabled = this.activeChessHost.value == this.chessHost.value
-        ? this.chessHost.value == chess.getHost()
+      chess.enabled = this.activeChessHost.value == this.localUser.chessHost
+        ? this.localUser.chessHost == chess.getHost()
         : false;
     });
     this.lastSelected = null;
@@ -665,7 +594,7 @@ export default class Player {
         this.onChessPickupOrDrop({ chess: event.chess, isPickup: true });
         // 将非持棋方的棋子全部启用（这样下次才能点击要吃的目标棋子）
         this.chessboard.getChessList().forEach((chess) => {
-          if (chess.getHost() != this.chessHost.value) {
+          if (chess.getHost() != this.localUser.chessHost) {
             chess.enabled = true;
           }
         });
@@ -673,7 +602,7 @@ export default class Player {
       return;
     }
 
-    if (event.chess.selected && event.chess.getHost() == this.chessHost.value) {
+    if (event.chess.selected && event.chess.getHost() == this.localUser.chessHost) {
       // 重复点击，取消选中
       this.lastSelected.selected = false;
       this.onChessPickupOrDrop({ chess: event.chess, isPickup: false });
@@ -705,7 +634,7 @@ export default class Player {
     if (toPos.equals(chess.getPos())) {
       return;
     }
-    if (chess.getHost() != this.chessHost.value) {
+    if (chess.getHost() != this.localUser.chessHost) {
       return;
     }
     if (this.lastSelected) {
@@ -721,7 +650,7 @@ export default class Player {
   }
 
   private onUserMoveChess(moveType: number, fromPos: ChessPos, toPos: ChessPos, duration?: number) {
-    this.playfield.moveChess(fromPos, toPos, this.chessHost.value, moveType, duration);
+    this.playfield.moveChess(fromPos, toPos, this.localUser.chessHost, moveType, duration);
     this.socketService.send('play.chess_move', {
       moveType,
       fromPos,
@@ -737,8 +666,8 @@ export default class Player {
   }
 
   public onReadyStartClick() {
-    if (this.isRoomOwner.value) {
-      if (this.readied && this.otherReadied) {
+    if (this.localUser.isRoomOwner.value) {
+      if (this.localUser.readied.value && this.otherUser.readied.value) {
         this.socketService.send('play.start_game');
       }
     } else {
@@ -791,11 +720,6 @@ export default class Player {
         this.partRoom();
       });
     }
-  }
-
-  public onInviteClick() {
-    // eslint-disable-next-line
-    (this.context.$vnode.context?.$refs.toolbar as any).toggle('socialBrowser');
   }
 
   private showText(text: string, duration?: number) {
