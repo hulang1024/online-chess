@@ -7,8 +7,11 @@ import lombok.Data;
 public class GameOverServerMsg extends ServerMessage {
     private Long winUserId;
 
-    public GameOverServerMsg(Long winUserId) {
+    private boolean isTimeout;
+
+    public GameOverServerMsg(Long winUserId, boolean isTimeout) {
       super("play.game_over");
       this.winUserId = winUserId;
+      this.isTimeout = isTimeout;
     }
 }

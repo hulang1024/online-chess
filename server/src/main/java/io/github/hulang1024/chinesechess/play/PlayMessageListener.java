@@ -132,7 +132,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         result.setMoveType(chessMoveMsg.getMoveType());
         result.setFromPos(chessMoveMsg.getFromPos());
         result.setToPos(chessMoveMsg.getToPos());
-        roomManager.broadcast(room, result);
+        roomManager.broadcast(room, result, user);
     }
 
     private void onConfirmRequest(ConfirmRequestMsg confirmRequestMsg) {
@@ -147,7 +147,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         result.setReqType(confirmRequestMsg.getReqType());
         result.setChessHost(room.getChessHost(user).code());
 
-        roomManager.broadcast(room, result);
+        roomManager.broadcast(room, result, user);
     }
 
     private void onConfirmResponse(ConfirmResponseMsg confirmResponseMsg) {
@@ -167,15 +167,15 @@ public class PlayMessageListener extends AbstractMessageListener {
             if (confirmResponseMsg.getReqType() == ConfirmRequestType.WHITE_FLAG.code()) {
                 User reqUser = room.getOtherUser(user);
                 channelManager.broadcast(room.getChannel(), new InfoMessage(reqUser.getNickname() + " 认输"));
+                this.gameOver(user.getId(), false, room);
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.DRAW.code()) {
-                //todo something
+                this.gameOver(null, false, room);
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.WITHDRAW.code()) {
                 withdraw(room);
-                room.getGame().turnActiveChessHost();
             }
         }
 
-        roomManager.broadcast(room, result);
+        roomManager.broadcast(room, result, user);
     }
 
     private void withdraw(Room room) {
@@ -188,6 +188,8 @@ public class PlayMessageListener extends AbstractMessageListener {
         if (lastAction.getEatenChess() != null) {
             chessboardState.setChess(lastAction.getToPos(), lastAction.getEatenChess(), lastAction.getChessHost());
         }
+        room.getGame().turnActiveChessHost();
+        roomManager.broadcast(room, new ChessWithdrawServerMsg());
     }
 
     private void startGame(Room room) {
@@ -256,13 +258,16 @@ public class PlayMessageListener extends AbstractMessageListener {
             roomManager.broadcast(joinedRoom, serverMsg);
         }
     }
-
     private void onGameOver(GameOverMsg msg) {
         Room room = roomManager.getJoinedRoom(msg.getUser());
         if (room == null) {
             return;
         }
 
+        gameOver(msg.getWinUserId(), msg.isTimeout(), room);
+    }
+
+    private void gameOver(Long winUserId, boolean isTimeout, Room room) {
         room.setStatus(RoomStatus.BEGINNING);
         room.getGame().setState(GameState.END);
         room.getGame().getRedTimer().stop();
@@ -270,11 +275,10 @@ public class PlayMessageListener extends AbstractMessageListener {
 
         room.updateUserReadyState(room.getOtherUser(room.getOwner()), false);
 
-
         User winUser = null;
-        if (msg.getWinUserId() != null) {
+        if (winUserId != null) {
             Optional<User> winUserOpt = room.getUsers().stream()
-                .filter(user -> user.getId().equals(msg.getWinUserId()))
+                .filter(user -> user.getId().equals(winUserId))
                 .findAny();
             winUser = winUserOpt.get();
             User loseUser = room.getOtherUser(winUser);
@@ -285,7 +289,7 @@ public class PlayMessageListener extends AbstractMessageListener {
                 userStatsService.updateUser(user, GameResult.DRAW);
             });
         }
-        spectatorManager.broadcast(room, new GameOverServerMsg(msg.getWinUserId()));
+        roomManager.broadcast(room, new GameOverServerMsg(winUserId, isTimeout));
         userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
         room.getUsers().forEach(user -> {
             userActivityService.enter(user, UserActivity.IN_ROOM);

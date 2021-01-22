@@ -11,5 +11,4 @@ export interface RoomUserJoinedMsg extends ServerMsg {
 
 export interface RoomUserLeftMsg extends ServerMsg {
   uid: number;
-  nickname: string;
 }

@@ -12,14 +12,14 @@ const routes: RouteConfig[] = [
     path: '/play',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', name: 'play', component: () => import('pages/play/Play.vue') },
+      { path: '', name: 'play', component: () => import('pages/play/Player.vue') },
     ],
   },
   {
     path: '/spectate',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', name: 'spectate', component: () => import('pages/play/Spectate.vue') },
+      { path: '', name: 'spectate', component: () => import('pages/play/SpectatorPlayer.vue') },
     ],
   },
   // Always leave this as last one,

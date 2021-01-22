@@ -127,11 +127,11 @@ export default defineComponent({
   .item
     .label
       padding-right: 4px
-      font-size: 0.9em
+      font-size: 1em
       &::after
         content: ':'
 
     .time
-      font-size: 0.9em
+      font-size: 1em
       font-weight: 500
 </style>

@@ -7,6 +7,7 @@ export const gameStarted = new Signal();
 export const gameOver = new Signal();
 export const chessPickup = new Signal();
 export const chessMoved = new Signal();
+export const chessWithdraw = new Signal();
 export const confirmRequest = new Signal();
 export const confirmResponse = new Signal();
 export const gameContinue = new Signal();
@@ -25,6 +26,7 @@ export interface GameStartedMsg extends ServerMsg {
 
 export interface GameOverMsg extends ServerMsg {
   winUserId: number;
+  timeout: boolean;
 }
 
 export interface ChessPickUpMsg extends ServerMsg {

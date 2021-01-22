@@ -12,4 +12,6 @@ public class GameOverMsg extends ClientMessage {
      * 为空表示平局
      */
     private Long winUserId;
+
+    private boolean isTimeout;
 }
