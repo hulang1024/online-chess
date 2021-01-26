@@ -39,17 +39,13 @@ export default {};
 }
 
 .playfield >>> .eat-judgement > .title {
-  font-size: 2rem;
+  font-size: 3rem;
   line-height: 3rem;
-  font-weight: 300;
+  font-weight: 500;
 }
 
 .playfield >>> .eat-judgement.show {
   opacity: 1;
-}
-.playfield >>> .eat-judgement.show > .title {
-  font-size: 3rem;
-  font-weight: 500;
 }
 
 .playfield >>> .checkmate-judgement {
