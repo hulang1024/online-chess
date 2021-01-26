@@ -501,6 +501,11 @@ export default class Player {
   }
 
   private onRoomUserLeftEvent(msg: RoomEvents.RoomUserLeftMsg) {
+    if (this.gameState.value == GameState.PAUSE && !this.room.offlineAt) {
+      this.chessboard.show();
+      // eslint-disable-next-line
+      this.textOverlay.hide();      
+    }
     this.gameState.value = GameState.READY;
 
     const gameUser = msg.uid == this.localUser.id
@@ -622,7 +627,7 @@ export default class Player {
     if (!isGameResume) {
       let activeGameUser: GameUser;
       let inactiveGameUser: GameUser;
-      if (this.gameRule.activeChessHost.value == this.localUser.chessHost) {
+      if (activeChessHost == this.localUser.chessHost) {
         activeGameUser = this.localUser;
         inactiveGameUser = this.otherUser;
       } else {

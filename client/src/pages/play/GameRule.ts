@@ -89,6 +89,7 @@ export default class GameRule implements Game {
 
     this.checkmateJudgement = new CheckmateJudgement(this, this.viewChessHost);
 
+    this.chessboard.show();
     this.chessboard.enabled = false;
 
     this.historyRecorder.clear();
