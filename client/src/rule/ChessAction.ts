@@ -11,5 +11,5 @@ export default class ChessAction {
 
   toPos: ChessPos;
 
-  eatenChess: Chess;
+  eatenChess: Chess | null;
 }

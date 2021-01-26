@@ -1,3 +1,5 @@
+import ChessHost from "./chess_host";
+
 /**
  * 棋子位置
  */
@@ -32,6 +34,15 @@ export default class ChessPos {
 
   copy() {
     return new ChessPos(this.row, this.col);
+  }
+
+  /**
+   * 将当前棋子位置（视为源视角棋方的棋子位置）转换为指定视角棋方的棋子位置
+   * @param chessHost 源视角棋方
+   * @param viewChessHost 指定视角棋方
+   */
+  convertViewPos(chessHost: ChessHost, viewChessHost: ChessHost) {
+    return viewChessHost == chessHost ? this.copy() : ChessPos.reverseView(this);
   }
 
   /**

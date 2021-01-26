@@ -4,7 +4,7 @@ import ChessPos from "./ChessPos";
 import ChessHost from "./chess_host";
 import Game from "./Game";
 
-export default class Checkmate {
+export default class CheckmateJudgement {
   private game: Game;
 
   private redK: Chess;
@@ -30,7 +30,7 @@ export default class Checkmate {
    * 检查指定棋方此刻是否被将军
    * @param chessHost
    */
-  check(checkHost: ChessHost): boolean {
+  judge(checkHost: ChessHost): boolean {
     const checkKPos = (checkHost == ChessHost.RED ? this.redK : this.blackK).getPos();
 
     // 有可能上一步就被吃了，检查在不在
