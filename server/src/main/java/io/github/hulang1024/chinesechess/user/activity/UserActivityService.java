@@ -53,20 +53,20 @@ public class UserActivityService {
         return userCurrentStatusMap.get(user.getId());
     }
 
-    public void enter(User user, UserActivity nowStatus) {
-        if (nowStatus == null) {
+    public void enter(User user, UserActivity statusToEnter) {
+        if (statusToEnter == null) {
             return;
         }
-        List<User> users = activityUsersMap.get(nowStatus);
+        List<User> users = activityUsersMap.get(statusToEnter);
         if (!users.contains(user)) {
             users.add(user);
         }
 
-        if (nowStatus == UserActivity.VIEW_ONLINE_USER) {
+        if (statusToEnter == UserActivity.VIEW_ONLINE_USER) {
             return;
         }
 
-        switch (nowStatus) {
+        switch (statusToEnter) {
             case IN_ROOM:
                 exit(user, UserActivity.IN_LOBBY, false);
                 exit(user, UserActivity.PLAYING, false);
@@ -82,14 +82,18 @@ public class UserActivityService {
                 break;
         }
 
-        if (nowStatus == UserActivity.AFK) {
+        if (statusToEnter == UserActivity.AFK) {
             userAFKStatusMap.put(user.getId() ,user);
         } else {
-            userCurrentStatusMap.put(user.getId(), nowStatus);
+            userCurrentStatusMap.put(user.getId(), statusToEnter);
         }
 
-        UserStatus newUserStatus =  activityToStatus(nowStatus);
-        broadcast(user, newUserStatus != null ? newUserStatus : UserStatus.ONLINE);
+        if (statusToEnter == UserActivity.AFK
+            || (statusToEnter != UserActivity.AFK && userAFKStatusMap.get(user.getId()) == null)) {
+            // 进入新的状态同时当前不是AFK时才通知客户端更新
+            UserStatus newUserStatus = activityToStatus(statusToEnter);
+            broadcast(user, newUserStatus != null ? newUserStatus : UserStatus.ONLINE);
+        }
     }
 
     public void exit(User user, UserActivity activityToExit) {

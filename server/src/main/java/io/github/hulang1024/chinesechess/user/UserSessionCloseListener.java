@@ -53,8 +53,11 @@ public class UserSessionCloseListener {
                     // 如果游戏已经是暂停状态，是因为上个用户离线导致的
                     UserOfflineServerMsg userOfflineMsg = new UserOfflineServerMsg(user);
                     if (joinedRoom.getOnlineUserCount() > 0) {
-                        // 另个用户也退出游戏状态
-                        userActivityService.enter(joinedRoom.getOtherUser(user), UserActivity.IN_ROOM);
+                        User otherUser = joinedRoom.getOtherUser(user);
+                        if (userActivityService.getCurrentStatus(otherUser) == UserActivity.PLAYING) {
+                            // 另个用户也退出游戏状态
+                            userActivityService.enter(otherUser, UserActivity.IN_ROOM);
+                        }
                         // 房间内还有在线用户，发送离线消息
                         roomManager.broadcast(joinedRoom, userOfflineMsg, user);
                     } else {
