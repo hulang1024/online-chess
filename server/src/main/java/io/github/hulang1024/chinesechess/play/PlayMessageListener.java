@@ -11,7 +11,6 @@ import io.github.hulang1024.chinesechess.room.Room;
 import io.github.hulang1024.chinesechess.room.RoomManager;
 import io.github.hulang1024.chinesechess.room.RoomStatus;
 import io.github.hulang1024.chinesechess.room.ws.LobbyRoomUpdateServerMsg;
-import io.github.hulang1024.chinesechess.spectator.SpectatorManager;
 import io.github.hulang1024.chinesechess.user.User;
 import io.github.hulang1024.chinesechess.user.UserStatus;
 import io.github.hulang1024.chinesechess.user.activity.UserActivity;
@@ -30,22 +29,22 @@ public class PlayMessageListener extends AbstractMessageListener {
     @Autowired
     private RoomManager roomManager;
     @Autowired
-    private SpectatorManager spectatorManager;
-    @Autowired
     private UserStatsService userStatsService;
     @Autowired
     private ChannelManager channelManager;
 
     @Override
     public void init() {
+        addMessageHandler(StartGameMsg.class, this::onStartGame);
+        addMessageHandler(PauseGameMsg.class, this::onPauseGame);
+        addMessageHandler(ResumeGameMsg.class, this::onResumeGame);
+        addMessageHandler(GameOverMsg.class, this::onGameOver);
+        addMessageHandler(GameContinueMsg.class, this::onGameContinue);
         addMessageHandler(ReadyMsg.class, this::onReady);
         addMessageHandler(ChessPickMsg.class, this::onPickChess);
         addMessageHandler(ChessMoveMsg.class, this::onMoveChess);
         addMessageHandler(ConfirmRequestMsg.class, this::onConfirmRequest);
         addMessageHandler(ConfirmResponseMsg.class, this::onConfirmResponse);
-        addMessageHandler(StartGameMsg.class, this::onStartGame);
-        addMessageHandler(GameOverMsg.class, this::onGameOver);
-        addMessageHandler(GameContinueMsg.class, this::onGameContinue);
     }
 
     private void onReady(ReadyMsg readyMsg) {
@@ -85,6 +84,14 @@ public class PlayMessageListener extends AbstractMessageListener {
         }
     }
 
+    private void onPauseGame(PauseGameMsg msg) {
+        pauseGame(roomManager.getJoinedRoom(msg.getUser()));
+    }
+
+    private void onResumeGame(ResumeGameMsg msg) {
+        resumeGame(roomManager.getJoinedRoom(msg.getUser()));
+    }
+
     private void onPickChess(ChessPickMsg chessPickMsg) {
         User user = chessPickMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
@@ -117,9 +124,8 @@ public class PlayMessageListener extends AbstractMessageListener {
         action.setChessType(chessboardState.chessAt(chessMoveMsg.getFromPos(), action.getChessHost()).type);
         action.setFromPos(chessMoveMsg.getFromPos());
         action.setToPos(chessMoveMsg.getToPos());
-        if (chessMoveMsg.getMoveType() == 2) {
-            action.setEatenChess(chessboardState.chessAt(chessMoveMsg.getToPos(), action.getChessHost()));
-        }
+        action.setEatenChess(chessboardState.chessAt(chessMoveMsg.getToPos(), action.getChessHost()));
+
         room.getGame().getActionStack().push(action);
 
         chessboardState.moveChess(
@@ -129,7 +135,6 @@ public class PlayMessageListener extends AbstractMessageListener {
 
         ChessMoveServerMsg result = new ChessMoveServerMsg();
         result.setChessHost(room.getChessHost(user).code());
-        result.setMoveType(chessMoveMsg.getMoveType());
         result.setFromPos(chessMoveMsg.getFromPos());
         result.setToPos(chessMoveMsg.getToPos());
         roomManager.broadcast(room, result, user);
@@ -139,7 +144,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         User user = confirmRequestMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
-        if (room.getGame() == null || room.getGame().getState() != GameState.PLAYING) {
+        if (room.getGame() == null || room.getGame().getState() == null) {
             return;
         }
 
@@ -154,7 +159,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         User user = confirmResponseMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
-        if (room.getGame() == null || room.getGame().getState() != GameState.PLAYING) {
+        if (room.getGame() == null || room.getGame().getState() == null) {
             return;
         }
 
@@ -167,11 +172,15 @@ public class PlayMessageListener extends AbstractMessageListener {
             if (confirmResponseMsg.getReqType() == ConfirmRequestType.WHITE_FLAG.code()) {
                 User reqUser = room.getOtherUser(user);
                 channelManager.broadcast(room.getChannel(), new InfoMessage(reqUser.getNickname() + " 认输"));
-                this.gameOver(user.getId(), false, room);
+                gameOver(user.getId(), false, room);
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.DRAW.code()) {
-                this.gameOver(null, false, room);
+                gameOver(null, false, room);
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.WITHDRAW.code()) {
                 withdraw(room);
+            } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.PAUSE_GAME.code()) {
+                pauseGame(room);
+            } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.RESUME_GAME.code()) {
+                resumeGame(room);
             }
         }
 
@@ -215,6 +224,37 @@ public class PlayMessageListener extends AbstractMessageListener {
         roomManager.broadcast(room, new GameStartServerMsg(room.getRedChessUser(), room.getBlackChessUser()));
         userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
         channelManager.broadcast(room.getChannel(), new InfoMessage("对局开始"));
+    }
+
+    private void pauseGame(Room room) {
+        if (room.getGame() == null || room.getGame().getState() != GameState.PLAYING) {
+            return;
+        }
+
+        room.getGame().pause();
+
+        room.getUsers().forEach(user -> {
+            userActivityService.enter(user, UserActivity.IN_ROOM);
+        });
+
+        roomManager.broadcast(room, new GamePauseServerMsg());
+    }
+
+    private void resumeGame(Room room) {
+        if (room.getGame() == null ||
+            room.getGame().getState() != GameState.PAUSE ||
+            room.getOfflineAt() != null) {
+            return;
+        }
+
+        room.getGame().resume();
+
+        room.setStatus(RoomStatus.PLAYING);
+
+        room.getUsers().forEach(user -> {
+            userActivityService.enter(user, UserActivity.IN_ROOM);
+        });
+        roomManager.broadcast(room, new GameResumeServerMsg());
     }
 
     private void onGameContinue(GameContinueMsg clientMsg) {
