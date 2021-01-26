@@ -11,6 +11,12 @@
     }"
     class="channel"
   >
+    <q-inner-loading
+      :showing="loading"
+      class="bg-transparent"
+      color="primary"
+      size="2em"
+    />
     <chat-line
       v-for="msg in messages"
       :key="msg.id"
@@ -35,6 +41,7 @@ export default defineComponent({
       type: Object as PropType<Channel>,
       require: true,
     },
+    loading: Boolean,
     chatLineProps: Object,
   },
   setup(props) {

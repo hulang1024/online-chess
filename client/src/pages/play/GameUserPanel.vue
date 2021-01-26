@@ -4,12 +4,12 @@
     class="game-user-panel"
   >
     <div
-      class="row items-start"
+      class="row items-center"
       :class="{reverse}"
     >
       <circle-timer
         ref="circleStepTimer"
-        size="66px"
+        size="68px"
         class="user-avatar-frame"
         :color="color"
       >
@@ -18,9 +18,16 @@
           :online="online"
           class=""
           :class="[{afk: user && (status == UserStatus.AFK), 'shadow-1': !!user}]"
-          size="60px"
+          size="62px"
           @click="onUserAvatarClick"
-        />
+        >
+          <ready-status-display
+            v-if="$q.screen.xs"
+            v-show="user && showReadyStatus"
+            :is-ready="readied"
+            class="info-overlay absolute-center"
+          />
+        </user-avatar>
         <div
           v-show="user && (status == UserStatus.AFK || !online)"
           class="absolute-bottom-right user-status"
@@ -30,8 +37,9 @@
       </circle-timer>
       <div
         v-show="user"
+        class="user-info"
         :class="`q-m${reverse ? 'r' : 'l'}-xs`"
-        :style="{textAlign: reverse && 'right'}"
+        :style="{textAlign: reverse ? 'right' : 'left'}"
       >
         <div class="nickname ellipsis">
           {{ user && user.nickname }}
@@ -47,6 +55,11 @@
           </div>
         </div>
       </div>
+      <ready-status-display
+        v-if="!$q.screen.xs"
+        v-show="user && showReadyStatus"
+        :is-ready="readied"
+      />
     </div>
   </q-card>
 </template>
@@ -61,15 +74,23 @@ import UserStatus from "src/user/UserStatus";
 import ChessHost from "src/rule/chess_host";
 import Timer from "./timer/Timer.vue";
 import CircleTimer from "./timer/CircleTimer.vue";
+import ReadyStatusDisplay from "./ReadyStatusDisplay.vue";
 
 export default defineComponent({
-  components: { UserAvatar, Timer, CircleTimer },
+  components: {
+    UserAvatar,
+    Timer,
+    CircleTimer,
+    ReadyStatusDisplay,
+  },
   props: {
     user: Object as PropType<User>,
     online: Boolean,
+    readied: Boolean,
     status: Number as PropType<UserStatus>,
     chessHost: Number as PropType<ChessHost | undefined>,
     active: Boolean,
+    showReadyStatus: Boolean,
     reverse: Boolean,
   },
   inject: ['showUserDetails'],
@@ -77,7 +98,9 @@ export default defineComponent({
     const context = getCurrentInstance() as Vue;
 
     const color = computed(() => ((props.user && props.active)
-      ? (props.chessHost == ChessHost.RED ? 'red' : context.$q.dark.isActive ? 'grey-2' : 'black')
+      ? (props.chessHost == ChessHost.RED
+        ? 'red'
+        : context.$q.dark.isActive ? 'grey-2' : 'black')
       : 'transparent'));
 
     const onUserAvatarClick = () => {
@@ -100,13 +123,12 @@ export default defineComponent({
 
 <style lang="sass" scoped>
 .game-user-panel
-  width: 194px
   background: transparent
 
 .nickname
   width: 124px
-  font-size: 1.1em
-  font-weight: bold
+  font-size: 1.2em
+  font-weight: 400
 
 .chess-host
   &::before
@@ -121,12 +143,24 @@ export default defineComponent({
     opacity: 0.6 !important
 
   .user-status
-    font-size: 10px
+    font-size: 12px
+
+  .info-overlay
+    width: 100%
+    height: 100%
+    display: flex
+    justify-content: center
+    align-items: center
+    font-size: 14px
+    background: rgba(0,0,0,0.3)
+    border-radius: 100%
+    transition: all 0.2s ease
 
 .time-panel
   .item
+    user-select: none
     .label
-      padding-right: 4px
+      padding-right: 2px
       font-size: 1em
       &::after
         content: ':'

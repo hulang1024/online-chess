@@ -1,3 +1,5 @@
+import Signal from "src/utils/signals/Signal";
+
 export enum ConfigItem {
   username = 'username',
   password = 'password',
@@ -10,6 +12,8 @@ export enum ConfigItem {
 }
 
 export default class ConfigManager {
+  public changed = new Signal();
+
   private store: {[key: string]: unknown} = {};
 
   private loaded = false;
@@ -51,6 +55,7 @@ export default class ConfigManager {
 
   public set(key: string, value: unknown) {
     this.store[key] = value;
+    this.changed.dispatch(key, value);
   }
 
   public get(key: string) {

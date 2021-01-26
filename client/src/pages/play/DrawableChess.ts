@@ -37,18 +37,32 @@ export default class DrawableChess implements Chess {
   private load() {
     const el = document.createElement('div');
     this._el = el;
+    const color = this.chess.getHost() == ChessHost.RED ? '#dd1100' : '#443322';
     el.className = 'chess shadow-2';
     el.style.position = 'absolute';
     el.style.display = 'flex';
     el.style.justifyContent = 'center';
     el.style.alignItems = 'center';
-    el.style.backgroundColor = this.chess.getHost() == ChessHost.RED ? '#dd1100' : '#443322';
+    el.style.backgroundColor = '#f5e1c1';
     el.style.userSelect = 'none';
-    el.style.color = '#f6f6f6';
+    el.style.color = color;
     el.style.outlineOffset = '1px';
     el.style.fontWeight = 'bolder';
     el.style.textAlign = 'center';
     el.style.lineHeight = `${this.radius * 2}px`;
+
+    const circle = document.createElement('div');
+    circle.className = 'chess__circle';
+    circle.style.display = 'flex';
+    circle.style.justifyContent = 'center';
+    circle.style.alignItems = 'center';
+    circle.style.width = 'calc(100% - 4px)';
+    circle.style.height = 'calc(100% - 4px)';
+    circle.style.border = `1px solid ${color}`;
+    circle.style.borderRadius = '100%';
+
+    el.appendChild(circle);
+
     this.setFront(this.chess.isFront());
     el.onmouseenter = () => {
       if (!this.enabled || this.lit || this.selected) return;
@@ -154,7 +168,8 @@ export default class DrawableChess implements Chess {
 
   public setFront(b: boolean) {
     this.chess.setFront(b);
-    this.el.innerText = this.chess.isFront() ? chessClassToText(this.chess) : '';
+    const circle = this.el.firstChild as HTMLDivElement;
+    circle.innerText = this.chess.isFront() ? chessClassToText(this.chess) : '';
   }
 
   public isFront() {

@@ -4,6 +4,8 @@ import ServerMsg from "../ServerMsg";
 
 export const readied = new Signal();
 export const gameStarted = new Signal();
+export const gamePause = new Signal();
+export const gameResume = new Signal();
 export const gameOver = new Signal();
 export const chessPickup = new Signal();
 export const chessMoved = new Signal();
@@ -36,7 +38,6 @@ export interface ChessPickUpMsg extends ServerMsg {
 }
 
 export interface ChessMoveMsg extends ServerMsg {
-  moveType: number;
   chessHost: number;
   fromPos: ServerMsgPos;
   toPos: ServerMsgPos;

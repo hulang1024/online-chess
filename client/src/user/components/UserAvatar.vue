@@ -18,6 +18,7 @@
     >
       {{ id && id > 0 ? (nickname ? nickname.substring(0,1) : '') : '' }}
     </span>
+    <slot />
   </q-avatar>
 </template>
 

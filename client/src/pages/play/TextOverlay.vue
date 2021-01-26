@@ -3,6 +3,7 @@
     v-show="visible"
     transition-show="fade"
     transition-hide="fade"
+    flat
     :class="[`q-py-${$q.screen.xs ? 'xs' : 'sm'}`, 'full-width']"
   >
     <span class="text-subtitle1">{{ _text }}</span>
@@ -43,7 +44,7 @@ export default defineComponent({
 
 <style lang="sass" scoped>
 .q-card
-  background: rgba(0,0,0,0.5)
+  background: rgba(0,0,0,0.2)
   color: white
   text-align: center
 

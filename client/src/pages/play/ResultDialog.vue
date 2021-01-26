@@ -5,17 +5,17 @@
   >
     <q-card style="width: 300px">
       <q-card-section class="row items-center">
-        <span class="q-ml-sm">{{ displayText }}</span>
+        <span class="q-ml-sm text-h6">{{ displayText }}</span>
       </q-card-section>
 
       <q-card-actions align="right">
-        <u-button
+        <q-btn
           label="退出"
           @click="() => onAction('quit')"
           color="negative"
           v-close-popup
         />
-        <u-button
+        <q-btn
           label="再来"
           @click="() => onAction('again')"
           color="primary"
@@ -40,8 +40,8 @@ export default defineComponent({
       {result: number, isTimeout: boolean, action: (action: string) => void}) => {
       const textMap: { [t: number]: string } = {
         0: '平局',
-        1: `${isTimeout ? '因为对方超时，' : ''}你赢了!`,
-        2: `${isTimeout ? '因为超时，' : ''}你输了`,
+        1: isTimeout ? '对方超时，你赢了！' : '你赢了！',
+        2: isTimeout ? '你因为超时输了' : '你输了',
       };
       displayText.value = textMap[result];
       actionCallback = action;

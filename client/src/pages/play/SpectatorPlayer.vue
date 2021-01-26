@@ -1,308 +1,65 @@
 <template>
-  <q-page :class="[!isXSScreen && 'row items-center q-pl-sm']">
-    <template v-if="isXSScreen">
-      <div>
-        <game-user-panel
-          ref="otherGameUserPanel"
-          :user="otherUser"
-          :online="otherOnline"
-          :status="otherUserStatus"
-          :chess-host="otherChessHost"
-          :active="activeChessHost == otherChessHost"
-          class="q-pt-sm q-ml-sm"
-        />
-        <div class="row absolute-top-right q-mt-sm q-mr-sm">
-          <spectators-count-display
-            :count="spectatorCount"
-            class="q-mr-sm"
-          />
-          <u-button
-            outline
-            label="邀请"
-            color="orange"
-            @click.stop="onInviteClick"
-          />
-        </div>
-        <playfield
-          ref="playfield"
-          class="absolute-center"
-        >
-          <text-overlay
-            ref="textOverlay"
-            class="absolute-center"
-          />
-        </playfield>
-        <q-btn
-          color="orange"
-          label="菜单"
-          class="fixed-bottom-left q-mb-sm q-ml-sm"
-        >
-          <q-menu
-            transition-show="jump-up"
-            transition-hide="jump-down"
-            :offset="[0, 8]"
-            auto-close
-          >
-            <q-list style="min-width: 100px">
-              <q-item
-                clickable
-                v-close-popup
-                @click="onToggleViewClick"
-              >
-                <q-item-section>切换</q-item-section>
-              </q-item>
-              <q-separator />
-              <q-item
-                clickable
-                v-close-popup
-                @click="onQuitClick"
-              >
-                <q-item-section>离开</q-item-section>
-              </q-item>
-            </q-list>
-          </q-menu>
-        </q-btn>
-        <game-user-panel
-          ref="viewGameUserPanel"
-          :user="viewUser"
-          :online="viewOnline"
-          :status="viewUserStatus"
-          :chess-host="viewChessHost"
-          :active="activeChessHost == viewChessHost"
-          reverse
-          class="fixed-bottom-right q-mr-sm q-mb-sm"
-        />
-      </div>
+  <player-view
+    ref="playerView"
+    :room="room"
+    :game-state="gameState"
+    :game-status="gameStatus"
+    :is-playing="isPlaying"
+    :can-withdraw="canWithdraw"
+    :view-user="viewUser"
+    :other-user="otherUser"
+    :spectator-count="spectatorCount"
+    :enable-game-rule-buttons="false"
+    :reverse="reverse"
+    @quit="onQuitClick"
+    @chat="onChatClick"
+  >
+    <template #xs-screen-main-buttons>
+      <q-item
+        clickable
+        v-close-popup
+        @click="onToggleViewClick"
+      >
+        <q-item-section>切换</q-item-section>
+      </q-item>
+      <q-separator />
     </template>
-    <template v-else>
-      <playfield ref="playfield">
-        <text-overlay
-          ref="textOverlay"
-          class="absolute-center"
-        />
-      </playfield>
-      <div ref="controls" class="controls">
-        <spectators-count-display
-          show-always
-          :count="spectatorCount"
-          class="q-mb-xs"
-          style="text-align: right"
-        />
-        <q-card
-          flat
-          class="q-mb-xs q-px-sm q-py-sm"
-        >
-          <game-user-panel
-            ref="otherGameUserPanel"
-            :user="otherUser"
-            :online="otherOnline"
-            :status="otherUserStatus"
-            :chess-host="otherChessHost"
-            :active="activeChessHost == otherChessHost"
-          />
-          <q-separator class="q-my-sm" />
-          <game-user-panel
-            ref="viewGameUserPanel"
-            :user="viewUser"
-            :online="viewOnline"
-            :status="viewUserStatus"
-            :chess-host="viewChessHost"
-            :active="activeChessHost == viewChessHost"
-          />
-        </q-card>
-        <q-card
-          flat
-          class="q-mb-xs q-py-sm"
-        >
-          <div class="flex justify-evenly q-gutter-y-sm">
-            <u-button
-              label="切换"
-              color="warning"
-              @click="onToggleViewClick"
-            />
-            <u-button
-              label="邀请"
-              color="orange"
-              @click.stop="onInviteClick"
-            />
-            <u-button
-              label="离开"
-              color="negative"
-              @click="onQuitClick"
-            />
-          </div>
-        </q-card>
-
-        <chat-panel ref="chatPanel" />
-      </div>
+    <template #main-buttons>
+      <u-button
+        label="切换"
+        color="warning"
+        @click="onToggleViewClick"
+      />
     </template>
-  </q-page>
+  </player-view>
 </template>
 
 <script lang="ts">
-import {
-  computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, Ref, ref,
-} from '@vue/composition-api';
-import GameState from 'src/online/play/GameState';
-import ChessHost from 'src/rule/chess_host';
-import User from 'src/user/User';
-import { bindableBindToRef, createBoundRef } from 'src/utils/vue/vue_ref_utils';
+import { defineComponent, getCurrentInstance } from '@vue/composition-api';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
-import UserStatus from 'src/user/UserStatus';
-import DrawableChessboard from './DrawableChessboard';
+import PlayerView from './PlayerView.vue';
+import ReadyOverlay from './ReadyOverlay.vue';
 import SpectatorPlayer from './SpectatorPlayer';
-import Playfield from './Playfield';
-import PlayfieldView from './Playfield.vue';
-import GameUserPanel from './GameUserPanel.vue';
-import SpectatorsCountDisplay from './SpectatorsCountDisplay.vue';
-import ResultDialog from './ResultDialog.vue';
-import TextOverlay from './TextOverlay.vue';
-import ChatPanel from './ChatPanel.vue';
+import { usePlayerStates } from './PlayerComponentStates';
 
 export default defineComponent({
   components: {
-    Playfield: PlayfieldView,
-    GameUserPanel,
-    SpectatorsCountDisplay,
-    ResultDialog,
-    TextOverlay,
-    ChatPanel,
-  },
-  inject: ['reload'],
-  watch: {
-    $route() {
-      // eslint-disable-next-line
-      (this.reload as any)();
-    },
+    PlayerView,
+    ReadyOverlay,
   },
   setup() {
-    /*
-    const ctx = getCurrentInstance() as Vue;
-    const { $route } = ctx;
-    const { spectateResponse } = $route.params;
+    const context = getCurrentInstance() as Vue;
+    const { spectateResponse } = context.$route.params as
+      unknown as { spectateResponse: SpectateResponse };
 
-    const player = new SpectatorPlayer(ctx, spectateResponse as unknown as SpectateResponse);
-    const gameState: Ref<GameState> = createBoundRef(player.gameState);
-    const isPlaying = computed(() => gameState.value == GameState.PLAYING);
-    const activeChessHost: Ref<ChessHost | null> = createBoundRef(player.activeChessHost);
-    const viewChessHost: Ref<ChessHost> = createBoundRef(player.viewChessHost);
-    const spectatorCount: Ref<number> = createBoundRef(player.spectatorCount);
-
-    const otherChessHost: Ref<ChessHost | null> = ref(null);
-    const viewUser: Ref<User | null> = ref(null);
-    const viewUserStatus: Ref<UserStatus | null> = ref(null);
-    const viewOnline: Ref<boolean> = ref(false);
-    const viewReadied: Ref<boolean> = ref(false);
-    const otherUser: Ref<User | null> = ref(null);
-    const otherUserStatus: Ref<UserStatus | null> = ref(null);
-    const otherOnline: Ref<boolean> = ref(false);
-    const otherReadied: Ref<boolean> = ref(false);
-
-    player.viewChessHost.addAndRunOnce((chessHost: ChessHost) => {
-      otherChessHost.value = ChessHost.reverse(chessHost);
-      [
-        player.blackUser, player.blackUserStatus,
-        player.blackOnline, player.blackReadied,
-        player.redUser, player.redUserStatus,
-        player.redOnline, player.redReadied,
-      ].forEach((bindable) => {
-        bindable.changed.removeAll(); // todo: 这里假设只有这里增加了绑定
-      });
-      if (chessHost == ChessHost.BLACK) {
-        bindableBindToRef(player.blackUser, viewUser);
-        bindableBindToRef(player.blackUserStatus, viewUserStatus);
-        bindableBindToRef(player.blackOnline, viewOnline);
-        bindableBindToRef(player.blackReadied, viewReadied);
-        bindableBindToRef(player.redUser, otherUser);
-        bindableBindToRef(player.redUserStatus, otherUserStatus);
-        bindableBindToRef(player.redOnline, otherOnline);
-        bindableBindToRef(player.redReadied, otherReadied);
-      } else {
-        bindableBindToRef(player.blackUser, otherUser);
-        bindableBindToRef(player.blackUserStatus, otherUserStatus);
-        bindableBindToRef(player.blackOnline, otherOnline);
-        bindableBindToRef(player.blackReadied, otherReadied);
-        bindableBindToRef(player.redUser, viewUser);
-        bindableBindToRef(player.redUserStatus, viewUserStatus);
-        bindableBindToRef(player.redOnline, viewOnline);
-        bindableBindToRef(player.redReadied, viewReadied);
-      }
-    });
-
-    // 有些元素随窗口尺寸变化无法实现，因此在初始时就确定屏幕大小
-    const isXSScreen = ctx.$q.screen.xs;
-
-    let onReisze: () => void;
-    onMounted(() => {
-      const pageEl = ctx.$el as HTMLElement;
-      const playfieldEl = (ctx.$refs.playfield as Vue).$el as HTMLDivElement;
-      const recalcChessboardSize = () => {
-        const width = pageEl?.offsetWidth || 0;
-        const height = (pageEl?.parentElement?.offsetHeight || 0) - 40 - 16 || 0;
-        return {
-          // eslint-disable-next-line
-          width: isXSScreen ? width : width - (ctx.$refs.controls as any).offsetWidth + 8,
-          height,
-        };
-      };
-      const chessboard = new DrawableChessboard(recalcChessboardSize(), ctx.$q.screen);
-      playfieldEl.insertBefore(chessboard.el, playfieldEl.firstChild);
-      player.playfield = new Playfield(ctx);
-      player.playfield.chessboard = chessboard;
-      player.playfield.screen = ctx.$q.screen;
-      player.playfieldLoaded.dispatch();
-
-      window.addEventListener('resize', onReisze = () => {
-        if (isXSScreen) {
-          return;
-        }
-        player.playfield.resize(recalcChessboardSize());
-      });
-    });
-    onBeforeUnmount(() => {
-      window.removeEventListener('resize', onReisze);
-    });
+    const player = new SpectatorPlayer(context, spectateResponse);
 
     return {
-      isXSScreen,
+      room: spectateResponse.room,
+      ...usePlayerStates(player),
 
-      gameState,
-      isPlaying,
-      activeChessHost,
-
-      viewUser,
-      viewUserStatus,
-      viewOnline,
-      viewReadied,
-      viewChessHost,
-
-      otherUser,
-      otherUserStatus,
-      otherOnline,
-      otherReadied,
-      otherChessHost,
-
-      spectatorCount,
-
-      onQuitClick: player.onQuitClick.bind(spectator),
-      onInviteClick: player.onInviteClick.bind(spectator),
-      onToggleViewClick: player.onToggleViewClick.bind(spectator),
+      onToggleViewClick: player.onToggleViewClick.bind(player),
     };
-    */
   },
 });
 </script>
-
-<style lang="sass" scoped>
-.q-page
-  flex-wrap: nowrap
-.controls
-  padding: 8px
-  width: 310px
-  display: flex
-  flex-direction: column
-  min-height: inherit
-
-  .chat-panel
-    flex-grow: 1
-</style>

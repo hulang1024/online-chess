@@ -53,5 +53,5 @@ export default defineComponent({
 <style lang="sass" scoped>
 .timer
   display: inline-block
-
+  user-select: none
 </style>

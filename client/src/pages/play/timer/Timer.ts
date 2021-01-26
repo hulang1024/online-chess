@@ -123,7 +123,7 @@ export default class Timer {
       if (this.soundEnabled && this.seconds.value <= 10) {
         const soundStart = Math.ceil(this.totalSeconds.value / 3);
         if (this.seconds.value <= soundStart) {
-          GameAudio.play(`gameplay/count/${this.seconds.value}`);
+          GameAudio.play(`gameplay/count/zh/${this.seconds.value}`);
         }
       }
     }, 1000);

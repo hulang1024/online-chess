@@ -1,7 +1,7 @@
 <template>
   <q-card
     class="list-user-card text-white"
-    :style="{backgroundColor}"
+    :style="{backgroundColor: statusStates.color}"
     flat
     v-ripple
   >
@@ -10,7 +10,7 @@
         :user="user"
         :online="userStatus != UserStatus.OFFLINE"
         rounded
-        :size="$q.screen.xs ? '48px' : '56px'"
+        :size="$q.screen.xs ? '48px' : '58px'"
         @click="$emit('user-avatar-click')"
       />
       <q-icon
@@ -36,7 +36,7 @@
             v-if="userStatus != UserStatus.OFFLINE"
             class="q-mr-xs"
           >[{{ loginDeviceOS != 'unknown' ? loginDeviceOS : '' }}在线]</span>
-          <span>[{{ userStatusText }}]</span>
+          <span>[{{ statusStates.text }}]</span>
         </div>
       </div>
     </div>
@@ -70,36 +70,35 @@ export default defineComponent({
     const USER_STATUS_MAP = {
       [UserStatus.OFFLINE]: {
         text: '离线',
-        color: ctx.$q.dark.isActive ? '#1f1f1f' : '#eee',
+        color: ctx.$q.dark.isActive ? '#1f1f1f' : '#f5f5f5',
       },
       [UserStatus.ONLINE]: {
         text: '现在空闲',
-        color: '#8bc34a',
+        color: '#e1f5fe',
       },
       [UserStatus.AFK]: {
         text: '暂时离开',
-        color: 'grey',
+        color: '#757575',
       },
       [UserStatus.IN_LOBBY]: {
         text: '正在大厅',
-        color: '#8bc34a',
+        color: '#3f51b5',
       },
       [UserStatus.IN_ROOM]: {
         text: '准备游戏',
-        color: '#af52c6',
+        color: '#ff9800',
       },
       [UserStatus.PLAYING]: {
         text: '正在游戏',
-        color: '#ff9800',
+        color: '#fdd835',
       },
       [UserStatus.SPECTATING]: {
         text: '正在旁观',
-        color: '#3f51b5',
+        color: '#7870c2',
       },
     };
 
-    const backgroundColor = computed(() => USER_STATUS_MAP[states.userStatus].color);
-    const userStatusText = computed(() => USER_STATUS_MAP[states.userStatus].text);
+    const statusStates = computed(() => USER_STATUS_MAP[states.userStatus]);
 
     watch(props, () => {
       states.userStatus = props.user?.status as UserStatus;
@@ -118,8 +117,7 @@ export default defineComponent({
       UserStatus,
       ...props.user,
       ...toRefs(states),
-      userStatusText,
-      backgroundColor,
+      statusStates,
     };
   },
 });
@@ -137,7 +135,7 @@ export default defineComponent({
 
 .nickname
   width: 176px
-  font-size: 1.2em
+  font-size: 1.22em
   font-weight: 500
 
 .status-desc

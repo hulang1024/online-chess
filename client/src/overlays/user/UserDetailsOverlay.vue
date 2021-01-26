@@ -61,7 +61,7 @@
             <label>用户注册时间: </label>
             <span>{{ user.registerTime }}</span>
           </div>
-          <div v-if="localUser.isAdmin">
+          <div>
             <label>用户ID: </label>
             <span>{{ user.id }}</span>
           </div>

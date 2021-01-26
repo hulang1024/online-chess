@@ -134,6 +134,7 @@ export default defineComponent({
 .row > .content-colon {
   padding-right: 12px;
   font-weight: 600;
+  user-select: none
 }
 
 .row.small > .content-colon {

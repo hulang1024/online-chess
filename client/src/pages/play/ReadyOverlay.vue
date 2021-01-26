@@ -1,7 +1,7 @@
 <template>
-  <q-card
+  <div
     v-show="visible"
-    class="ready-overlay row justify-center text-white q-py-lg"
+    class="ready-overlay row justify-center"
   >
     <q-btn
       label="邀请"
@@ -16,10 +16,10 @@
     />
     <q-btn
       label="离开"
-      color="warning"
+      color="orange"
       @click="onQuitClick"
     />
-  </q-card>
+  </div>
 </template>
 
 <script lang="ts">
@@ -55,8 +55,8 @@ export default defineComponent({
           label.value = readied ? '取消准备' : '准备!';
           color.value = readied ? 'info' : 'primary';
           disable.value = false;
-          visible.value = true;
         }
+        visible.value = true;
       } else {
         visible.value = false;
       }
@@ -89,7 +89,7 @@ export default defineComponent({
 
   .q-btn
     margin: 0px 4px
-    width: 92px
+    width: 96px
     font-weight: bold
     letter-spacing: 1px
 

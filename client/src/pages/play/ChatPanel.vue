@@ -7,6 +7,7 @@
     <drawable-channel
       v-if="channel"
       :channel="channel"
+      :loading="loading"
       :chat-line-props="{
         rightAlign: false,
         small: true
@@ -47,6 +48,7 @@ export default defineComponent({
     const inputEnabled = ref(true);
     const channel = ref<Channel | null>(null);
     const channelHeight = ref<number>(0);
+    const loading = ref(true);
 
     onMounted(() => {
       channelHeight.value = context.$el.scrollHeight - 92;
@@ -58,6 +60,7 @@ export default defineComponent({
 
     const loadChannel = (ch: Channel) => {
       channel.value = ch;
+      loading.value = false;
     };
 
     const onSend = () => {
@@ -84,6 +87,7 @@ export default defineComponent({
 
     return {
       channel,
+      loading,
 
       messageText,
       inputEnabled,

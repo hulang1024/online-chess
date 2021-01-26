@@ -15,6 +15,8 @@ export default class Room {
 
   status: number;
 
+  offlineAt: string | null;
+
   channelId: number;
 
   owner: User;

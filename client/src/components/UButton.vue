@@ -3,7 +3,9 @@
     unelevated
     v-bind="$attrs"
     @click="$listeners.click"
-  />
+  >
+    <slot />
+  </q-btn>
 </template>
 
 <script lang="ts">

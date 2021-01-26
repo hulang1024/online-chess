@@ -22,6 +22,7 @@ const routes: RouteConfig[] = [
       { path: '', name: 'spectate', component: () => import('pages/play/SpectatorPlayer.vue') },
     ],
   },
+
   // Always leave this as last one,
   // but you can also remove it
   {

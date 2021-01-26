@@ -2,7 +2,7 @@
   <q-card
     v-ripple
     :style="{
-      borderLeft: `5px solid ${statusColor}`,
+      borderLeft: `5px solid ${statusStates.color}`,
       cursor: 'pointer',
     }"
     @click="onClick"
@@ -11,7 +11,7 @@
       <div class="text-body1">
         {{ name }}
       </div>
-      <div class="text-caption">{{ statusText }}</div>
+      <div class="text-caption">{{ statusStates.text }}</div>
     </q-card-section>
     <q-card-section
       horizontal
@@ -69,15 +69,14 @@ export default defineComponent({
       },
       2: {
         text: '即将开始(可旁观)',
-        color: '#af52c6',
+        color: '#ff9800',
       },
       3: {
         text: '进行中(可旁观)',
-        color: '#ff9800',
+        color: '#fdd835',
       },
     };
-    const statusColor = computed(() => ROOM_STATUS_MAP[roomStates.status].color);
-    const statusText = computed(() => ROOM_STATUS_MAP[roomStates.status].text);
+    const statusStates = computed(() => ROOM_STATUS_MAP[roomStates.status]);
 
     watch(props, () => {
       roomStates.name = props.room.name;
@@ -142,8 +141,7 @@ export default defineComponent({
 
     return {
       ...toRefs(roomStates),
-      statusColor,
-      statusText,
+      statusStates,
       onClick,
     };
   },

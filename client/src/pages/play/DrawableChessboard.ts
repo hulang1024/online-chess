@@ -1,3 +1,5 @@
+import { configManager } from "src/boot/main";
+import { ConfigItem } from "src/config/ConfigManager";
 import Chess from "src/rule/Chess";
 import Chessboard from "src/rule/Chessboard";
 import ChessPos from "src/rule/ChessPos";
@@ -13,7 +15,7 @@ export default class DrawableChessboard implements Chessboard {
 
   public get bounds() { return this._bounds; }
 
-  public enabled = false;
+  public _enabled = false;
 
   public readonly chessPickupOrDrop: Signal = new Signal();
 
@@ -49,7 +51,18 @@ export default class DrawableChessboard implements Chessboard {
     el.style.position = 'relative';
     el.style.padding = `${this.padding}px`;
     el.style.borderRadius = '4px';
-    el.style.background = '#e8b161';
+
+    const drawBackground = () => {
+      const isDark = configManager.get(ConfigItem.theme) == 'dark';
+      this.el.style.background = isDark ? 'transparent' : '#eab76c';
+    };
+    drawBackground();
+    configManager.changed.add((key: string) => {
+      if (key == ConfigItem.theme) {
+        drawBackground();
+      }
+    });
+
     el.onclick = this.onClick.bind(this);
 
     this.setupDragable();
@@ -79,6 +92,23 @@ export default class DrawableChessboard implements Chessboard {
     });
   }
 
+  public get enabled() { return this._enabled; }
+
+  public set enabled(val: boolean) {
+    this._enabled = val;
+    this.getChessList().forEach((chess) => {
+      chess.enabled = val;
+    });
+  }
+
+  public show() {
+    this.el.classList.remove('elements-hide');
+  }
+
+  public hide() {
+    this.el.classList.add('elements-hide');
+  }
+
   private setupDragable() {
     const el = this._el;
 
@@ -104,10 +134,7 @@ export default class DrawableChessboard implements Chessboard {
     };
   }
 
-  onClick(event: MouseEvent) {
-    if (!this.enabled) {
-      return;
-    }
+  private onClick(event: MouseEvent) {
     const pos = this.chessPosFromInputEvent(event);
 
     const clickedArgs = { pos, chess: this.chessAt(pos) };
@@ -347,9 +374,14 @@ export default class DrawableChessboard implements Chessboard {
     const { x, y } = this.calcChessDisplayPos(chess.getPos());
     chess.x = x;
     chess.y = y;
-    // 可能重复加，删除之前绑定的处理器
-    chess.clicked.remove(this.onChessClick.bind(this), this);
-    chess.clicked.add(this.onChessClick.bind(this), this);
+
+    chess.clicked.removeAll();
+    chess.pickup.removeAll();
+    chess.drop.removeAll();
+
+    chess.clicked.add(() => {
+      this.clicked.dispatch({ chess, pos: chess.getPos() });
+    });
     chess.pickup.add(() => {
       this.chessPickupOrDrop.dispatch({ chess, isPickup: true });
     });
@@ -359,8 +391,15 @@ export default class DrawableChessboard implements Chessboard {
     this._el.appendChild(chess.el);
   }
 
-  private onChessClick(chess: Chess) {
-    this.clicked.dispatch({ chess, pos: chess.getPos() });
+  public clear() {
+    for (let row = 0; row < 10; row++) {
+      for (let col = 0; col < 9; col++) {
+        const chess = this.chessAt(new ChessPos(row, col));
+        if (chess) {
+          this.removeChess(chess);
+        }
+      }
+    }
   }
 
   public calcChessDisplayPos(pos: ChessPos) {
