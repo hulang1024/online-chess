@@ -8,16 +8,17 @@ export default class SampleStore {
   }
 
   public get(name: string): HTMLAudioElement {
-    let audio = this.sampleCache[name];
+    const key = name.lastIndexOf('.') > -1 ? name.substring(0, name.lastIndexOf('.')) : name;
+    let audio = this.sampleCache[key];
     if (audio) {
       return audio;
     }
 
     audio = new Audio();
-    audio.src = `/audio/${name}.wav`;
+    audio.src = `/audio/${name}${name.lastIndexOf('.') > -1 ? '' : '.wav'}`;
     audio.load();
 
-    this.sampleCache[name] = audio;
+    this.sampleCache[key] = audio;
 
     return audio;
   }
@@ -29,9 +30,14 @@ export default class SampleStore {
   }
 
   private loadAll() {
-    const names = ['room/user_join', 'room/user_left', 'new_invitation', 'gameplay/chess_move'];
+    const names = [
+      'room/user_join', 'room/user_left', 'room/unready', 'room/readied',
+      'new_invitation',
+      'gameplay/started.mp3',
+      'gameplay/chess_move',
+    ];
     for (let count = 1; count <= 10; count++) {
-      names.push(`gameplay/count/${count}`);
+      names.push(`gameplay/count/zh/${count}.mp3`);
     }
 
     names.forEach((name) => {
