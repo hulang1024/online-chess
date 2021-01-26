@@ -153,7 +153,12 @@ export default class GameRule implements Game {
     ).start();
 
     const judgementShowDelay = duration ? duration - 50 : duration;
-    if (eatenChess) {
+
+    if (this.checkmateJudgement.judge(ChessHost.reverse(action.chessHost))) {
+      setTimeout(() => {
+        this.drawableCheckmateJudgement.show(action.chessHost);
+      }, judgementShowDelay);
+    } else if (eatenChess) {
       // 判断胜负
       if (eatenChess != null && eatenChess.is(ChessK)) {
         this.onGameOver(chess.getHost());
@@ -161,12 +166,6 @@ export default class GameRule implements Game {
       }
       setTimeout(() => {
         this.drawableEatJudgement.show(eatenChess.chess);
-      }, judgementShowDelay);
-    }
-
-    if (this.checkmateJudgement.judge(ChessHost.reverse(action.chessHost))) {
-      setTimeout(() => {
-        this.drawableCheckmateJudgement.show(action.chessHost);
       }, judgementShowDelay);
     }
 
