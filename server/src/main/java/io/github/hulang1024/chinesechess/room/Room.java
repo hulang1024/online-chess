@@ -69,7 +69,6 @@ public class Room {
     /**
      * 房间内所有用户都离线则记录房间离线时间，否则为null
      */
-    @JSONField(serialize = false)
     private LocalDateTime offlineAt;
 
     private int gameCount = 0;
