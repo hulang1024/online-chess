@@ -38,7 +38,7 @@ import ResponseGameStates from 'src/online/play/game_states_response';
 import PlayerView from './PlayerView.vue';
 import ReadyOverlay from './ReadyOverlay.vue';
 import Player from './Player';
-import { usePlayerStates } from './PlayerComponentStates';
+import { usePlayerStates } from './PlayerViewStates';
 
 export default defineComponent({
   components: {

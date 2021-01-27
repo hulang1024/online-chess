@@ -40,7 +40,7 @@ import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import PlayerView from './PlayerView.vue';
 import ReadyOverlay from './ReadyOverlay.vue';
 import SpectatorPlayer from './SpectatorPlayer';
-import { usePlayerStates } from './PlayerComponentStates';
+import { usePlayerStates } from './PlayerViewStates';
 
 export default defineComponent({
   components: {
