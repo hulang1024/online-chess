@@ -2,10 +2,14 @@ import Chess from "src/rule/Chess";
 import ChessHost from "src/rule/chess_host";
 import { chessClassToText } from "src/rule/chess_map";
 
+const TRANSITION_DURATION = 200;
+
 export default class DrawableEatJudgement {
   public el: HTMLDivElement;
 
   private sub: HTMLDivElement;
+
+  private timer: NodeJS.Timeout | null;
 
   constructor() {
     const el = document.createElement('div');
@@ -22,12 +26,25 @@ export default class DrawableEatJudgement {
   }
 
   public show(eatenChess: Chess) {
-    const chessHostText = eatenChess?.getHost() == ChessHost.RED ? '红' : '黑';
-    this.sub.innerText = `（${chessHostText}${chessClassToText(eatenChess)}被吃）`;
-    this.el.style.display = 'block';
-    this.el.classList.add('show');
-    setTimeout(() => {
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
       this.el.classList.remove('show');
+      setTimeout(() => this.show(eatenChess), TRANSITION_DURATION);
+      return;
+    }
+
+    this.el.style.display = 'block';
+    const color = eatenChess?.getHost() == ChessHost.RED ? 'red' : 'black';
+    this.sub.innerHTML = `（<span style="color:${color}">${chessClassToText(eatenChess)}</span>被吃）`;
+    this.el.classList.add('show');
+
+    this.timer = setTimeout(() => {
+      this.el.classList.remove('show');
+      this.timer = null;
+      setTimeout(() => {
+        this.el.style.display = 'none';
+      }, TRANSITION_DURATION + 50);
     }, 2000);
   }
 }

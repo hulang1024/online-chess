@@ -1,7 +1,11 @@
 import ChessHost from "src/rule/chess_host";
 
+const TRANSITION_DURATION = 200;
+
 export default class DrawableCheckmateJudgement {
   public el: HTMLDivElement;
+
+  private timer: NodeJS.Timeout;
 
   constructor() {
     const el = document.createElement('div');
@@ -11,11 +15,16 @@ export default class DrawableCheckmateJudgement {
   }
 
   public show(actionChessHost: ChessHost) {
+    clearTimeout(this.timer);
+
     this.el.style.display = 'block';
     const colorClass = actionChessHost == ChessHost.RED ? 'red' : 'black';
     this.el.classList.add(colorClass, 'show');
-    setTimeout(() => {
+    this.timer = setTimeout(() => {
       this.el.classList.remove(colorClass, 'show');
+      setTimeout(() => {
+        this.el.style.display = 'none';
+      }, TRANSITION_DURATION + 50);
     }, 2000);
   }
 }
