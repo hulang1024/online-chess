@@ -44,6 +44,11 @@ export default {};
   font-weight: 500;
 }
 
+.playfield >>> .eat-judgement .chess-name {
+  text-shadow: 0px 0px 1px white;
+  font-weight: bold;
+}
+
 .playfield >>> .eat-judgement.show {
   opacity: 1;
 }

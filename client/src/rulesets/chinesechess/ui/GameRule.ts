@@ -1,21 +1,21 @@
-import ChessK from 'src/rule/chess/ChessK';
-import ChessAction from 'src/rule/ChessAction';
-import ChessPos from 'src/rule/ChessPos';
-import ChessHost from 'src/rule/chess_host';
-import CheckmateJudgement from 'src/rule/CheckmateJudgement';
-import HistoryRecorder from 'src/rule/HistoryRecorder';
+import ChessK from 'src/rulesets/chinesechess/chess/ChessK';
+import ChessAction from 'src/rulesets/chinesechess/ChessAction';
+import ChessPos from 'src/rulesets/chinesechess/ChessPos';
+import ChessHost from 'src/rulesets/chinesechess/chess_host';
+import CheckmateJudgement from 'src/rulesets/chinesechess/CheckmateJudgement';
+import HistoryRecorder from 'src/rulesets/chinesechess/HistoryRecorder';
 import Bindable from 'src/utils/bindables/Bindable';
 import BindableBool from 'src/utils/bindables/BindableBool';
-import Game from 'src/rule/Game';
+import Game from 'src/rulesets/chinesechess/Game';
 import ResponseGameStates, { ResponseGameStateChess } from "src/online/play/game_states_response";
-import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList } from 'src/rule/chess_map';
-import Chess from 'src/rule/Chess';
+import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList } from 'src/rulesets/chinesechess/chess_map';
+import Chess from 'src/rulesets/chinesechess/Chess';
 import DrawableChess from "./DrawableChess";
 import DrawableChessboard from "./DrawableChessboard";
 import ChessMoveAnimation from './ChessMoveAnimation';
 import ChessTargetDrawer from './ChessTargetDrawer';
-import DrawableEatJudgement from './judgements/DrawableEatJudgement';
-import DrawableCheckmateJudgement from './judgements/DrawableCheckmateJudgement';
+import DrawableEatJudgement from './DrawableEatJudgement';
+import DrawableCheckmateJudgement from './DrawableCheckmateJudgement';
 import Playfield from './Playfield';
 
 export default class GameRule implements Game {

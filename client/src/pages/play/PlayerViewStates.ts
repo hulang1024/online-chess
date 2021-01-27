@@ -2,7 +2,7 @@ import {
   computed, reactive, Ref, watchEffect, watch, getCurrentInstance,
 } from "@vue/composition-api";
 import GameState from "src/online/play/GameState";
-import ChessHost from "src/rule/chess_host";
+import ChessHost from "src/rulesets/chinesechess/chess_host";
 import { createBoundRef } from "src/utils/vue/vue_ref_utils";
 import GameUser from "./GameUser";
 import Player from "./Player";

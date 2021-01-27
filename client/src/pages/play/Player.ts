@@ -10,25 +10,25 @@ import * as SpectatorEvents from 'src/online/ws/events/spectator';
 import * as RoomEvents from 'src/online/ws/events/room';
 import ResponseGameStates from 'src/online/play/game_states_response';
 import SocketService from 'src/online/ws/SocketService';
-import ChessHost from 'src/rule/chess_host';
+import ChessHost from 'src/rulesets/chinesechess/chess_host';
 import Bindable from 'src/utils/bindables/Bindable';
 import BindableBool from 'src/utils/bindables/BindableBool';
 import { onBeforeUnmount, onMounted } from '@vue/composition-api';
-import ChessPos from 'src/rule/ChessPos';
+import ChessPos from 'src/rulesets/chinesechess/ChessPos';
 import { api, channelManager, socketService } from 'src/boot/main';
-import ConfirmRequest from 'src/rule/confirm_request';
+import ConfirmRequest from 'src/rulesets/chinesechess/confirm_request';
 import UserStatus from 'src/user/UserStatus';
 import User from 'src/user/User';
-import ChessAction from 'src/rule/ChessAction';
+import ChessAction from 'src/rulesets/chinesechess/ChessAction';
 import Timer from './timer/Timer';
-import DrawableChess from './DrawableChess';
-import DrawableChessboard from './DrawableChessboard';
-import Playfield from './Playfield';
+import DrawableChess from '../../rulesets/chinesechess/ui/DrawableChess';
+import DrawableChessboard from '../../rulesets/chinesechess/ui/DrawableChessboard';
+import Playfield from '../../rulesets/chinesechess/ui/Playfield';
 import CircleTimer from './timer/CircleTimer';
 import GameUser from './GameUser';
 import GameAudio from './GameAudio';
-import GameRule from './GameRule';
-import UserPlayInput from './UserPlayInput';
+import GameRule from '../../rulesets/chinesechess/ui/GameRule';
+import UserPlayInput from '../../rulesets/chinesechess/ui/UserPlayInput';
 
 export default class Player {
   public gameState = new Bindable<GameState>(GameState.READY);
@@ -227,6 +227,7 @@ export default class Player {
       if (this.isWatchingMode) {
         return;
       }
+      this.userPlayInput.disable();
       // 如果步时/读秒时间用完
       this.socketService.send('play.game_over', { winUserId: this.otherUser.id, timeout: true });
     });
@@ -600,7 +601,7 @@ export default class Player {
             activeGameUser = this.localUser;
             if (this.userPlayInput) {
               // 禁用过，现在应启用输入
-              this.userPlayInput.onTurn();
+              this.userPlayInput.enable();
             }
           } else {
             activeGameUser = this.otherUser;
@@ -645,14 +646,18 @@ export default class Player {
         activeGameUser = this.otherUser;
         inactiveGameUser = this.localUser;
       }
-      activeGameUser.stepTimer.start();
+      activeGameUser.stepTimer.restart();
       activeGameUser.gameTimer.resume();
       inactiveGameUser.stepTimer.stop();
       inactiveGameUser.gameTimer.pause();
     }
 
     if (this.userPlayInput) {
-      this.userPlayInput.onTurn();
+      if (activeChessHost == this.localUser.chessHost) {
+        this.userPlayInput.enable();
+      } else {
+        this.userPlayInput.disable();
+      }
     }
   }
 

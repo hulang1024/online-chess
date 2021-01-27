@@ -1,9 +1,10 @@
-import Chess from 'src/rule/Chess';
-import ChessPos from 'src/rule/ChessPos';
-import ChessHost from 'src/rule/chess_host';
-import { chessClassToText } from 'src/rule/chess_map';
-import Game from 'src/rule/Game';
+import Chess from 'src/rulesets/chinesechess/Chess';
+import ChessPos from 'src/rulesets/chinesechess/ChessPos';
+import ChessHost from 'src/rulesets/chinesechess/chess_host';
+import { chessClassToText } from 'src/rulesets/chinesechess/chess_map';
+import Game from 'src/rulesets/chinesechess/Game';
 import Signal from 'src/utils/signals/Signal';
+import { CHESS_BLACK, CHESS_RED } from "./colors";
 
 export default class DrawableChess implements Chess {
   private _el: HTMLDivElement;
@@ -37,7 +38,7 @@ export default class DrawableChess implements Chess {
   private load() {
     const el = document.createElement('div');
     this._el = el;
-    const color = this.chess.getHost() == ChessHost.RED ? '#dd1100' : '#443322';
+    const color = this.chess.getHost() == ChessHost.RED ? CHESS_RED : CHESS_BLACK;
     el.className = 'chess shadow-2';
     el.style.position = 'absolute';
     el.style.display = 'flex';

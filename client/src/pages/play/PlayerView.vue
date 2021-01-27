@@ -258,12 +258,12 @@ import {
 } from '@vue/composition-api';
 import GameState from 'src/online/play/GameState';
 import Room from 'src/online/room/Room';
+import Playfield from 'src/rulesets/chinesechess/ui/Playfield.vue';
+import ResultDialog from 'src/rulesets/chinesechess/ui/ResultDialog.vue';
+import TextOverlay from 'src/rulesets/chinesechess/ui/TextOverlay.vue';
 import GameUser from './GameUser';
-import Playfield from './Playfield.vue';
 import GameUserPanel from './GameUserPanel.vue';
 import SpectatorCountDisplay from './SpectatorCountDisplay.vue';
-import ResultDialog from './ResultDialog.vue';
-import TextOverlay from './TextOverlay.vue';
 import ChatPanel from './ChatPanel.vue';
 
 export default defineComponent({

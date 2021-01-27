@@ -1,8 +1,8 @@
 import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
-import Chess from "src/rule/Chess";
-import Chessboard from "src/rule/Chessboard";
-import ChessPos from "src/rule/ChessPos";
+import Chess from "src/rulesets/chinesechess/Chess";
+import Chessboard from "src/rulesets/chinesechess/chessboard";
+import ChessPos from "src/rulesets/chinesechess/ChessPos";
 import Signal from "src/utils/signals/Signal";
 import DrawableChess from "./DrawableChess";
 

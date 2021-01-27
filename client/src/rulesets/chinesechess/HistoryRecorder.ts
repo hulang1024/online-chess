@@ -1,5 +1,5 @@
 import { ResponseGameStateChessAction } from "src/online/play/game_states_response";
-import ChessAction from "src/rule/ChessAction";
+import ChessAction from "src/rulesets/chinesechess/ChessAction";
 import Chess from "./Chess";
 import ChessPos from "./ChessPos";
 import ChessHost from "./chess_host";

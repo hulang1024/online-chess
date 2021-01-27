@@ -1,6 +1,6 @@
 import TWEEN from "tween.ts";
 import DrawableChess from "./DrawableChess";
-import GameAudio from "./GameAudio";
+import GameAudio from "../../../pages/play/GameAudio";
 
 export default class ChessMoveAnimation {
   public static make(

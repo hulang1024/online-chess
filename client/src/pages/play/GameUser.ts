@@ -1,4 +1,4 @@
-import ChessHost from "src/rule/chess_host";
+import ChessHost from "src/rulesets/chinesechess/chess_host";
 import User from "src/user/User";
 import UserStatus from "src/user/UserStatus";
 import Bindable from "src/utils/bindables/Bindable";

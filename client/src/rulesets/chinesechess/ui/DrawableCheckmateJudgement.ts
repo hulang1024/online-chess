@@ -1,4 +1,4 @@
-import ChessHost from "src/rule/chess_host";
+import ChessHost from "src/rulesets/chinesechess/chess_host";
 
 const TRANSITION_DURATION = 200;
 

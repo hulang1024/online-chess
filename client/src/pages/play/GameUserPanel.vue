@@ -71,7 +71,7 @@ import {
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import User from "src/user/User";
 import UserStatus from "src/user/UserStatus";
-import ChessHost from "src/rule/chess_host";
+import ChessHost from "src/rulesets/chinesechess/chess_host";
 import Timer from "./timer/Timer.vue";
 import CircleTimer from "./timer/CircleTimer.vue";
 import ReadyStatusDisplay from "./ReadyStatusDisplay.vue";

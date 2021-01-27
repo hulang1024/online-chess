@@ -1,8 +1,8 @@
 import { socketService } from "src/boot/main";
 import GameState from "src/online/play/GameState";
-import ChessAction from "src/rule/ChessAction";
-import ChessPos from "src/rule/ChessPos";
-import ChessHost from "src/rule/chess_host";
+import ChessAction from "src/rulesets/chinesechess/ChessAction";
+import ChessPos from "src/rulesets/chinesechess/ChessPos";
+import ChessHost from "src/rulesets/chinesechess/chess_host";
 import Bindable from "src/utils/bindables/Bindable";
 import Signal from "src/utils/signals/Signal";
 import DrawableChess from "./DrawableChess";
@@ -50,15 +50,15 @@ export default class UserPlayInput {
     });
   }
 
-  public onTurn() {
-    const thisSide = this.gameRule.activeChessHost.value == this.localChessHost.value;
-    // 如果当前是本方走，将敌方棋子禁用；否则，全部禁用
-    this.chessboard.enabled = thisSide;
-    if (thisSide) {
-      this.chessboard.getChessList().forEach((chess) => {
-        chess.enabled = this.localChessHost.value == chess.getHost();
-      });
-    }
+  public enable() {
+    this.chessboard.enabled = true;
+    this.chessboard.getChessList().forEach((chess) => {
+      chess.enabled = this.localChessHost.value == chess.getHost();
+    });
+  }
+
+  public disable() {
+    this.chessboard.enabled = false;
   }
 
   private onChessPickupOrDrop({ chess, isPickup } : {chess: DrawableChess, isPickup: boolean}) {

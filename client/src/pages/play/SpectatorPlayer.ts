@@ -1,11 +1,11 @@
 import { onMounted } from "@vue/composition-api";
 import * as GameEvents from 'src/online/ws/events/play';
 import GameState from "src/online/play/GameState";
-import ConfirmRequest from 'src/rule/confirm_request';
+import ConfirmRequest from 'src/rulesets/chinesechess/confirm_request';
 import SpectateResponse from "src/online/spectator/APISpectateResponse";
 import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
 import User from "src/user/User";
-import ChessHost from "src/rule/chess_host";
+import ChessHost from "src/rulesets/chinesechess/chess_host";
 import Player from "./Player";
 import GameUser from "./GameUser";
 

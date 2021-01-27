@@ -52,6 +52,7 @@ export default class Timer {
 
   /** 重置为总时，重新计时 */
   public restart() {
+    this.emit('restarted');
     this.seconds.value = this.totalSeconds.value;
     this.starts++;
     this.tick();
@@ -61,7 +62,6 @@ export default class Timer {
   public start() {
     // 第一次之后才重新计时
     if (this.starts > 0) {
-      this.emit('restarted');
       this.restart();
     } else {
       this.emit('started');
