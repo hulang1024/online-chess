@@ -98,7 +98,6 @@ export default class Player {
           this.gameRule,
           this.gameState,
           this.localUser.chessHostBindable,
-          this.gameRule.activeChessHost,
         );
         this.userPlayInput.inputDone.add(() => {
           this.localUser.stepTimer.pause();
@@ -149,8 +148,6 @@ export default class Player {
       }
 
       if (initialGameStates) {
-        this.gameState.value = this.room.gameStatus || GameState.READY;
-
         this.gameRule.start(this.localUser.chessHost, initialGameStates);
       }
 
@@ -162,8 +159,10 @@ export default class Player {
     });
   }
 
-  private loadState(initialGameStates?: ResponseGameStates | undefined) {
-    this.gameState.value = this.room.gameStatus || GameState.READY;
+  private loadState(states?: ResponseGameStates | undefined, isReload = false) {
+    if (!isReload) {
+      this.gameState.value = this.room.gameStatus || GameState.READY;
+    }
 
     // 初始双方对局状态和持棋方
     if (this.localUser.id == this.room.redChessUser?.id) {
@@ -178,25 +177,30 @@ export default class Player {
     const setGameUser = (gameUser: GameUser) => {
       const data = this.room as {[k: string]: any };
       const keyP = ChessHost.RED == gameUser.chessHost ? 'red' : 'black';
-      gameUser.bindable.value = data[`${keyP}ChessUser`] as User;
+      if (!isReload) {
+        gameUser.bindable.value = data[`${keyP}ChessUser`] as User;
+      }
       gameUser.online.value = data[`${keyP}Online`] as boolean;
       gameUser.status.value = data[`${keyP}UserStatus`] as number;
       gameUser.readied.value = data[`${keyP}Readied`] as boolean;
       gameUser.isRoomOwner.value = gameUser.id == this.room.owner.id;
-      const { roomSettings } = this.room;
-      const { gameTimer, stepTimer } = gameUser;
-      gameTimer.setTotalSeconds(roomSettings.gameDuration);
-      stepTimer.setTotalSeconds(roomSettings.stepDuration);
-      if (initialGameStates) {
-        const timerState = {
-          red: initialGameStates.redTimer,
-          black: initialGameStates?.blackTimer,
-        }[keyP];
-        gameTimer.ready(timerState.gameTime);
-        stepTimer.ready(timerState.stepTime);
-      } else {
-        gameTimer.ready();
-        stepTimer.ready();
+
+      if (!isReload) {
+        const { roomSettings } = this.room;
+        const { gameTimer, stepTimer } = gameUser;
+        gameTimer.setTotalSeconds(roomSettings.gameDuration);
+        stepTimer.setTotalSeconds(roomSettings.stepDuration);
+        if (states) {
+          const timerState = {
+            red: states.redTimer,
+            black: states?.blackTimer,
+          }[keyP];
+          gameTimer.ready(timerState.gameTime);
+          stepTimer.ready(timerState.stepTime);
+        } else {
+          gameTimer.ready();
+          stepTimer.ready();
+        }
       }
     };
 
@@ -279,6 +283,7 @@ export default class Player {
 
       this.gameState.value = GameState.PAUSE;
       this.localUser.online.value = false;
+      this.room.offlineAt = new Date().toString();
     }, this);
 
     api.state.changed.addOnce((state: APIState) => {
@@ -295,6 +300,7 @@ export default class Player {
       GameEvents.chessWithdraw,
       GameEvents.readied,
       GameEvents.gameStarted,
+      GameEvents.gameStates,
       GameEvents.gamePause,
       GameEvents.gameResume,
       GameEvents.gameOver,
@@ -462,16 +468,16 @@ export default class Player {
 
   private onGameContinueEvent() {
     this.localUser.online.value = true;
-    if (this.localUser.online.value && this.otherUser.online.value) {
-      this.gameState.value = GameState.PLAYING;
-      this.room.offlineAt = null;
-    }
     this.socketService.send('play.game_continue', { ok: true });
+    GameEvents.gameStates.addOnce((msg: GameEvents.GameStatesMsg) => {
+      this.loadState(msg.states, true);
+      if (msg.states.room?.gameStatus == GameState.PLAYING) {
+        this.gameState.value = GameState.PLAYING;
+      }
+    });
   }
 
   private onGameContinueResponseEvent(msg: GameEvents.GameContinueResponseMsg) {
-    this.otherUser.online.value = true;
-
     if (msg.ok) {
       this.gameState.value = GameState.PLAYING;
       this.room.offlineAt = null;
@@ -550,8 +556,9 @@ export default class Player {
     }
     this.room.offlineAt = new Date().toString();
     gameUser.online.value = false;
+    gameUser.status.value = UserStatus.OFFLINE;
     this.gameState.value = GameState.PAUSE;
-    this.showText(`${msg.nickname}已下线/掉线，你可以等待对方回来继续`);
+    this.showText(`对方已下线/掉线，你可以等待对方回来继续`);
   }
 
   private onUserOnlineEvent(msg: UserEvents.UserOnlineMsg) {
@@ -560,6 +567,7 @@ export default class Player {
       return;
     }
     gameUser.online.value = true;
+    gameUser.status.value = UserStatus.ONLINE;
     this.context.$q.notify(`${msg.nickname}已上线`);
   }
 
@@ -590,7 +598,10 @@ export default class Player {
           let activeGameUser: GameUser;
           if (this.gameRule.activeChessHost.value == this.localUser.chessHost) {
             activeGameUser = this.localUser;
-            this.onTurnActiveChessHost(this.gameRule.activeChessHost.value, true);
+            if (this.userPlayInput) {
+              // 禁用过，现在应启用输入
+              this.userPlayInput.onTurn();
+            }
           } else {
             activeGameUser = this.otherUser;
           }
@@ -693,6 +704,7 @@ export default class Player {
           ? ConfirmRequest.Type.PAUSE_GAME
           : ConfirmRequest.Type.RESUME_GAME,
       });
+      this.showText('已发送请求，等待对方回应', 1000);
     }
   }
 

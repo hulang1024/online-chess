@@ -28,7 +28,6 @@ export default class UserPlayInput {
     gameRule: GameRule,
     gameState: Bindable<GameState>,
     localChessHost: Bindable<ChessHost | null>,
-    activeChessHost: Bindable<ChessHost | null>,
   ) {
     this.gameRule = gameRule;
     this.gameState = gameState;
@@ -46,7 +45,7 @@ export default class UserPlayInput {
         this.chessboard.enabled = false;
       }
     });
-    activeChessHost.changed.add(() => {
+    this.gameRule.activeChessHost.changed.add(() => {
       this.lastSelected = null;
     });
   }

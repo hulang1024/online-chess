@@ -295,7 +295,7 @@ public class PlayMessageListener extends AbstractMessageListener {
             GameContinueResponseServerMsg serverMsg = new GameContinueResponseServerMsg();
             serverMsg.setOk(clientMsg.isOk());
             serverMsg.setUid(user.getId());
-            roomManager.broadcast(joinedRoom, serverMsg);
+            roomManager.broadcast(joinedRoom, serverMsg, user);
         }
     }
     private void onGameOver(GameOverMsg msg) {
