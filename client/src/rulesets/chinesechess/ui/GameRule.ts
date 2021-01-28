@@ -90,7 +90,6 @@ export default class GameRule implements Game {
     this.checkmateJudgement = new CheckmateJudgement(this, this.viewChessHost);
 
     this.chessboard.show();
-    this.chessboard.enabled = false;
 
     this.historyRecorder.clear();
 
@@ -246,8 +245,6 @@ export default class GameRule implements Game {
               this.chessboard.bounds.chessRadius,
             );
           }
-          drawableChess.setLit(false);
-          drawableChess.enabled = true;
           this.chessboard.addChess(drawableChess);
         }
 

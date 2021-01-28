@@ -35,14 +35,14 @@ export default class UserPlayInput {
     this.chessboard = gameRule.getChessboard();
 
     this.chessboard.chessPickupOrDrop.add(this.onChessPickupOrDrop, this);
-    this.chessboard.clicked.add(this.onChessboardClick, this);
+    this.chessboard.chessPosClicked.add(this.onChessboardClick, this);
     this.chessboard.chessMoved.add(this.onInputChessMove, this);
 
     gameState.changed.add(() => {
       this.lastSelected = null;
 
       if (gameState.value != GameState.PLAYING) {
-        this.chessboard.enabled = false;
+        this.disable();
       }
     });
     this.gameRule.activeChessHost.changed.add(() => {
@@ -51,14 +51,15 @@ export default class UserPlayInput {
   }
 
   public enable() {
-    this.chessboard.enabled = true;
     this.chessboard.getChessList().forEach((chess) => {
-      chess.enabled = this.localChessHost.value == chess.getHost();
+      chess.selectable = this.localChessHost.value == chess.getHost();
     });
   }
 
   public disable() {
-    this.chessboard.enabled = false;
+    this.chessboard.getChessList().forEach((chess) => {
+      chess.selectable = false;
+    });
   }
 
   private onChessPickupOrDrop({ chess, isPickup } : {chess: DrawableChess, isPickup: boolean}) {
@@ -89,6 +90,9 @@ export default class UserPlayInput {
     }
     // 点击了一个棋子
     if (this.lastSelected == null) {
+      if (!event.chess.selectable) {
+        return;
+      }
       // 并且之前并未选择棋子
       // 现在是选择要走的棋子，只能先选中持棋方棋子
       if (event.chess.getHost() == this.gameRule.activeChessHost.value) {
@@ -98,7 +102,7 @@ export default class UserPlayInput {
         // 将非持棋方的棋子全部启用（这样下次才能点击要吃的目标棋子）
         this.chessboard.getChessList().forEach((chess) => {
           if (chess.getHost() != this.localChessHost.value) {
-            chess.enabled = true;
+            chess.selectable = true;
           }
         });
       }
@@ -110,6 +114,11 @@ export default class UserPlayInput {
       this.lastSelected.selected = false;
       this.onChessPickupOrDrop({ chess: event.chess, isPickup: false });
       this.lastSelected = null;
+      this.chessboard.getChessList().forEach((chess) => {
+        if (chess.getHost() != this.localChessHost.value) {
+          chess.selectable = false;
+        }
+      });
       return;
     }
 

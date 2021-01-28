@@ -11,7 +11,7 @@ export default class DrawableChess implements Chess {
 
   public get el() { return this._el; }
 
-  private _enabled = false;
+  private _selectable = false;
 
   private _selected = false;
 
@@ -23,6 +23,9 @@ export default class DrawableChess implements Chess {
 
   public readonly pickup = new Signal();
 
+  /**
+   * 点击事件，与可选中不同
+   */
   public readonly clicked = new Signal();
 
   public readonly chess: Chess;
@@ -60,26 +63,24 @@ export default class DrawableChess implements Chess {
     circle.style.width = 'calc(100% - 4px)';
     circle.style.height = 'calc(100% - 4px)';
     circle.style.border = `1px solid ${color}`;
+    circle.style.pointerEvents = 'none';
     circle.style.borderRadius = '100%';
 
     el.appendChild(circle);
 
     this.setFront(this.chess.isFront());
     el.onmouseenter = () => {
-      if (!this.enabled || this.lit || this.selected) return;
+      if (!this.selectable || this.lit || this.selected) return;
       el.style.outline = '1px solid #fff';
     };
     el.onmouseleave = () => {
-      if (!this.enabled || this.lit) return;
+      if (!this.selectable || this.lit) return;
       el.style.outline = '';
     };
 
     this.setupDragable();
 
     el.onclick = (event) => {
-      if (!this._enabled) {
-        return;
-      }
       event.stopPropagation();
       this.clicked.dispatch(this);
     };
@@ -90,6 +91,9 @@ export default class DrawableChess implements Chess {
   private setupDragable() {
     const el = this._el;
     el.ondragstart = (event: DragEvent) => {
+      if (!this.selectable) {
+        return;
+      }
       this.selected = true;
       this.pickup.dispatch();
       const { row, col } = this.getPos();
@@ -129,15 +133,18 @@ export default class DrawableChess implements Chess {
 
   public get y() { return this._el.offsetTop + this.radius; }
 
-  public set enabled(val: boolean) {
-    this._enabled = val;
+  public set selectable(val: boolean) {
+    this._selectable = val;
     this._el.draggable = val;
-    this._el.style.cursor = this._enabled ? 'pointer' : 'default';
+    this._el.style.cursor = this._selectable ? 'pointer' : 'default';
   }
 
-  public get enabled() { return this._enabled; }
+  public get selectable() { return this._selectable; }
 
   public set selected(value: boolean) {
+    if (!this.selectable) {
+      return;
+    }
     if (this._selected == value) return;
     this._selected = value;
     this._el.style.opacity = (this._selected ? 0.5 : 1).toString();

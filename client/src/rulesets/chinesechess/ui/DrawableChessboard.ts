@@ -15,11 +15,11 @@ export default class DrawableChessboard implements Chessboard {
 
   public get bounds() { return this._bounds; }
 
-  public _enabled = false;
+  public readonly clicked: Signal = new Signal();
 
   public readonly chessPickupOrDrop: Signal = new Signal();
 
-  public readonly clicked: Signal = new Signal();
+  public readonly chessPosClicked: Signal = new Signal();
 
   public readonly chessMoved: Signal = new Signal();
 
@@ -92,15 +92,6 @@ export default class DrawableChessboard implements Chessboard {
     });
   }
 
-  public get enabled() { return this._enabled; }
-
-  public set enabled(val: boolean) {
-    this._enabled = val;
-    this.getChessList().forEach((chess) => {
-      chess.enabled = val;
-    });
-  }
-
   public show() {
     this.el.classList.remove('elements-hide');
   }
@@ -135,17 +126,12 @@ export default class DrawableChessboard implements Chessboard {
   }
 
   private onClick(event: MouseEvent) {
+    this.clicked.dispatch(event);
+
     const pos = this.chessPosFromInputEvent(event);
+    const args = { pos, chess: this.chessAt(pos) };
 
-    const clickedArgs = { pos, chess: this.chessAt(pos) };
-
-    if (clickedArgs.chess != null) {
-      if (!clickedArgs.chess.enabled) {
-        return;
-      }
-    }
-
-    this.clicked.dispatch(clickedArgs);
+    this.chessPosClicked.dispatch(args);
   }
 
   private chessPosFromInputEvent(event: DragEvent | MouseEvent) {
@@ -380,7 +366,7 @@ export default class DrawableChessboard implements Chessboard {
     chess.drop.removeAll();
 
     chess.clicked.add(() => {
-      this.clicked.dispatch({ chess, pos: chess.getPos() });
+      this.chessPosClicked.dispatch({ chess, pos: chess.getPos() });
     });
     chess.pickup.add(() => {
       this.chessPickupOrDrop.dispatch({ chess, isPickup: true });
