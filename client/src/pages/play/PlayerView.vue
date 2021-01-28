@@ -147,9 +147,10 @@
         <q-card
           flat
           class="q-mb-xs q-px-sm q-py-sm row items-center"
+          style="user-select:none"
         >
           <span class="text-subtitle1">
-            <span style="user-select:none">棋桌#</span>
+            <span>棋桌#</span>
             <span>{{ room.id }}</span>
           </span>
           <span
