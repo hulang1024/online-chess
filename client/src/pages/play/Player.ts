@@ -94,6 +94,14 @@ export default class Player {
       this.gameRule.setPlayfield(playfield);
 
       if (!this.isWatchingMode) {
+        this.chessboard.chessPosClicked.add(() => {
+          if (this.gameState.value == GameState.PLAYING
+              && this.localUser.chessHost != this.gameRule.activeChessHost.value) {
+            const playerView = this.context.$refs.playerView as Vue;
+            // eslint-disable-next-line
+            (playerView.$refs.otherGameUserPanel as any).blink();
+          }
+        });
         this.userPlayInput = new UserPlayInput(
           this.gameRule,
           this.gameState,
@@ -646,7 +654,7 @@ export default class Player {
         activeGameUser = this.otherUser;
         inactiveGameUser = this.localUser;
       }
-      activeGameUser.stepTimer.restart();
+      activeGameUser.stepTimer.start();
       activeGameUser.gameTimer.resume();
       inactiveGameUser.stepTimer.stop();
       inactiveGameUser.gameTimer.pause();
