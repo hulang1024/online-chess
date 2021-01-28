@@ -159,7 +159,7 @@ public class PlayMessageListener extends AbstractMessageListener {
         User user = confirmResponseMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
 
-        if (room.getGame() == null || room.getGame().getState() == null) {
+        if (room == null || room.getGame() == null || room.getGame().getState() == null) {
             return;
         }
 
