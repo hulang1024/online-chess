@@ -94,7 +94,6 @@ public class Room {
         channelManager.joinChannel(channel, user);
 
         status = getUserCount() < 2 ? RoomStatus.OPEN : RoomStatus.BEGINNING;
-        offlineAt = null;
     }
 
     public void partUser(User user) {
