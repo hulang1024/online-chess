@@ -114,12 +114,13 @@ export default defineComponent({
       channels.value.push(channel);
       channel.newMessagesArrived.add((messages: Message[]) => {
         const last = messages[messages.length - 1];
-        if (last.sender.id <= 0) {
+        // 系统用户发送的消息
+        if (last.sender.id == 0 || last.sender.id > -100) {
           return;
         }
+
         // 解决当弹出窗口之后，当棋盘已有选中棋子点击棋盘误触移动的问题
-        // 不是自己发的，并且游戏中
-        if (last.sender.id != api.localUser.id && ctx.$router.currentRoute.name == 'play') {
+        if (ctx.$router.currentRoute.name == 'play') {
           // 使用遮罩
           seamless.value = false;
         }
@@ -167,13 +168,13 @@ export default defineComponent({
 
     const toggle = () => {
       if (!isOpen.value) {
-        seamless.value = true;
+        seamless.value = ctx.$router.currentRoute.name != 'play';
       }
       isOpen.value = !isOpen.value;
     };
 
     const show = () => {
-      seamless.value = true;
+      seamless.value = ctx.$router.currentRoute.name != 'play';
       isOpen.value = true;
     };
 
