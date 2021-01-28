@@ -9,6 +9,8 @@ export default class CircleTimer {
   // 在计时过程中，保证不直接改变max，保存总时
   public totalMS = 0;
 
+  public blinkState = ref(false);
+
   // 计时开始时间戳
   private startTime = 0;
 
@@ -35,6 +37,7 @@ export default class CircleTimer {
       },
       started: this.start.bind(this),
       restarted: this.restart.bind(this),
+      'downcount-started': this.startDowncount.bind(this),
       paused: this.pause.bind(this),
       resumed: this.resume.bind(this),
       stoped: this.stop.bind(this),
@@ -53,6 +56,7 @@ export default class CircleTimer {
     this.max.value = this.totalMS;
     this.startTime = performance.now();
     this.pauseTime = 0;
+    this.blinkState.value = false;
     this.tick(this.current.value ? this.totalMS - this.current.value : 0);
   }
 
@@ -61,12 +65,18 @@ export default class CircleTimer {
     this.current.value = this.totalMS;
     this.startTime = performance.now();
     this.pauseTime = 0;
+    this.blinkState.value = false;
     this.tick();
+  }
+
+  private startDowncount() {
+    this.blinkState.value = true;
   }
 
   private pause() {
     cancelAnimationFrame(this.animationId);
     this.pauseTime = performance.now();
+    this.blinkState.value = false;
   }
 
   private resume() {
@@ -77,6 +87,7 @@ export default class CircleTimer {
   private stop() {
     cancelAnimationFrame(this.animationId);
     this.current.value = this.totalMS;
+    this.blinkState.value = false;
   }
 
   private tick(offsetTime = 0) {

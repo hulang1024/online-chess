@@ -11,6 +11,7 @@
         ref="circleStepTimer"
         size="68px"
         class="user-avatar-frame"
+        :blink="blinkState"
         :color="color"
       >
         <user-avatar
@@ -66,7 +67,7 @@
 
 <script lang="ts">
 import {
-  computed, defineComponent, getCurrentInstance, PropType,
+  computed, defineComponent, getCurrentInstance, PropType, ref,
 } from "@vue/composition-api";
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import User from "src/user/User";
@@ -111,9 +112,21 @@ export default defineComponent({
       (context as any).showUserDetails(props.user);
     };
 
+    const blinkState = ref(false);
+
+    const blink = () => {
+      blinkState.value = true;
+      setTimeout(() => {
+        blinkState.value = false;
+      }, 200 * 3);
+    };
+
     return {
       UserStatus,
       color,
+
+      blink,
+      blinkState,
 
       onUserAvatarClick,
     };

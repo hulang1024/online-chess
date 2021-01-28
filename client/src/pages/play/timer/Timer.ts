@@ -121,9 +121,10 @@ export default class Timer {
 
       // 声音
       if (this.soundEnabled && this.seconds.value <= 10) {
-        const soundStart = Math.ceil(this.totalSeconds.value / 3);
-        if (this.seconds.value <= soundStart) {
+        const start = Math.ceil(this.totalSeconds.value / 3);
+        if (this.seconds.value <= start) {
           GameAudio.play(`gameplay/count/zh/${this.seconds.value}`);
+          this.emit('downcount-started');
         }
       }
     }, 1000);
