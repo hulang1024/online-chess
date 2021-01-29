@@ -85,57 +85,78 @@ export default defineComponent({
       roomStates.blackChessUser = props.room.blackChessUser;
     });
 
+    const joinRoom = () => {
+      $q.loading.show();
+      const req = new JoinRoomRequest(room);
+      req.success = async (result) => {
+        await $router.push({
+          name: 'play',
+          replace: true,
+          query: { id: result.room.id as unknown as string },
+          params: { room: result.room as unknown as string },
+        });
+        $q.loading.hide();
+      };
+      req.failure = (result) => {
+        const codeMsgMap: { [code: number]: string } = {
+          2: '未连接到服务器',
+          3: '棋桌已满',
+          4: '你已加入本棋桌',
+          5: '你已加入其它棋桌',
+          6: '密码错误',
+          7: '该棋桌已不存在',
+        };
+        $q.notify({ type: 'warning', message: `加入棋桌失败：${codeMsgMap[result.code]}` });
+        $q.loading.hide();
+      };
+      api.perform(req);
+    };
+
+    const spectateRoom = () => {
+      $q.loading.show();
+      const req = new SpectateRoomRequest(room);
+      req.success = async (spectateResponse: SpectateResponse) => {
+        await $router.push({
+          name: 'spectate',
+          replace: true,
+          query: { id: spectateResponse.room.id as unknown as string },
+          params: { spectateResponse: spectateResponse as unknown as string },
+        });
+        $q.loading.hide();
+      };
+      req.failure = () => {
+        $q.notify({ type: 'error', message: '观看请求失败' });
+        $q.loading.hide();
+      };
+      api.perform(req);
+    };
+
     const onClick = () => {
       if (!api.isLoggedIn) {
         $q.notify({ type: 'warning', message: '请先登录' });
         return;
       }
 
-      $q.loading.show();
-
       if (room.userCount == 1) {
-        const paramRoom = new Room();
-        paramRoom.id = room.id;
         if (room.locked) {
           // todo
         }
-        const req = new JoinRoomRequest(room);
-        req.success = async (result) => {
-          await $router.push({
-            name: 'play',
-            query: { id: result.room.id as unknown as string },
-            params: { room: result.room as unknown as string },
-          });
-          $q.loading.hide();
-        };
-        req.failure = (result) => {
-          const codeMsgMap: { [code: number]: string } = {
-            2: '未连接到服务器',
-            3: '棋桌已满',
-            4: '你已加入本棋桌',
-            5: '你已加入其它棋桌',
-            6: '密码错误',
-            7: '该棋桌已不存在',
-          };
-          $q.notify({ type: 'warning', message: `加入棋桌失败：${codeMsgMap[result.code]}` });
-          $q.loading.hide();
-        };
-        api.perform(req);
+        joinRoom();
       } else {
-        const req = new SpectateRoomRequest(room);
-        req.success = async (spectateResponse: SpectateResponse) => {
-          await $router.push({
-            name: 'spectate',
-            query: { id: spectateResponse.room.id as unknown as string },
-            params: { spectateResponse: spectateResponse as unknown as string },
-          });
-          $q.loading.hide();
-        };
-        req.failure = () => {
-          $q.notify({ type: 'error', message: '观看请求失败' });
-          $q.loading.hide();
-        };
-        api.perform(req);
+        let updated = false;
+        if (room.redChessUser?.id == api.localUser.id) {
+          room.redChessUser = null;
+          updated = true;
+        }
+        if (room.blackChessUser?.id == api.localUser.id) {
+          room.blackChessUser = null;
+          updated = true;
+        }
+        if (updated) {
+          joinRoom();
+        } else {
+          spectateRoom();
+        }
       }
     };
 
