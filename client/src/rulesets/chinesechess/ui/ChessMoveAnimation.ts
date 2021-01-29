@@ -10,6 +10,12 @@ export default class ChessMoveAnimation {
     duration = 200,
     enableAudio = true,
   ) {
+    // 使用setTimeout而不是动画onComplete，因为浏览器后台会暂停动画
+    setTimeout(() => {
+      if (enableAudio) {
+        GameAudio.play('gameplay/chess_move');
+      }
+    }, duration);
     return new TWEEN.Tween(chess)
       .to(to, duration)
       .easing(TWEEN.Easing.Circular.Out)
@@ -18,10 +24,6 @@ export default class ChessMoveAnimation {
         chess.setLit(true);
 
         onComplete();
-
-        if (enableAudio) {
-          GameAudio.play('gameplay/chess_move');
-        }
       });
   }
 }
