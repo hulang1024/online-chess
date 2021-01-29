@@ -263,8 +263,9 @@ public class PlayMessageListener extends AbstractMessageListener {
         if (joinedRoom == null) {
             return;
         }
+
         if (clientMsg.isOk()) {
-            if (joinedRoom.getStatus() == RoomStatus.DISMISSED) {
+            if (joinedRoom.getStatus() == RoomStatus.DISMISSED || joinedRoom.getStatus() == RoomStatus.PLAYING) {
                 return;
             }
             GamePlayStatesServerMsg gamePlayStatesServerMsg = new GamePlayStatesServerMsg();
