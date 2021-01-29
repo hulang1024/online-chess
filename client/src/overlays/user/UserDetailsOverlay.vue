@@ -57,6 +57,10 @@
             <label>最后活动时间: </label>
             <span>{{ lastActiveTimeDesc }}</span>
           </div>
+          <div>
+            <label>最后登录时间: </label>
+            <span>{{ user.lastLoginTime }}</span>
+          </div>
           <div v-if="user.id > 0">
             <label>用户注册时间: </label>
             <span>{{ user.registerTime }}</span>
