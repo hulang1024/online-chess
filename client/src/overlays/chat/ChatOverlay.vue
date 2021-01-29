@@ -223,7 +223,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .chat-overlay {
   & .q-card {
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: #fff;
 
     & .q-tab-panels {
       height: calc(100vh / 2.3 - 92px);
@@ -234,7 +234,7 @@ export default defineComponent({
     }
   }
   & .q-card.q-dark {
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: #191919;
   }
 
   .message-input {
