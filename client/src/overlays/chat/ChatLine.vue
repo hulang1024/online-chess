@@ -1,24 +1,35 @@
 <template>
-  <div class="row" :class="{small}">
+  <div
+    class="row"
+    :class="{small}"
+  >
     <div class="time">
       {{ timeText }}
     </div>
     <div
-      class="nickname"
-      :class="{'right-align': rightAlign, 'ellipsis': rightAlign}"
-      :style="{color: nicknameColor}"
-      @click="onNicknameClick"
+      class="nickname_col"
+      :class="{'right-align': rightAlign}"
     >
-      {{ nickname }}
-    </div>
-    <div
-      class="content-colon"
-      :style="{color: nicknameColor}"
-    >
-      <span>:</span>
+      <div
+        class="nickname"
+        :class="{'has-background': hasBackground}"
+        @click="onNicknameClick"
+        :style="{
+          color: hasBackground ? ($q.dark.isActive ? '#111' : '#fff') : nicknameColor,
+        }"
+      >
+        <span
+          class="nickname__text"
+          :class="{ellipsis: rightAlign}"
+          :style="{
+            background: hasBackground ? backgroundColor : ''
+          }"
+        >{{ nickname }}</span>
+        <span v-if="!hasBackground">:</span>
+      </div>
     </div>
     <div class="content">
-      <span :style="{color}">{{ content }}</span>
+      <span :style="{color: contentColor}">{{ content }}</span>
     </div>
   </div>
 </template>
@@ -62,9 +73,9 @@ export default defineComponent({
       ? USERNAME_COLORS[Math.abs(sender.id) % USERNAME_COLORS.length]
       : '';
 
-    const color = ref<string>('');
+    const contentColor = ref<string>('');
     if (message instanceof ErrorMessage) {
-      color.value = 'pink';
+      contentColor.value = 'pink';
     }
 
     const onNicknameClick = () => {
@@ -79,8 +90,10 @@ export default defineComponent({
       timeText,
       nickname: sender.nickname,
       nicknameColor: `#${(nicknameColor).toString(16)}`,
+      hasBackground: sender.isAdmin,
+      backgroundColor: sender.isAdmin ? '#1f78ff' : '',
       content: message.content,
-      color,
+      contentColor,
 
       onNicknameClick,
     };
@@ -90,7 +103,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .row > div {
-  line-height: 20px;
+  line-height: 1.4em;
   font-size: 1.1em;
 }
 
@@ -102,42 +115,38 @@ export default defineComponent({
   .row > div {
     font-size: 1em;
   }
-  .nickname {
-    width: 94px !important;
-  }
-  .content-colon {
-    padding-right: 4px !important;
+  .nickname_col {
+    width: 96px !important;
   }
 }
 
 .row > .time {
   width: 54px;
-  font-size: 0.9em;
+  font-size: 0.9em !important;
   user-select: none;
 }
 
-.row > .nickname {
-  font-weight: 600;
-  user-select: none;
+.row > .nickname_col {
+  margin-right: 8px;
 }
-.row > .nickname.right-align {
+.row > .nickname_col.right-align {
   width: 110px;
   text-align: right;
 }
-.row > .nickname:not(.right-align) {
-  padding-left: 4px;
-}
-.row > .nickname:hover {
-  opacity: 0.6;
-}
-
-.row > .content-colon {
-  padding-right: 12px;
+.row .nickname {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
   font-weight: 600;
-  user-select: none
+  user-select: none;
+}
+.row .nickname.has-background > .nickname__text {
+  padding: 1px 4px;
+  border-radius: 4px;
+  line-height: normal;
 }
 
-.row.small > .content-colon {
-  padding-right: 4px;
+.row .nickname__text:hover {
+  opacity: 0.6;
 }
 </style>
