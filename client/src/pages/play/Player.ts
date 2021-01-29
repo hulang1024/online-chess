@@ -300,6 +300,17 @@ export default class Player {
         this.exitScreen();
       }
     });
+
+    const onPopState = () => {
+      if ([GameState.READY, GameState.END].includes(this.gameState.value)) {
+        this.partRoom();
+      } else {
+        // 不知道怎么阻止后退按键事件导致后退，简单重载
+        window.location.reload();
+      }
+      window.removeEventListener('popstate', onPopState);
+    };
+    window.addEventListener('popstate', onPopState);
   }
 
   private onQuit() {
@@ -787,7 +798,7 @@ export default class Player {
 
   protected exitScreen() {
     // eslint-disable-next-line
-    this.context.$router.push('/');
+    this.context.$router.replace('/');
   }
 
   protected exitActiveOverlays() {
