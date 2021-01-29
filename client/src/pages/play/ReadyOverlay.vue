@@ -10,7 +10,7 @@
     />
     <q-btn
       :label="label"
-      :color="color"
+      color="primary"
       :disable="disable"
       @click="onReadyStart"
     />
@@ -38,7 +38,6 @@ export default defineComponent({
   setup(props, { emit }) {
     const visible = ref<boolean>(true);
     const label = ref<string>('');
-    const color = ref<string>('');
     const disable = ref(true);
 
     let onPropsChange;
@@ -49,11 +48,9 @@ export default defineComponent({
       if (gameState == GameState.READY) {
         if (isRoomOwner) {
           label.value = '开始!';
-          color.value = 'primary';
           disable.value = !otherReadied;
         } else {
           label.value = readied ? '取消准备' : '准备!';
-          color.value = readied ? 'info' : 'primary';
           disable.value = false;
         }
         visible.value = true;
@@ -67,7 +64,6 @@ export default defineComponent({
     return {
       visible,
       label,
-      color,
       disable,
       onReadyStart: () => {
         emit('ready-start');
