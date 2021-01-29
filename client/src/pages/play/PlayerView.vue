@@ -10,6 +10,13 @@
             ? 'fixed-bottom-right q-mr-sm q-mb-sm'
             : 'absolute-top-left q-pt-sm q-ml-sm'"
         />
+        <game-user-panel
+          ref="viewGameUserPanel"
+          v-bind="viewUser"
+          :class="reverse
+            ? 'absolute-top-left q-pt-sm q-ml-sm'
+            : 'fixed-bottom-right q-mr-sm q-mb-sm'"
+        />
         <div class="row absolute-top-right q-mt-sm q-mr-sm">
           <q-card
             v-show="spectatorCount > 0"
@@ -120,13 +127,6 @@
             class="q-ml-md"
           />
         </div>
-        <game-user-panel
-          ref="viewGameUserPanel"
-          v-bind="viewUser"
-          :class="reverse
-            ? 'absolute-top-left q-pt-sm q-ml-sm'
-            : 'fixed-bottom-right q-mr-sm q-mb-sm'"
-        />
       </div>
     </template>
     <template v-else>
