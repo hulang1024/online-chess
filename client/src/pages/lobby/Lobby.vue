@@ -89,6 +89,7 @@ export default defineComponent({
       $q.loading.show();
       await $router.push({
         name: 'play',
+        replace: true,
         query: { id: room?.id as unknown as string },
         params: {
           room: room as unknown as string,
@@ -154,6 +155,7 @@ export default defineComponent({
           if (res.spectateResponse) {
             await $router.push({
               name: 'spectate',
+              replace: true,
               query: { id: res.spectateResponse.room.id as unknown as string },
               params: { spectateResponse: res.spectateResponse as unknown as string },
             });

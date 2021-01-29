@@ -26,12 +26,12 @@ async function start(router: VueRouter) {
         // eslint-disable-next-line
         api.login(null, token);
         // eslint-disable-next-line
-        router.push('/');
+        router.replace('/');
         return;
       }
     } else if (matchRet) {
       // eslint-disable-next-line
-      router.push('/');
+      router.replace('/');
       Notify.create({ type: 'warning', message: '登录失败' });
     }
   }
