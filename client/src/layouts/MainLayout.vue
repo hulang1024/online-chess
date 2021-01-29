@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh lpR lFf">
-    <q-header>
+    <q-header :class="`bg-${$q.dark.isActive ? 'dark' : 'light'}`">
       <toolbar ref="toolbar" />
     </q-header>
 
