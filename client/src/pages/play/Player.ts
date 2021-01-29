@@ -402,6 +402,7 @@ export default class Player {
       return;
     }
 
+    this.exitActiveOverlays();
     // eslint-disable-next-line
     this.resultDialog.open({
       result,
@@ -452,6 +453,7 @@ export default class Player {
       this.socketService.send('play.confirm_response', { reqType: msg.reqType, ok: isOk });
     };
     // 显示确认对话框
+    this.exitActiveOverlays();
     this.context.$q.dialog({
       title: '确认',
       message: `对方想要${ConfirmRequest.toReadableText(msg.reqType)}`,
@@ -786,5 +788,10 @@ export default class Player {
   protected exitScreen() {
     // eslint-disable-next-line
     this.context.$router.push('/');
+  }
+
+  protected exitActiveOverlays() {
+    // eslint-disable-next-line
+    (this.context.$vnode.context?.$refs.toolbar as any).exitActive();
   }
 }
