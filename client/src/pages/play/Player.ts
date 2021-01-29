@@ -305,7 +305,7 @@ export default class Player {
       if ([GameState.READY, GameState.END].includes(this.gameState.value)) {
         this.partRoom();
       } else {
-        // 不知道怎么阻止后退按键事件导致后退，简单重载
+        // 不知道怎么阻止浏览器后退按键事件导致后退，简单重载
         window.location.reload();
       }
       window.removeEventListener('popstate', onPopState);
