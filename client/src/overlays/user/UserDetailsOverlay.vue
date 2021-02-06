@@ -147,6 +147,9 @@ export default defineComponent({
       req.success = (resUser) => {
         _user.value = resUser;
       };
+      req.failure = () => {
+        _user.value = { ..._user.value as SearchUserInfo, lastActiveTime: '' };
+      };
       api.queue(req);
 
       isOpen.value = true;
