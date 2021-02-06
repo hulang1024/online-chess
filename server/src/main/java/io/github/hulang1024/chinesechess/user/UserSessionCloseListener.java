@@ -29,14 +29,16 @@ public class UserSessionCloseListener {
     @Autowired
     private UserActivityService userActivityService;
 
-    public void onClose(Session session) {
+    public void onClose(Session session, boolean apiLogout) {
         User user = getLoggedInUser(session);
+        boolean shouldApiLogout = false;
         if (user == null) {
             Long boundUserId = userSessionManager.getBoundUserId(session);
             if (boundUserId == null) {
                 return;
             }
             user = new User(boundUserId);
+            apiLogout = false;
         }
         // 如果加入了房间
         Room joinedRoom = roomManager.getJoinedRoom(user);
@@ -73,6 +75,7 @@ public class UserSessionCloseListener {
                     // 游戏未进行，安全退出
                     roomManager.partRoom(joinedRoom, user);
                     channelManager.leaveChannels(user);
+                    shouldApiLogout = true;
                     break;
             }
         } else {
@@ -82,9 +85,14 @@ public class UserSessionCloseListener {
                 spectatorManager.leaveRoom(user, spectatingRoom);
             }
             channelManager.leaveChannels(user);
+            shouldApiLogout = true;
         }
 
         userSessionManager.removeBinding(user);
+
+        if (apiLogout && shouldApiLogout) {
+            userManager.logoutAPI(user);
+        }
 
         if (user != null) {
             userActivityService.removeUser(user);

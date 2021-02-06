@@ -33,7 +33,7 @@ public class ChineseChessWebSocketServerEndpoint {
 
     @OnClose
     public void onClose(Session session) throws IOException {
-        userSessionCloseListener.onClose(session);
+        userSessionCloseListener.onClose(session, true);
     }
 
     @OnError

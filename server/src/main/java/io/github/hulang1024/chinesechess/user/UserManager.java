@@ -22,10 +22,7 @@ import org.yeauty.pojo.Session;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -66,6 +63,10 @@ public class UserManager {
 
     public User getLoggedInUser(long userId) {
         return loggedInUserMap.get(userId);
+    }
+
+    public Collection<User> getLoggedInUsers() {
+        return loggedInUserMap.values();
     }
 
     public UserDeviceInfo getUserDeviceInfo(User user) {
@@ -306,12 +307,13 @@ public class UserManager {
         if (session != null) {
             // 并不真的关闭，走关闭的流程
             // TODO：未来onClose实现可能会变化
-            sessionCloseListener.onClose(session);
-        }
-        if (apiLogout) {
-            loggedInUserMap.remove(user.getId());
-            loggedInUserDeviceInfoMap.remove(user.getId());
+            sessionCloseListener.onClose(session, apiLogout);
         }
         return true;
+    }
+
+    public boolean logoutAPI(User user) {
+        loggedInUserDeviceInfoMap.remove(user.getId());
+        return loggedInUserMap.remove(user.getId()) != null;
     }
 }
