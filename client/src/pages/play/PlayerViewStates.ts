@@ -1,6 +1,10 @@
 import {
-  computed, reactive, Ref, watchEffect, watch, getCurrentInstance,
+  computed, reactive, ref, Ref, watchEffect, watch, getCurrentInstance,
 } from "@vue/composition-api";
+import { api, channelManager } from "src/boot/main";
+import Channel from "src/online/chat/Channel";
+import ChannelType from "src/online/chat/ChannelType";
+import Message from "src/online/chat/Message";
 import GameState from "src/online/play/GameState";
 import ChessHost from "src/rulesets/chinesechess/chess_host";
 import { createBoundRef } from "src/utils/vue/vue_ref_utils";
@@ -90,9 +94,22 @@ export function usePlayerStates(player: Player) {
 
   const spectatorCount: Ref<number> = createBoundRef(player.spectatorCount);
 
+  const unreadMessageCount = ref(0);
+  channelManager.currentChannel.addAndRunOnce((channel: Channel) => {
+    if (channel.type == ChannelType.ROOM) {
+      channel.newMessagesArrived.add((messages: Message[]) => {
+        if (messages[0].sender.id == api.localUser.id) {
+          return;
+        }
+        unreadMessageCount.value = channel.getUnreadMessages().length;
+      });
+    }
+  });
+
   const onChatClick = () => {
     // eslint-disable-next-line
     (context.$vnode.context?.$refs.toolbar as any).toggle('chat');
+    unreadMessageCount.value = 0;
   };
 
   const onInviteClick = () => {
@@ -112,6 +129,7 @@ export function usePlayerStates(player: Player) {
     viewUser,
     otherUser,
     spectatorCount,
+    unreadMessageCount,
 
     onChatClick,
     onInviteClick,

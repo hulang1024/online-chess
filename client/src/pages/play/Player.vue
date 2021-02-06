@@ -9,6 +9,7 @@
     :view-user="viewUser"
     :other-user="otherUser"
     :spectator-count="spectatorCount"
+    :unread-message-count="unreadMessageCount"
     enable-game-rule-buttons
     @quit="onQuitClick"
     @chat="onChatClick"

@@ -125,7 +125,16 @@
             color="orange"
             @click.stop="onChatClick"
             class="q-ml-md"
-          />
+          >
+            <q-badge
+              v-show="unreadMessageCount > 0"
+              color="red"
+              floating
+              transparent
+            >
+              {{ unreadMessageCount }}
+            </q-badge>
+          </q-btn>
         </div>
       </div>
     </template>
@@ -311,6 +320,12 @@ export default defineComponent({
     spectatorCount: {
       type: Number,
       required: true,
+    },
+
+    unreadMessageCount: {
+      type: Number,
+      required: true,
+      default: 0,
     },
 
     enableGameRuleButtons: Boolean,
