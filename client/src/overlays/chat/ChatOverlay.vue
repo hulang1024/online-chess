@@ -115,12 +115,12 @@ export default defineComponent({
       channel.newMessagesArrived.add((messages: Message[]) => {
         const last = messages[messages.length - 1];
         // 系统用户发送的消息
-        if (last.sender.id == 0 || last.sender.id > -100) {
+        if (last.sender.id == 0 || (last.sender.id < 0 && last.sender.id > -100)) {
           return;
         }
 
         // 解决当弹出窗口之后，当棋盘已有选中棋子点击棋盘误触移动的问题
-        if (ctx.$router.currentRoute.name == 'play') {
+        if (['play', 'spectate'].includes(ctx.$router.currentRoute.name as string)) {
           // 使用遮罩
           seamless.value = false;
         }
@@ -132,8 +132,10 @@ export default defineComponent({
             channelManager.openPrivateChannel(last.sender);
           }
         } else if (channel.type == ChannelType.ROOM && ctx.$q.screen.xs) {
-          isOpen.value = true;
-          channelManager.openChannel(channel.id);
+          if (channel.messagesLoaded) {
+            isOpen.value = true;
+            channelManager.openChannel(channel.id);
+          }
         }
       });
     });
@@ -168,13 +170,13 @@ export default defineComponent({
 
     const toggle = () => {
       if (!isOpen.value) {
-        seamless.value = ctx.$router.currentRoute.name != 'play';
+        seamless.value = !['play', 'spectate'].includes(ctx.$router.currentRoute.name as string);
       }
       isOpen.value = !isOpen.value;
     };
 
     const show = () => {
-      seamless.value = ctx.$router.currentRoute.name != 'play';
+      seamless.value = !['play', 'spectate'].includes(ctx.$router.currentRoute.name as string);
       isOpen.value = true;
     };
 
