@@ -282,10 +282,22 @@ export default class ChannelManager {
     }
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  public markChannelAsRead(channel: Channel) {
+    if (channel.lastMessageId == channel.lastReadId) {
+      return;
+    }
+    channel.lastReadId = channel.lastMessageId;
+  }
+
   private initSocketListeners() {
     ChatEvents.message.add((msg: ChatEvents.ChatMessageMsg) => {
       const channel = this.getChannel(msg.channelId);
       channel.addNewMessages(Message.from(msg));
+
+      if (msg.sender.id == this.api.localUser.id) {
+        this.markChannelAsRead(this.getChannel(msg.channelId, false, false));
+      }
     });
 
     ChatEvents.presence.add((msg: ChatEvents.ChatPresenceMsg) => {

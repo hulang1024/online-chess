@@ -21,7 +21,9 @@ export default class Channel {
 
   public messageRemoved: Signal = new Signal();
 
-  public lastMessageId: number;
+  public lastMessageId: number | null = null;
+
+  public lastReadId: number | null = null;
 
   public readonly joined: BindableBool = new BindableBool(false);
 
@@ -34,11 +36,11 @@ export default class Channel {
     }
   }
 
-  addLocalEcho(message: Message) {
+  public addLocalEcho(message: Message) {
     this.addNewMessages(message);
   }
 
-  addNewMessages(messages: Message[] | Message) {
+  public addNewMessages(messages: Message[] | Message) {
     messages = messages instanceof Array ? messages : [messages];
     // 排除重复
     messages = messages.filter((newMsg: Message) => this.messages
@@ -48,7 +50,7 @@ export default class Channel {
       return;
     }
     const maxMessageId = messages.reduce((max, m) => Math.max(m.id, max), 0);
-    if (maxMessageId > this.lastMessageId) {
+    if (this.lastMessageId == null || maxMessageId > this.lastMessageId) {
       this.lastMessageId = maxMessageId;
     }
     this.messages = this.messages.concat(messages);
@@ -56,9 +58,14 @@ export default class Channel {
     this.newMessagesArrived.dispatch(messages);
   }
 
-  removeMessage(messageId: number) {
+  public removeMessage(messageId: number) {
     this.messages = this.messages.filter((msg) => msg.id == messageId);
     this.messageRemoved.dispatch(messageId);
+  }
+
+  public getUnreadMessages() {
+    return this.messages.filter((m) => m.id > 0
+      && (this.lastReadId == null || this.lastReadId < m.id));
   }
 
   public static from(ch: Channel) {
