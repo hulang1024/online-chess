@@ -120,7 +120,10 @@ export default defineComponent({
         }
 
         // 解决当弹出窗口之后，当棋盘已有选中棋子点击棋盘误触移动的问题
-        if (['play', 'spectate'].includes(ctx.$router.currentRoute.name as string)) {
+        const isPlayActicity = ['play', 'spectate'].includes(
+          ctx.$router.currentRoute.name as string,
+        );
+        if (isPlayActicity) {
           // 使用遮罩
           seamless.value = false;
         }
@@ -128,13 +131,8 @@ export default defineComponent({
         if (channel.type == ChannelType.PM) {
           // todo: 暂时不支持回显，而是绕一圈，这里判断不是自己
           if (last.sender.id != api.localUser.id) {
-            isOpen.value = true;
+            isOpen.value = !isPlayActicity;
             channelManager.openPrivateChannel(last.sender);
-          }
-        } else if (channel.type == ChannelType.ROOM && ctx.$q.screen.xs) {
-          if (channel.messagesLoaded) {
-            isOpen.value = true;
-            channelManager.openChannel(channel.id);
           }
         }
       });
@@ -178,6 +176,8 @@ export default defineComponent({
     const show = () => {
       seamless.value = !['play', 'spectate'].includes(ctx.$router.currentRoute.name as string);
       isOpen.value = true;
+
+      channelManager.markChannelAsRead(channelManager.currentChannel.value);
     };
 
     const hide = () => {
