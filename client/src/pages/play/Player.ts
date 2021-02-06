@@ -1,5 +1,6 @@
 import APIAccess, { APIState } from 'src/online/api/APIAccess';
 import Channel from 'src/online/chat/Channel';
+import ChannelType from 'src/online/chat/ChannelType';
 import ChannelManager from 'src/online/chat/ChannelManager';
 import GameState from 'src/online/play/GameState';
 import PartRoomRequest from 'src/online/room/PartRoomRequest';
@@ -147,6 +148,7 @@ export default class Player {
       let channel = new Channel();
       channel.name = '#当前房间';
       channel.id = this.room.channelId;
+      channel.type = ChannelType.ROOM;
       channel = this.channelManager.joinChannel(channel);
       // eslint-disable-next-line
       (playerView.$refs.chatPanel as any)?.loadChannel(channel);
