@@ -1,4 +1,7 @@
 import { Notify } from "quasar";
+import { configManager } from "src/boot/main";
+import { ConfigItem } from "src/config/ConfigManager";
+import GuestUser from "src/user/GuestUser";
 import Signal from "src/utils/signals/Signal";
 import APIAccess, { APIState } from "../api/APIAccess";
 import ChannelManager from "../chat/ChannelManager";
@@ -140,7 +143,7 @@ export default class SocketService {
     }
   }
 
-  private onLoginMessage(msg: UserEvents.UserLoggedInMsg) {
+  private async onLoginMessage(msg: UserEvents.UserLoggedInMsg) {
     if (msg.code !== 0) {
       switch (msg.code) {
         case 1:
@@ -151,10 +154,16 @@ export default class SocketService {
           Notify.create({ type: 'error', message: '你的账号已在别处登录' });
           this.api.logout();
           break;
-        case 3:
-          Notify.create({ type: 'error', message: '你还未登录' });
-          this.api.logout();
+        case 3: {
+          const lastLoginUser = this.api.localUser;
+          const token = configManager.get(ConfigItem.token) as string;
+          if ((lastLoginUser.username && lastLoginUser.password) || token) {
+            await this.api.login(lastLoginUser, token);
+          } else {
+            await this.api.login(new GuestUser());
+          }
           break;
+        }
         default:
           break;
       }

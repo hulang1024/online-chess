@@ -64,7 +64,7 @@ export default class APIAccess {
       const req = new LoginRequest(user, token);
       req.success = (ret: APILoginResult) => {
         this.accessToken = ret.accessToken;
-        this.localUser = ret.user;
+        this.localUser = { ...user, ...ret.user };
 
         if (!(user instanceof GuestUser)) {
           this.configManager.set(ConfigItem.username, user?.username);
