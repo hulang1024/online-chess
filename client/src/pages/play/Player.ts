@@ -495,6 +495,7 @@ export default class Player {
     this.localUser.online.value = true;
     this.socketService.send('play.game_continue', { ok: true });
     GameEvents.gameStates.addOnce((msg: GameEvents.GameStatesMsg) => {
+      this.room = msg.states.room as Room;
       this.loadState(msg.states, true);
       if (msg.states.room?.gameStatus == GameState.PLAYING) {
         this.gameState.value = GameState.PLAYING;
