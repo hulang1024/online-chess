@@ -1,12 +1,11 @@
 import { Notify } from "quasar";
-import { configManager } from "src/boot/main";
+import { api, configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
 import GuestUser from "src/user/GuestUser";
 import Signal from "src/utils/signals/Signal";
 import APIAccess, { APIState } from "../api/APIAccess";
 import ChannelManager from "../chat/ChannelManager";
-import { setupEvents } from './events/setup';
-import * as UserEvents from "./events/user";
+import * as UserServerMsgs from "../user/user_server_messages";
 import ServerMsg from "./ServerMsg";
 
 interface ServerMsgQueueElement {
@@ -45,13 +44,9 @@ export default class SocketService {
 
   private isQueueLooping: boolean;
 
-  private api: APIAccess;
+  private api: APIAccess = api;
 
-  constructor(api: APIAccess) {
-    this.api = api;
-
-    setupEvents(this);
-
+  constructor() {
     api.state.changed.add((state: APIState) => {
       if (state == APIState.online) {
         // 当API登录成功，需要WS(重新)登录
@@ -67,14 +62,7 @@ export default class SocketService {
       }
     });
 
-    UserEvents.loggedIn.add(this.onLoginMessage.bind(this), this);
-    UserEvents.online.add((msg: UserEvents.UserOnlineMsg) => {
-      Notify.create(`已上线：${msg.nickname}`);
-    });
-
-    UserEvents.offline.add((msg: UserEvents.UserOfflineMsg) => {
-      Notify.create(`已下线：${msg.nickname}`);
-    });
+    this.on('user.login', this.onLoginMessage.bind(this), this);
   }
 
   public queue(sendFunc: SendFunc) {
@@ -94,8 +82,22 @@ export default class SocketService {
     this.socket.send(msg);
   }
 
-  public addEvent(type: string, signal: Signal) {
+  public addSignal(type: string, signal: Signal) {
     this.messageTypeBoundSignalMap[type] = signal;
+  }
+
+  public on(type: string, listener: any, listenerContext: any = null) {
+    const signal = new Signal();
+    signal.add(listener, listenerContext);
+    this.addSignal(type, signal);
+  }
+
+  public off(type: string, listener?: any, listenerContext: any = null) {
+    if (listener) {
+      this.messageTypeBoundSignalMap[type].remove(listener, listenerContext);
+    } else {
+      delete this.messageTypeBoundSignalMap[type];
+    }
   }
 
   private login() {
@@ -143,7 +145,7 @@ export default class SocketService {
     }
   }
 
-  private async onLoginMessage(msg: UserEvents.UserLoggedInMsg) {
+  private async onLoginMessage(msg: UserServerMsgs.UserLoggedInMsg) {
     if (msg.code !== 0) {
       switch (msg.code) {
         case 1:

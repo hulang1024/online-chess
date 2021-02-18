@@ -135,7 +135,9 @@ export default class GameRule implements Game {
     this.historyRecorder.push(action);
 
     // 被移动棋子选择状态置不选中
+    chess.selectable = true;
     chess.selected = false;
+    chess.selectable = false;
     const convertedToPos = toPos.convertViewPos(chessHost, this.viewChessHost);
 
     // 设置棋盘状态

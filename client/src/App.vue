@@ -9,7 +9,9 @@ import { Notify } from 'quasar';
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import User from 'src/user/User';
-import { configManager, api, socketService } from './boot/main';
+import {
+  configManager, api, socketService, userManager,
+} from './boot/main';
 import { ConfigItem } from './config/ConfigManager';
 import GuestUser from './user/GuestUser';
 import APILoginResult from './online/api/APILoginResult';
@@ -56,6 +58,13 @@ export default defineComponent({
   name: 'App',
   setup() {
     const context = getCurrentInstance() as Vue;
+
+    userManager.userOnline.add((user: number, nickname: string) => {
+      Notify.create(`已上线：${nickname}`);
+    });
+    userManager.userOffline.add((uid: number, nickname: string) => {
+      Notify.create(`已下线：${nickname}`);
+    });
 
     context.$q.dark.set(configManager.get(ConfigItem.theme) == 'dark');
 

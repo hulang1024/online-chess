@@ -3,11 +3,11 @@
     flat
     class="chat-panel q-px-sm q-py-sm"
   >
-    <div class="text-subtitle1">聊天</div>
+    <div class="title text-subtitle1" >聊天</div>
     <drawable-channel
       v-if="channel"
       :channel="channel"
-      :loading="loading"
+      :loading="channel.loading"
       :chat-line-props="{
         rightAlign: false,
         small: true
@@ -35,7 +35,6 @@ import {
 } from '@vue/composition-api'
 import { channelManager } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
-import * as ChatEvents from 'src/online/ws/events/chat';
 import DrawableChannel from 'src/overlays/chat/DrawableChannel.vue';
 
 export default defineComponent({
@@ -48,19 +47,18 @@ export default defineComponent({
     const inputEnabled = ref(true);
     const channel = ref<Channel | null>(null);
     const channelHeight = ref<number>(0);
-    const loading = ref(true);
 
     onMounted(() => {
       channelHeight.value = context.$el.scrollHeight - 92;
     });
 
-    ChatEvents.wordsEnabled.add((msg: ChatEvents.WordsEnableMsg) => {
-      inputEnabled.value = msg.enabled;
+    channelManager.wordsEnableSignal.add((enabled: boolean) => {
+      inputEnabled.value = enabled;
     });
 
     const loadChannel = (ch: Channel) => {
+      ch.loading.value = false;
       channel.value = ch;
-      loading.value = false;
     };
 
     const onSend = () => {
@@ -87,7 +85,6 @@ export default defineComponent({
 
     return {
       channel,
-      loading,
 
       messageText,
       inputEnabled,
@@ -100,3 +97,8 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="sass" scoped>
+.title
+  user-select: none
+</style>

@@ -4,7 +4,7 @@ import ChessHost from 'src/rulesets/chinesechess/chess_host';
 import { chessClassToText } from 'src/rulesets/chinesechess/chess_map';
 import Game from 'src/rulesets/chinesechess/Game';
 import Signal from 'src/utils/signals/Signal';
-import { CHESS_BLACK, CHESS_RED } from "./colors";
+import './chess.scss';
 
 export default class DrawableChess implements Chess {
   private _el: HTMLDivElement;
@@ -41,42 +41,16 @@ export default class DrawableChess implements Chess {
   private load() {
     const el = document.createElement('div');
     this._el = el;
-    const color = this.chess.getHost() == ChessHost.RED ? CHESS_RED : CHESS_BLACK;
-    el.className = 'chess shadow-2';
-    el.style.position = 'absolute';
-    el.style.display = 'flex';
-    el.style.justifyContent = 'center';
-    el.style.alignItems = 'center';
-    el.style.backgroundColor = '#f5e1c1';
-    el.style.userSelect = 'none';
-    el.style.color = color;
-    el.style.outlineOffset = '1px';
-    el.style.fontWeight = 'bolder';
-    el.style.textAlign = 'center';
+    const colorClass = this.chess.getHost() == ChessHost.RED ? 'red' : 'black';
+    el.classList.add('chess', colorClass);
     el.style.lineHeight = `${this.radius * 2}px`;
 
     const circle = document.createElement('div');
     circle.className = 'chess__circle';
-    circle.style.display = 'flex';
-    circle.style.justifyContent = 'center';
-    circle.style.alignItems = 'center';
-    circle.style.width = 'calc(100% - 4px)';
-    circle.style.height = 'calc(100% - 4px)';
-    circle.style.border = `1px solid ${color}`;
-    circle.style.pointerEvents = 'none';
-    circle.style.borderRadius = '100%';
 
     el.appendChild(circle);
 
     this.setFront(this.chess.isFront());
-    el.onmouseenter = () => {
-      if (!this.selectable || this.lit || this.selected) return;
-      el.style.outline = '1px solid #fff';
-    };
-    el.onmouseleave = () => {
-      if (!this.selectable || this.lit) return;
-      el.style.outline = '';
-    };
 
     this.setupDragable();
 
@@ -112,7 +86,6 @@ export default class DrawableChess implements Chess {
     const el = this._el;
     el.style.width = `${radius * 2}px`;
     el.style.height = `${radius * 2}px`;
-    el.style.borderRadius = `${radius}px`;
     el.style.fontSize = `${radius + 3}px`;
     this.radius = radius;
   }
@@ -136,7 +109,7 @@ export default class DrawableChess implements Chess {
   public set selectable(val: boolean) {
     this._selectable = val;
     this._el.draggable = val;
-    this._el.style.cursor = this._selectable ? 'pointer' : 'default';
+    this._el.classList[val ? 'add' : 'remove']('selectable');
   }
 
   public get selectable() { return this._selectable; }
@@ -147,7 +120,7 @@ export default class DrawableChess implements Chess {
     }
     if (this._selected == value) return;
     this._selected = value;
-    this._el.style.opacity = (this._selected ? 0.5 : 1).toString();
+    this._el.classList[value ? 'add' : 'remove']('selected');
   }
 
   public get selected() { return this._selected; }
@@ -155,7 +128,7 @@ export default class DrawableChess implements Chess {
   public setLit(lit: boolean) {
     if (this._lit == lit) return;
     this._lit = lit;
-    this._el.style.outline = lit ? '1px solid #fff' : '';
+    this._el.classList[lit ? 'add' : 'remove']('lit');
   }
 
   public canGoTo(destPos: ChessPos, game: Game) {

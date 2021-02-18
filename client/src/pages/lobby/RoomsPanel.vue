@@ -6,11 +6,18 @@
       color="primary"
       size="3em"
     />
-    <drawable-room
+    <transition
       v-for="room in rooms"
       :key="room.id"
-      :room="room"
-    />
+      appear
+      enter-active-class="animated fadeIn"
+      leave-active-class="animated fadeOut"
+      :duration="200"
+    >
+      <drawable-room
+        :room="room"
+      />
+    </transition>
   </div>
 </template>
 

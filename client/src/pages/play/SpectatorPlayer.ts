@@ -1,13 +1,13 @@
 import { onMounted } from "@vue/composition-api";
-import * as GameEvents from 'src/online/ws/events/play';
+import * as GameEvents from 'src/online/play/gameplay_server_messages';
 import GameState from "src/online/play/GameState";
-import ConfirmRequest from 'src/rulesets/chinesechess/confirm_request';
+import { toReadableText } from 'src/online/play/confirm_request';
 import SpectateResponse from "src/online/spectator/APISpectateResponse";
 import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
 import User from "src/user/User";
 import ChessHost from "src/rulesets/chinesechess/chess_host";
 import Player from "./Player";
-import GameUser from "./GameUser";
+import GameUser from "../../online/play/GameUser";
 
 export default class SpectatorPlayer extends Player {
   constructor(context: Vue, spectateResponse: SpectateResponse) {
@@ -42,8 +42,14 @@ export default class SpectatorPlayer extends Player {
     });
   }
 
-  protected onGameReadyEvent(msg: GameEvents.GameReadyMsg) {
-    super.onGameReadyEvent(msg);
+  protected onUserLeft(leftUser: GameUser) {
+    super.onUserLeft(leftUser);
+    // eslint-disable-next-line
+    this.textOverlay.hide();
+  }
+
+  protected resultsReady(msg: GameEvents.ResultsReadyMsg) {
+    super.resultsReady(msg);
     if (this.gameState.value == GameState.END) {
       this.gameState.value = GameState.READY;
       // eslint-disable-next-line
@@ -51,8 +57,8 @@ export default class SpectatorPlayer extends Player {
     }
   }
 
-  protected onGameOverEvent(msg: GameEvents.GameOverMsg) {
-    super.onGameOverEvent(msg);
+  protected resultsGameOver(msg: GameEvents.GameOverMsg) {
+    super.resultsGameOver(msg);
     const winner = msg.winUserId ? this.getGameUserByUserId(msg.winUserId) as GameUser : null;
     const winnerName = winner?.bindable.value?.nickname || '';
     this.showText(msg.winUserId == null
@@ -60,10 +66,10 @@ export default class SpectatorPlayer extends Player {
       : `${winner?.chessHost == ChessHost.RED ? '红方' : '黑方'} (${winnerName}) 赢！`);
   }
 
-  protected onGameConfirmRequestEvent(msg: GameEvents.ConfirmRequestMsg) {
-    super.onGameConfirmRequestEvent(msg);
+  protected resultsConfirmRequest(msg: GameEvents.ConfirmRequestMsg) {
+    super.resultsConfirmRequest(msg);
     let text = msg.chessHost == ChessHost.BLACK ? '黑方' : '红方';
-    text += `请求${ConfirmRequest.toReadableText(msg.reqType)}`;
+    text += `请求${toReadableText(msg.reqType)}`;
     this.showText(text, 1000);
   }
 
@@ -90,7 +96,17 @@ export default class SpectatorPlayer extends Player {
   }
 
   public onQuitClick() {
-    this.api.perform(new SpectatorLeaveRequest(this.room));
     this.exitScreen();
+  }
+
+  protected exitScreen() {
+    const req = new SpectatorLeaveRequest(this.room);
+    req.success = () => {
+      super.exitScreen();
+    };
+    req.failure = () => {
+      super.exitScreen();
+    };
+    this.api.perform(req);
   }
 }

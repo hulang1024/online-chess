@@ -1,10 +1,10 @@
-import { socketService } from "src/boot/main";
 import GameState from "src/online/play/GameState";
 import ChessAction from "src/rulesets/chinesechess/ChessAction";
 import ChessPos from "src/rulesets/chinesechess/ChessPos";
 import ChessHost from "src/rulesets/chinesechess/chess_host";
 import Bindable from "src/utils/bindables/Bindable";
 import Signal from "src/utils/signals/Signal";
+import ChinesechessGameplayServer from "../online/ChinesechessGameplayServer";
 import DrawableChess from "./DrawableChess";
 import DrawableChessboard from "./DrawableChessboard";
 import GameRule from "./GameRule";
@@ -22,7 +22,7 @@ export default class UserPlayInput {
 
   private lastSelected: DrawableChess | null;
 
-  private socketService = socketService;
+  private gameplayServer = new ChinesechessGameplayServer();
 
   constructor(
     gameRule: GameRule,
@@ -34,7 +34,10 @@ export default class UserPlayInput {
     this.localChessHost = localChessHost;
     this.chessboard = gameRule.getChessboard();
 
-    this.chessboard.chessPickupOrDrop.add(this.onChessPickupOrDrop, this);
+    this.chessboard.chessPickupOrDrop.add(({ chess, isPickup }
+      : {chess: DrawableChess, isPickup: boolean}) => {
+      this.gameplayServer.pickChess(chess.getPos(), isPickup);
+    }, this);
     this.chessboard.chessPosClicked.add(this.onChessboardClick, this);
     this.chessboard.chessMoved.add(this.onInputChessMove, this);
 
@@ -59,13 +62,6 @@ export default class UserPlayInput {
   public disable() {
     this.chessboard.getChessList().forEach((chess) => {
       chess.selectable = false;
-    });
-  }
-
-  private onChessPickupOrDrop({ chess, isPickup } : {chess: DrawableChess, isPickup: boolean}) {
-    this.socketService.send('play.chess_pick', {
-      pos: chess.getPos(),
-      pickup: isPickup,
     });
   }
 
@@ -98,7 +94,7 @@ export default class UserPlayInput {
       if (event.chess.getHost() == this.gameRule.activeChessHost.value) {
         this.lastSelected = event.chess;
         this.lastSelected.selected = true;
-        this.onChessPickupOrDrop({ chess: event.chess, isPickup: true });
+        this.gameplayServer.pickChess(event.chess.getPos(), true);
         // 将非持棋方的棋子全部启用（这样下次才能点击要吃的目标棋子）
         this.chessboard.getChessList().forEach((chess) => {
           if (chess.getHost() != this.localChessHost.value) {
@@ -112,7 +108,7 @@ export default class UserPlayInput {
     if (event.chess.selected && event.chess.getHost() == this.localChessHost.value) {
       // 重复点击，取消选中
       this.lastSelected.selected = false;
-      this.onChessPickupOrDrop({ chess: event.chess, isPickup: false });
+      this.gameplayServer.pickChess(event.chess.getPos(), false);
       this.lastSelected = null;
       this.chessboard.getChessList().forEach((chess) => {
         if (chess.getHost() != this.localChessHost.value) {
@@ -135,10 +131,7 @@ export default class UserPlayInput {
       this.lastSelected.selected = false;
       event.chess.selected = true;
       this.lastSelected = event.chess;
-      this.socketService.send('play.chess_pick', {
-        pos: this.lastSelected?.getPos(),
-        pickup: true,
-      });
+      this.gameplayServer.pickChess(this.lastSelected?.getPos(), true);
     }
   }
 
@@ -172,9 +165,6 @@ export default class UserPlayInput {
     action.toPos = toPos;
     action.chessHost = this.localChessHost.value as ChessHost;
     this.gameRule.onChessAction(action, duration);
-    this.socketService.send('play.chess_move', {
-      fromPos,
-      toPos,
-    });
+    this.gameplayServer.moveChess(fromPos, toPos);
   }
 }

@@ -29,6 +29,7 @@
 
       <q-tab-panels
         v-model="activeChannelTab"
+        keep-alive
         animated
         class="q-pb-xs"
       >
@@ -76,7 +77,6 @@ import ChannelType from 'src/online/chat/ChannelType';
 import InfoMessage from 'src/online/chat/InfoMessage';
 import Message from 'src/online/chat/Message';
 import User from 'src/user/User';
-import * as ChatEvents from 'src/online/ws/events/chat';
 import DrawableChannel from './DrawableChannel.vue';
 
 export default defineComponent({
@@ -158,13 +158,13 @@ export default defineComponent({
       channelManager.openChannel(1);
     };
 
-    ChatEvents.wordsEnabled.add((msg: ChatEvents.WordsEnableMsg) => {
-      inputEnabled.value = msg.enabled;
+    channelManager.wordsEnableSignal.add((enabled: boolean) => {
+      inputEnabled.value = enabled;
     });
 
     channelManager.initializeChannels();
     channelManager.openChannel(1);
-    channelManager.addInfoMessage(1, new InfoMessage('欢迎来到在线象棋'));
+    channelManager.addInfoMessage(1, new InfoMessage('欢迎'));
 
     const toggle = () => {
       if (!isOpen.value) {

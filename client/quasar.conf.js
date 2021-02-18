@@ -126,7 +126,10 @@ module.exports = configure((ctx) => ({
 
   // animations: 'all', // --- includes all animations
   // https://quasar.dev/options/animations
-  animations: [],
+  animations: [
+    'fadeIn',
+    'fadeOut',
+  ],
 
   // https://quasar.dev/quasar-cli/developing-ssr/configuring-ssr
   ssr: {
@@ -138,9 +141,9 @@ module.exports = configure((ctx) => ({
     workboxPluginMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
     workboxOptions: {}, // only for GenerateSW
     manifest: {
-      name: '在线中国象棋',
-      short_name: '在线中国象棋',
-      description: '在线中国象棋',
+      name: '在线下棋',
+      short_name: '在线下棋',
+      description: '在线下棋',
       display: 'standalone',
       orientation: 'portrait',
       background_color: '#ffffff',

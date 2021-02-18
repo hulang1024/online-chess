@@ -1,7 +1,7 @@
 import Chess from "src/rulesets/chinesechess/Chess";
 import ChessHost from "src/rulesets/chinesechess/chess_host";
 import { chessClassToText } from "src/rulesets/chinesechess/chess_map";
-import { CHESS_BLACK, CHESS_RED } from "./colors";
+import './judgement.scss';
 
 const TRANSITION_DURATION = 200;
 
@@ -36,8 +36,8 @@ export default class DrawableEatJudgement {
     }
 
     this.el.style.display = 'block';
-    const color = eatenChess?.getHost() == ChessHost.RED ? CHESS_RED : CHESS_BLACK;
-    this.sub.innerHTML = `（<span class="chess-name" style="color:${color}">`
+    const colorClass = eatenChess?.getHost() == ChessHost.RED ? 'red' : 'black';
+    this.sub.innerHTML = `（<span class="chess-name ${colorClass}">`
       + `${chessClassToText(eatenChess)}</span>被吃）`;
     this.el.classList.add('show');
 

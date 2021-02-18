@@ -1,8 +1,8 @@
 import { onBeforeUnmount, onMounted } from "@vue/composition-api";
 import Signal from "src/utils/signals/Signal";
+import TweenAnimationUpdater from "src/rulesets/ui/TweenAnimationUpdater";
 import ChessTargetDrawer from "./ChessTargetDrawer";
 import DrawableChessboard from "./DrawableChessboard";
-import TweenAnimationUpdater from "./TweenAnimationUpdater";
 
 export default class Playfield {
   public loaded: Signal = new Signal();

@@ -5,6 +5,7 @@ import Chessboard from "src/rulesets/chinesechess/chessboard";
 import ChessPos from "src/rulesets/chinesechess/ChessPos";
 import Signal from "src/utils/signals/Signal";
 import DrawableChess from "./DrawableChess";
+import './chessboard.scss';
 
 export default class DrawableChessboard implements Chessboard {
   private _el: HTMLDivElement;
@@ -47,7 +48,7 @@ export default class DrawableChessboard implements Chessboard {
   private load(stage: {width: number, height: number}, screen: any) {
     const el = document.createElement('div');
     this._el = el;
-    el.className = 'chessboard';
+    el.className = 'chessboard chinese-chess-chessboard';
     el.style.position = 'relative';
     el.style.padding = `${this.padding}px`;
     el.style.borderRadius = '4px';

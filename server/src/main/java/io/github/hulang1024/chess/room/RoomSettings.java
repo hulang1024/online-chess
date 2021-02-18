@@ -1,0 +1,23 @@
+package io.github.hulang1024.chess.room;
+
+import lombok.Data;
+
+/**
+ * 房间设置
+ */
+@Data
+public class RoomSettings {
+    /**
+     * 局时（秒）
+     */
+    private int gameDuration;
+    /**
+     * 步时（秒）
+     */
+    private int stepDuration;
+    /**
+     * 读秒
+     */
+    private int secondsCountdown;
+
+}

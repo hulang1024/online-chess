@@ -51,13 +51,9 @@ export default defineComponent({
   },
   setup(props) {
     const { $q, $router } = getCurrentInstance() as Vue;
-    const { room } = props;
 
-    const roomStates = reactive({
-      name: room.name,
-      status: room.status,
-      redChessUser: room.redChessUser,
-      blackChessUser: room.blackChessUser,
+    const room = reactive({
+      ...props.room,
     });
 
     const ROOM_STATUS_MAP: {
@@ -76,13 +72,10 @@ export default defineComponent({
         color: '#fdd835',
       },
     };
-    const statusStates = computed(() => ROOM_STATUS_MAP[roomStates.status]);
+    const statusStates = computed(() => ROOM_STATUS_MAP[room.status]);
 
     watch(props, () => {
-      roomStates.name = props.room.name;
-      roomStates.status = props.room.status;
-      roomStates.redChessUser = props.room.redChessUser;
-      roomStates.blackChessUser = props.room.blackChessUser;
+      Object.assign(room, props.room);
     });
 
     const joinRoom = () => {
@@ -161,7 +154,7 @@ export default defineComponent({
     };
 
     return {
-      ...toRefs(roomStates),
+      ...toRefs(room),
       statusStates,
       onClick,
     };

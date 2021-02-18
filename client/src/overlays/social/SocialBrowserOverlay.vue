@@ -147,9 +147,10 @@ import SpectateUserRequest from 'src/online/spectator/SpectateUserRequest';
 import GetUsersRequest from 'src/online/user/GetUsersRequest';
 import InviteRequest from 'src/online/invitation/InviteRequest';
 import SearchUserInfo from 'src/online/user/SearchUserInfo';
-import * as UserEvents from "src/online/ws/events/user";
-import * as StatEvents from "src/online/ws/events/stat";
-import { api, channelManager, socketService } from 'src/boot/main';
+import { StatOnlineCountMsg } from "src/online/stat";
+import {
+  api, channelManager, socketService, userActivityClient, userManager,
+} from 'src/boot/main';
 import SearchUserParams from 'src/online/user/SearchUserParams';
 import UserStatus from 'src/user/UserStatus';
 import APIPageResponse from 'src/online/api/APIPageResponse';
@@ -204,16 +205,12 @@ export default defineComponent({
       setTimeout(() => {
         queryUsers();
       }, 300);
-      socketService.queue((send) => {
-        send('user_activity.enter', { code: 2 });
-      });
+      userActivityClient.enter(2);
     };
 
     const hide = () => {
       isOpen.value = false;
-      socketService.queue((send) => {
-        send('user_activity.exit', { code: 2 });
-      });
+      userActivityClient.exit(2);
     };
 
     const toggle = () => {
@@ -229,8 +226,8 @@ export default defineComponent({
       isLoggedIn.value = api.isLoggedIn;
     });
 
-    UserEvents.statusChanged.add((msg: UserEvents.UserStatusChangedMsg) => {
-      const found = users.value.find((u) => u.id == msg.uid);
+    userManager.userStatusChanged.add((user: SearchUserInfo, status: UserStatus) => {
+      const found = users.value.find((u) => u.id == user.id);
       let isToAdd = false;
       switch (activeTab.value) {
         case 'all':
@@ -241,10 +238,10 @@ export default defineComponent({
         case 'in_room':
         case 'playing': {
           if (found) {
-            if (found.status != msg.status) {
-              users.value = users.value.filter((u) => u.id != msg.uid);
+            if (found.status != status) {
+              users.value = users.value.filter((u) => u.id != user.id);
             }
-          } else if ((msg.status == UserStatus.IN_ROOM || msg.status == UserStatus.PLAYING)) {
+          } else if ((status == UserStatus.IN_ROOM || status == UserStatus.PLAYING)) {
             isToAdd = true;
           }
           break;
@@ -254,18 +251,18 @@ export default defineComponent({
       }
 
       if (isToAdd) {
-        users.value = users.value.concat([msg.user]);
+        users.value = users.value.concat([user]);
       }
       if (found) {
-        found.status = msg.status;
-        found.isOnline = msg.status != UserStatus.OFFLINE;
-        found.loginDeviceOS = msg.user?.loginDeviceOS;
+        found.status = status;
+        found.isOnline = status != UserStatus.OFFLINE;
+        found.loginDeviceOS = user?.loginDeviceOS;
       }
 
       users.value = users.value.sort((a, b) => (a.isOnline ? (b.isOnline ? 0 : -1) : +1));
     });
 
-    StatEvents.online.add((msg: StatEvents.StatOnlineCountMsg) => {
+    socketService.on('stat.online', (msg: StatOnlineCountMsg) => {
       onlineCount.value = msg.online;
       guestCount.value = msg.guest;
     });
@@ -370,7 +367,7 @@ export default defineComponent({
         return;
       }
       queryUsers();
-      socketService.send('user_activity.enter', { code: 2 });
+      userActivityClient.enter(2);
     });
 
     return {

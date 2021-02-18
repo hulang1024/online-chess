@@ -15,6 +15,8 @@ export default class Channel {
 
   public users: User[] = [];
 
+  public loading = new BindableBool(true);
+
   public messagesLoaded = false;
 
   public newMessagesArrived: Signal = new Signal();
@@ -25,7 +27,7 @@ export default class Channel {
 
   public lastReadId: number | null = null;
 
-  public readonly joined: BindableBool = new BindableBool(false);
+  public readonly joined = new BindableBool(false);
 
   constructor(user?: User) {
     if (user) {

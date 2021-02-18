@@ -29,7 +29,7 @@ export default async function desktopNotify(msg: string): Promise<Notification |
     body: msg,
   };
 
-  const notification = new Notification('中国象棋-通知', options);
+  const notification = new Notification('通知', options);
 
   return notification;
 }

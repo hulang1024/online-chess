@@ -51,23 +51,25 @@
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, onMounted, onUnmounted, ref, watch,
+  defineComponent, getCurrentInstance, onMounted, onBeforeUnmount, ref, watch,
 } from '@vue/composition-api';
 import CreateRoomRequest from 'src/online/room/CreateRoomRequest';
 import QuickStartRequest from 'src/online/room/QuickStartRequest';
 import ReplyInvitationRequest from 'src/online/invitation/ReplyInvitationRequest';
 import Room from 'src/online/room/Room';
-import RoomManager from 'src/online/room/RoomManager.ts';
-import * as GameEvents from 'src/online/ws/events/play';
-import * as InvitationEvents from "src/online/ws/events/invitation";
+import RoomManager from 'src/online/room/RoomManager';
+import * as InvitationEvents from "src/online/invitation";
+import * as GameplayMsgs from 'src/online/play/gameplay_server_messages';
 import {
   api, audioManager, channelManager, socketService,
 } from 'src/boot/main';
 import { RoomSettings } from 'src/online/room/RoomSettings';
-import { InvitationReplyServerMsg, InvitationServerMsg } from 'src/online/ws/events/invitation';
+import { InvitationReplyServerMsg, InvitationServerMsg } from 'src/online/invitation';
 import ResponseGameStates from 'src/online/play/game_states_response';
+import * as playPageSignals from 'src/pages/play/signals';
 import CreateRoomDialog from './CreateRoomDialog.vue';
 import RoomsPanel from './RoomsPanel.vue';
+import { userActivityClient } from '../../boot/main';
 
 export default defineComponent({
   components: { CreateRoomDialog, RoomsPanel },
@@ -101,7 +103,7 @@ export default defineComponent({
 
     const onReconnected = () => {
       queryRooms();
-      socketService.send('user_activity.enter', { code: 1 });
+      userActivityClient.enter(1);
     };
 
     socketService.reconnected.add(onReconnected);
@@ -110,7 +112,7 @@ export default defineComponent({
       if (!api.isLoggedIn) {
         return;
       }
-      socketService.queue((send) => send('user_activity.enter', { code: 1 }));
+      userActivityClient.enter(1);
     };
     api.state.changed.add(onLoggedIn);
 
@@ -118,9 +120,6 @@ export default defineComponent({
       const onAction = (isOk: boolean) => {
         socketService.queue((send) => {
           send('play.game_continue', { ok: isOk });
-        });
-        GameEvents.gameStates.addOnce(async (msg: GameEvents.GameStatesMsg) => {
-          await pushPlayPage(msg.states.room, msg.states);
         });
       };
       $q.dialog({
@@ -138,8 +137,11 @@ export default defineComponent({
       }).onOk(() => onAction(true))
         .onCancel(() => onAction(false));
     };
-    GameEvents.gameContinue.add(onGameContinue);
-
+    const onGameStates = async (msg: GameplayMsgs.GameStatesMsg) => {
+      await pushPlayPage(msg.states.room, msg.states);
+    };
+    socketService.on('play.game_continue', onGameContinue);
+    socketService.on('play.game_states', onGameStates);
     const onNewInvitation = (msg: InvitationServerMsg) => {
       const { invitation } = msg;
       // eslint-disable-next-line
@@ -148,17 +150,29 @@ export default defineComponent({
       audioManager.samples.get('new_invitation').play();
       const onAction = (isAccept: boolean) => {
         const req = new ReplyInvitationRequest(invitation.id, isAccept);
-        req.success = async (res) => {
-          if (res.playRoom) {
-            await pushPlayPage(res.playRoom);
-          }
-          if (res.spectateResponse) {
-            await $router.push({
-              name: 'spectate',
-              replace: true,
-              query: { id: res.spectateResponse.room.id as unknown as string },
-              params: { spectateResponse: res.spectateResponse as unknown as string },
+        req.success = (res) => {
+          const toPage = () => {
+            if (res.playRoom) {
+              // eslint-disable-next-line
+              pushPlayPage(res.playRoom);
+            } else if (res.spectateResponse) {
+              // eslint-disable-next-line
+              $router.push({
+                name: 'spectate',
+                replace: true,
+                query: { id: res.spectateResponse.room.id as unknown as string },
+                params: { spectateResponse: res.spectateResponse as unknown as string },
+              });
+            }
+          };
+
+          if (['play', 'spectate'].includes(ctx.$router.currentRoute.name as string)) {
+            playPageSignals.quit.dispatch();
+            playPageSignals.exit.addOnce(() => {
+              setTimeout(toPage, 300);
             });
+          } else {
+            toPage();
           }
         };
         req.failure = (res) => {
@@ -213,11 +227,12 @@ export default defineComponent({
       channelManager.openChannel(1);
     });
 
-    onUnmounted(() => {
+    onBeforeUnmount(() => {
       socketService.reconnected.remove(onReconnected);
       api.state.changed.remove(onLoggedIn);
       roomManager.removeListeners();
-      GameEvents.gameContinue.remove(onGameContinue);
+      socketService.off('play.game_continue', onGameContinue);
+      socketService.off('play.game_states', onGameStates);
       // eslint-disable-next-line
       (ctx.$vnode.context?.$refs.toolbar as any).exitActive();
     });

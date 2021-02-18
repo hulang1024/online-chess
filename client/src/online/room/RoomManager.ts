@@ -1,12 +1,12 @@
 import { ref } from "@vue/composition-api";
-import { api } from "src/boot/main";
+import { api, socketService } from "src/boot/main";
 import APIAccess from "../api/APIAccess";
 import CreateRoomRequest from "./CreateRoomRequest";
 import GetRoomsRequest from "./GetRoomsRequest";
 import Room from "./Room";
 import {
-  roomCreated, RoomCreatedMsg, roomRemoved, RoomRemovedMsg, roomUpdated, RoomUpdatedMsg,
-} from "../ws/events/lobby";
+  RoomCreatedMsg, RoomRemovedMsg, RoomUpdatedMsg,
+} from "./room_server_messages";
 import SearchRoomParams from "./SearchRoomParams";
 
 export default class RoomManager {
@@ -46,11 +46,11 @@ export default class RoomManager {
   }
 
   private initSocketListeners() {
-    roomCreated.add((msg: RoomCreatedMsg) => {
+    socketService.on('lobby.room_create', (msg: RoomCreatedMsg) => {
       this.rooms.value.push(msg.room);
     });
 
-    roomUpdated.add((msg: RoomUpdatedMsg) => {
+    socketService.on('lobby.room_update', (msg: RoomUpdatedMsg) => {
       if (msg.code != 0) {
         return;
       }
@@ -59,7 +59,7 @@ export default class RoomManager {
       Object.assign(this.rooms.value[i], msg.room);
     });
 
-    roomRemoved.add((msg: RoomRemovedMsg) => {
+    socketService.on('lobby.room_remove', (msg: RoomRemovedMsg) => {
       if (msg.code != 0) {
         return;
       }
@@ -68,8 +68,8 @@ export default class RoomManager {
   }
 
   public removeListeners() {
-    [roomCreated, roomUpdated, roomRemoved].forEach((signal) => {
-      signal.removeAll();
+    ['lobby.room_create', 'lobby.room_update', 'lobby.room_remove'].forEach((event) => {
+      socketService.off(event);
     });
     this.rooms.value = [];
   }

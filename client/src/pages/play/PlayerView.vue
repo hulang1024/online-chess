@@ -269,9 +269,9 @@ import {
 import GameState from 'src/online/play/GameState';
 import Room from 'src/online/room/Room';
 import Playfield from 'src/rulesets/chinesechess/ui/Playfield.vue';
-import ResultDialog from 'src/rulesets/chinesechess/ui/ResultDialog.vue';
-import TextOverlay from 'src/rulesets/chinesechess/ui/TextOverlay.vue';
-import GameUser from './GameUser';
+import ResultDialog from 'src/rulesets/ui/ResultDialog.vue';
+import TextOverlay from 'src/rulesets/ui/TextOverlay.vue';
+import GameUser from 'src/online/play/GameUser';
 import GameUserPanel from './GameUserPanel.vue';
 import SpectatorCountDisplay from './SpectatorCountDisplay.vue';
 import ChatPanel from './ChatPanel.vue';
@@ -379,7 +379,7 @@ export default defineComponent({
 
 .xs-screen
   .ready-info
-    width: calc(100% - 4px)
+    width: calc(100% - 1px)
     text-align: center
     color: white
     font-weight: bold

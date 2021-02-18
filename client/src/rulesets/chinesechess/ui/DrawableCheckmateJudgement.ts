@@ -1,4 +1,5 @@
 import ChessHost from "src/rulesets/chinesechess/chess_host";
+import './judgement.scss';
 
 const TRANSITION_DURATION = 200;
 

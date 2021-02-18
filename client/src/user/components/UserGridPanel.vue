@@ -51,7 +51,7 @@ import {
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import UserStatus from "src/user/UserStatus";
 import SearchUserInfo from 'src/online/user/SearchUserInfo';
-import { translateDeviceOS } from "src/user/device.ts";
+import { translateDeviceOS } from "src/user/device";
 
 export default defineComponent({
   components: { UserAvatar },

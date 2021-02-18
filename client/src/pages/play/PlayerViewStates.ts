@@ -8,7 +8,7 @@ import Message from "src/online/chat/Message";
 import GameState from "src/online/play/GameState";
 import ChessHost from "src/rulesets/chinesechess/chess_host";
 import { createBoundRef } from "src/utils/vue/vue_ref_utils";
-import GameUser from "./GameUser";
+import GameUser from "../../online/play/GameUser";
 import Player from "./Player";
 
 export function usePlayerStates(player: Player) {
@@ -72,7 +72,7 @@ export function usePlayerStates(player: Player) {
         text: '对局已结束',
       },
     };
-    return otherUser.user?.id
+    return (otherUser.user?.id && viewUser.user?.id)
       ? statusMap[gameState.value]
       : { color: '#8bc34a', text: '等待玩家加入' };
   });
@@ -92,7 +92,7 @@ export function usePlayerStates(player: Player) {
 
   const canWithdraw: Ref<boolean> = createBoundRef(player.gameRule.canWithdraw);
 
-  const spectatorCount: Ref<number> = createBoundRef(player.spectatorCount);
+  const spectatorCount: Ref<number> = createBoundRef(player.spectatorClient.spectatorCount);
 
   const unreadMessageCount = ref(0);
   channelManager.currentChannel.addAndRunOnce((channel: Channel) => {

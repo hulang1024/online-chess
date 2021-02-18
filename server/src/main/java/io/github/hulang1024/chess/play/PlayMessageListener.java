@@ -1,0 +1,344 @@
+package io.github.hulang1024.chess.play;
+
+import io.github.hulang1024.chess.chat.ChannelManager;
+import io.github.hulang1024.chess.chat.InfoMessage;
+import io.github.hulang1024.chess.play.rule.ChessboardState;
+import io.github.hulang1024.chess.play.rule.ConfirmRequestType;
+import io.github.hulang1024.chess.play.rule.GameResult;
+import io.github.hulang1024.chess.play.ws.*;
+import io.github.hulang1024.chess.play.ws.servermsg.*;
+import io.github.hulang1024.chess.room.Room;
+import io.github.hulang1024.chess.room.RoomManager;
+import io.github.hulang1024.chess.room.RoomStatus;
+import io.github.hulang1024.chess.room.ws.LobbyRoomUpdateServerMsg;
+import io.github.hulang1024.chess.user.User;
+import io.github.hulang1024.chess.user.UserStatus;
+import io.github.hulang1024.chess.user.activity.UserActivity;
+import io.github.hulang1024.chess.user.activity.UserActivityService;
+import io.github.hulang1024.chess.userstats.UserStatsService;
+import io.github.hulang1024.chess.ws.AbstractMessageListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+
+@Component
+public class PlayMessageListener extends AbstractMessageListener {
+    @Autowired
+    private UserActivityService userActivityService;
+    @Autowired
+    private RoomManager roomManager;
+    @Autowired
+    private UserStatsService userStatsService;
+    @Autowired
+    private ChannelManager channelManager;
+
+    @Override
+    public void init() {
+        addMessageHandler(StartGameMsg.class, this::onStartGame);
+        addMessageHandler(PauseGameMsg.class, this::onPauseGame);
+        addMessageHandler(ResumeGameMsg.class, this::onResumeGame);
+        addMessageHandler(GameOverMsg.class, this::onGameOver);
+        addMessageHandler(GameContinueMsg.class, this::onGameContinue);
+        addMessageHandler(ReadyMsg.class, this::onReady);
+        addMessageHandler(ChessPickMsg.class, this::onPickChess);
+        addMessageHandler(ChessMoveMsg.class, this::onMoveChess);
+        addMessageHandler(ConfirmRequestMsg.class, this::onConfirmRequest);
+        addMessageHandler(ConfirmResponseMsg.class, this::onConfirmResponse);
+    }
+
+    private void onReady(ReadyMsg readyMsg) {
+        User user = readyMsg.getUser();
+        Room room = roomManager.getJoinedRoom(user);
+
+        if (room == null) {
+            return;
+        }
+
+        room.updateUserReadyState(user, readyMsg.getReadied() != null
+            ? readyMsg.getReadied()
+            : !room.getUserReadied(user));
+
+        ReadyServerMsg readyServerMsg = new ReadyServerMsg();
+        readyServerMsg.setCode(0);
+        readyServerMsg.setUid(user.getId());
+        readyServerMsg.setReadied(room.getUserReadied(user));
+
+        roomManager.broadcast(room, readyServerMsg);
+
+        userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room), user);
+    }
+
+    private void onStartGame(StartGameMsg msg) {
+        Room room = roomManager.getJoinedRoom(msg.getUser());
+
+        boolean isAllReadied = room.getStatus() == RoomStatus.BEGINNING
+            && room.getUsers().stream().allMatch(u -> room.getUserReadied(u));
+        // 全部准备好
+        if (isAllReadied) {
+            // 确保其中一个不是离开状态
+            if (room.getRedUserStatus() == UserStatus.IN_ROOM.getCode() &&
+                room.getBlackUserStatus() == UserStatus.IN_ROOM.getCode()) {
+                startGame(room);
+            }
+        }
+    }
+
+    private void onPauseGame(PauseGameMsg msg) {
+        pauseGame(roomManager.getJoinedRoom(msg.getUser()));
+    }
+
+    private void onResumeGame(ResumeGameMsg msg) {
+        resumeGame(roomManager.getJoinedRoom(msg.getUser()));
+    }
+
+    private void onPickChess(ChessPickMsg chessPickMsg) {
+        User user = chessPickMsg.getUser();
+        Room room = roomManager.getJoinedRoom(user);
+
+        if (room.getGame() == null || room.getGame().getState() != GameState.PLAYING) {
+            return;
+        }
+
+        ChessPickServerMsg chessPickServerMsg = new ChessPickServerMsg();
+        chessPickServerMsg.setChessHost(room.getChessHost(user).code());
+        chessPickServerMsg.setPos(chessPickMsg.getPos());
+        chessPickServerMsg.setPickup(chessPickMsg.isPickup());
+
+        roomManager.broadcast(room, chessPickServerMsg, user);
+    }
+
+    private void onMoveChess(ChessMoveMsg chessMoveMsg) {
+        User user = chessMoveMsg.getUser();
+        Room room = roomManager.getJoinedRoom(user);
+
+        if (room.getGame() == null || room.getGame().getState() != GameState.PLAYING) {
+            return;
+        }
+
+        ChessboardState chessboardState = room.getGame().getChessboardState();
+
+        // 记录动作
+        ChessAction action = new ChessAction();
+        action.setChessHost(room.getChessHost(user));
+        action.setChessType(chessboardState.chessAt(chessMoveMsg.getFromPos(), action.getChessHost()).type);
+        action.setFromPos(chessMoveMsg.getFromPos());
+        action.setToPos(chessMoveMsg.getToPos());
+        action.setEatenChess(chessboardState.chessAt(chessMoveMsg.getToPos(), action.getChessHost()));
+
+        room.getGame().getActionStack().push(action);
+
+        chessboardState.moveChess(
+            chessMoveMsg.getFromPos(), chessMoveMsg.getToPos(), room.getChessHost(user));
+
+        room.getGame().turnActiveChessHost();
+
+        ChessMoveServerMsg result = new ChessMoveServerMsg();
+        result.setChessHost(room.getChessHost(user).code());
+        result.setFromPos(chessMoveMsg.getFromPos());
+        result.setToPos(chessMoveMsg.getToPos());
+        roomManager.broadcast(room, result, user);
+    }
+
+    private void onConfirmRequest(ConfirmRequestMsg confirmRequestMsg) {
+        User user = confirmRequestMsg.getUser();
+        Room room = roomManager.getJoinedRoom(user);
+
+        if (room.getGame() == null || room.getGame().getState() == null) {
+            return;
+        }
+
+        PlayConfirmServerMsg result = new PlayConfirmServerMsg();
+        result.setReqType(confirmRequestMsg.getReqType());
+        result.setChessHost(room.getChessHost(user).code());
+
+        roomManager.broadcast(room, result, user);
+    }
+
+    private void onConfirmResponse(ConfirmResponseMsg confirmResponseMsg) {
+        User user = confirmResponseMsg.getUser();
+        Room room = roomManager.getJoinedRoom(user);
+
+        if (room == null || room.getGame() == null || room.getGame().getState() == null) {
+            return;
+        }
+
+        PlayConfirmResponseServerMsg result = new PlayConfirmResponseServerMsg();
+        result.setReqType(confirmResponseMsg.getReqType());
+        result.setChessHost(room.getChessHost(user).code());
+        result.setOk(confirmResponseMsg.isOk());
+
+        if (confirmResponseMsg.isOk()) {
+            if (confirmResponseMsg.getReqType() == ConfirmRequestType.WHITE_FLAG.code()) {
+                User reqUser = room.getOtherUser(user);
+                channelManager.broadcast(room.getChannel(), new InfoMessage(reqUser.getNickname() + " 认输"));
+                gameOver(user.getId(), false, room);
+            } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.DRAW.code()) {
+                gameOver(null, false, room);
+            } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.WITHDRAW.code()) {
+                withdraw(room);
+            } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.PAUSE_GAME.code()) {
+                pauseGame(room);
+            } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.RESUME_GAME.code()) {
+                resumeGame(room);
+            }
+        }
+
+        roomManager.broadcast(room, result, user);
+    }
+
+    private void withdraw(Room room) {
+        ChessboardState chessboardState = room.getGame().getChessboardState();
+        if (room.getGame().getActionStack().isEmpty()) {
+            return;
+        }
+        ChessAction lastAction = room.getGame().getActionStack().pop();
+        chessboardState.moveChess(lastAction.getToPos(), lastAction.getFromPos(), lastAction.getChessHost());
+        if (lastAction.getEatenChess() != null) {
+            chessboardState.setChess(lastAction.getToPos(), lastAction.getEatenChess(), lastAction.getChessHost());
+        }
+        room.getGame().turnActiveChessHost();
+        roomManager.broadcast(room, new ChessWithdrawServerMsg());
+    }
+
+    private void startGame(Room room) {
+        Game round = new Game(room);
+        room.setGame(round);
+
+        room.setGameCount(room.getGameCount() + 1);
+
+        if (room.getGameCount() > 1) {
+            // 第n个对局，交换棋方
+            User redChessUser = room.getRedChessUser();
+            User blackChessUser = room.getBlackChessUser();
+            room.setBlackChessUser(redChessUser);
+            room.setRedChessUser(blackChessUser);
+        }
+
+        room.setStatus(RoomStatus.PLAYING);
+
+        room.getUsers().forEach(user -> {
+            userActivityService.enter(user, UserActivity.PLAYING);
+        });
+
+        roomManager.broadcast(room, new GameStartServerMsg(room.getRedChessUser(), room.getBlackChessUser()));
+        userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
+        channelManager.broadcast(room.getChannel(), new InfoMessage("对局开始"));
+    }
+
+    private void pauseGame(Room room) {
+        if (room.getGame() == null || room.getGame().getState() != GameState.PLAYING) {
+            return;
+        }
+
+        room.getGame().pause();
+
+        room.getUsers().forEach(user -> {
+            userActivityService.enter(user, UserActivity.IN_ROOM);
+        });
+
+        roomManager.broadcast(room, new GamePauseServerMsg());
+    }
+
+    private void resumeGame(Room room) {
+        if (room.getGame() == null ||
+            room.getGame().getState() != GameState.PAUSE ||
+            room.getOfflineAt() != null) {
+            return;
+        }
+
+        room.getGame().resume();
+
+        room.setStatus(RoomStatus.PLAYING);
+
+        room.getUsers().forEach(user -> {
+            userActivityService.enter(user, UserActivity.IN_ROOM);
+        });
+        roomManager.broadcast(room, new GameResumeServerMsg());
+    }
+
+    private void onGameContinue(GameContinueMsg clientMsg) {
+        User user = clientMsg.getUser();
+        Room joinedRoom = roomManager.getJoinedRoom(user);
+        if (joinedRoom == null) {
+            return;
+        }
+
+        if (clientMsg.isOk()) {
+            if (joinedRoom.getStatus() == RoomStatus.DISMISSED ||
+                joinedRoom.getGame().getState() == GameState.PLAYING) {
+                return;
+            }
+            GamePlayStatesServerMsg gamePlayStatesServerMsg = new GamePlayStatesServerMsg();
+            gamePlayStatesServerMsg.setStates(joinedRoom.getGame().buildGameStatesResponse());
+
+            if (joinedRoom.getGame().getState() == GameState.PAUSE) {
+                User otherUser = joinedRoom.getOtherUser(user);
+                UserActivity otherUserStatus = userActivityService.getCurrentStatus(otherUser);
+                if (otherUserStatus == UserActivity.IN_ROOM) {
+                    joinedRoom.getGame().resume();
+                    joinedRoom.setStatus(RoomStatus.PLAYING);
+                    userActivityService.enter(user, UserActivity.PLAYING);
+                    userActivityService.enter(otherUser, UserActivity.PLAYING);
+                } else {
+                    userActivityService.enter(user, UserActivity.IN_ROOM);
+                }
+            }
+
+            send(gamePlayStatesServerMsg, user);
+        } else {
+            // 如果不想继续，离开房间
+            roomManager.partRoom(joinedRoom, user);
+        }
+
+        joinedRoom.setOfflineAt(null);
+
+        if (joinedRoom.getOnlineUserCount() > 0) {
+            GameContinueResponseServerMsg serverMsg = new GameContinueResponseServerMsg();
+            serverMsg.setOk(clientMsg.isOk());
+            serverMsg.setUid(user.getId());
+            roomManager.broadcast(joinedRoom, serverMsg, user);
+        }
+    }
+    private void onGameOver(GameOverMsg msg) {
+        Room room = roomManager.getJoinedRoom(msg.getUser());
+        if (room == null) {
+            return;
+        }
+
+        gameOver(msg.getWinUserId(), msg.isTimeout(), room);
+    }
+
+    private void gameOver(Long winUserId, boolean isTimeout, Room room) {
+        room.setStatus(RoomStatus.BEGINNING);
+        room.getGame().setState(GameState.END);
+        room.getGame().getRedTimer().stop();
+        room.getGame().getBlackTimer().stop();
+
+        room.updateUserReadyState(room.getOtherUser(room.getOwner()), false);
+
+        User winUser = null;
+        if (winUserId != null) {
+            Optional<User> winUserOpt = room.getUsers().stream()
+                .filter(user -> user.getId().equals(winUserId))
+                .findAny();
+            winUser = winUserOpt.get();
+            User loseUser = room.getOtherUser(winUser);
+            userStatsService.updateUser(winUser, GameResult.WIN);
+            userStatsService.updateUser(loseUser, GameResult.LOSE);
+        } else {
+            room.getUsers().forEach(user -> {
+                userStatsService.updateUser(user, GameResult.DRAW);
+            });
+        }
+        roomManager.broadcast(room, new GameOverServerMsg(winUserId, isTimeout));
+        userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
+        room.getUsers().forEach(user -> {
+            userActivityService.enter(user, UserActivity.IN_ROOM);
+        });
+        channelManager.broadcast(room.getChannel(),
+            new InfoMessage(winUser == null
+                ? "平局"
+                : winUser.getNickname() + " 胜"));
+    }
+}

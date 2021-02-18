@@ -1,3 +1,5 @@
+import { api, socketService } from "src/boot/main";
+import Signal from "src/utils/signals/Signal";
 import User from "../../user/User";
 import Bindable from "../../utils/bindables/Bindable";
 import BindableList from "../../utils/bindables/BindableList";
@@ -14,7 +16,7 @@ import LocalEchoMessage from "./LocalEchoMessage";
 import Message from "./Message";
 import PostMessageRequest from "./PostMessageRequest";
 import SocketService from "../ws/SocketService";
-import * as ChatEvents from '../ws/events/chat';
+import * as ChatServerMsgs from './chat_server_messages';
 import APICreatedChannel from "./APICreatedChannel";
 
 export default class ChannelManager {
@@ -24,17 +26,17 @@ export default class ChannelManager {
 
   public readonly joinedChannels: BindableList<Channel> = new BindableList<Channel>();
 
-  private api: APIAccess;
+  public readonly wordsEnableSignal = new Signal();
 
-  private socketService: SocketService;
+  private api: APIAccess = api;
+
+  private socketService: SocketService = socketService;
 
   private channelsInitialised: boolean;
 
   public onHideChannel: (channel: Channel) => void;
 
-  constructor(api: APIAccess, socketService: SocketService) {
-    this.api = api;
-    this.socketService = socketService;
+  constructor() {
     this.initSocketListeners();
   }
 
@@ -291,7 +293,7 @@ export default class ChannelManager {
   }
 
   private initSocketListeners() {
-    ChatEvents.message.add((msg: ChatEvents.ChatMessageMsg) => {
+    this.socketService.on('chat.message', (msg: ChatServerMsgs.ChatMessageMsg) => {
       const channel = this.getChannel(msg.channelId);
       channel.addNewMessages(Message.from(msg));
 
@@ -300,7 +302,7 @@ export default class ChannelManager {
       }
     });
 
-    ChatEvents.presence.add((msg: ChatEvents.ChatPresenceMsg) => {
+    this.socketService.on('chat.presence', (msg: ChatServerMsgs.ChatPresenceMsg) => {
       const channel = Channel.from(msg.channel);
       // 从服务器接收到的频道应该都是已经加入的
       channel.joined.value = true;
@@ -317,7 +319,7 @@ export default class ChannelManager {
       }
     });
 
-    ChatEvents.channelUserLeft.add((msg: ChatEvents.ChatChannelUserLeftMsg) => {
+    this.socketService.on('chat.user_left', (msg: ChatServerMsgs.ChatChannelUserLeftMsg) => {
       const channel = this.getChannel(msg.channelId);
       if (channel.type == ChannelType.PM) {
         // 该私聊频道中的对话用户已经离开
@@ -325,9 +327,19 @@ export default class ChannelManager {
       }
     });
 
-    ChatEvents.messageRecalled.add((msg: ChatEvents.ChatRecallMessageMsg) => {
+    this.socketService.on('chat.recall_message', (msg: ChatServerMsgs.ChatRecallMessageMsg) => {
       const channel = this.getChannel(msg.channelId);
       channel.removeMessage(msg.messageId);
+    });
+
+    this.socketService.on('chat.words_enable', (msg: ChatServerMsgs.WordsEnableMsg) => {
+      this.wordsEnableSignal.dispatch(msg.enabled);
+    });
+
+    this.socketService.disconnect.add(() => {
+      this.joinedChannels.value.forEach((ch) => {
+        ch.loading.value = true;
+      });
     });
 
     this.socketService.reconnected.add(() => {
@@ -336,8 +348,10 @@ export default class ChannelManager {
       }
       this.joinedChannels.value.forEach((ch) => {
         const req = new GetMessagesRequest(ch);
+        ch.loading.value = true;
         req.success = (msgs) => {
           this.handleChannelMessages(msgs.map((mg) => Message.from(mg)));
+          ch.loading.value = false;
         };
         this.api.queue(req);
       });
@@ -347,9 +361,11 @@ export default class ChannelManager {
   private fetchInitalMessages(channel: Channel) {
     if (channel.messagesLoaded) return;
     const req = new GetMessagesRequest(channel);
+    channel.loading.value = true;
     req.success = (msgs) => {
       this.handleChannelMessages(msgs.map((mg) => Message.from(mg)));
       channel.messagesLoaded = true;
+      channel.loading.value = false;
     };
     this.api.queue(req);
   }

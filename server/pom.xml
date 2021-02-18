@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>io.github.hulang1024</groupId>
-    <artifactId>chinese-chess-server</artifactId>
+    <artifactId>chess-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>chinese-chess-server</name>
+    <name>chess-server</name>
 
     <properties>
         <java.version>1.8</java.version>

@@ -10,4 +10,4 @@ spring:
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: io.github.hulang1024.chinesechessserver.user
+  type-aliases-package: io.github.hulang1024.chesss.user
