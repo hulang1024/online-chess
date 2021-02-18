@@ -1,0 +1,38 @@
+import { socketService } from 'src/boot/main';
+import { ConfirmRequestType } from 'src/online/play/confirm_request';
+
+export default class GameplayServer {
+  private socketService = socketService;
+
+  public toggleReady(isReady?: boolean) {
+    this.socketService.send('play.ready', { readied: isReady });
+  }
+
+  public startGame() {
+    this.socketService.send('play.start_game');
+  }
+
+  public pauseGame() {
+    this.socketService.send('play.pause_game');
+  }
+
+  public resumeGame() {
+    this.socketService.send('play.resume_game');
+  }
+
+  public gameOver(winUserId: number, timeout?: boolean) {
+    this.socketService.send('play.game_over', { winUserId, timeout });
+  }
+
+  public gameContinue(isOk: boolean) {
+    this.socketService.send('play.game_continue', { ok: isOk });
+  }
+
+  public confirmResponse(reqType: ConfirmRequestType, isOk: boolean) {
+    this.socketService.send('play.confirm_response', { reqType, ok: isOk });
+  }
+
+  public confirmRequest(reqType: ConfirmRequestType) {
+    this.socketService.send('play.confirm_request', { reqType });
+  }
+}

@@ -1,0 +1,63 @@
+@import 'chess.scss';
+
+.playfield {
+  .judgement {
+    display: none;
+    padding: 8px 40px;
+    color: white;
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+    text-align: center;
+    opacity: 0;
+    transition: all .2s ease;
+    pointer-events: none;
+    min-width: fit-content;
+  }
+
+  .eat-judgement {
+    text-shadow: 0px 1px 1px black;
+
+    &.show {
+      opacity: 1;
+    }
+
+    > .title {
+      font-size: 3rem;
+      line-height: 3rem;
+      font-weight: 500;
+    }
+
+    > div > .chess-name {
+      text-shadow: 0px 0px 1px white;
+      font-weight: bold;
+
+      &.red {
+        color: $red;
+      }
+  
+      &.black {
+        color: $black;
+      }
+    }
+  }
+
+  .checkmate-judgement {
+    font-size: 2rem;
+    font-weight: 300;
+    text-shadow: 1px 1px 1px white;
+
+    &.show {
+      opacity: 1;
+      font-size: 3rem;
+      font-weight: 500;
+    }
+    
+    &.red {
+      color: $red;
+    }
+
+    &.black {
+      color: $black;
+    }
+  }
+}
