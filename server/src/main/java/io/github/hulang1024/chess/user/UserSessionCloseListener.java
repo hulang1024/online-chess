@@ -1,7 +1,7 @@
 package io.github.hulang1024.chess.user;
 
 import io.github.hulang1024.chess.chat.ChannelManager;
-import io.github.hulang1024.chess.play.GameState;
+import io.github.hulang1024.chess.games.GameState;
 import io.github.hulang1024.chess.room.Room;
 import io.github.hulang1024.chess.room.RoomManager;
 import io.github.hulang1024.chess.spectator.SpectatorManager;
@@ -57,7 +57,7 @@ public class UserSessionCloseListener {
                     // 如果游戏已经是暂停状态，是因为上个用户离线导致的
                     UserOfflineServerMsg userOfflineMsg = new UserOfflineServerMsg(user);
                     if (joinedRoom.getOnlineUserCount() > 0) {
-                        User otherUser = joinedRoom.getOtherUser(user);
+                        User otherUser = joinedRoom.getOtherUser(user).getUser();
                         // 另个用户也退出游戏状态
                         if (userActivityService.getCurrentStatus(otherUser) == UserActivity.PLAYING) {
                             userActivityService.enter(otherUser, UserActivity.IN_ROOM);

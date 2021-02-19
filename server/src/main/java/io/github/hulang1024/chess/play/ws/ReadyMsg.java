@@ -7,5 +7,5 @@ import lombok.Data;
 @Data
 @ClientMsgType("play.ready")
 public class ReadyMsg extends ClientMessage {
-    private Boolean readied;
+    private Boolean isReady;
 }

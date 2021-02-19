@@ -1,19 +1,15 @@
-package io.github.hulang1024.chess.play;
+package io.github.hulang1024.chess.games.chinesechess;
 
-import io.github.hulang1024.chess.room.Room;
+import io.github.hulang1024.chess.games.GameStatesResponse;
 import lombok.Data;
 
 import java.util.List;
 import java.util.Stack;
 
 @Data
-public class GamePlayStatesResponse {
-    private Room room;
+public class ChineseChessGameStatesResponse extends GameStatesResponse {
     private List<Chess> chesses;
-    private Integer activeChessHost;
     private Stack<ChessAction> actionStack;
-    private GameTimer redTimer;
-    private GameTimer blackTimer;
 
     @Data
     public static class Chess {

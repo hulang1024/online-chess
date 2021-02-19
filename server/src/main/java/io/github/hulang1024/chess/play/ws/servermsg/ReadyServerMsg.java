@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class ReadyServerMsg extends ServerMessage {
     private long uid;
-    private boolean readied;
+    private boolean ready;
 
     public ReadyServerMsg() {
       super("play.ready");

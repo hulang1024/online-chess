@@ -2,7 +2,7 @@ package io.github.hulang1024.chess.spectator;
 
 import io.github.hulang1024.chess.chat.ChannelManager;
 import io.github.hulang1024.chess.chat.ws.ChatUpdatesServerMsg;
-import io.github.hulang1024.chess.play.GameState;
+import io.github.hulang1024.chess.games.GameState;
 import io.github.hulang1024.chess.room.Room;
 import io.github.hulang1024.chess.room.RoomManager;
 import io.github.hulang1024.chess.spectator.ws.SpectatorJoinServerMsg;
@@ -111,7 +111,6 @@ public class SpectatorManager {
         SpectateResponse response = new SpectateResponse(0);
         if (room.getGame() != null) {
             response.setStates(room.getGame().buildGameStatesResponse());
-            response.getStates().setRoom(null);
         }
         response.setRoom(room);
         if (targetUser != null) {

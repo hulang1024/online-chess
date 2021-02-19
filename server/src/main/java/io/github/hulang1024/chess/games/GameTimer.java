@@ -1,4 +1,4 @@
-package io.github.hulang1024.chess.play;
+package io.github.hulang1024.chess.games;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import io.github.hulang1024.chess.room.RoomSettings;

@@ -3,18 +3,19 @@ package io.github.hulang1024.chess.room;
 import com.alibaba.fastjson.annotation.JSONField;
 import io.github.hulang1024.chess.chat.Channel;
 import io.github.hulang1024.chess.chat.ChannelManager;
-import io.github.hulang1024.chess.play.Game;
-import io.github.hulang1024.chess.play.GameState;
-import io.github.hulang1024.chess.play.rule.ChessHost;
+import io.github.hulang1024.chess.games.Game;
+import io.github.hulang1024.chess.games.GameType;
+import io.github.hulang1024.chess.games.GameUser;
+import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.user.User;
 import io.github.hulang1024.chess.user.UserManager;
-import io.github.hulang1024.chess.user.UserStatus;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @Data
@@ -35,24 +36,19 @@ public class Room {
     @JSONField(serialize = false)
     private LocalDateTime updateAt;
 
-    /**
-     * 最近棋局
-     */
+    @JSONField(serialize = false)
+    private GameType gameType;
+
     @JSONField(serialize = false)
     private Game game;
 
+    @JSONField(serialize = false)
     private User owner;
 
     @JSONField(serialize = false)
     private Channel channel;
 
-    private User redChessUser;
-
-    private User blackChessUser;
-
-    private boolean redReadied;
-
-    private boolean blackReadied;
+    private List<GameUser> gameUsers = new ArrayList<>();
 
     @JSONField(serialize = false)
     private List<User> spectators = new ArrayList<>();
@@ -81,15 +77,14 @@ public class Room {
     }
 
     public void joinUser(User user) {
-        if (redChessUser == null) {
-            redChessUser = user;
-            redReadied = true;
-        } else if (blackChessUser == null) {
-            blackChessUser = user;
-            blackReadied = true;
-        }
+        GameUser joinedUser = new GameUser();
+        joinedUser.setUserManager(userManager);
+        joinedUser.setUser(user);
+        joinedUser.setReady(user.equals(owner));
+        joinedUser.setRoomOwner(user.equals(owner));
 
-        updateUserReadyState(user, user.equals(owner));
+        joinedUser.setChess(getUserCount() == 0 ? ChessHost.FIRST : ChessHost.SECOND);
+        gameUsers.add(joinedUser);
 
         channelManager.joinChannel(channel, user);
 
@@ -100,17 +95,14 @@ public class Room {
         channelManager.leaveChannel(channel, user);
         status = RoomStatus.OPEN;
 
-        if (getChessHost(user) == ChessHost.RED) {
-            redChessUser = null;
-            redReadied = false;
-        }
-        if (getChessHost(user) == ChessHost.BLACK) {
-            blackChessUser = null;
-            blackReadied = false;
-        }
+        getGameUser(user).ifPresent((leftUser) -> {
+            gameUsers.remove(getGameUser(user).get());
+            leftUser.setUser(null);
+            leftUser.setReady(false);
+        });
 
         if (game != null) {
-            game.setState(GameState.END);
+            game.over();
             game = null;
         }
     }
@@ -120,124 +112,33 @@ public class Room {
         this.channelId = channel.getId();
     }
 
-    public ChessHost getChessHost(User user) {
-        if (user.equals(this.redChessUser)) {
-            return ChessHost.RED;
-        }
-        if (user.equals(this.blackChessUser)) {
-            return ChessHost.BLACK;
-        }
-        return null;
-    }
-
-    public boolean getUserReadied(User user) {
-        if (user.equals(redChessUser)) {
-            return redReadied;
-        }
-        if (user.equals(blackChessUser)) {
-            return blackReadied;
-        }
-        return false;
-    }
-
-    public void updateUserReadyState(User user, boolean readied) {
-        if (user.equals(redChessUser)) {
-            redReadied = readied;
-        }
-        if (user.equals(blackChessUser)) {
-            blackReadied = readied;
-        }
+    @JSONField(serialize = false)
+    public int getOnlineUserCount() {
+        return (int)gameUsers.stream().filter((u) -> u.getUser() != null && u.isOnline()).count();
     }
 
     @JSONField(serialize = false)
-    public int getOnlineUserCount() {
-        int count = 0;
-        if (this.redChessUser != null && userManager.isOnline(redChessUser)) {
-            count++;
-        }
-        if (this.blackChessUser != null && userManager.isOnline(blackChessUser)) {
-            count++;
-        }
-        return count;
-    }
-
     public boolean isFull() {
         return getUserCount() == 2;
     }
 
+    @JSONField(serialize = false)
     public int getUserCount() {
-        int count = 0;
-        if (this.redChessUser != null) {
-            count++;
-        }
-        if (this.blackChessUser != null) {
-            count++;
-        }
-        return count;
+        return gameUsers.size();
     }
 
     @JSONField(serialize = false)
-    public User getOneUser() {
-        if (this.redChessUser != null) {
-            return this.redChessUser;
-        }
-        if (this.blackChessUser != null) {
-            return this.blackChessUser;
-        }
-        return null;
+    public Optional<GameUser> getGameUser(User user) {
+        return gameUsers.stream()
+            .filter((u) -> u.getUser().equals(user))
+            .findAny();
     }
 
     @JSONField(serialize = false)
-    public User getOtherUser(User user) {
-        if (user.equals(redChessUser)) {
-            return blackChessUser;
-        }
-        if (user.equals(blackChessUser)) {
-            return redChessUser;
-        }
-        return null;
-    }
-
-    @JSONField(serialize = false)
-    public List<User> getUsers() {
-        List<User> users = new ArrayList<>();
-        if (redChessUser != null) {
-            users.add(redChessUser);
-        }
-        if (blackChessUser != null) {
-            users.add(blackChessUser);
-        }
-        return users;
-    }
-
-    public boolean getRedOnline() {
-        if (redChessUser != null) {
-            return userManager.isOnline(redChessUser);
-        }
-        return false;
-    }
-
-    public boolean getBlackOnline() {
-        if (blackChessUser != null) {
-            return userManager.isOnline(blackChessUser);
-        }
-        return false;
-    }
-
-    public Integer getRedUserStatus() {
-        UserStatus userStatus = null;
-        if (redChessUser != null) {
-            userStatus = userManager.getUserStatus(redChessUser);
-        }
-        return userStatus != null ? userStatus.getCode() : null;
-    }
-
-    public Integer getBlackUserStatus() {
-        UserStatus userStatus = null;
-        if (blackChessUser != null) {
-            userStatus = userManager.getUserStatus(blackChessUser);
-        }
-        return userStatus != null ? userStatus.getCode() : null;
+    public GameUser getOtherUser(User user) {
+        return gameUsers.stream()
+            .filter((u) -> !u.getUser().equals(user))
+            .findFirst().get();
     }
 
     public int getSpectatorCount() {
@@ -246,6 +147,11 @@ public class Room {
 
     public boolean isLocked() {
         return StringUtils.isNotBlank(password);
+    }
+
+    @JSONField(name = "gameType")
+    public int getGameTypeCode() {
+        return gameType.getCode();
     }
 
     @JSONField(name = "status")

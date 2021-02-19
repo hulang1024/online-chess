@@ -1,4 +1,4 @@
-package io.github.hulang1024.chess.play.rule;
+package io.github.hulang1024.chess.play;
 
 public enum GameResult {
     DRAW(0),

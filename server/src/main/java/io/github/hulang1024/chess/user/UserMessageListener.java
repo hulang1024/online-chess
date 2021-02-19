@@ -2,7 +2,7 @@ package io.github.hulang1024.chess.user;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.github.hulang1024.chess.chat.ChannelManager;
-import io.github.hulang1024.chess.play.GameState;
+import io.github.hulang1024.chess.games.GameState;
 import io.github.hulang1024.chess.play.ws.servermsg.GameContinueServerMsg;
 import io.github.hulang1024.chess.room.Room;
 import io.github.hulang1024.chess.room.RoomManager;

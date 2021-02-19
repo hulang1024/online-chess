@@ -1,4 +1,6 @@
-package io.github.hulang1024.chess.play.rule;
+package io.github.hulang1024.chess.games.chinesechess.rule;
+
+import io.github.hulang1024.chess.games.chess.ChessHost;
 
 public class Chess {
     public ChessHost chessHost;

@@ -5,7 +5,9 @@ import io.github.hulang1024.chess.chat.ChannelManager;
 import io.github.hulang1024.chess.chat.ChannelType;
 import io.github.hulang1024.chess.chat.InfoMessage;
 import io.github.hulang1024.chess.chat.ws.ChatUpdatesServerMsg;
-import io.github.hulang1024.chess.play.GameState;
+import io.github.hulang1024.chess.games.GameState;
+import io.github.hulang1024.chess.games.GameType;
+import io.github.hulang1024.chess.games.GameUser;
 import io.github.hulang1024.chess.room.ws.*;
 import io.github.hulang1024.chess.spectator.SpectatorManager;
 import io.github.hulang1024.chess.user.User;
@@ -28,9 +30,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class RoomManager {
-    //@Resource
-    //private RedisTemplate<String, Object> redisTemplate;
-
     /** 房间id -> 房间 */
     private static Map<Long, Room> roomMap = new ConcurrentHashMap<>();
 
@@ -57,6 +56,9 @@ public class RoomManager {
             rooms = roomMap.values().stream()
                 .filter(room -> {
                     boolean ret = true;
+                    if (searchRoomParam.getGameType() != null) {
+                        ret = ret && room.getGameTypeCode() == searchRoomParam.getGameType();
+                    }
                     if (searchRoomParam.getStatus() != null) {
                         ret = ret && room.getStatus().code == searchRoomParam.getStatus();
                     }
@@ -118,6 +120,8 @@ public class RoomManager {
         } else {
             createdRoom.setName(createdRoom.getId().toString());
         }
+
+        createdRoom.setGameType(GameType.from(createRoomParam.getGameType()));
 
         createdRoom.setRoomSettings(createRoomParam.getRoomSettings());
 
@@ -241,19 +245,20 @@ public class RoomManager {
 
         // 离开之后，房间内还有用户
         if (room.getUserCount() == 1) {
-            User otherUser = room.getOneUser();
-            UserActivity otherUserStatus = userActivityService.getCurrentStatus(otherUser);
+            GameUser otherUser = room.getGameUsers().get(0);
+            UserActivity otherUserStatus = userActivityService.getCurrentStatus(otherUser.getUser());
             // 该用户在房间/游戏中
             if (otherUserStatus == UserActivity.IN_ROOM || otherUserStatus == UserActivity.PLAYING) {
                 // 如果是房主离开，转移房主引用
                 if (room.getOwner().equals(user)) {
-                    room.setOwner(otherUser);
-                    room.updateUserReadyState(room.getOwner(), true);
+                    room.setOwner(otherUser.getUser());
+                    otherUser.setRoomOwner(true);
+                    otherUser.setReady(true);
                 }
-                userActivityService.enter(otherUser, UserActivity.IN_ROOM);
+                userActivityService.enter(otherUser.getUser(), UserActivity.IN_ROOM);
             } else {
                 // 不在游戏中则将此用户也从房间移除
-                partRoom(room, otherUser);
+                partRoom(room, otherUser.getUser());
                 // 导致解散房间
                 if (room.getStatus() == RoomStatus.DISMISSED) {
                     return 0;
@@ -306,11 +311,11 @@ public class RoomManager {
     }
 
     public void broadcast(Room room, ServerMessage message, User exclude) {
-        room.getUsers().forEach(user -> {
-            if (user.equals(exclude)) {
+        room.getGameUsers().forEach(gameUser -> {
+            if (gameUser.getUser().equals(exclude)) {
                 return;
             }
-            wsMessageService.send(message, user);
+            wsMessageService.send(message, gameUser.getUser());
         });
         spectatorManager.broadcast(room, message);
     }
@@ -318,6 +323,5 @@ public class RoomManager {
     private static long nextRoomId = 1000;
     private long nextRoomId() {
         return ++nextRoomId;
-        //return redisTemplate.opsForValue().increment("room:next_id", 1);
     }
 }

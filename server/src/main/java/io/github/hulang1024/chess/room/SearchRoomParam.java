@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class SearchRoomParam {
+    private Integer gameType;
     private Integer status;
     private Boolean requirePassword;
 }

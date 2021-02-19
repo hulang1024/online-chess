@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.github.hulang1024.chess.database.DaoPageParam;
 import io.github.hulang1024.chess.http.params.PageParam;
 import io.github.hulang1024.chess.http.results.PageRet;
-import io.github.hulang1024.chess.play.rule.GameResult;
+import io.github.hulang1024.chess.play.GameResult;
 import io.github.hulang1024.chess.user.GuestUser;
 import io.github.hulang1024.chess.user.SearchUserInfo;
 import io.github.hulang1024.chess.user.User;

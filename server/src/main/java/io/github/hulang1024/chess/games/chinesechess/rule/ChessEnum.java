@@ -1,4 +1,4 @@
-package io.github.hulang1024.chess.play.rule;
+package io.github.hulang1024.chess.games.chinesechess.rule;
 
 /**
  * 棋子枚举

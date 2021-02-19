@@ -1,7 +1,7 @@
 package io.github.hulang1024.chess.spectator;
 
+import io.github.hulang1024.chess.games.GameStatesResponse;
 import io.github.hulang1024.chess.http.results.Result;
-import io.github.hulang1024.chess.play.GamePlayStatesResponse;
 import io.github.hulang1024.chess.room.Room;
 import lombok.Data;
 
@@ -9,7 +9,7 @@ import lombok.Data;
 public class SpectateResponse extends Result {
     private Room room;
 
-    private GamePlayStatesResponse states;
+    private GameStatesResponse states;
 
     /**
      * 观看目标用户（为空时是围观房间）

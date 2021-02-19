@@ -6,6 +6,9 @@ import lombok.Data;
 public class CreateRoomParam {
     private String name;
     private String password;
+
+    private int gameType;
+
     /**
      * 局时（分钟）
      */
