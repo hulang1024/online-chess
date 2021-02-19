@@ -15,9 +15,6 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
 
   private chesses: DrawableChess[] = [];
 
-  /**
-   * 绘制棋盘
-   */
   constructor(stage: {width: number, height: number}) {
     super();
 
