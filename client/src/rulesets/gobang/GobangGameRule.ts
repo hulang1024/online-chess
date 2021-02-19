@@ -54,7 +54,7 @@ export default class GobangGameRule extends GameRule {
       if (lastAction) {
         const drawableChess = this.chessboard.chessAt(lastAction.pos);
         if (drawableChess) {
-          drawableChess.lit = true;
+          drawableChess.marked = true;
         }
       }
     }
@@ -64,13 +64,13 @@ export default class GobangGameRule extends GameRule {
 
   public onChessAction(action: ChessAction) {
     this.chessboard.getChesses().forEach((chess) => {
-      if (chess.lit) {
-        chess.lit = false;
+      if (chess.marked) {
+        chess.marked = false;
       }
     });
 
     const drawableChess = new DrawableChess(action.chess, action.pos, this.chessboard.sizes);
-    drawableChess.lit = true;
+    drawableChess.marked = true;
 
     this.chessboard.addChess(drawableChess);
 
@@ -104,8 +104,8 @@ export default class GobangGameRule extends GameRule {
     }
 
     this.chessboard.getChesses().forEach((chess) => {
-      if (chess.lit) {
-        chess.lit = false;
+      if (chess.marked) {
+        chess.marked = false;
       }
     });
 
@@ -115,7 +115,7 @@ export default class GobangGameRule extends GameRule {
     if (!this.historyRecorder.isEmpty()) {
       const prevAction = this.historyRecorder.get(-1);
 
-      (this.chessboard.chessAt(prevAction.pos) as DrawableChess).lit = true;
+      (this.chessboard.chessAt(prevAction.pos) as DrawableChess).marked = true;
     }
 
     this.turnActiveChessHost();

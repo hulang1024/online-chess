@@ -6,7 +6,7 @@ import './chess.scss';
 export default class DrawableChess {
   public el: HTMLElement;
 
-  private _lit: boolean;
+  private _marked: boolean;
 
   public chess: ChessHost;
 
@@ -38,13 +38,19 @@ export default class DrawableChess {
     el.style.left = `${pos.col * cellSize + padding - chessRadius}px`;
   }
 
-  public get lit() {
-    return this._lit;
+  public appear() {
+    setTimeout(() => {
+      this.el.classList.add('appear');
+    }, 0);
   }
 
-  public set lit(val: boolean) {
-    if (this._lit == val) return;
-    this._lit = val;
-    this.el.classList[val ? 'add' : 'remove']('lit');
+  public get marked() {
+    return this._marked;
+  }
+
+  public set marked(val: boolean) {
+    if (this._marked == val) return;
+    this._marked = val;
+    this.el.classList[val ? 'add' : 'remove']('marked');
   }
 }

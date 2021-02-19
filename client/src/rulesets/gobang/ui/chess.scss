@@ -2,29 +2,44 @@
   .chess {
     position: absolute;
     border-radius: 100%;
-    box-shadow: 0px 0px 3px 1px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.3);
     pointer-events: none;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity, transform 0.15s ease-out;
 
     &.black {
-      background-color: black;
+      background-color: #111;
     }
 
     &.white {
       background-color:#fff;
     }
 
-    &.lit {
-      outline-offset: 2px;
-      outline: 1px solid #fff;
+    &.appear {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    &.marked::after {
+      content: "";
+      width: 30%;
+      height: 30%;
+      max-width: 12px;
+      background-color: $red;
+      border-radius: 100%;
     }
 
     &.highlight {
-      animation: blink 0.8s ease infinite;
+      animation: fade-out 0.8s ease infinite;
     }
   }
 }
 
-@keyframes blink {
+@keyframes fade-out {
   100% {
     opacity: 0;
   }

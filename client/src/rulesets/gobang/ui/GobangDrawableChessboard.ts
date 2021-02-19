@@ -58,6 +58,7 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
   public addChess(drawableChess: DrawableChess) {
     this.chesses.push(drawableChess);
     this.el.appendChild(drawableChess.el);
+    drawableChess.appear();
     this.chessboardState.setChess(drawableChess.pos, drawableChess.chess);
   }
 
