@@ -6,7 +6,7 @@ import Channel from "src/online/chat/Channel";
 import ChannelType from "src/online/chat/ChannelType";
 import Message from "src/online/chat/Message";
 import GameState from "src/online/play/GameState";
-import ChessHost from "src/rulesets/chinesechess/chess_host";
+import ChessHost from "src/rulesets/chess_host";
 import { createBoundRef } from "src/utils/vue/vue_ref_utils";
 import GameUser from "../../online/play/GameUser";
 import Player from "./Player";
@@ -20,12 +20,12 @@ export function usePlayerStates(player: Player) {
   const gameState: Ref<GameState> = createBoundRef(player.gameState);
 
   const toReactive = (user: GameUser) => reactive({
-    user: createBoundRef(user.bindable),
+    user: createBoundRef(user.user),
     online: createBoundRef(user.online),
     status: createBoundRef(user.status),
-    readied: createBoundRef(user.readied),
+    ready: createBoundRef(user.ready),
     showReadyStatus: true,
-    chessHost: createBoundRef(user.chessHostBindable),
+    chess: createBoundRef(user.chess),
     isRoomOwner: createBoundRef(user.isRoomOwner),
     active: false,
     reverse: false,
@@ -51,8 +51,8 @@ export function usePlayerStates(player: Player) {
       readyStatusText = '准备开始';
     } else {
       readyStatusText = viewUser.isRoomOwner
-        ? (otherUser.readied ? '可以开始' : '等待对方准备')
-        : (viewUser.readied ? '等待房主开始' : '请准备');
+        ? (otherUser.ready ? '可以开始' : '等待对方准备')
+        : (viewUser.ready ? '等待房主开始' : '请准备');
     }
     const statusMap = {
       [GameState.READY]: {
@@ -79,18 +79,18 @@ export function usePlayerStates(player: Player) {
 
   const isPlaying = computed(() => gameState.value == GameState.PLAYING);
 
-  const activeChessHost: Ref<ChessHost | null> = createBoundRef(player.gameRule.activeChessHost);
+  const activeChessHost: Ref<ChessHost | null> = createBoundRef(player.game.activeChessHost);
 
   watchEffect(() => {
     // activeChessHost.value可能为空
-    viewUser.active = activeChessHost.value == viewUser.chessHost;
-    otherUser.active = activeChessHost.value == otherUser.chessHost;
+    viewUser.active = activeChessHost.value == viewUser.chess;
+    otherUser.active = activeChessHost.value == otherUser.chess;
 
     viewUser.showReadyStatus = gameState.value == GameState.READY && !viewUser.isRoomOwner;
     otherUser.showReadyStatus = gameState.value == GameState.READY && !otherUser.isRoomOwner;
   });
 
-  const canWithdraw: Ref<boolean> = createBoundRef(player.gameRule.canWithdraw);
+  const canWithdraw: Ref<boolean> = createBoundRef(player.game.canWithdraw);
 
   const spectatorCount: Ref<number> = createBoundRef(player.spectatorClient.spectatorCount);
 

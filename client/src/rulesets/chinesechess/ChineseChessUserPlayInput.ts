@@ -1,24 +1,17 @@
 import GameState from "src/online/play/GameState";
 import ChessAction from "src/rulesets/chinesechess/ChessAction";
 import ChessPos from "src/rulesets/chinesechess/ChessPos";
-import ChessHost from "src/rulesets/chinesechess/chess_host";
+import ChessHost from "src/rulesets/chess_host";
 import Bindable from "src/utils/bindables/Bindable";
-import Signal from "src/utils/signals/Signal";
-import ChinesechessGameplayServer from "../online/ChinesechessGameplayServer";
-import DrawableChess from "./DrawableChess";
-import DrawableChessboard from "./DrawableChessboard";
-import GameRule from "./GameRule";
+import ChinesechessGameplayServer from "./online/ChinesechessGameplayServer";
+import DrawableChess from "./ui/DrawableChess";
+import DrawableChessboard from "./ui/ChineseChessDrawableChessboard";
+import UserPlayInput from "../UserPlayInput";
+import ChineseChessGameRule from "./ChineseChessGameRule";
+import GameRule from "../GameRule";
 
-export default class UserPlayInput {
-  public inputDone = new Signal();
-
-  private gameRule: GameRule;
-
-  private gameState: Bindable<GameState>;
-
+export default class ChineseChessUserPlayInput extends UserPlayInput {
   private chessboard: DrawableChessboard;
-
-  private localChessHost: Bindable<ChessHost | null>;
 
   private lastSelected: DrawableChess | null;
 
@@ -29,11 +22,15 @@ export default class UserPlayInput {
     gameState: Bindable<GameState>,
     localChessHost: Bindable<ChessHost | null>,
   ) {
-    this.gameRule = gameRule;
-    this.gameState = gameState;
-    this.localChessHost = localChessHost;
-    this.chessboard = gameRule.getChessboard();
+    super(gameRule, gameState, localChessHost);
+    this.chessboard = (gameRule as ChineseChessGameRule).getChessboard();
 
+    this.chessboard.clicked.add(() => {
+      if (this.gameState.value == GameState.PLAYING
+        && this.localChessHost.value != this.gameRule.activeChessHost.value) {
+        this.onReject();
+      }
+    });
     this.chessboard.chessPickupOrDrop.add(({ chess, isPickup }
       : {chess: DrawableChess, isPickup: boolean}) => {
       this.gameplayServer.pickChess(chess.getPos(), isPickup);
@@ -78,7 +75,7 @@ export default class UserPlayInput {
         const fromPos = this.lastSelected.getPos();
         const toPos = event.pos;
         const chess = this.chessboard.chessAt(fromPos);
-        if (chess?.canGoTo(toPos, this.gameRule)) {
+        if (chess?.canGoTo(toPos, (this.gameRule as ChineseChessGameRule))) {
           this.onUserMoveChess(fromPos, toPos);
         }
       }
@@ -123,7 +120,7 @@ export default class UserPlayInput {
       const fromPos = this.lastSelected.getPos();
       const toPos = event.pos;
       const chess = this.chessboard.chessAt(fromPos);
-      if (chess?.canGoTo(toPos, this.gameRule)) {
+      if (chess?.canGoTo(toPos, this.gameRule as ChineseChessGameRule)) {
         this.onUserMoveChess(fromPos, toPos);
       }
     } else {
@@ -149,7 +146,7 @@ export default class UserPlayInput {
     if (this.lastSelected) {
       this.lastSelected.selected = false;
     }
-    if (chess.canGoTo(toPos, this.gameRule)) {
+    if (chess.canGoTo(toPos, this.gameRule as ChineseChessGameRule)) {
       const isMove = this.chessboard.isEmpty(toPos.row, toPos.col);
       if (!isMove && this.chessboard.chessAt(toPos)?.getHost() == chess.getHost()) {
         return;
@@ -164,7 +161,7 @@ export default class UserPlayInput {
     action.fromPos = fromPos;
     action.toPos = toPos;
     action.chessHost = this.localChessHost.value as ChessHost;
-    this.gameRule.onChessAction(action, duration);
+    (this.gameRule as ChineseChessGameRule).onChessAction(action, duration);
     this.gameplayServer.moveChess(fromPos, toPos);
   }
 }

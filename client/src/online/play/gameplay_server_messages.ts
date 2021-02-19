@@ -1,9 +1,9 @@
-import ResponseGameStates from "src/online/play/game_states_response";
 import ServerMsg from "../ws/ServerMsg";
+import ResponseGameStates from "../../rulesets/game_states_response";
 
 export interface ResultsReadyMsg extends ServerMsg {
   uid: number;
-  readied: boolean;
+  ready: boolean;
 }
 
 export interface GameStartedMsg extends ServerMsg {
@@ -18,12 +18,12 @@ export interface GameOverMsg extends ServerMsg {
 
 export interface ConfirmRequestMsg extends ServerMsg {
   reqType: number;
-  chessHost: number;
+  uid: number;
 }
 
 export interface ConfirmResponseMsg extends ServerMsg {
   reqType: number;
-  chessHost: number;
+  uid: number;
   ok: boolean
 }
 

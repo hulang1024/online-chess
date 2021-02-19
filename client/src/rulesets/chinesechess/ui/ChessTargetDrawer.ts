@@ -1,4 +1,4 @@
-import DrawableChessboard from "./DrawableChessboard";
+import DrawableChessboard from "./ChineseChessDrawableChessboard";
 import ChessPos from "../ChessPos";
 
 export default class ChessTargetDrawer {

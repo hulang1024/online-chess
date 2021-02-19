@@ -6,22 +6,23 @@ import GameState from 'src/online/play/GameState';
 import PartRoomRequest from 'src/online/room/PartRoomRequest';
 import Room from 'src/online/room/Room';
 import * as GameplayMsgs from 'src/online/play/gameplay_server_messages';
-import ResponseGameStates from 'src/online/play/game_states_response';
+import ResponseGameStates, { ResponseGameStateTimer } from 'src/rulesets/game_states_response';
 import BindableBool from 'src/utils/bindables/BindableBool';
 import { onBeforeUnmount, onMounted } from '@vue/composition-api';
 import { api, channelManager } from 'src/boot/main';
 import UserStatus from 'src/user/UserStatus';
-import User from 'src/user/User';
-import ChessHost from 'src/rulesets/chinesechess/chess_host';
-import DrawableChessboard from 'src/rulesets/chinesechess/ui/DrawableChessboard';
-import Playfield from 'src/rulesets/chinesechess/ui/Playfield';
-import GameRule from 'src/rulesets/chinesechess/ui/GameRule';
-import UserPlayInput from 'src/rulesets/chinesechess/ui/UserPlayInput';
-import OnlineRulesetPlay from 'src/rulesets/chinesechess/ui/OnlineRulesetPlay';
+import ChessHost from 'src/rulesets/chess_host';
+import Playfield from 'src/pages/play/Playfield';
+import GameRule from 'src/rulesets/GameRule';
+import UserPlayInput from 'src/rulesets/UserPlayInput';
+import RulesetClient from 'src/rulesets/RulesetClient';
+import RulesetFactory from 'src/rulesets/RulesetFactory';
+import Ruleset from 'src/rulesets/Ruleset';
 import GameplayClient from 'src/online/play/GameplayClient';
 import GameplayServer from 'src/online/play/GameplayServer';
 import { ConfirmRequestType, toReadableText } from 'src/online/play/confirm_request';
 import SpectatorClient from 'src/online/play/SpectatorClient';
+import APIGameUser from 'src/online/play/APIGameUser';
 import GameUser from '../../online/play/GameUser';
 import Timer from './timer/Timer';
 import CircleTimer from './timer/CircleTimer';
@@ -29,7 +30,7 @@ import GameAudio from './GameAudio';
 import * as signals from './signals';
 
 export default class Player extends GameplayClient {
-  public gameRule = new GameRule();
+  public game: GameRule;
 
   private userPlayInput: UserPlayInput;
 
@@ -39,15 +40,13 @@ export default class Player extends GameplayClient {
 
   private gameplayServer = this as GameplayServer;
 
-  private rulesetPlay: OnlineRulesetPlay;
+  private rulesetClient: RulesetClient;
 
   public spectatorClient = new SpectatorClient();
 
   private channelManager: ChannelManager = channelManager;
 
   protected playfield: Playfield;
-
-  private chessboard: DrawableChessboard;
 
   protected room: Room;
 
@@ -77,39 +76,43 @@ export default class Player extends GameplayClient {
       return;
     }
 
-    this.localUser.bindable.value = api.localUser;
+    this.localUser.user.value = api.localUser;
     this.room = room || initialGameStates?.room as Room;
+
+    const ruleset = RulesetFactory.create(this.room.gameType) as Ruleset;
+
+    this.game = ruleset.createGameRule();
+
+    this.rulesetClient = ruleset.createRulesetClient(this.game);
 
     this.initListeners();
 
-    const playfield = new Playfield(context);
+    const playfield = new Playfield(context, ruleset);
     this.playfield = playfield;
 
+    this.rulesetClient.playfield = playfield;
+
     playfield.loaded.add(() => {
-      this.chessboard = playfield.chessboard as unknown as DrawableChessboard;
-      this.gameRule.setPlayfield(playfield);
+      this.game.setPlayfield(playfield);
 
       if (!this.isWatchingMode) {
-        this.chessboard.chessPosClicked.add(() => {
-          if (this.gameState.value == GameState.PLAYING
-              && this.localUser.chessHost != this.gameRule.activeChessHost.value) {
-            const playerView = this.context.$refs.playerView as Vue;
-            // eslint-disable-next-line
-            (playerView.$refs.otherGameUserPanel as any).blink();
-          }
-        });
-        this.userPlayInput = new UserPlayInput(
-          this.gameRule,
+        this.userPlayInput = ruleset.createUserPlayInput(
+          this.game,
           this.gameState,
-          this.localUser.chessHostBindable,
+          this.localUser.chess,
         );
+        this.userPlayInput.onReject = () => {
+          const playerView = this.context.$refs.playerView as Vue;
+          // eslint-disable-next-line
+          (playerView.$refs.otherGameUserPanel as any).blink();
+        };
         this.userPlayInput.inputDone.add(() => {
           this.localUser.stepTimer.pause();
           this.localUser.gameTimer.pause();
         });
       }
 
-      this.gameRule.onGameOver = (winChessHost: ChessHost) => {
+      this.game.onGameOver = (winChessHost: ChessHost) => {
         if (this.isWatchingMode) {
           return;
         }
@@ -122,14 +125,10 @@ export default class Player extends GameplayClient {
         }, 0);
       };
 
-      this.gameRule.activeChessHost.changed.add(
+      this.game.activeChessHost.changed.add(
         (v: ChessHost) => this.onTurnActiveChessHost(v, false), this,
       );
     });
-
-    this.rulesetPlay = new OnlineRulesetPlay();
-    this.rulesetPlay.playfield = playfield;
-    this.rulesetPlay.gameRule = this.gameRule;
 
     onMounted(() => {
       const playerView = this.context.$refs.playerView as Vue;
@@ -140,8 +139,8 @@ export default class Player extends GameplayClient {
       this.initTimers();
       this.loadState(initialGameStates);
 
-      this.localUser.chessHostBindable.addAndRunOnce((chessHost: ChessHost) => {
-        this.otherUser.chessHostBindable.value = ChessHost.reverse(chessHost);
+      this.localUser.chess.addAndRunOnce((chessHost: ChessHost) => {
+        this.otherUser.chess.value = ChessHost.reverse(chessHost);
       });
 
       let channel = new Channel();
@@ -158,7 +157,7 @@ export default class Player extends GameplayClient {
       }
 
       if (initialGameStates) {
-        this.gameRule.start(this.localUser.chessHost, initialGameStates);
+        this.game.start(this.localUser.chessHost, initialGameStates);
       }
 
       this.gameState.addAndRunOnce(this.onGameStateChanged, this);
@@ -176,26 +175,19 @@ export default class Player extends GameplayClient {
       this.gameState.value = this.room.gameStatus || GameState.READY;
     }
 
-    // 初始双方对局状态和持棋方
-    if (this.localUser.id == this.room.redChessUser?.id) {
-      this.localUser.chessHostBindable.value = ChessHost.RED;
-      this.otherUser.chessHostBindable.value = ChessHost.BLACK;
-    }
-    if (this.localUser.id == this.room.blackChessUser?.id) {
-      this.localUser.chessHostBindable.value = ChessHost.BLACK;
-      this.otherUser.chessHostBindable.value = ChessHost.RED;
-    }
-
-    const setGameUser = (gameUser: GameUser) => {
-      const data = this.room as {[k: string]: any };
-      const keyP = ChessHost.RED == gameUser.chessHost ? 'red' : 'black';
-      if (!isReload) {
-        gameUser.bindable.value = data[`${keyP}ChessUser`] as User;
+    const setGameUser = (gameUser: GameUser, apiGameUser: APIGameUser) => {
+      if (!apiGameUser) {
+        return;
       }
-      gameUser.online.value = data[`${keyP}Online`] as boolean;
-      gameUser.status.value = data[`${keyP}UserStatus`] as number;
-      gameUser.readied.value = data[`${keyP}Readied`] as boolean;
-      gameUser.isRoomOwner.value = gameUser.id == this.room.owner.id;
+
+      if (!isReload) {
+        gameUser.user.value = apiGameUser.user;
+      }
+      gameUser.chess.value = apiGameUser.chess;
+      gameUser.online.value = apiGameUser.online;
+      gameUser.status.value = apiGameUser.status;
+      gameUser.ready.value = apiGameUser.ready;
+      gameUser.isRoomOwner.value = apiGameUser.roomOwner;
 
       if (!isReload) {
         const { roomSettings } = this.room;
@@ -203,10 +195,10 @@ export default class Player extends GameplayClient {
         gameTimer.setTotalSeconds(roomSettings.gameDuration);
         stepTimer.setTotalSeconds(roomSettings.stepDuration);
         if (states) {
-          const timerState = {
-            red: states.redTimer,
-            black: states?.blackTimer,
-          }[keyP];
+          const timerState = ({
+            1: states.firstTimer,
+            2: states?.secondTimer,
+          } as {[chess: number]: ResponseGameStateTimer})[apiGameUser.chess];
           gameTimer.ready(timerState.gameTime);
           stepTimer.ready(timerState.stepTime);
         } else {
@@ -216,8 +208,13 @@ export default class Player extends GameplayClient {
       }
     };
 
-    setGameUser(this.localUser);
-    setGameUser(this.otherUser);
+    this.room.gameUsers.forEach((gameUser) => {
+      if (gameUser.user?.id == this.localUser.id) {
+        setGameUser(this.localUser, gameUser);
+      } else {
+        setGameUser(this.otherUser, gameUser);
+      }
+    });
 
     this.spectatorClient.spectatorCount.value = this.room.spectatorCount;
   }
@@ -270,7 +267,7 @@ export default class Player extends GameplayClient {
           this.showText(`对方已下线/掉线，你可以等待对方回来继续`);
           break;
         case UserStatus.ONLINE:
-          this.context.$q.notify(`${gameUser.bindable.value?.nickname as string}已上线`);
+          this.context.$q.notify(`${gameUser.user.value?.nickname as string}已上线`);
           break;
         default:
           break;
@@ -313,7 +310,7 @@ export default class Player extends GameplayClient {
   protected onExit() {
     this.exit();
     this.spectatorClient.exit();
-    this.rulesetPlay.exit();
+    this.rulesetClient.exit();
     this.channelManager.leaveChannel(this.room.channelId);
     signals.quit.removeAll();
     signals.exit.dispatch();
@@ -321,18 +318,18 @@ export default class Player extends GameplayClient {
 
   protected resultsReady(msg: GameplayMsgs.ResultsReadyMsg) {
     const gameUser = this.getGameUserByUserId(msg.uid) as GameUser;
-    gameUser.readied.value = msg.readied;
+    gameUser.ready.value = msg.ready;
     if (gameUser != this.localUser) {
-      GameAudio.play(`room/${msg.readied ? 'readied' : 'unready'}`);
+      GameAudio.play(`room/${msg.ready ? 'ready' : 'unready'}`);
     }
   }
 
   protected gameStart(msg: GameplayMsgs.GameStartedMsg) {
     const redGameUser = this.getGameUserByUserId(msg.redChessUid) as GameUser;
     const blackGameUser = this.getGameUserByUserId(msg.blackChessUid) as GameUser;
-    this.gameRule.activeChessHost.value = null;
-    redGameUser.chessHostBindable.value = ChessHost.RED;
-    blackGameUser.chessHostBindable.value = ChessHost.BLACK;
+    this.game.activeChessHost.value = null;
+    redGameUser.chess.value = ChessHost.FIRST;
+    blackGameUser.chess.value = ChessHost.SECOND;
 
     this.gameState.value = GameState.PLAYING;
 
@@ -348,15 +345,15 @@ export default class Player extends GameplayClient {
     GameAudio.play('gameplay/started');
     this.showText(`开始对局`, 1000);
 
-    this.gameRule.start(this.localUser.chessHost);
-    // 因为activeChessHost一般一直是红方，值相同将不能触发，这里手动触发一次
-    this.onTurnActiveChessHost(ChessHost.RED);
+    this.game.start(this.localUser.chessHost);
+    // 因为activeChessHost一般一直是先手，值相同将不能触发，这里手动触发一次
+    this.onTurnActiveChessHost(ChessHost.FIRST);
   }
 
   protected gamePause() {
     this.gameState.value = GameState.PAUSE;
     if (!this.isWatchingMode) {
-      this.chessboard.hide();
+      this.playfield.hideContent();
     }
     this.showText('对局暂停');
   }
@@ -364,7 +361,7 @@ export default class Player extends GameplayClient {
   protected gameResume() {
     this.gameState.value = GameState.PLAYING;
     if (!this.isWatchingMode) {
-      this.chessboard.show();
+      this.playfield.showContent();
     }
   }
 
@@ -372,10 +369,10 @@ export default class Player extends GameplayClient {
     this.gameState.value = GameState.END;
 
     if (this.localUser.isRoomOwner.value) {
-      this.otherUser.readied.value = false;
+      this.otherUser.ready.value = false;
     }
 
-    this.gameRule.activeChessHost.value = null;
+    this.game.activeChessHost.value = null;
 
     const loser = this.localUser.id == msg.winUserId ? this.otherUser : this.localUser;
     if (msg.timeout) {
@@ -407,7 +404,7 @@ export default class Player extends GameplayClient {
   }
 
   protected resultsWithdraw() {
-    this.gameRule.withdraw();
+    this.game.withdraw();
   }
 
   protected resultsConfirmRequest(msg: GameplayMsgs.ConfirmRequestMsg) {
@@ -437,9 +434,11 @@ export default class Player extends GameplayClient {
   }
 
   protected resultsConfirmResponse(msg: GameplayMsgs.ConfirmResponseMsg) {
-    const title = this.isWatchingMode ? (ChessHost.BLACK ? '黑方' : '红方') : '对方';
+    const title = this.isWatchingMode
+      ? this.getGameUserByUserId(msg.uid)?.user.value?.nickname
+      : '对方';
     if (!msg.ok) {
-      this.showText(`${title}不同意${toReadableText(msg.reqType)}`, 1000);
+      this.showText(`${title as string}不同意${toReadableText(msg.reqType)}`, 1000);
     }
   }
 
@@ -460,18 +459,18 @@ export default class Player extends GameplayClient {
     if (msg.ok) {
       this.gameState.value = GameState.PLAYING;
       this.room.offlineAt = null;
-      this.chessboard.show();
+      this.playfield.showContent();
       this.showText('对手已回来，对局继续', 3000);
     } else {
       this.gameState.value = GameState.READY;
-      this.otherUser.bindable.value = null;
+      this.otherUser.user.value = null;
       this.showText('对手已选择不继续对局', 2000);
     }
   }
 
   protected onUserLeft(leftUser: GameUser) {
     if (this.gameState.value == GameState.PAUSE && !this.room.offlineAt) {
-      this.chessboard.show();
+      this.playfield.showContent();
       // eslint-disable-next-line
       this.textOverlay.hide();
     }
@@ -487,7 +486,7 @@ export default class Player extends GameplayClient {
     stepTimer.ready();
     gameTimer.ready();
 
-    this.gameRule.activeChessHost.value = null;
+    this.game.activeChessHost.value = null;
 
     GameAudio.play('room/user_left');
 
@@ -511,7 +510,7 @@ export default class Player extends GameplayClient {
         if (prevGameState == GameState.PAUSE) {
           // 之前离线暂停，现在恢复
           let activeGameUser: GameUser;
-          if (this.gameRule.activeChessHost.value == this.localUser.chessHost) {
+          if (this.game.activeChessHost.value == this.localUser.chessHost) {
             activeGameUser = this.localUser;
             if (this.userPlayInput) {
               // 禁用过，现在应启用输入
@@ -544,7 +543,7 @@ export default class Player extends GameplayClient {
   }
 
   private onTurnActiveChessHost(activeChessHost: ChessHost, isGameResume = false) {
-    this.gameRule.activeChessHost.value = activeChessHost;
+    this.game.activeChessHost.value = activeChessHost;
 
     if (this.gameState.value != GameState.PLAYING) {
       return;
@@ -577,7 +576,7 @@ export default class Player extends GameplayClient {
 
   public onReadyStartClick() {
     if (this.localUser.isRoomOwner.value) {
-      if (this.otherUser.id && this.otherUser.readied.value) {
+      if (this.otherUser.id && this.otherUser.ready.value) {
         if (this.otherUser.status.value == UserStatus.AFK) {
           this.context.$q.notify('对方现在是离开状态，不能开始，请等待对方回来');
           return;
@@ -633,7 +632,7 @@ export default class Player extends GameplayClient {
 
   public onToggleViewClick() {
     this.reverse.toggle();
-    this.gameRule.reverseChessLayoutView();
+    this.game.reverseChessLayoutView();
   }
 
   public onQuitClick() {

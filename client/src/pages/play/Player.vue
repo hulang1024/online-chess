@@ -20,8 +20,8 @@
   >
     <template #ready-overlay>
       <ready-overlay
-        :readied="viewUser.readied"
-        :other-readied="otherUser.readied"
+        :ready="viewUser.ready"
+        :other-ready="otherUser.ready"
         :is-room-owner="viewUser.isRoomOwner"
         :game-state="gameState"
         @invite="onInviteClick"
@@ -35,7 +35,7 @@
 <script lang="ts">
 import { defineComponent, getCurrentInstance } from '@vue/composition-api';
 import Room from 'src/online/room/Room';
-import ResponseGameStates from 'src/online/play/game_states_response';
+import ResponseGameStates from 'src/rulesets/game_states_response';
 import PlayerView from './PlayerView.vue';
 import ReadyOverlay from './ReadyOverlay.vue';
 import Player from './Player';

@@ -47,7 +47,7 @@ export default class Timer {
     this.timerState = null;
     this.starts = 0;
     this.seconds.value = current || this.totalSeconds.value;
-    this.emit('readied', this.seconds.value);
+    this.emit('ready', this.seconds.value);
   }
 
   /** 重置为总时，重新计时 */

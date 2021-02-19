@@ -1,9 +1,9 @@
-import { ResponseGameStateChessAction } from "src/online/play/game_states_response";
 import ChessAction from "src/rulesets/chinesechess/ChessAction";
 import Chess from "./Chess";
 import ChessPos from "./ChessPos";
-import ChessHost from "./chess_host";
+import ChessHost from "../chess_host";
 import CHESS_CLASS_KEY_MAP from "./chess_map";
+import { ResponseGameStateChessAction } from "./online/gameplay_server_messages";
 
 export default class ReplayRecorder {
   private actions: ChessAction[] = [];
@@ -36,7 +36,7 @@ export default class ReplayRecorder {
 
     const actionStack: ChessAction[] = actions.map((act) => {
       const action = new ChessAction();
-      action.chessHost = act.chessHost == 'RED' ? ChessHost.RED : ChessHost.BLACK;
+      action.chessHost = act.chessHost == 'FIRST' ? ChessHost.FIRST : ChessHost.SECOND;
       // eslint-disable-next-line
       action.chessType = CHESS_CLASS_KEY_MAP[act.chessType];
       action.fromPos = ChessPos.make(act.fromPos);

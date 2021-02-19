@@ -245,7 +245,7 @@ export default class ChannelManager {
 
     this.channelsInitialised = true;
 
-    [[1, '#象棋']].forEach(([id, name]) => {
+    [[1, '#世界']].forEach(([id, name]) => {
       const channel = new Channel();
       channel.id = <number>id;
       channel.type = ChannelType.PUBLIC;

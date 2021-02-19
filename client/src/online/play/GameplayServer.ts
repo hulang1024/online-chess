@@ -5,7 +5,7 @@ export default class GameplayServer {
   private socketService = socketService;
 
   public toggleReady(isReady?: boolean) {
-    this.socketService.send('play.ready', { readied: isReady });
+    this.socketService.send('play.ready', { ready: isReady });
   }
 
   public startGame() {

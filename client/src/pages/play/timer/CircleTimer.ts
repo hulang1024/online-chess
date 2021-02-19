@@ -31,7 +31,7 @@ export default class CircleTimer {
       totalSecondsSet: (totalS: number) => {
         this.totalMS = totalS * 1000;
       },
-      readied: (currentS: number) => {
+      ready: (currentS: number) => {
         this.max.value = this.totalMS;
         this.current.value = currentS * 1000;
       },

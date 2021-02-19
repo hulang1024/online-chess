@@ -31,7 +31,7 @@ export default class SampleStore {
 
   private loadAll() {
     const names = [
-      'room/user_join', 'room/user_left', 'room/unready', 'room/readied',
+      'room/user_join', 'room/user_left', 'room/unready', 'room/ready',
       'new_invitation',
       'gameplay/started.mp3',
       'gameplay/chess_move',

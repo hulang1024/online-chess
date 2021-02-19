@@ -25,7 +25,7 @@
           <ready-status-display
             v-if="$q.screen.xs"
             v-show="user && showReadyStatus"
-            :is-ready="readied"
+            :is-ready="ready"
             class="info-overlay absolute-center"
           />
         </user-avatar>
@@ -59,7 +59,7 @@
       <ready-status-display
         v-if="!$q.screen.xs"
         v-show="user && showReadyStatus"
-        :is-ready="readied"
+        :is-ready="ready"
       />
     </div>
   </q-card>
@@ -72,7 +72,8 @@ import {
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import User from "src/user/User";
 import UserStatus from "src/user/UserStatus";
-import ChessHost from "src/rulesets/chinesechess/chess_host";
+import ChessHost from "src/rulesets/chess_host";
+import { GameType } from "src/rulesets/GameType";
 import Timer from "./timer/Timer.vue";
 import CircleTimer from "./timer/CircleTimer.vue";
 import ReadyStatusDisplay from "./ReadyStatusDisplay.vue";
@@ -87,22 +88,33 @@ export default defineComponent({
   props: {
     user: Object as PropType<User>,
     online: Boolean,
-    readied: Boolean,
+    ready: Boolean,
     status: Number as PropType<UserStatus>,
-    chessHost: Number as PropType<ChessHost | undefined>,
+    chess: Number as PropType<ChessHost | undefined>,
     active: Boolean,
     showReadyStatus: Boolean,
     reverse: Boolean,
+    gameType: Number as PropType<GameType>,
   },
   inject: ['showUserDetails'],
   setup(props) {
     const context = getCurrentInstance() as Vue;
 
-    const color = computed(() => ((props.user && props.active)
-      ? (props.chessHost == ChessHost.RED
-        ? 'red'
-        : context.$q.dark.isActive ? 'grey-2' : 'black')
-      : 'transparent'));
+    const color = computed(() => {
+      const GAME_TYPE_COLOR_MAP = {
+        [GameType.chinesechess]: {
+          [ChessHost.FIRST]: 'red',
+          [ChessHost.SECOND]: context.$q.dark.isActive ? 'grey-2' : 'black',
+        },
+        [GameType.gobang]: {
+          [ChessHost.FIRST]: context.$q.dark.isActive ? 'grey-8' : 'black',
+          [ChessHost.SECOND]: context.$q.dark.isActive ? 'white' : 'grey-4',
+        },
+      };
+      return ((props.user && props.active)
+        ? GAME_TYPE_COLOR_MAP[props.gameType as GameType][props.chess as ChessHost]
+        : 'transparent');
+    });
 
     const onUserAvatarClick = () => {
       if (!props.user) {

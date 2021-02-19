@@ -1,0 +1,31 @@
+.gobang-chessboard {
+  .chess {
+    position: absolute;
+    border-radius: 100%;
+    box-shadow: 0px 0px 3px 1px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+
+    &.black {
+      background-color: black;
+    }
+
+    &.white {
+      background-color:#fff;
+    }
+
+    &.lit {
+      outline-offset: 2px;
+      outline: 1px solid #fff;
+    }
+
+    &.highlight {
+      animation: blink 0.8s ease infinite;
+    }
+  }
+}
+
+@keyframes blink {
+  100% {
+    opacity: 0;
+  }
+}

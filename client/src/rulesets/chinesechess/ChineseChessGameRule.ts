@@ -1,33 +1,25 @@
 import ChessK from 'src/rulesets/chinesechess/chess/ChessK';
 import ChessAction from 'src/rulesets/chinesechess/ChessAction';
 import ChessPos from 'src/rulesets/chinesechess/ChessPos';
-import ChessHost from 'src/rulesets/chinesechess/chess_host';
+import ChessHost from 'src/rulesets/chess_host';
 import CheckmateJudgement from 'src/rulesets/chinesechess/CheckmateJudgement';
 import HistoryRecorder from 'src/rulesets/chinesechess/HistoryRecorder';
-import Bindable from 'src/utils/bindables/Bindable';
-import BindableBool from 'src/utils/bindables/BindableBool';
 import Game from 'src/rulesets/chinesechess/Game';
-import ResponseGameStates, { ResponseGameStateChess } from "src/online/play/game_states_response";
 import CHESS_CLASS_KEY_MAP, { createIntialLayoutChessList } from 'src/rulesets/chinesechess/chess_map';
 import Chess from 'src/rulesets/chinesechess/Chess';
-import DrawableChess from "./DrawableChess";
-import DrawableChessboard from "./DrawableChessboard";
-import ChessMoveAnimation from './ChessMoveAnimation';
-import ChessTargetDrawer from './ChessTargetDrawer';
-import DrawableEatJudgement from './DrawableEatJudgement';
-import DrawableCheckmateJudgement from './DrawableCheckmateJudgement';
-import Playfield from './Playfield';
+import ResponseGameStates from 'src/rulesets/game_states_response';
+import GameRule from 'src/rulesets/GameRule';
+import DrawableChess from "./ui/DrawableChess";
+import ChessMoveAnimation from './ui/ChessMoveAnimation';
+import ChessTargetDrawer from './ui/ChessTargetDrawer';
+import DrawableEatJudgement from './ui/DrawableEatJudgement';
+import DrawableCheckmateJudgement from './ui/DrawableCheckmateJudgement';
+import Playfield from '../../pages/play/Playfield';
+import ChineseChessResponseGameStates, { ResponseGameStateChess } from './online/gameplay_server_messages';
+import ChineseChessDrawableChessboard from './ui/ChineseChessDrawableChessboard';
 
-export default class GameRule implements Game {
-  public onGameOver: (winChessHost: ChessHost) => void;
-
-  public canWithdraw = new BindableBool();
-
-  public activeChessHost = new Bindable<ChessHost | null>();
-
-  public chessboard: DrawableChessboard;
-
-  public viewChessHost: ChessHost;
+export default class ChineseChessGameRule extends GameRule implements Game {
+  public chessboard: ChineseChessDrawableChessboard;
 
   private historyRecorder = new HistoryRecorder();
 
@@ -49,12 +41,17 @@ export default class GameRule implements Game {
   }
 
   public setPlayfield(playfield: Playfield) {
-    this.chessboard = playfield.chessboard;
+    this.chessboard = playfield.chessboard as ChineseChessDrawableChessboard;
+    playfield.resized.add(() => {
+      if (this.fromPosTargetDrawer?.getSavePos()) {
+        this.fromPosTargetDrawer.draw(this.fromPosTargetDrawer.getSavePos());
+      }
+    });
     playfield.el.appendChild(this.drawableEatJudgement.el);
     playfield.el.appendChild(this.drawableCheckmateJudgement.el);
   }
 
-  public start(viewChessHost: ChessHost, gameStates?: ResponseGameStates) {
+  public start(viewChessHost: ChessHost, gameStates0?: ResponseGameStates) {
     this.viewChessHost = viewChessHost;
     this.canWithdraw.value = false;
 
@@ -63,13 +60,14 @@ export default class GameRule implements Game {
     }
     this.fromPosTargetDrawer.clear();
 
+    const gameStates = gameStates0 as ChineseChessResponseGameStates;
     if (gameStates && gameStates.chesses) {
       // 把棋子放到棋盘上
       this.chessboard.clear();
       gameStates.chesses.forEach((stateChess: ResponseGameStateChess) => {
         let pos = new ChessPos(stateChess.row, stateChess.col);
         // 服务器保存数据默认视角是红方，如果当前视图是黑方就要翻转下
-        if (this.viewChessHost == ChessHost.BLACK) {
+        if (this.viewChessHost == ChessHost.SECOND) {
           pos = pos.reverseView();
         }
         // eslint-disable-next-line
@@ -106,7 +104,7 @@ export default class GameRule implements Game {
       }
     }
 
-    this.activeChessHost.value = (gameStates && gameStates.activeChessHost) || ChessHost.RED;
+    this.activeChessHost.value = (gameStates && gameStates.activeChessHost) || ChessHost.FIRST;
   }
 
   public onChessAction(action: ChessAction, duration?: number) {

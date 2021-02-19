@@ -5,6 +5,7 @@
         <game-user-panel
           ref="otherGameUserPanel"
           v-bind="otherUser"
+          :game-type="room.gameType"
           class="q-pt-sm q-ml-sm"
           :class="reverse
             ? 'fixed-bottom-right q-mr-sm q-mb-sm'
@@ -13,6 +14,7 @@
         <game-user-panel
           ref="viewGameUserPanel"
           v-bind="viewUser"
+          :game-type="room.gameType"
           :class="reverse
             ? 'absolute-top-left q-pt-sm q-ml-sm'
             : 'fixed-bottom-right q-mr-sm q-mb-sm'"
@@ -220,11 +222,13 @@
           <game-user-panel
             ref="otherGameUserPanel"
             v-bind="otherUser"
+            :game-type="room.gameType"
           />
           <q-separator class="q-my-sm" />
           <game-user-panel
             ref="viewGameUserPanel"
             v-bind="viewUser"
+            :game-type="room.gameType"
           />
         </q-card>
         <q-card
@@ -268,7 +272,7 @@ import {
 } from '@vue/composition-api';
 import GameState from 'src/online/play/GameState';
 import Room from 'src/online/room/Room';
-import Playfield from 'src/rulesets/chinesechess/ui/Playfield.vue';
+import Playfield from 'src/pages/play/Playfield.vue';
 import ResultDialog from 'src/rulesets/ui/ResultDialog.vue';
 import TextOverlay from 'src/rulesets/ui/TextOverlay.vue';
 import GameUser from 'src/online/play/GameUser';

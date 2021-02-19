@@ -1,4 +1,4 @@
-import ChessHost from "src/rulesets/chinesechess/chess_host";
+import ChessHost from "src/rulesets/chess_host";
 import './judgement.scss';
 
 const TRANSITION_DURATION = 200;
@@ -19,7 +19,7 @@ export default class DrawableCheckmateJudgement {
     clearTimeout(this.timer);
 
     this.el.style.display = 'block';
-    const colorClass = actionChessHost == ChessHost.RED ? 'red' : 'black';
+    const colorClass = actionChessHost == ChessHost.FIRST ? 'red' : 'black';
     this.el.classList.add(colorClass, 'show');
     this.timer = setTimeout(() => {
       this.el.classList.remove(colorClass, 'show');

@@ -7,24 +7,24 @@
     <span
       class="nickname ellipsis"
       :class="`q-m${reverse ? 'r' : 'l'}-xs`"
-    >{{ nickname }}</span>
+    >{{ user.nickname }}</span>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType } from '@vue/composition-api';
+import APIGameUser from 'src/online/play/APIGameUser';
 import UserAvatar from 'src/user/components/UserAvatar.vue';
-import User from 'src/user/User';
 
 export default defineComponent({
   components: { UserAvatar },
   props: {
-    user: Object as PropType<User>,
+    gameUser: Object as PropType<APIGameUser>,
     reverse: Boolean,
   },
   setup(props) {
     return {
-      ...props.user,
+      ...props.gameUser,
     };
   },
 });

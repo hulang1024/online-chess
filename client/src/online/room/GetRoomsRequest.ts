@@ -7,6 +7,7 @@ export default class GetRoomsRequest extends APIRequest<any> {
     this.method = HttpMethod.GET;
     this.path = 'rooms';
 
+    this.addParam('gameType', searchParams?.gameType);
     this.addParam('status', searchParams?.status);
   }
 }

@@ -5,7 +5,6 @@ import { toReadableText } from 'src/online/play/confirm_request';
 import SpectateResponse from "src/online/spectator/APISpectateResponse";
 import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
 import User from "src/user/User";
-import ChessHost from "src/rulesets/chinesechess/chess_host";
 import Player from "./Player";
 import GameUser from "../../online/play/GameUser";
 
@@ -60,17 +59,14 @@ export default class SpectatorPlayer extends Player {
   protected resultsGameOver(msg: GameEvents.GameOverMsg) {
     super.resultsGameOver(msg);
     const winner = msg.winUserId ? this.getGameUserByUserId(msg.winUserId) as GameUser : null;
-    const winnerName = winner?.bindable.value?.nickname || '';
-    this.showText(msg.winUserId == null
-      ? '平局'
-      : `${winner?.chessHost == ChessHost.RED ? '红方' : '黑方'} (${winnerName}) 赢！`);
+    const winnerName = winner?.user.value?.nickname || '';
+    this.showText(msg.winUserId == null ? '平局' : `${winnerName} 赢！`);
   }
 
   protected resultsConfirmRequest(msg: GameEvents.ConfirmRequestMsg) {
     super.resultsConfirmRequest(msg);
-    let text = msg.chessHost == ChessHost.BLACK ? '黑方' : '红方';
-    text += `请求${toReadableText(msg.reqType)}`;
-    this.showText(text, 1000);
+    const nickname = this.getGameUserByUserId(msg.uid)?.user.value?.nickname;
+    this.showText(`${nickname as string}请求${toReadableText(msg.reqType)}`, 1000);
   }
 
   private watchUser(targetUserId: number) {
@@ -80,19 +76,14 @@ export default class SpectatorPlayer extends Player {
 
     if (targetUserId != null) {
       // 如果是观看用户
-      if (room.redChessUser && room.redChessUser.id == targetUserId) {
-        watchingUser = room.redChessUser;
-      }
-      if (room.blackChessUser && room.blackChessUser.id == targetUserId) {
-        watchingUser = room.blackChessUser;
-      }
-    } else if (room.redChessUser && room.blackChessUser) {
-      watchingUser = Math.random() > 0.5 ? room.redChessUser : room.blackChessUser;
+      watchingUser = room.gameUsers.find((u) => u.user?.id == targetUserId)?.user as User;
+    } else if (room.gameUsers.length == 2) {
+      watchingUser = room.gameUsers[+(Math.random() > 0.5)].user as User;
     } else {
-      watchingUser = (room.redChessUser || room.blackChessUser) as User;
+      watchingUser = room.gameUsers[0].user as User;
     }
 
-    this.localUser.bindable.value = watchingUser;
+    this.localUser.user.value = watchingUser;
   }
 
   public onQuitClick() {

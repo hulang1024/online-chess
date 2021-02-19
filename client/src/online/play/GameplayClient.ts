@@ -93,10 +93,10 @@ export default abstract class GameplayClient extends GameplayServer {
         : this.otherUser
       : this.localUser;
 
-    gameUser.bindable.value = msg.user;
+    gameUser.user.value = msg.user;
     gameUser.online.value = true;
     gameUser.status.value = UserStatus.ONLINE;
-    gameUser.readied.value = false;
+    gameUser.ready.value = false;
 
     this.userJoined();
   }
@@ -106,8 +106,8 @@ export default abstract class GameplayClient extends GameplayServer {
       ? this.localUser
       : this.otherUser;
 
-    leftUser.bindable.value = null;
-    leftUser.readied.value = false;
+    leftUser.user.value = null;
+    leftUser.ready.value = false;
     leftUser.online.value = false;
 
     this.userLeft(leftUser);

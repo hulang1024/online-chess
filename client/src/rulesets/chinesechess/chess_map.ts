@@ -7,7 +7,7 @@ import ChessN from './chess/ChessN';
 import ChessR from './chess/ChessR';
 import ChessS from './chess/ChessS';
 import ChessPos from './ChessPos';
-import ChessHost from './chess_host';
+import ChessHost from '../chess_host';
 
 const CHESS_CLASS_KEY_MAP: {[type: string]: any} = {
   R: ChessR,

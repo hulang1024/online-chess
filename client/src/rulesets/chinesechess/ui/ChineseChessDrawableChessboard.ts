@@ -4,19 +4,14 @@ import Chess from "src/rulesets/chinesechess/Chess";
 import Chessboard from "src/rulesets/chinesechess/chessboard";
 import ChessPos from "src/rulesets/chinesechess/ChessPos";
 import Signal from "src/utils/signals/Signal";
+import DrawableChessboard from "src/rulesets/ui/DrawableChessboard";
 import DrawableChess from "./DrawableChess";
-import './chessboard.scss';
 
-export default class DrawableChessboard implements Chessboard {
-  private _el: HTMLDivElement;
-
-  public get el() { return this._el; }
-
+export default class ChineseChessDrawableChessboard
+  extends DrawableChessboard implements Chessboard {
   private _bounds: ChessboardBounds;
 
   public get bounds() { return this._bounds; }
-
-  public readonly clicked: Signal = new Signal();
 
   public readonly chessPickupOrDrop: Signal = new Signal();
 
@@ -31,6 +26,7 @@ export default class DrawableChessboard implements Chessboard {
   private chessArray: Array<Array<DrawableChess | null>>;
 
   constructor(stage: {width: number, height: number}, screen: any) {
+    super();
     // eslint-disable-next-line
     this.chessArray = new Array(10);
     for (let row = 0; row < 10; row++) {
@@ -91,14 +87,6 @@ export default class DrawableChessboard implements Chessboard {
       chess.x = x;
       chess.y = y;
     });
-  }
-
-  public show() {
-    this.el.classList.remove('elements-hide');
-  }
-
-  public hide() {
-    this.el.classList.add('elements-hide');
   }
 
   private setupDragable() {

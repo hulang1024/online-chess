@@ -1,7 +1,7 @@
 import Chess from "./Chess";
 import ChessK from "./chess/ChessK";
 import ChessPos from "./ChessPos";
-import ChessHost from "./chess_host";
+import ChessHost from "../chess_host";
 import Game from "./Game";
 
 export default class CheckmateJudgement {
@@ -17,7 +17,7 @@ export default class CheckmateJudgement {
     const chessboard = this.game.getChessboard();
     const topKPos = new ChessPos(9, 4);
     const bottomKPos = new ChessPos(0, 4);
-    if (viewChessHost == ChessHost.RED) {
+    if (viewChessHost == ChessHost.FIRST) {
       this.redK = chessboard.chessAt(topKPos) as Chess;
       this.blackK = chessboard.chessAt(bottomKPos) as Chess;
     } else {
@@ -31,7 +31,7 @@ export default class CheckmateJudgement {
    * @param chessHost
    */
   judge(checkHost: ChessHost): boolean {
-    const checkKPos = (checkHost == ChessHost.RED ? this.redK : this.blackK).getPos();
+    const checkKPos = (checkHost == ChessHost.FIRST ? this.redK : this.blackK).getPos();
 
     // 有可能上一步就被吃了，检查在不在
     const chessK = this.game.getChessboard().chessAt(checkKPos);

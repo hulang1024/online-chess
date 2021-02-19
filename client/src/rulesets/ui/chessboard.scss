@@ -1,0 +1,10 @@
+.chessboard {
+  position: relative;
+  &.elements-hide {
+    > .chess,
+    > .chess-target {
+      transition: opacity .2s ease;
+      opacity: 0 !important;
+    }
+  }
+}

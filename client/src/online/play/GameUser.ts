@@ -1,4 +1,4 @@
-import ChessHost from "src/rulesets/chinesechess/chess_host";
+import ChessHost from "src/rulesets/chess_host";
 import User from "src/user/User";
 import UserStatus from "src/user/UserStatus";
 import Bindable from "src/utils/bindables/Bindable";
@@ -6,22 +6,22 @@ import BindableBool from "src/utils/bindables/BindableBool";
 import Timer from "../../pages/play/timer/Timer";
 
 export default class GameUser {
-  public bindable = new Bindable<User | null>();
+  public user = new Bindable<User | null>();
 
   public get id() {
-    return this.bindable.value?.id;
+    return this.user.value?.id;
   }
 
   public status = new Bindable<UserStatus>();
 
   public online = new BindableBool(true);
 
-  public readied = new BindableBool();
+  public ready = new BindableBool();
 
-  public chessHostBindable = new Bindable<ChessHost>();
+  public chess = new Bindable<ChessHost>();
 
   public get chessHost() {
-    return this.chessHostBindable.value;
+    return this.chess.value;
   }
 
   // todo: 从online包中移除

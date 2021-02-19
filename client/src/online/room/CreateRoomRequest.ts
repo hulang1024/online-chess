@@ -8,6 +8,7 @@ export default class CreateRoomRequest extends APIRequest<Room> {
     this.path = 'rooms';
 
     this.addParam('name', room.name);
+    this.addParam('gameType', room.gameType);
     this.addParam('gameDuration', room.roomSettings.gameDuration);
     this.addParam('stepDuration', room.roomSettings.stepDuration);
     this.addParam('secondsCountdown', room.roomSettings.secondsCountdown);

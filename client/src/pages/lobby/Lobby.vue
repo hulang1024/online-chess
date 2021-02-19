@@ -19,6 +19,24 @@
     </div>
     <!-- 房间筛选选项卡 -->
     <q-tabs
+      v-model="gameTypeActiveTab"
+      dense
+      :class="['row', $q.dark.isActive && 'text-white']"
+    >
+      <q-tab
+        :name="0"
+        label="全部"
+      />
+      <q-tab
+        :name="1"
+        label="象棋"
+      />
+      <q-tab
+        :name="2"
+        label="五子棋"
+      />
+    </q-tabs>
+    <q-tabs
       v-model="roomStatusActiveTab"
       dense
       :class="['row', $q.dark.isActive && 'text-white']"
@@ -65,8 +83,9 @@ import {
 } from 'src/boot/main';
 import { RoomSettings } from 'src/online/room/RoomSettings';
 import { InvitationReplyServerMsg, InvitationServerMsg } from 'src/online/invitation';
-import ResponseGameStates from 'src/online/play/game_states_response';
+import ResponseGameStates from 'src/rulesets/game_states_response';
 import * as playPageSignals from 'src/pages/play/signals';
+import { GameType } from 'src/rulesets/GameType';
 import CreateRoomDialog from './CreateRoomDialog.vue';
 import RoomsPanel from './RoomsPanel.vue';
 import { userActivityClient } from '../../boot/main';
@@ -78,13 +97,15 @@ export default defineComponent({
     const { $refs, $router, $q } = ctx;
     const roomManager = new RoomManager();
     const joining = ref(false);
-
+    const gameTypeActiveTab = ref(0);
     const roomStatusActiveTab = ref(0);
 
     const queryRooms = () => {
       let status: number | null = roomStatusActiveTab.value;
       status = status == 0 ? null : status;
-      roomManager.searchRooms({ status });
+      let gameType: number | null = gameTypeActiveTab.value;
+      gameType = gameType == 0 ? null : gameType;
+      roomManager.searchRooms({ status, gameType });
     };
 
     const pushPlayPage = async (room: Room | null, states?: ResponseGameStates) => {
@@ -217,6 +238,9 @@ export default defineComponent({
     watch(roomStatusActiveTab, () => {
       queryRooms();
     });
+    watch(gameTypeActiveTab, () => {
+      queryRooms();
+    });
 
     onMounted(() => {
       onLoggedIn();
@@ -259,6 +283,7 @@ export default defineComponent({
       req.failure = () => {
         const room = new Room();
         room.name = '';
+        room.gameType = Math.random() > 0.5 ? GameType.chinesechess : GameType.gobang;
         room.roomSettings = new RoomSettings();
         const createReq = new CreateRoomRequest(room);
         createReq.success = async (createdRoom) => {
@@ -292,6 +317,7 @@ export default defineComponent({
     };
 
     return {
+      gameTypeActiveTab,
       roomStatusActiveTab,
 
       rooms: roomManager.rooms,

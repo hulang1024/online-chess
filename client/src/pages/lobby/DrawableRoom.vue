@@ -9,7 +9,7 @@
   >
     <q-card-section class="row justify-between items-center q-py-xs">
       <div class="text-body1">
-        {{ name }}
+        {{ name }} <span class="text-caption">({{ gameTypeName }})</span>
       </div>
       <div class="text-caption">{{ statusStates.text }}</div>
     </q-card-section>
@@ -18,13 +18,13 @@
       class="row justify-between q-pb-sm q-px-md"
     >
       <drawable-room-user
-        v-if="redChessUser"
-        :user="redChessUser"
+        v-if="gameUsers[0]"
+        :game-user="gameUsers[0]"
       />
       <drawable-room-user
-        v-if="blackChessUser"
-        :user="blackChessUser"
-        :reverse="!!(redChessUser && blackChessUser)"
+        v-if="gameUsers[1]"
+        :game-user="gameUsers[1]"
+        :reverse="!!(gameUsers.length == 2)"
       />
     </q-card-section>
   </q-card>
@@ -38,6 +38,7 @@ import JoinRoomRequest from 'src/online/room/JoinRoomRequest';
 import SpectateRoomRequest from 'src/online/spectator/SpectateRoomRequest';
 import { api } from 'src/boot/main';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
+import { GameType } from 'src/rulesets/GameType';
 import DrawableRoomUser from './DrawableRoomUser.vue';
 import Room from '../../online/room/Room';
 
@@ -72,7 +73,20 @@ export default defineComponent({
         color: '#fdd835',
       },
     };
+
+    const GAME_TYPE_MAP: {
+      [n: number]: {text: string}
+    } = {
+      [GameType.chinesechess]: {
+        text: '象棋',
+      },
+      [GameType.gobang]: {
+        text: '五子棋',
+      },
+    };
+
     const statusStates = computed(() => ROOM_STATUS_MAP[room.status]);
+    const gameTypeName = computed(() => GAME_TYPE_MAP[room.gameType].text);
 
     watch(props, () => {
       Object.assign(room, props.room);
@@ -130,20 +144,19 @@ export default defineComponent({
         return;
       }
 
-      if (room.userCount == 1) {
+      if (room.gameUsers.length == 1) {
         if (room.locked) {
           // todo
         }
         joinRoom();
       } else {
         let updated = false;
-        if (room.redChessUser?.id == api.localUser.id) {
-          room.redChessUser = null;
-          updated = true;
-        }
-        if (room.blackChessUser?.id == api.localUser.id) {
-          room.blackChessUser = null;
-          updated = true;
+        for (let i = 0; i < room.gameUsers.length; i++) {
+          const gameUser = room.gameUsers[i];
+          if (gameUser.user?.id == api.localUser.id) {
+            gameUser.user = null;
+            updated = true;
+          }
         }
         if (updated) {
           joinRoom();
@@ -156,6 +169,7 @@ export default defineComponent({
     return {
       ...toRefs(room),
       statusStates,
+      gameTypeName,
       onClick,
     };
   },

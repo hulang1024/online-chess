@@ -5,12 +5,12 @@ enum ChessHost {
     /**
      * 先手
      */
-    RED = 1,
+    FIRST = 1,
 
     /**
      * 后手
      */
-    BLACK = 2
+    SECOND = 2
 }
 
 export default ChessHost;
@@ -19,6 +19,6 @@ export default ChessHost;
 namespace ChessHost {
   // eslint-disable-next-line
   export function reverse(host: ChessHost) {
-    return host == ChessHost.BLACK ? ChessHost.RED : ChessHost.BLACK;
+    return host == ChessHost.SECOND ? ChessHost.FIRST : ChessHost.SECOND;
   }
 }

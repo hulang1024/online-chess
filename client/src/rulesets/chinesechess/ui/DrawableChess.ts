@@ -1,6 +1,6 @@
 import Chess from 'src/rulesets/chinesechess/Chess';
 import ChessPos from 'src/rulesets/chinesechess/ChessPos';
-import ChessHost from 'src/rulesets/chinesechess/chess_host';
+import ChessHost from 'src/rulesets/chess_host';
 import { chessClassToText } from 'src/rulesets/chinesechess/chess_map';
 import Game from 'src/rulesets/chinesechess/Game';
 import Signal from 'src/utils/signals/Signal';
@@ -41,7 +41,7 @@ export default class DrawableChess implements Chess {
   private load() {
     const el = document.createElement('div');
     this._el = el;
-    const colorClass = this.chess.getHost() == ChessHost.RED ? 'red' : 'black';
+    const colorClass = this.chess.getHost() == ChessHost.FIRST ? 'red' : 'black';
     el.classList.add('chess', colorClass);
     el.style.lineHeight = `${this.radius * 2}px`;
 

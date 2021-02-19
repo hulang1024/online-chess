@@ -87,7 +87,7 @@ export default defineComponent({
     const notify = ctx.$q.notify;
 
     const isOpen = ref(false);
-    const activeChannelTab = ref('#象棋');
+    const activeChannelTab = ref('#世界');
     const channels = ref<Channel[]>([]);
     const messageText = ref('');
     const inputEnabled = ref(true);

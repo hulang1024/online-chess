@@ -1,0 +1,21 @@
+@import 'src/rulesets/ui/chessboard.scss';
+
+.gobang-chessboard {
+  border-radius: 8px;
+  background-color: #fad9a0;
+
+  > .chessboard_border {
+    width: 100%;
+    height: 100%;
+    border: 2px solid #d99c65;
+    border-radius: 4px;
+    box-sizing: border-box;
+
+    > canvas {
+      width: 100%;
+      height: 100%;
+      background-color: #fbd396;
+      border-radius: 4px;
+    }
+  }
+}

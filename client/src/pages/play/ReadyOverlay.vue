@@ -30,8 +30,8 @@ import GameState from 'src/online/play/GameState';
 
 export default defineComponent({
   props: {
-    readied: Boolean,
-    otherReadied: Boolean,
+    ready: Boolean,
+    otherReady: Boolean,
     isRoomOwner: Boolean,
     gameState: Number as PropType<GameState>,
   },
@@ -43,14 +43,14 @@ export default defineComponent({
     let onPropsChange;
     watch(props, onPropsChange = () => {
       const {
-        readied, otherReadied, isRoomOwner, gameState,
+        ready, otherReady, isRoomOwner, gameState,
       } = props;
       if (gameState == GameState.READY) {
         if (isRoomOwner) {
           label.value = '开始!';
-          disable.value = !otherReadied;
+          disable.value = !otherReady;
         } else {
-          label.value = readied ? '取消准备' : '准备!';
+          label.value = ready ? '取消准备' : '准备!';
           disable.value = false;
         }
         visible.value = true;

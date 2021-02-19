@@ -1,15 +1,15 @@
 import { onBeforeUnmount, onMounted } from "@vue/composition-api";
 import Signal from "src/utils/signals/Signal";
 import TweenAnimationUpdater from "src/rulesets/ui/TweenAnimationUpdater";
-import ChessTargetDrawer from "./ChessTargetDrawer";
-import DrawableChessboard from "./DrawableChessboard";
+import Ruleset from "src/rulesets/Ruleset";
+import DrawableChessboard from "src/rulesets/ui/DrawableChessboard";
 
 export default class Playfield {
   public loaded: Signal = new Signal();
 
-  public chessboard: DrawableChessboard;
+  public resized: Signal = new Signal();
 
-  private fromPosTargetDrawer: ChessTargetDrawer;
+  public chessboard: DrawableChessboard;
 
   private context: Vue;
 
@@ -17,7 +17,7 @@ export default class Playfield {
     return ((this.context.$refs.playerView as Vue).$refs.playfield as Vue).$el as HTMLDivElement;
   }
 
-  constructor(context: Vue) {
+  constructor(context: Vue, ruleset: Ruleset) {
     this.context = context;
     const isXSScreen = context.$q.screen.xs;
 
@@ -35,10 +35,12 @@ export default class Playfield {
           height,
         };
       };
-      const chessboard = new DrawableChessboard(recalcChessboardSize(), context.$q.screen);
+
       // eslint-disable-next-line
-      this.el.insertBefore(chessboard.el, this.el.firstChild);
-      this.chessboard = chessboard;
+      this.chessboard = ruleset.createChessboard(recalcChessboardSize(), context.$q.screen);
+
+      // eslint-disable-next-line
+      this.el.insertBefore(this.chessboard.el, this.el.firstChild);
       this.loaded.dispatch();
 
       window.addEventListener('resize', onReisze = () => {
@@ -46,6 +48,7 @@ export default class Playfield {
           return;
         }
         this.resize(recalcChessboardSize(), context.$q.screen);
+        this.resized.dispatch();
       });
     });
 
@@ -58,10 +61,15 @@ export default class Playfield {
     });
   }
 
+  public hideContent() {
+    this.chessboard.hide();
+  }
+
+  public showContent() {
+    this.chessboard.show();
+  }
+
   public resize(stage: {width: number, height: number}, screen: any) {
     this.chessboard.resizeAndDraw(stage, screen);
-    if (this.fromPosTargetDrawer?.getSavePos()) {
-      this.fromPosTargetDrawer.draw(this.fromPosTargetDrawer.getSavePos());
-    }
   }
 }

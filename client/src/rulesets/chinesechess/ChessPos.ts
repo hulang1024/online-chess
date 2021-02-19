@@ -1,4 +1,4 @@
-import ChessHost from "./chess_host";
+import ChessHost from "../chess_host";
 
 /**
  * 棋子位置

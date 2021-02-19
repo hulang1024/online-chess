@@ -10,6 +10,12 @@
         ref="form"
         class="q-gutter-md"
       >
+
+        <div class="q-gutter-sm">
+          <q-radio v-model="gameType" :val="1" label="象棋" />
+          <q-radio v-model="gameType" :val="2" label="五子棋" />
+        </div>
+
         <q-input
           v-model="name"
           standout
@@ -102,6 +108,7 @@ export default defineComponent({
       name: '',
       requirePassword: false,
       password: '',
+      gameType: 1,
       ...new RoomSettings(),
     };
 
@@ -133,6 +140,7 @@ export default defineComponent({
         const room = new Room();
         room.name = form.name;
         room.password = form.password;
+        room.gameType = form.gameType;
         const roomSettings = new RoomSettings();
         roomSettings.gameDuration = form.gameDuration;
         roomSettings.stepDuration = form.stepDuration;
