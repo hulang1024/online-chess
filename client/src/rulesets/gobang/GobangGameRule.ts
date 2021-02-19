@@ -160,7 +160,7 @@ export default class GobangGameRule extends GameRule {
       const count = 1
         + scanSameCount(dirTable[i], poss)
         + scanSameCount(dirTable[i + 1], poss);
-      if (count == 5) {
+      if (count >= 5) {
         fiveInRowPoss.push(origin);
         poss.forEach((pos) => {
           fiveInRowPoss.push(pos);
