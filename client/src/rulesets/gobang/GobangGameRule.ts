@@ -21,11 +21,6 @@ export default class GobangGameRule extends GameRule {
     return this.chessboard;
   }
 
-  public isHostAtChessboardTop(chessHost: ChessHost) {
-    // 视角棋方总是在底部
-    return chessHost != this.viewChessHost;
-  }
-
   public setPlayfield(playfield: Playfield) {
     this.chessboard = playfield.chessboard as GobangDrawableChessboard;
   }
