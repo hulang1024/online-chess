@@ -3,62 +3,77 @@
     flat
     class="game-user-panel"
   >
-    <div
-      class="row items-center"
-      :class="{reverse}"
-    >
-      <circle-timer
-        ref="circleStepTimer"
-        size="68px"
-        class="user-avatar-frame"
-        :blink="blinkState"
-        :color="color"
-      >
-        <user-avatar
-          :user="user"
-          :online="online"
-          class=""
-          :class="[{afk: user && (status == UserStatus.AFK), 'shadow-1': !!user}]"
-          size="62px"
-          @click="onUserAvatarClick"
+    <div class="row items-center justify-between">
+      <div :class="['row', {reverse}]">
+        <circle-timer
+          ref="circleStepTimer"
+          size="68px"
+          class="user-avatar-frame"
+          :blink="blinkState"
+          :color="config.timerColor"
         >
-          <ready-status-display
-            v-if="$q.screen.xs"
-            v-show="user && showReadyStatus"
-            :is-ready="ready"
-            class="info-overlay absolute-center"
-          />
-        </user-avatar>
-        <div
-          v-show="user && (status == UserStatus.AFK || !online)"
-          class="absolute-bottom-right user-status"
-        >
-          <span>({{ online ? '离开' : '离线' }})</span>
-        </div>
-      </circle-timer>
-      <div
-        v-show="user"
-        class="user-info"
-        :class="`q-m${reverse ? 'r' : 'l'}-xs`"
-        :style="{textAlign: reverse ? 'right' : 'left'}"
-      >
-        <div class="nickname ellipsis">
-          {{ user && user.nickname }}
-        </div>
-        <div class="time-panel">
-          <div class="item">
-            <span class="label">步时</span>
-            <timer ref="stepTimer" class="step-timer" />
+          <user-avatar
+            :user="user"
+            :online="online"
+            class=""
+            :class="[{afk: user && (status == UserStatus.AFK), 'shadow-1': !!user}]"
+            size="62px"
+            @click="onUserAvatarClick"
+          >
+            <ready-status-display
+              v-if="$q.screen.xs"
+              v-show="user && showReadyStatus"
+              :is-ready="ready"
+              class="info-overlay absolute-center"
+            />
+          </user-avatar>
+          <div
+            v-show="user && (status == UserStatus.AFK || !online)"
+            class="absolute-bottom-right user-status"
+          >
+            <span>({{ online ? '离开' : '离线' }})</span>
           </div>
-          <div class="item">
-            <span class="label">局时</span>
-            <timer ref="gameTimer" class="game-timer" />
+        </circle-timer>
+        <div
+          v-show="user"
+          class="user-info"
+          :class="`q-m${reverse ? 'r' : 'l'}-xs`"
+          :style="{textAlign: reverse ? 'right' : 'left'}"
+        >
+          <div
+            class="row items-center"
+            :class="[reverse && 'reverse']"
+          >
+            <div :class="['nickname', 'ellipsis', $q.screen.xs && 'xs-screen']">
+              {{ user && user.nickname }}
+            </div>
+            <div
+              v-if="$q.screen.xs && config.chessColor"
+              class="chess"
+              :class="`q-m${reverse ? 'r' : 'l'}-sm`"
+              :style="{backgroundColor: config.chessColor}"
+            />
+          </div>
+          <div class="time-panel">
+            <div class="item">
+              <span class="label">步时</span>
+              <timer ref="stepTimer" class="step-timer" />
+            </div>
+            <div class="item">
+              <span class="label">局时</span>
+              <timer ref="gameTimer" class="game-timer" />
+            </div>
           </div>
         </div>
       </div>
+      <div
+        v-if="!$q.screen.xs && config.chessColor"
+        class="chess q-mr-xs"
+        :style="{backgroundColor: config.chessColor}"
+      />
       <ready-status-display
         v-if="!$q.screen.xs"
-        v-show="user && showReadyStatus"
+        :class="(user && showReadyStatus) && 'show'"
         :is-ready="ready"
       />
     </div>
@@ -100,20 +115,49 @@ export default defineComponent({
   setup(props) {
     const context = getCurrentInstance() as Vue;
 
-    const color = computed(() => {
-      const GAME_TYPE_COLOR_MAP = {
+    const config = computed(() => {
+      const GAME_TYPE_CONFIG_MAP = {
         [GameType.chinesechess]: {
-          [ChessHost.FIRST]: 'red',
-          [ChessHost.SECOND]: context.$q.dark.isActive ? 'grey-2' : 'black',
+          chessColor: {
+            [ChessHost.FIRST]: 'red',
+            [ChessHost.SECOND]: 'black',
+          },
+          chessName: {
+            [ChessHost.FIRST]: '红',
+            [ChessHost.SECOND]: '黑',
+          },
+          timerColor: null,
+          showChess: false,
         },
         [GameType.gobang]: {
-          [ChessHost.FIRST]: context.$q.dark.isActive ? 'grey-8' : 'black',
-          [ChessHost.SECOND]: context.$q.dark.isActive ? 'white' : 'grey-4',
+          chessColor: {
+            [ChessHost.FIRST]: 'black',
+            [ChessHost.SECOND]: 'white',
+          },
+          chessName: {
+            [ChessHost.FIRST]: '黑',
+            [ChessHost.SECOND]: '白',
+          },
+          timerColor: {
+            [ChessHost.FIRST]: context.$q.dark.isActive ? 'black' : 'light-green-4',
+            [ChessHost.SECOND]: context.$q.dark.isActive ? 'white' : 'light-green-4',
+          },
+          showChess: true,
         },
       };
-      return ((props.user && props.active)
-        ? GAME_TYPE_COLOR_MAP[props.gameType as GameType][props.chess as ChessHost]
-        : 'transparent');
+      const cfg = GAME_TYPE_CONFIG_MAP[props.gameType as GameType];
+      const chessColor = cfg.chessColor[props.chess as ChessHost];
+      const timerColor = cfg.timerColor
+        ? cfg.timerColor[props.chess as ChessHost]
+        : chessColor;
+      return {
+        timerColor: ((props.user && props.active)
+          ? timerColor
+          : 'transparent'),
+        chessName: props.user && cfg.chessName[props.chess as ChessHost],
+        showChess: cfg.showChess,
+        chessColor: (props.user && cfg.showChess) ? chessColor : null,
+      };
     });
 
     const onUserAvatarClick = () => {
@@ -135,7 +179,7 @@ export default defineComponent({
 
     return {
       UserStatus,
-      color,
+      config,
 
       blink,
       blinkState,
@@ -154,6 +198,9 @@ export default defineComponent({
   width: 124px
   font-size: 1.2em
   font-weight: 400
+  &.xs-screen
+    width: unset
+    max-width: 124px
 
 .chess-host
   &::before
@@ -193,4 +240,18 @@ export default defineComponent({
     .time
       font-size: 1em
       font-weight: 500
+
+.chess
+  display: inline-block
+  width: 16px
+  height: 16px
+  border-radius: 100%
+  box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.1)
+
+.ready-status
+  width: 62px
+  text-align: left
+  visibility: hidden
+  &.show
+    visibility: visible
 </style>
