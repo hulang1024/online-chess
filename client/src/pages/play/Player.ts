@@ -172,7 +172,7 @@ export default class Player extends GameplayClient {
       this.onExit();
     });
 
-    signals.quit.add(() => {
+    signals.reload.add(() => {
       this.exitScreen('/reload');
     }, this);
   }
@@ -320,8 +320,8 @@ export default class Player extends GameplayClient {
     this.spectatorClient.exit();
     this.rulesetClient.exit();
     this.channelManager.leaveChannel(this.room.channelId);
-    signals.quit.removeAll();
-    signals.exit.dispatch();
+    signals.reload.removeAll();
+    signals.exited.dispatch();
   }
 
   protected resultsReady(msg: GameplayMsgs.ResultsReadyMsg) {

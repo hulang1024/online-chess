@@ -174,25 +174,28 @@ export default defineComponent({
       const onAction = (isAccept: boolean) => {
         const req = new ReplyInvitationRequest(invitation.id, isAccept);
         req.success = (res) => {
-          const toPage = () => {
+          const toPage = async () => {
             if (res.playRoom) {
               // eslint-disable-next-line
               pushPlayPage(res.playRoom);
             } else if (res.spectateResponse) {
+              $q.loading.show();
               // eslint-disable-next-line
-              $router.push({
+              await $router.push({
                 name: 'spectate',
                 replace: true,
                 query: { id: res.spectateResponse.room.id as unknown as string },
                 params: { spectateResponse: res.spectateResponse as unknown as string },
               });
+              $q.loading.hide();
             }
           };
 
           if (['play', 'spectate'].includes(ctx.$router.currentRoute.name as string)) {
-            playPageSignals.quit.dispatch();
-            playPageSignals.exit.addOnce(toPage);
+            playPageSignals.reload.dispatch();
+            playPageSignals.exited.addOnce(toPage);
           } else {
+            // eslint-disable-next-line
             toPage();
           }
         };

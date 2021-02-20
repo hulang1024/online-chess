@@ -90,13 +90,13 @@ export default class SpectatorPlayer extends Player {
     this.exitScreen();
   }
 
-  protected exitScreen() {
+  protected exitScreen(name = '/') {
     const req = new SpectatorLeaveRequest(this.room);
     req.success = () => {
-      super.exitScreen();
+      super.exitScreen(name);
     };
     req.failure = () => {
-      super.exitScreen();
+      super.exitScreen(name);
     };
     this.api.perform(req);
   }

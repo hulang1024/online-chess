@@ -1,5 +1,5 @@
 import Signal from "src/utils/signals/Signal";
 
-export const quit = new Signal();
+export const reload = new Signal();
 
-export const exit = new Signal();
+export const exited = new Signal();
