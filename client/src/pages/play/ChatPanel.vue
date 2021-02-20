@@ -69,7 +69,7 @@ export default defineComponent({
       if (!text) {
         return;
       }
-      if (text.length > 100) {
+      if (text.length > 200) {
         notify({ type: 'warning', message: '消息过长' });
         return;
       }
