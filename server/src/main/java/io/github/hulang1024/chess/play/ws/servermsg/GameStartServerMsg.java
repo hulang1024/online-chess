@@ -10,12 +10,12 @@ import lombok.Data;
  */
 @Data
 public class GameStartServerMsg extends ServerMessage {
-    private long redChessUid;
-    private long blackChessUid;
+    private long firstChessUid;
+    private long secondChessUid;
 
-    public GameStartServerMsg(User redChessUser, User blackChessUser) {
+    public GameStartServerMsg(User firstChessUser, User secondChessUser) {
       super("play.game_start");
-      this.redChessUid = redChessUser.getId();
-      this.blackChessUid = blackChessUser.getId();
+      this.firstChessUid = firstChessUser.getId();
+      this.secondChessUid = secondChessUser.getId();
     }
 }

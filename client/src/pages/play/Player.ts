@@ -333,17 +333,17 @@ export default class Player extends GameplayClient {
   }
 
   protected gameStart(msg: GameplayMsgs.GameStartedMsg) {
-    const redGameUser = this.getGameUserByUserId(msg.redChessUid) as GameUser;
-    const blackGameUser = this.getGameUserByUserId(msg.blackChessUid) as GameUser;
+    const firstGameUser = this.getGameUserByUserId(msg.firstChessUid) as GameUser;
+    const secondGameUser = this.getGameUserByUserId(msg.secondChessUid) as GameUser;
     this.game.activeChessHost.value = null;
-    redGameUser.chess.value = ChessHost.FIRST;
-    blackGameUser.chess.value = ChessHost.SECOND;
+    firstGameUser.chess.value = ChessHost.FIRST;
+    secondGameUser.chess.value = ChessHost.SECOND;
 
     this.gameState.value = GameState.PLAYING;
 
     const { gameSettings } = this.room.roomSettings;
 
-    [redGameUser, blackGameUser].forEach(({ gameTimer, stepTimer }) => {
+    [firstGameUser, secondGameUser].forEach(({ gameTimer, stepTimer }) => {
       gameTimer.setTotalSeconds(gameSettings.timer.gameDuration);
       stepTimer.setTotalSeconds(gameSettings.timer.stepDuration);
       gameTimer.ready();
