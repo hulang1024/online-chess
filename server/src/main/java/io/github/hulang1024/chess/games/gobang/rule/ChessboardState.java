@@ -4,7 +4,17 @@ import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.games.chess.ChessPos;
 
 public class ChessboardState {
-    private ChessHost[][] array = new ChessHost[15][15];
+    private int size;
+    private ChessHost[][] array;
+
+    public ChessboardState(int size) {
+        this.size = size;
+        this.array = new ChessHost[size][size];
+    }
+
+    public int getSize() {
+        return size;
+    }
 
     public ChessHost chessAt(ChessPos pos) {
         return chessAt(pos.row, pos.col);

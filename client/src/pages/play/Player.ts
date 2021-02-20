@@ -79,7 +79,9 @@ export default class Player extends GameplayClient {
     this.localUser.user.value = api.localUser;
     this.room = room || initialGameStates?.room as Room;
 
-    const ruleset = RulesetFactory.create(this.room.gameType) as Ruleset;
+    const { gameSettings } = this.room.roomSettings;
+    const ruleset = RulesetFactory.create(gameSettings.gameType) as Ruleset;
+    ruleset.gameSettings = gameSettings;
 
     this.game = ruleset.createGameRule();
 
@@ -190,10 +192,10 @@ export default class Player extends GameplayClient {
       gameUser.isRoomOwner.value = apiGameUser.roomOwner;
 
       if (!isReload) {
-        const { roomSettings } = this.room;
+        const { gameSettings } = this.room.roomSettings;
         const { gameTimer, stepTimer } = gameUser;
-        gameTimer.setTotalSeconds(roomSettings.gameDuration);
-        stepTimer.setTotalSeconds(roomSettings.stepDuration);
+        gameTimer.setTotalSeconds(gameSettings.timer.gameDuration);
+        stepTimer.setTotalSeconds(gameSettings.timer.stepDuration);
         if (states) {
           const timerState = ({
             1: states.firstTimer,
@@ -220,13 +222,14 @@ export default class Player extends GameplayClient {
   }
 
   private initTimers() {
+    const { gameSettings } = this.room.roomSettings;
     const playerView = this.context.$refs.playerView as Vue;
     const viewGameUserPanelRefs = (playerView.$refs.viewGameUserPanel as Vue).$refs;
     const otherGameUserPanelRefs = (playerView.$refs.otherGameUserPanel as Vue).$refs;
     this.localUser.gameTimer = viewGameUserPanelRefs.gameTimer as unknown as Timer;
     (this.localUser.gameTimer as unknown as Vue).$on('ended', () => {
       // 如果局时用完，步时计时器用作读秒计数器
-      this.localUser.stepTimer.setTotalSeconds(this.room.roomSettings.secondsCountdown);
+      this.localUser.stepTimer.setTotalSeconds(gameSettings.timer.secondsCountdown);
     });
     this.localUser.stepTimer = viewGameUserPanelRefs.stepTimer as unknown as Timer;
     (this.localUser.stepTimer as unknown as Vue).$on('ended', () => {
@@ -241,7 +244,7 @@ export default class Player extends GameplayClient {
 
     this.otherUser.gameTimer = otherGameUserPanelRefs.gameTimer as unknown as Timer;
     (this.otherUser.gameTimer as unknown as Vue).$on('ended', () => {
-      this.otherUser.stepTimer.setTotalSeconds(this.room.roomSettings.secondsCountdown);
+      this.otherUser.stepTimer.setTotalSeconds(gameSettings.timer.secondsCountdown);
     });
     this.otherUser.stepTimer = otherGameUserPanelRefs.stepTimer as unknown as Timer;
     this.otherUser.stepTimer.setSoundEnabled(this.isWatchingMode);
@@ -333,11 +336,11 @@ export default class Player extends GameplayClient {
 
     this.gameState.value = GameState.PLAYING;
 
-    const { roomSettings: { gameDuration, stepDuration } } = this.room;
+    const { gameSettings } = this.room.roomSettings;
 
     [redGameUser, blackGameUser].forEach(({ gameTimer, stepTimer }) => {
-      gameTimer.setTotalSeconds(gameDuration);
-      stepTimer.setTotalSeconds(stepDuration);
+      gameTimer.setTotalSeconds(gameSettings.timer.gameDuration);
+      stepTimer.setTotalSeconds(gameSettings.timer.stepDuration);
       gameTimer.ready();
       stepTimer.ready();
     });
@@ -477,12 +480,12 @@ export default class Player extends GameplayClient {
     this.gameState.value = GameState.READY;
 
     const { gameTimer, stepTimer } = leftUser;
-    const { roomSettings: { gameDuration, stepDuration } } = this.room;
+    const { gameSettings } = this.room.roomSettings;
 
     gameTimer.stop();
     stepTimer.stop();
-    gameTimer.setTotalSeconds(gameDuration);
-    stepTimer.setTotalSeconds(stepDuration);
+    gameTimer.setTotalSeconds(gameSettings.timer.gameDuration);
+    stepTimer.setTotalSeconds(gameSettings.timer.stepDuration);
     stepTimer.ready();
     gameTimer.ready();
 

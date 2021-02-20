@@ -51,7 +51,7 @@ export default class ChineseChessDrawableChessboard
 
     const drawBackground = () => {
       const isDark = configManager.get(ConfigItem.theme) == 'dark';
-      this.el.style.background = isDark ? 'transparent' : '#eab76c';
+      this.el.style.background = isDark ? 'transparent' : '#ecbe79';
     };
     drawBackground();
     configManager.changed.add((key: string) => {
@@ -196,7 +196,7 @@ export default class ChineseChessDrawableChessboard
       context.moveTo(grid.x + x1, grid.y + y1);
       context.lineTo(grid.x + x2, grid.y + y2);
       context.closePath();
-      context.strokeStyle = color || '#946830';
+      context.strokeStyle = color || '#9a6d32';
       context.stroke();
     };
 

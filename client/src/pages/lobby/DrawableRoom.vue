@@ -85,8 +85,9 @@ export default defineComponent({
       },
     };
 
+    const { gameSettings } = room.roomSettings;
     const statusStates = computed(() => ROOM_STATUS_MAP[room.status]);
-    const gameTypeName = computed(() => GAME_TYPE_MAP[room.gameType].text);
+    const gameTypeName = computed(() => GAME_TYPE_MAP[gameSettings.gameType].text);
 
     watch(props, () => {
       Object.assign(room, props.room);

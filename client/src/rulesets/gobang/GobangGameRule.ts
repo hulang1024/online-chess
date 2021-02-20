@@ -8,14 +8,25 @@ import Playfield from '../../pages/play/Playfield';
 import GobangResponseGameStates, { ResponseGameStateChess } from './online/gameplay_server_messages';
 import GobangDrawableChessboard from './ui/GobangDrawableChessboard';
 import ChessPos from './ChessPos';
-import { gridNumber } from './Chessboard';
+import ChessboardState from './ChessboardState';
+import DrawableChessPool from './ui/DrawableChessPool';
+import GobangGameSettings from './GobangGameSettings';
 
 export default class GobangGameRule extends GameRule {
   public chessboard: GobangDrawableChessboard;
 
+  public chessboardState: ChessboardState;
+
   public viewChessHost: ChessHost;
 
+  private drawableChessPool: DrawableChessPool;
+
   private historyRecorder = new HistoryRecorder();
+
+  constructor(gameSettings: GobangGameSettings) {
+    super();
+    this.chessboardState = new ChessboardState(gameSettings.chessboardSize);
+  }
 
   public getChessboard() {
     return this.chessboard;
@@ -23,24 +34,26 @@ export default class GobangGameRule extends GameRule {
 
   public setPlayfield(playfield: Playfield) {
     this.chessboard = playfield.chessboard as GobangDrawableChessboard;
+    this.drawableChessPool = new DrawableChessPool(this.chessboard);
   }
 
   public start(viewChessHost: ChessHost, gameStates0?: ResponseGameStates) {
     this.viewChessHost = viewChessHost;
     this.canWithdraw.value = false;
     this.chessboard.clear();
+    this.chessboardState.clear();
+    this.drawableChessPool.add();
     const gameStates = gameStates0 as GobangResponseGameStates;
     if (gameStates && gameStates.chesses) {
       // 把棋子放到棋盘上
       gameStates.chesses.forEach((stateChess: ResponseGameStateChess) => {
+        const drawableChess = new DrawableChess();
+        drawableChess.chess = stateChess.type;
+        drawableChess.pos = new ChessPos(stateChess.row, stateChess.col);
         // eslint-disable-next-line
-        this.chessboard.addChess(
-          new DrawableChess(
-            stateChess.type,
-            new ChessPos(stateChess.row, stateChess.col),
-            this.chessboard.sizes,
-          ),
-        );
+        this.chessboard.addChess(drawableChess);
+        drawableChess.draw(this.chessboard.sizes);
+        this.chessboardState.setChess(drawableChess.pos, drawableChess.chess);
       });
     }
 
@@ -69,10 +82,13 @@ export default class GobangGameRule extends GameRule {
       }
     });
 
-    const drawableChess = new DrawableChess(action.chess, action.pos, this.chessboard.sizes);
+    const drawableChess = this.drawableChessPool.get() as DrawableChess;
+    drawableChess.chess = action.chess;
+    drawableChess.pos = action.pos;
     drawableChess.marked = true;
+    drawableChess.draw(this.chessboard.sizes);
 
-    this.chessboard.addChess(drawableChess);
+    this.chessboardState.setChess(action.pos, action.chess);
 
     this.historyRecorder.push(action);
 
@@ -83,6 +99,8 @@ export default class GobangGameRule extends GameRule {
     }
 
     this.turnActiveChessHost();
+
+    this.drawableChessPool.add();
 
     this.canWithdraw.value = true;
   }
@@ -110,6 +128,7 @@ export default class GobangGameRule extends GameRule {
     });
 
     this.chessboard.removeChess(this.chessboard.chessAt(lastAction.pos) as DrawableChess);
+    this.chessboardState.setChess(lastAction.pos, null);
 
     // 画上手的棋子走位标记
     if (!this.historyRecorder.isEmpty()) {
@@ -131,9 +150,9 @@ export default class GobangGameRule extends GameRule {
       for (let stop = false; !stop;) {
         cur = new ChessPos(cur.row + dx, cur.col + dy);
         if (true
-          && (cur.row >= 0 && cur.row < gridNumber)
-          && (cur.col >= 0 && cur.col < gridNumber)
-          && (this.chessboard.chessboardState.chessAt(cur) == checkChess)) {
+          && (cur.row >= 0 && cur.row < this.chessboardState.size)
+          && (cur.col >= 0 && cur.col < this.chessboardState.size)
+          && (this.chessboardState.chessAt(cur) == checkChess)) {
           count++;
           poss.push(cur);
         } else {
@@ -181,6 +200,6 @@ export default class GobangGameRule extends GameRule {
     toggleHighlight(true);
     setTimeout(() => {
       toggleHighlight(false);
-    }, 5000);
+    }, 5 * 1000 * 0.8);
   }
 }

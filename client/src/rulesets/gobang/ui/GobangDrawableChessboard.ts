@@ -1,22 +1,22 @@
 import DrawableChessboard from "src/rulesets/ui/DrawableChessboard";
 import DrawableChess from "./DrawableChess";
 import ChessPos from "../ChessPos";
-import Chessboard, { gridNumber } from "../Chessboard";
 import './chessboard.scss';
 
 export default class GobangDrawableChessboard extends DrawableChessboard {
-  public chessboardState = new Chessboard();
-
   public sizes: ChessboardSizes;
 
   public onChessPosClick: (pos: ChessPos) => void;
+
+  private gridNumber: number;
 
   private canvas: HTMLCanvasElement;
 
   private chesses: DrawableChess[] = [];
 
-  constructor(stage: {width: number, height: number}) {
+  constructor(stage: {width: number, height: number}, gridNumber: number) {
     super();
+    this.gridNumber = gridNumber;
 
     this._el = document.createElement('div');
     this.el.classList.add('chessboard', 'gobang-chessboard');
@@ -46,27 +46,23 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
   }
 
   public chessAt(pos: ChessPos): DrawableChess | null {
-    return this.chesses.find((drawableChess) => drawableChess.pos.equals(pos)) || null;
+    return this.chesses.find((drawableChess) => drawableChess.pos?.equals(pos)) || null;
   }
 
   public removeChess(drawableChess: DrawableChess) {
     this.chesses = this.chesses.filter((ch) => ch != drawableChess);
     this.el.removeChild(drawableChess.el);
-    this.chessboardState.setChess(drawableChess.pos, null);
   }
 
   public addChess(drawableChess: DrawableChess) {
     this.chesses.push(drawableChess);
     this.el.appendChild(drawableChess.el);
-    drawableChess.appear();
-    this.chessboardState.setChess(drawableChess.pos, drawableChess.chess);
   }
 
   public clear(): void {
     this.chesses.forEach((chess) => {
       this.removeChess(chess);
     });
-    this.chessboardState.clear();
   }
 
   public resizeAndDraw(stage: {width: number, height: number}) {
@@ -75,9 +71,9 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
     // 棋盘canvas尺寸
     let canvasSize = size - (borderWidth * 2);
     // 格子尺寸
-    const cellSize = Math.round(canvasSize / gridNumber);
-    const diff = canvasSize - cellSize * gridNumber;
-    canvasSize = cellSize * gridNumber;
+    const cellSize = Math.round(canvasSize / this.gridNumber);
+    const diff = canvasSize - cellSize * this.gridNumber;
+    canvasSize = cellSize * this.gridNumber;
     // 棋盘内边距
     const padding = cellSize / 2 + Math.round(diff / 2);
 
@@ -94,7 +90,7 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
     this.draw();
 
     this.chesses.forEach((chess) => {
-      chess.resizeAndDraw(this.sizes);
+      chess.draw(this.sizes);
     });
   }
 
@@ -127,7 +123,7 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
 
     // 画网格
     context.lineWidth = 1;
-    for (let i = 1; i <= gridNumber; i++) {
+    for (let i = 1; i <= this.gridNumber; i++) {
       // 画横线
       const y = i * cellSize;
       context.moveTo(0, y);
@@ -144,9 +140,9 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
     // 画圆点
     context.fillStyle = "#ecaa5b";
     [
-      [3, 3], [11, 3],
-      [(gridNumber - 1) / 2, (gridNumber - 1) / 2],
-      [3, 11], [11, 11],
+      [3, 3], [this.gridNumber - 3, 3],
+      [(this.gridNumber - 1) / 2, (this.gridNumber - 1) / 2],
+      [3, this.gridNumber - 3], [this.gridNumber - 3, this.gridNumber - 3],
     ].forEach(([row, col]) => {
       context.beginPath();
       context.arc(

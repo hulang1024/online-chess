@@ -51,7 +51,7 @@ export default class RoomManager {
       this.rooms.value = this.rooms.value.filter((room) => {
         let ret = true;
         if (this.lastSearchParams?.gameType) {
-          ret = ret && this.lastSearchParams.gameType == room.gameType;
+          ret = ret && this.lastSearchParams.gameType == room.roomSettings.gameSettings.gameType;
         }
         if (this.lastSearchParams?.status) {
           ret = ret && this.lastSearchParams.status == room.status;
@@ -75,19 +75,12 @@ export default class RoomManager {
       }
       this.rooms.value = this.rooms.value.filter((room: Room) => room.id != msg.roomId);
     });
-
-    socketService.disconnect.add(this.onDisconnect, this);
   }
 
   public removeListeners() {
     ['lobby.room_create', 'lobby.room_update', 'lobby.room_remove'].forEach((event) => {
       socketService.off(event);
     });
-    socketService.disconnect.remove(this.onDisconnect, this);
     this.rooms.value = [];
-  }
-
-  private onDisconnect() {
-    this.roomsLoading.value = true;
   }
 }

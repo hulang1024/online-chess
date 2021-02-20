@@ -336,12 +336,6 @@ export default class ChannelManager {
       this.wordsEnableSignal.dispatch(msg.enabled);
     });
 
-    this.socketService.disconnect.add(() => {
-      this.joinedChannels.value.forEach((ch) => {
-        ch.loading.value = true;
-      });
-    });
-
     this.socketService.reconnected.add(() => {
       if (!this.api.isLoggedIn) {
         return;

@@ -81,11 +81,12 @@ import * as GameplayMsgs from 'src/online/play/gameplay_server_messages';
 import {
   api, audioManager, channelManager, socketService,
 } from 'src/boot/main';
-import { RoomSettings } from 'src/online/room/RoomSettings';
 import { InvitationReplyServerMsg, InvitationServerMsg } from 'src/online/invitation';
 import ResponseGameStates from 'src/rulesets/game_states_response';
 import * as playPageSignals from 'src/pages/play/signals';
 import { GameType } from 'src/rulesets/GameType';
+import GameSettings from 'src/rulesets/GameSettings';
+import RoomSettings from 'src/online/room/RoomSettings';
 import CreateRoomDialog from './CreateRoomDialog.vue';
 import RoomsPanel from './RoomsPanel.vue';
 import { userActivityClient } from '../../boot/main';
@@ -283,8 +284,10 @@ export default defineComponent({
       req.failure = () => {
         const room = new Room();
         room.name = '';
-        room.gameType = Math.random() > 0.5 ? GameType.chinesechess : GameType.gobang;
+        const gameSettings = new GameSettings();
+        gameSettings.gameType = Math.random() > 0.5 ? GameType.chinesechess : GameType.gobang;
         room.roomSettings = new RoomSettings();
+        room.roomSettings.gameSettings = gameSettings;
         const createReq = new CreateRoomRequest(room);
         createReq.success = async (createdRoom) => {
           await pushPlayPage(createdRoom);

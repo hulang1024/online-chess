@@ -1,14 +1,12 @@
 import GameState from "../play/GameState";
 import User from "../../user/User";
-import { RoomSettings } from "./RoomSettings";
+import RoomSettings from "./RoomSettings";
 import APIGameUser from "../play/APIGameUser";
 
 export default class Room {
   id: number;
 
   name: string;
-
-  gameType: number;
 
   roomSettings: RoomSettings;
 

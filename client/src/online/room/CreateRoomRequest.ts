@@ -1,3 +1,4 @@
+import GobangGameSettings from "src/rulesets/gobang/GobangGameSettings";
 import { APIRequest, HttpMethod } from "../api/api_request";
 import Room from "./Room";
 
@@ -7,11 +8,16 @@ export default class CreateRoomRequest extends APIRequest<Room> {
     this.method = HttpMethod.POST;
     this.path = 'rooms';
 
+    // todo: json
     this.addParam('name', room.name);
-    this.addParam('gameType', room.gameType);
-    this.addParam('gameDuration', room.roomSettings.gameDuration);
-    this.addParam('stepDuration', room.roomSettings.stepDuration);
-    this.addParam('secondsCountdown', room.roomSettings.secondsCountdown);
+    const { roomSettings: { gameSettings } } = room;
+    this.addParam('gameType', gameSettings.gameType);
+    this.addParam('gameDuration', gameSettings.timer.gameDuration);
+    this.addParam('stepDuration', gameSettings.timer.stepDuration);
+    this.addParam('secondsCountdown', gameSettings.timer.secondsCountdown);
+    if (gameSettings instanceof GobangGameSettings) {
+      this.addParam('chessboardSize', gameSettings.chessboardSize);
+    }
     this.addParam('password', room.password);
   }
 }

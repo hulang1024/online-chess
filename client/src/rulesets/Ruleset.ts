@@ -5,8 +5,11 @@ import UserPlayInput from "./UserPlayInput";
 import GameRule from "./GameRule";
 import RulesetClient from "./RulesetClient";
 import DrawableChessboard from "./ui/DrawableChessboard";
+import GameSettings from "./GameSettings";
 
 export default abstract class Ruleset {
+  public gameSettings: GameSettings;
+
   public abstract createUserPlayInput(
     game: GameRule,
     gameState: Bindable<GameState>,

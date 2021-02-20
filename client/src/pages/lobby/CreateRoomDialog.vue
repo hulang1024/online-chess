@@ -57,7 +57,16 @@
           lazy-rules
           :rules="[ val => val || '' ]"
         />
-
+        <q-input
+          v-if="gameType == 2"
+          v-model.number="chessboardSize"
+          type="number"
+          standout
+          dense
+          label="棋盘大小"
+          lazy-rules
+          :rules="[ val => (val && val >= 15 && val % 2 != 0) || '最小15*15且奇数' ]"
+        />
         <q-toggle
           v-model="requirePassword"
           label="需要密码"
@@ -97,7 +106,12 @@ import {
   defineComponent, getCurrentInstance, reactive, ref, toRefs,
 } from '@vue/composition-api';
 import Room from 'src/online/room/Room';
-import { RoomSettings } from 'src/online/room/RoomSettings';
+import RoomSettings from 'src/online/room/RoomSettings';
+import GameSettings from 'src/rulesets/GameSettings';
+import TimerSettings from 'src/rulesets/TimerSettings';
+import { GameType } from 'src/rulesets/GameType';
+import GobangGameSettings from 'src/rulesets/gobang/GobangGameSettings';
+import ChineseChessGameSettings from 'src/rulesets/chinesechess/ChineseChessGameSettings';
 
 export default defineComponent({
   setup() {
@@ -108,8 +122,11 @@ export default defineComponent({
       name: '',
       requirePassword: false,
       password: '',
+      ...new GameSettings(),
+      ...new TimerSettings(),
+      // for gobang
+      chessboardSize: 15,
       gameType: 1,
-      ...new RoomSettings(),
     };
 
     const form = reactive({ ...INIT_VALUES });
@@ -140,11 +157,31 @@ export default defineComponent({
         const room = new Room();
         room.name = form.name;
         room.password = form.password;
-        room.gameType = form.gameType;
+
         const roomSettings = new RoomSettings();
-        roomSettings.gameDuration = form.gameDuration;
-        roomSettings.stepDuration = form.stepDuration;
-        roomSettings.secondsCountdown = form.secondsCountdown;
+
+        let gameSettings: GameSettings;
+        switch (form.gameType) {
+          case GameType.chinesechess:
+            gameSettings = new ChineseChessGameSettings();
+            break;
+          case GameType.gobang:
+            gameSettings = new GobangGameSettings(form.chessboardSize);
+            break;
+          default:
+            return;
+        }
+        gameSettings.gameType = form.gameType;
+
+        const timer = new TimerSettings();
+        timer.gameDuration = form.gameDuration;
+        timer.stepDuration = form.stepDuration;
+        timer.secondsCountdown = form.secondsCountdown;
+
+        gameSettings.timer = timer;
+
+        roomSettings.gameSettings = gameSettings;
+
         room.roomSettings = roomSettings;
         action(room, (success: boolean) => {
           createLoading.value = false;

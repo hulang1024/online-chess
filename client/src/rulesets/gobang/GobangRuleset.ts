@@ -7,6 +7,7 @@ import GobangDrawableChessboard from "./ui/GobangDrawableChessboard";
 import GobangGameRule from "./GobangGameRule";
 import GobangUserPlayInput from "./GobangUserPlayInput";
 import GobangClient from "./GobangClient";
+import GobangGameSettings from "./GobangGameSettings";
 
 export default class GobangRuleset extends Ruleset {
   // eslint-disable-next-line
@@ -24,7 +25,7 @@ export default class GobangRuleset extends Ruleset {
 
   // eslint-disable-next-line
   public createGameRule() {
-    return new GobangGameRule();
+    return new GobangGameRule(this.gameSettings as GobangGameSettings);
   }
 
   // eslint-disable-next-line
@@ -34,6 +35,7 @@ export default class GobangRuleset extends Ruleset {
 
   // eslint-disable-next-line
   public createChessboard(stage: {width: number, height: number}, screen: any) {
-    return new GobangDrawableChessboard(stage);
+    return new GobangDrawableChessboard(stage,
+      (this.gameSettings as GobangGameSettings).chessboardSize);
   }
 }

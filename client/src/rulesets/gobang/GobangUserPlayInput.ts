@@ -45,7 +45,7 @@ export default class GobangUserPlayInput extends UserPlayInput {
       return;
     }
 
-    if (!this.chessboard.chessboardState.isEmpty(pos)) {
+    if (!(this.gameRule as GobangGameRule).chessboardState.isEmpty(pos)) {
       return;
     }
 

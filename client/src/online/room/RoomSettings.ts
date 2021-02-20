@@ -1,7 +1,5 @@
-export class RoomSettings {
-  gameDuration = 10;
+import GameSettings from "../../rulesets/GameSettings";
 
-  stepDuration = 60;
-
-  secondsCountdown = 10;
+export default class RoomSettings {
+  gameSettings: GameSettings;
 }

@@ -12,36 +12,30 @@ export default class DrawableChess {
 
   public pos: ChessPos;
 
-  constructor(chess: ChessHost, pos: ChessPos, sizes: ChessboardSizes) {
-    this.chess = chess;
-    this.pos = pos;
-
+  constructor() {
     const el = document.createElement('div');
+    el.classList.add('chess');
     // 根据棋子类型设置类名
-    el.className = `chess ${chess == ChessHost.FIRST ? 'black' : 'white'}`;
     this.el = el;
-
-    this.resizeAndDraw(sizes);
   }
 
-  public resizeAndDraw(sizes: ChessboardSizes) {
-    const { el, pos } = this;
+  public draw(sizes: ChessboardSizes) {
+    const { el, chess } = this;
+
+    el.classList.add(chess == ChessHost.FIRST ? 'black' : 'white');
+
     const { cellSize, padding } = sizes;
-    const gap = 6; // 棋子之间的间距
+    const gap = 3; // 棋子之间的间距
     const size = cellSize - gap;
     const chessRadius = Math.round(size / 2);
     // 计算宽高
     el.style.width = `${size}px`;
     el.style.height = `${size}px`;
     // 计算位置
-    el.style.top = `${pos.row * cellSize + padding - chessRadius}px`;
-    el.style.left = `${pos.col * cellSize + padding - chessRadius}px`;
-  }
+    el.style.top = `${this.pos.row * cellSize + padding - chessRadius}px`;
+    el.style.left = `${this.pos.col * cellSize + padding - chessRadius}px`;
 
-  public appear() {
-    setTimeout(() => {
-      this.el.classList.add('appear');
-    }, 0);
+    this.el.classList.add('appear');
   }
 
   public get marked() {

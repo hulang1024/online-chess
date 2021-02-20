@@ -45,7 +45,7 @@ export default defineComponent({
 <style lang="sass" scoped>
 .q-card
   width: calc(100% - 1px)
-  background: rgba(0,0,0,0.3)
+  background: rgba(0,0,0,0.35)
   color: white
   text-align: center
   border-radius: 2px

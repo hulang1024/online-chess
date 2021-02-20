@@ -1,12 +1,13 @@
 import ChessHost from '../chess_host';
 import ChessPos from './ChessPos';
 
-export const gridNumber = 15;
+export default class ChessboardState {
+  public size: number;
 
-export default class Chessboard {
   private array: Array<Array<ChessHost | null>> = [];
 
-  constructor() {
+  constructor(size: number) {
+    this.size = size;
     this.clear();
   }
 
@@ -23,9 +24,9 @@ export default class Chessboard {
   }
 
   public clear() {
-    for (let row = 0; row < gridNumber; row++) {
-      this.array.push(new Array(gridNumber));
-      for (let col = 0; col < gridNumber; col++) {
+    for (let row = 0; row < this.size; row++) {
+      this.array.push(new Array(this.size));
+      for (let col = 0; col < this.size; col++) {
         this.array[row][col] = null;
       }
     }

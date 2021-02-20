@@ -5,7 +5,7 @@
         <game-user-panel
           ref="otherGameUserPanel"
           v-bind="otherUser"
-          :game-type="room.gameType"
+          :game-type="gameType"
           class="q-pt-sm q-ml-sm"
           :class="reverse
             ? 'fixed-bottom-right q-mr-sm q-mb-sm'
@@ -14,7 +14,7 @@
         <game-user-panel
           ref="viewGameUserPanel"
           v-bind="viewUser"
-          :game-type="room.gameType"
+          :game-type="gameType"
           :class="reverse
             ? 'absolute-top-left q-pt-sm q-ml-sm'
             : 'fixed-bottom-right q-mr-sm q-mb-sm'"
@@ -222,13 +222,13 @@
           <game-user-panel
             ref="otherGameUserPanel"
             v-bind="otherUser"
-            :game-type="room.gameType"
+            :game-type="gameType"
           />
           <q-separator class="q-my-sm" />
           <game-user-panel
             ref="viewGameUserPanel"
             v-bind="viewUser"
-            :game-type="room.gameType"
+            :game-type="gameType"
           />
         </q-card>
         <q-card
@@ -343,6 +343,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const context = getCurrentInstance() as Vue;
     const isXSScreen = context.$q.screen.xs;
+    const { gameType } = props.room.roomSettings.gameSettings;
 
     const onChatClick = () => {
       emit('chat')
@@ -365,6 +366,7 @@ export default defineComponent({
 
     return {
       isXSScreen,
+      gameType,
 
       onChatClick,
       onWithdrawClick,
@@ -387,7 +389,7 @@ export default defineComponent({
     text-align: center
     color: white
     font-weight: bold
-    background: rgba(0,0,0,0.3)
+    background: rgba(0,0,0,0.35)
     border-radius: 2px
 
 .controls
