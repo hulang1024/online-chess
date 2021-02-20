@@ -5,7 +5,11 @@ import ChessHost from "./chess_host";
 import ResponseGameStates from "./game_states_response";
 
 export default abstract class GameRule {
+  public ended = false;
+
   public onGameOver: (winChessHost: ChessHost) => void;
+
+  public onGameEnd: () => void;
 
   public canWithdraw = new BindableBool();
 
@@ -15,9 +19,17 @@ export default abstract class GameRule {
 
   public abstract setPlayfield(playfield: Playfield): void;
 
-  public abstract start(viewChessHost: ChessHost, gameStates?: ResponseGameStates): void;
+  // eslint-disable-next-line
+  public start(viewChessHost: ChessHost, gameStates?: ResponseGameStates) {
+    this.ended = false;
+  }
 
   public abstract withdraw(): void;
 
   public abstract reverseChessLayoutView(): void;
+
+  protected gameEnd() {
+    this.onGameEnd();
+    this.ended = true;
+  }
 }

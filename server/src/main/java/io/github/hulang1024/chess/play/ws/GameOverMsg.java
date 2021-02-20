@@ -14,4 +14,6 @@ public class GameOverMsg extends ClientMessage {
     private Long winUserId;
 
     private boolean isTimeout;
+
+    private boolean isNormal;
 }

@@ -125,9 +125,9 @@ public class GameplayMessageListener extends AbstractMessageListener {
             if (confirmResponseMsg.getReqType() == ConfirmRequestType.WHITE_FLAG.code()) {
                 User reqUser = room.getOtherUser(user).getUser();
                 channelManager.broadcast(room.getChannel(), new InfoMessage(reqUser.getNickname() + " 认输"));
-                gameOver(user.getId(), false, room);
+                gameOver(false, user.getId(), false, room);
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.DRAW.code()) {
-                gameOver(null, false, room);
+                gameOver(false, null, false, room);
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.WITHDRAW.code()) {
                 withdraw(room);
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.PAUSE_GAME.code()) {
@@ -254,7 +254,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
             return;
         }
 
-        gameOver(msg.getWinUserId(), msg.isTimeout(), room);
+        gameOver(msg.isNormal(), msg.getWinUserId(), msg.isTimeout(), room);
     }
 
     private void withdraw(Room room) {
@@ -262,7 +262,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
         roomManager.broadcast(room, new ChessWithdrawServerMsg());
     }
 
-    private void gameOver(Long winUserId, boolean isTimeout, Room room) {
+    private void gameOver(boolean isNormal, Long winUserId, boolean isTimeout, Room room) {
         room.setStatus(RoomStatus.BEGINNING);
         Game game = room.getGame();
         game.over();
@@ -283,7 +283,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
                 userStatsService.updateUser(gameUser.getUser(), GameResult.DRAW);
             });
         }
-        roomManager.broadcast(room, new GameOverServerMsg(winUserId, isTimeout));
+        roomManager.broadcast(room, new GameOverServerMsg(winUserId, isNormal, isTimeout));
         userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
         room.getGameUsers().forEach(gameUser -> {
             userActivityService.enter(gameUser.getUser(), UserActivity.IN_ROOM);

@@ -52,6 +52,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
   }
 
   public start(viewChessHost: ChessHost, gameStates0?: ResponseGameStates) {
+    super.start(viewChessHost, gameStates0);
     this.viewChessHost = viewChessHost;
     this.canWithdraw.value = false;
 
@@ -162,6 +163,9 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       // 判断胜负
       if (eatenChess != null && eatenChess.is(ChessK)) {
         this.onGameOver(chess.getHost());
+        setTimeout(() => {
+          this.gameEnd();
+        }, 500);
         return;
       }
       setTimeout(() => {

@@ -9,7 +9,7 @@ import * as GameplayMsgs from 'src/online/play/gameplay_server_messages';
 import ResponseGameStates, { ResponseGameStateTimer } from 'src/rulesets/game_states_response';
 import BindableBool from 'src/utils/bindables/BindableBool';
 import { onBeforeUnmount, onMounted } from '@vue/composition-api';
-import { api, channelManager } from 'src/boot/main';
+import { api, channelManager, userActivityClient } from 'src/boot/main';
 import UserStatus from 'src/user/UserStatus';
 import ChessHost from 'src/rulesets/chess_host';
 import Playfield from 'src/pages/play/Playfield';
@@ -123,7 +123,7 @@ export default class Player extends GameplayClient {
         }
         const winner = this.localUser.chessHost == winChessHost ? this.localUser : this.otherUser;
         setTimeout(() => {
-          this.gameplayServer.gameOver(winner.id as number);
+          this.gameplayServer.gameOver(winner.id as number, true);
         }, 0);
       };
 
@@ -140,6 +140,9 @@ export default class Player extends GameplayClient {
 
       this.initTimers();
       this.loadState(initialGameStates);
+      if (this.localUser.status.value == UserStatus.IN_LOBBY) {
+        userActivityClient.enter(3);
+      }
 
       this.localUser.chess.addAndRunOnce((chessHost: ChessHost) => {
         this.otherUser.chess.value = ChessHost.reverse(chessHost);
@@ -238,7 +241,7 @@ export default class Player extends GameplayClient {
       }
       this.userPlayInput.disable();
       // 如果步时/读秒时间用完
-      this.gameplayServer.gameOver(this.otherUser.id as number, true);
+      this.gameplayServer.gameOver(this.otherUser.id as number, false, true);
     });
     this.localUser.stepTimer.setSoundEnabled(true);
 
@@ -368,7 +371,7 @@ export default class Player extends GameplayClient {
     }
   }
 
-  protected resultsGameOver(msg: GameplayMsgs.GameOverMsg) {
+  protected resultsGameOver(gameOverMsg: GameplayMsgs.GameOverMsg) {
     this.gameState.value = GameState.END;
 
     if (this.localUser.isRoomOwner.value) {
@@ -377,33 +380,41 @@ export default class Player extends GameplayClient {
 
     this.game.activeChessHost.value = null;
 
-    const loser = this.localUser.id == msg.winUserId ? this.otherUser : this.localUser;
-    if (msg.timeout) {
+    const loser = this.localUser.id == gameOverMsg.winUserId ? this.otherUser : this.localUser;
+    if (gameOverMsg.timeout) {
       loser.stepTimer.setCurrent(0);
     }
-
-    const result = msg.winUserId ? (this.localUser.id == msg.winUserId ? 1 : 2) : 0;
 
     if (this.isWatchingMode) {
       return;
     }
 
-    this.exitActiveOverlays();
-    // eslint-disable-next-line
-    this.resultDialog.open({
-      result,
-      isTimeout: msg.timeout,
-      action: (option: string) => {
-        if (option == 'again') {
-          if (!this.localUser.isRoomOwner.value) {
-            this.gameplayServer.toggleReady(true);
+    const result = gameOverMsg.winUserId ? (this.localUser.id == gameOverMsg.winUserId ? 1 : 2) : 0;
+
+    const onGameEnd = () => {
+      this.exitActiveOverlays();
+      // eslint-disable-next-line
+      this.resultDialog.open({
+        result,
+        isTimeout: gameOverMsg.timeout,
+        action: (option: string) => {
+          if (option == 'again') {
+            if (!this.localUser.isRoomOwner.value) {
+              this.gameplayServer.toggleReady(true);
+            }
+            this.gameState.value = GameState.READY;
+          } else {
+            this.partRoom();
           }
-          this.gameState.value = GameState.READY;
-        } else {
-          this.partRoom();
-        }
-      },
-    });
+        },
+      });
+    };
+    if (this.game.ended || !gameOverMsg.normal) {
+      onGameEnd();
+      this.game.ended = true;
+    } else {
+      this.game.onGameEnd = onGameEnd;
+    }
   }
 
   protected resultsWithdraw() {
@@ -695,9 +706,9 @@ export default class Player extends GameplayClient {
     this.api.queue(req);
   }
 
-  protected exitScreen() {
+  protected exitScreen(name = '/') {
     // eslint-disable-next-line
-    this.context.$router.replace('/');
+    this.context.$router.replace(name);
   }
 
   protected exitActiveOverlays() {

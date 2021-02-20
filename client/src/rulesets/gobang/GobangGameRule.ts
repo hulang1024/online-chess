@@ -38,6 +38,7 @@ export default class GobangGameRule extends GameRule {
   }
 
   public start(viewChessHost: ChessHost, gameStates0?: ResponseGameStates) {
+    super.start(viewChessHost, gameStates0);
     this.viewChessHost = viewChessHost;
     this.canWithdraw.value = false;
     this.chessboard.clear();
@@ -94,8 +95,7 @@ export default class GobangGameRule extends GameRule {
 
     const fiveInRowPoss: ChessPos[] = [];
     if (this.checkWin(action.chess, action.pos, fiveInRowPoss)) {
-      this.highlightChesses(fiveInRowPoss);
-      this.onGameOver(action.chess);
+      this.gameOver(action.chess, fiveInRowPoss);
     }
 
     this.turnActiveChessHost();
@@ -190,16 +190,20 @@ export default class GobangGameRule extends GameRule {
     return false;
   }
 
-  private highlightChesses(poss: ChessPos[]) {
+  private gameOver(winChess: ChessHost, fiveInRowPoss: ChessPos[]) {
+    this.onGameOver(winChess);
+
     const toggleHighlight = (isAdd: boolean) => {
-      poss.forEach((pos) => {
+      fiveInRowPoss.forEach((pos) => {
         const chess = this.chessboard.chessAt(pos) as DrawableChess;
         chess.el.classList[isAdd ? 'add' : 'remove']('highlight');
       });
     };
+
     toggleHighlight(true);
     setTimeout(() => {
       toggleHighlight(false);
-    }, 5 * 1000 * 0.8);
+      this.gameEnd();
+    }, 3 * 1000 * 0.5);
   }
 }

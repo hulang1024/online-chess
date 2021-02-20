@@ -20,8 +20,8 @@ export default class GameplayServer {
     this.socketService.send('play.resume_game');
   }
 
-  public gameOver(winUserId: number, timeout?: boolean) {
-    this.socketService.send('play.game_over', { winUserId, timeout });
+  public gameOver(winUserId: number, normal: boolean, timeout?: boolean) {
+    this.socketService.send('play.game_over', { normal, timeout, winUserId });
   }
 
   public gameContinue(isOk: boolean) {

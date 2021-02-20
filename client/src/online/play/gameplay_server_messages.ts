@@ -13,6 +13,7 @@ export interface GameStartedMsg extends ServerMsg {
 
 export interface GameOverMsg extends ServerMsg {
   winUserId: number;
+  normal: boolean;
   timeout: boolean;
 }
 
