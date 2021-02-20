@@ -1,10 +1,10 @@
 package io.github.hulang1024.chess.games.chinesechess;
 
-import io.github.hulang1024.chess.games.chinesechess.rule.Chess;
-import io.github.hulang1024.chess.games.chess.ChessHost;
-import io.github.hulang1024.chess.games.chinesechess.rule.ChessboardState;
 import io.github.hulang1024.chess.games.Game;
 import io.github.hulang1024.chess.games.GameState;
+import io.github.hulang1024.chess.games.chess.ChessHost;
+import io.github.hulang1024.chess.games.chinesechess.rule.Chess;
+import io.github.hulang1024.chess.games.chinesechess.rule.ChessboardState;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -17,6 +17,10 @@ public class ChineseChessGame extends Game {
 
     @Getter
     private ChessboardState chessboardState = new ChessboardState();
+
+    public ChineseChessGame(ChineseChessGameSettings gameSettings) {
+        super(gameSettings);
+    }
 
     public void moveChess(ChessAction action) {
         action.setChessType(chessboardState.chessAt(action.getFromPos(), action.getChessHost()).type);

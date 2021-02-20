@@ -1,9 +1,9 @@
 package io.github.hulang1024.chess.games.gobang;
 
-import io.github.hulang1024.chess.games.chess.ChessHost;
-import io.github.hulang1024.chess.games.gobang.rule.ChessboardState;
 import io.github.hulang1024.chess.games.Game;
 import io.github.hulang1024.chess.games.GameState;
+import io.github.hulang1024.chess.games.chess.ChessHost;
+import io.github.hulang1024.chess.games.gobang.rule.ChessboardState;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -15,7 +15,15 @@ public class GobangGame extends Game {
     private Stack<ChessAction> actionStack = new Stack<>();
 
     @Getter
-    private ChessboardState chessboardState = new ChessboardState();
+    private ChessboardState chessboardState;
+
+    public GobangGame(GobangGameSettings gameSettings) {
+        super(gameSettings);
+        if (gameSettings == null) {
+            gameSettings = new GobangGameSettings();
+        }
+        chessboardState = new ChessboardState(gameSettings.getChessboardSize());
+    }
 
     public void putChess(ChessAction action) {
         actionStack.push(action);
@@ -57,8 +65,8 @@ public class GobangGame extends Game {
 
     private List<GobangGameplayStatesResponse.Chess> toStateChesses() {
         List<GobangGameplayStatesResponse.Chess> chesses = new ArrayList<>();
-        for (int r = 0; r < 10; r++) {
-            for (int c = 0; c < 9; c++) {
+        for (int r = 0; r < chessboardState.getSize(); r++) {
+            for (int c = 0; c < chessboardState.getSize(); c++) {
                 ChessHost chess = chessboardState.chessAt(r, c);
                 if (chess != null) {
                     GobangGameplayStatesResponse.Chess sChess = new GobangGameplayStatesResponse.Chess();
