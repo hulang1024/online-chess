@@ -82,7 +82,9 @@ public class Room {
         joinedUser.setReady(user.equals(owner));
         joinedUser.setRoomOwner(user.equals(owner));
 
-        joinedUser.setChess(getUserCount() == 0 ? ChessHost.FIRST : ChessHost.SECOND);
+        joinedUser.setChess(getUserCount() == 0
+            ? ChessHost.FIRST
+            : gameUsers.get(0).getChess().reverse());
         gameUsers.add(joinedUser);
 
         channelManager.joinChannel(channel, user);
