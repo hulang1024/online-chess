@@ -86,6 +86,7 @@ import ResponseGameStates from 'src/rulesets/game_states_response';
 import * as playPageSignals from 'src/pages/play/signals';
 import { GameType } from 'src/rulesets/GameType';
 import GameSettings from 'src/rulesets/GameSettings';
+import TimerSettings from 'src/rulesets/TimerSettings';
 import RoomSettings from 'src/online/room/RoomSettings';
 import CreateRoomDialog from './CreateRoomDialog.vue';
 import RoomsPanel from './RoomsPanel.vue';
@@ -190,9 +191,7 @@ export default defineComponent({
 
           if (['play', 'spectate'].includes(ctx.$router.currentRoute.name as string)) {
             playPageSignals.quit.dispatch();
-            playPageSignals.exit.addOnce(() => {
-              setTimeout(toPage, 300);
-            });
+            playPageSignals.exit.addOnce(toPage);
           } else {
             toPage();
           }
@@ -286,6 +285,7 @@ export default defineComponent({
         room.name = '';
         const gameSettings = new GameSettings();
         gameSettings.gameType = Math.random() > 0.5 ? GameType.chinesechess : GameType.gobang;
+        gameSettings.timer = new TimerSettings();
         room.roomSettings = new RoomSettings();
         room.roomSettings.gameSettings = gameSettings;
         const createReq = new CreateRoomRequest(room);

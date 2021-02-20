@@ -9,6 +9,13 @@ const routes: RouteConfig[] = [
     ],
   },
   {
+    path: '/reload',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', name: 'reload', component: () => import('pages/Reload.vue') },
+    ],
+  },
+  {
     path: '/play',
     component: () => import('layouts/MainLayout.vue'),
     children: [

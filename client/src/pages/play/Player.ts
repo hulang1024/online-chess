@@ -172,7 +172,9 @@ export default class Player extends GameplayClient {
       this.onExit();
     });
 
-    signals.quit.add(this.exitScreen, this);
+    signals.quit.add(() => {
+      this.exitScreen('/reload');
+    }, this);
   }
 
   private loadState(states?: ResponseGameStates | undefined, isReload = false) {
