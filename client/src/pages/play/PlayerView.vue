@@ -50,8 +50,10 @@
           style="padding-left: 12px; padding-bottom: 12px"
         >
           <q-btn
-            color="orange"
-            label="菜单"
+            icon="menu"
+            round
+            color="white"
+            text-color="primary"
           >
             <q-menu
               transition-show="jump-up"
@@ -123,10 +125,12 @@
             </q-menu>
           </q-btn>
           <q-btn
-            label="聊天"
-            color="orange"
+            icon="chat"
+            color="white"
+            text-color="primary"
+            round
             @click.stop="onChatClick"
-            class="q-ml-md"
+            class="q-ml-lg"
           >
             <q-badge
               v-show="unreadMessageCount > 0"

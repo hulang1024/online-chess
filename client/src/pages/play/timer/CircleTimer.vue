@@ -5,7 +5,7 @@
     :max="max"
     :value="current"
     track-color="transparent"
-    :thickness="0.1"
+    :thickness="0.2"
     reverse
     v-bind="$attrs"
     class="circle-timer"

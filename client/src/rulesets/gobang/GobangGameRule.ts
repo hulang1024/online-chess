@@ -193,17 +193,13 @@ export default class GobangGameRule extends GameRule {
   private gameOver(winChess: ChessHost, fiveInRowPoss: ChessPos[]) {
     this.onGameOver(winChess);
 
-    const toggleHighlight = (isAdd: boolean) => {
-      fiveInRowPoss.forEach((pos) => {
-        const chess = this.chessboard.chessAt(pos) as DrawableChess;
-        chess.el.classList[isAdd ? 'add' : 'remove']('highlight');
-      });
-    };
+    fiveInRowPoss.forEach((pos) => {
+      const chess = this.chessboard.chessAt(pos) as DrawableChess;
+      chess.el.classList.add('highlight');
+    });
 
-    toggleHighlight(true);
     setTimeout(() => {
-      toggleHighlight(false);
       this.gameEnd();
-    }, 3 * 1000 * 0.5);
+    }, 1000 * 0.5);
   }
 }

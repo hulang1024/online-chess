@@ -83,6 +83,6 @@ export default defineComponent({
 </script>
 <style scoped>
 #q-app {
-  background: #efefef;
+  background: #f2f3f7;
 }
 </style>

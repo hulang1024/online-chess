@@ -7,17 +7,17 @@
       <div :class="['row', {reverse}]">
         <circle-timer
           ref="circleStepTimer"
-          size="68px"
+          size="70px"
           class="user-avatar-frame"
+          :class="{[config.activeClass]: active}"
           :blink="blinkState"
           :color="config.timerColor"
         >
           <user-avatar
             :user="user"
             :online="online"
-            class=""
             :class="[{afk: user && (status == UserStatus.AFK), 'shadow-1': !!user}]"
-            size="62px"
+            size="60px"
             @click="onUserAvatarClick"
           >
             <ready-status-display
@@ -37,7 +37,7 @@
         <div
           v-show="user"
           class="user-info"
-          :class="`q-m${reverse ? 'r' : 'l'}-xs`"
+          :class="`q-m${reverse ? 'r' : 'l'}-sm`"
           :style="{textAlign: reverse ? 'right' : 'left'}"
         >
           <div
@@ -122,6 +122,10 @@ export default defineComponent({
             [ChessHost.FIRST]: 'red',
             [ChessHost.SECOND]: 'black',
           },
+          activeClass: {
+            [ChessHost.FIRST]: 'red',
+            [ChessHost.SECOND]: 'black',
+          },
           chessName: {
             [ChessHost.FIRST]: '红',
             [ChessHost.SECOND]: '黑',
@@ -134,13 +138,17 @@ export default defineComponent({
             [ChessHost.FIRST]: 'black',
             [ChessHost.SECOND]: 'white',
           },
+          activeClass: {
+            [ChessHost.FIRST]: 'chess-active',
+            [ChessHost.SECOND]: 'chess-active',
+          },
           chessName: {
             [ChessHost.FIRST]: '黑',
             [ChessHost.SECOND]: '白',
           },
           timerColor: {
-            [ChessHost.FIRST]: context.$q.dark.isActive ? 'black' : 'light-green-4',
-            [ChessHost.SECOND]: context.$q.dark.isActive ? 'white' : 'light-green-4',
+            [ChessHost.FIRST]: context.$q.dark.isActive ? 'black' : 'light-green',
+            [ChessHost.SECOND]: context.$q.dark.isActive ? 'white' : 'light-green',
           },
           showChess: true,
         },
@@ -157,6 +165,7 @@ export default defineComponent({
         chessName: props.user && cfg.chessName[props.chess as ChessHost],
         showChess: cfg.showChess,
         chessColor: (props.user && cfg.showChess) ? chessColor : null,
+        activeClass: cfg.activeClass[props.chess as ChessHost],
       };
     });
 
@@ -195,12 +204,12 @@ export default defineComponent({
   background: transparent
 
 .nickname
-  width: 124px
-  font-size: 1.2em
+  width: 118px
+  font-size: 1.1em
   font-weight: 400
   &.xs-screen
     width: unset
-    max-width: 124px
+    max-width: 118px
 
 .chess-host
   &::before
@@ -210,9 +219,21 @@ export default defineComponent({
 
 .user-avatar-frame
   position: relative
+  border-radius: 100%
+  transition: all 0.15s ease-out
 
-  .user-avatar.afk
-    opacity: 0.6 !important
+  .user-avatar
+    &.afk
+      opacity: 0.6 !important
+
+  &.red
+    box-shadow: 0px 0px 0px 6px rgba(255, 0, 0, 0.3)
+
+  &.black
+    box-shadow: 0px 0px 0px 6px rgba(0, 0, 0, 0.2)
+
+  &.chess-active
+    box-shadow: 0px 0px 0px 6px rgba(205, 220, 57, 0.3)
 
   .user-status
     font-size: 12px

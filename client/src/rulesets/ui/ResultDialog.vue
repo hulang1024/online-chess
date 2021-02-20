@@ -5,10 +5,10 @@
   >
     <q-card style="width: 300px">
       <q-card-section class="row items-center">
-        <span class="q-ml-sm text-h6">{{ displayText }}</span>
+        <span class="q-ml-sm text-h6 full-width text-center">{{ displayText }}</span>
       </q-card-section>
 
-      <q-card-actions align="right">
+      <q-card-actions align="center">
         <q-btn
           label="退出"
           @click="() => onAction('quit')"
