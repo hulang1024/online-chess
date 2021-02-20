@@ -15,7 +15,7 @@ export default class Channel {
 
   public users: User[] = [];
 
-  public loading = new BindableBool(true);
+  public loading = new BindableBool(false);
 
   public messagesLoaded = false;
 
