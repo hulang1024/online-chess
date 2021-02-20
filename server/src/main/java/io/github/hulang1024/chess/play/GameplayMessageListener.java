@@ -141,9 +141,9 @@ public class GameplayMessageListener extends AbstractMessageListener {
     }
 
     private void startGame(Room room) {
-        Game round = GameFactory.create(room.getGameType());
-        round.setFirstTimer(new GameTimer(room.getRoomSettings()));
-        round.setSecondTimer(new GameTimer(room.getRoomSettings()));
+        Game round = GameFactory.createGame(room.getGameSettings());
+        round.setFirstTimer(new GameTimer(room.getGameSettings().getTimer()));
+        round.setSecondTimer(new GameTimer(room.getGameSettings().getTimer()));
         round.start();
 
         room.setGame(round);

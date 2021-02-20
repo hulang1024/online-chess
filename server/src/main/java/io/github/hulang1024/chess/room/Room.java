@@ -4,7 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import io.github.hulang1024.chess.chat.Channel;
 import io.github.hulang1024.chess.chat.ChannelManager;
 import io.github.hulang1024.chess.games.Game;
-import io.github.hulang1024.chess.games.GameType;
+import io.github.hulang1024.chess.games.GameSettings;
 import io.github.hulang1024.chess.games.GameUser;
 import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.user.User;
@@ -36,8 +36,7 @@ public class Room {
     @JSONField(serialize = false)
     private LocalDateTime updateAt;
 
-    @JSONField(serialize = false)
-    private GameType gameType;
+    private GameSettings gameSettings;
 
     @JSONField(serialize = false)
     private Game game;
@@ -147,11 +146,6 @@ public class Room {
 
     public boolean isLocked() {
         return StringUtils.isNotBlank(password);
-    }
-
-    @JSONField(name = "gameType")
-    public int getGameTypeCode() {
-        return gameType.getCode();
     }
 
     @JSONField(name = "status")

@@ -6,7 +6,6 @@ import io.github.hulang1024.chess.chat.ChannelType;
 import io.github.hulang1024.chess.chat.InfoMessage;
 import io.github.hulang1024.chess.chat.ws.ChatUpdatesServerMsg;
 import io.github.hulang1024.chess.games.GameState;
-import io.github.hulang1024.chess.games.GameType;
 import io.github.hulang1024.chess.games.GameUser;
 import io.github.hulang1024.chess.room.ws.*;
 import io.github.hulang1024.chess.spectator.SpectatorManager;
@@ -57,7 +56,7 @@ public class RoomManager {
                 .filter(room -> {
                     boolean ret = true;
                     if (searchRoomParam.getGameType() != null) {
-                        ret = ret && room.getGameTypeCode() == searchRoomParam.getGameType();
+                        ret = ret && room.getGameSettings().getGameType().getCode() == searchRoomParam.getGameType();
                     }
                     if (searchRoomParam.getStatus() != null) {
                         ret = ret && room.getStatus().code == searchRoomParam.getStatus();
@@ -121,9 +120,8 @@ public class RoomManager {
             createdRoom.setName(createdRoom.getId().toString());
         }
 
-        createdRoom.setGameType(GameType.from(createRoomParam.getGameType()));
-
         createdRoom.setRoomSettings(createRoomParam.getRoomSettings());
+        createdRoom.setGameSettings(createdRoom.getRoomSettings().getGameSettings());
 
         createdRoom.setPassword(createRoomParam.getPassword());
         createdRoom.setCreateBy(creator.getId());

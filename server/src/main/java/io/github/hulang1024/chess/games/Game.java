@@ -9,6 +9,8 @@ import lombok.Setter;
  * @author HuLang
  */
 public abstract class Game {
+    protected GameSettings gameSettings;
+
     @Getter
     @Setter
     protected GameState state;
@@ -23,6 +25,10 @@ public abstract class Game {
     @Getter
     @Setter
     protected GameTimer secondTimer;
+
+    public Game(GameSettings gameSettings) {
+        this.gameSettings = gameSettings;
+    }
 
     public void start() {
         this.activeChessHost = ChessHost.FIRST;

@@ -1,5 +1,6 @@
 package io.github.hulang1024.chess.room;
 
+import io.github.hulang1024.chess.games.GameSettings;
 import lombok.Data;
 
 /**
@@ -7,17 +8,5 @@ import lombok.Data;
  */
 @Data
 public class RoomSettings {
-    /**
-     * 局时（秒）
-     */
-    private int gameDuration;
-    /**
-     * 步时（秒）
-     */
-    private int stepDuration;
-    /**
-     * 读秒
-     */
-    private int secondsCountdown;
-
+    private GameSettings gameSettings;
 }

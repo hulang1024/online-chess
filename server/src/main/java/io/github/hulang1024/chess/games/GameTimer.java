@@ -1,7 +1,6 @@
 package io.github.hulang1024.chess.games;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import io.github.hulang1024.chess.room.RoomSettings;
 import io.github.hulang1024.chess.utils.TimeUtils;
 import lombok.Data;
 
@@ -22,12 +21,12 @@ public class GameTimer {
     private long startTime;
 
     @JSONField(serialize = false)
-    private RoomSettings roomSettings;
+    private GameSettings.TimerSettings timerSettings;
 
-    public GameTimer(RoomSettings roomSettings) {
-        this.roomSettings = roomSettings;
-        gameTime = roomSettings.getGameDuration();
-        stepTime = roomSettings.getStepDuration();
+    public GameTimer(GameSettings.TimerSettings timerSettings) {
+        this.timerSettings = timerSettings;
+        gameTime = this.timerSettings.getGameDuration();
+        stepTime = this.timerSettings.getStepDuration();
     }
 
     public void start() {
@@ -78,9 +77,9 @@ public class GameTimer {
 
     private void resetStepTime() {
         if (gameTime > 0) {
-            stepTime = roomSettings.getStepDuration();
+            stepTime = timerSettings.getStepDuration();
         } else {
-            stepTime = roomSettings.getSecondsCountdown();
+            stepTime = timerSettings.getSecondsCountdown();
         }
     }
 }
