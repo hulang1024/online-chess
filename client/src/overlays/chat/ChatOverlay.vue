@@ -147,9 +147,7 @@ export default defineComponent({
         isOpen.value = true;
       }
       ctx.$nextTick(() => {
-        setTimeout(() => {
-          activeChannelTab.value = getChannelTabName(channel);
-        }, 100);
+        activeChannelTab.value = getChannelTabName(channel);
       });
     });
 

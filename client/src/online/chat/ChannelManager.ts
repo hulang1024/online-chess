@@ -151,11 +151,6 @@ export default class ChannelManager {
     }
 
     this.joinedChannels.removeIf((ch: Channel) => ch.id == channelId);
-
-    if (this.currentChannel.value == channel) {
-      // TODO: 默认一个
-      this.currentChannel.value = this.getChannel(1);
-    }
   }
 
   public postMessage(text: string, isAction = false, channel?: Channel) {
