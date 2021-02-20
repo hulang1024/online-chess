@@ -3,8 +3,13 @@
     class="ready-status"
     :style="{color: isReady ? '#8bc34a' : 'orange'}"
   >
-    <q-icon v-show="isReady" name="check_circle" />
-    {{ isReady ? '已准备' : '未准备' }}
+    <span>
+      <q-icon
+        v-show="isReady"
+        name="check_circle"
+      />
+      <span>{{ isReady ? '已准备' : '未准备' }}</span>
+    </span>
   </div>
 </template>
 

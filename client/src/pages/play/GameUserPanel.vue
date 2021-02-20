@@ -22,9 +22,9 @@
           >
             <ready-status-display
               v-if="$q.screen.xs"
-              v-show="user && showReadyStatus"
               :is-ready="ready"
               class="info-overlay absolute-center"
+              :class="(user && showReadyStatus) && 'show'"
             />
           </user-avatar>
           <div
@@ -73,7 +73,7 @@
       />
       <ready-status-display
         v-if="!$q.screen.xs"
-        :class="(user && showReadyStatus) && 'show'"
+        :class="[(user && showReadyStatus) && 'show', !$q.screen.xs && 'has-border']"
         :is-ready="ready"
       />
     </div>
@@ -271,8 +271,13 @@ export default defineComponent({
 
 .ready-status
   width: 62px
-  text-align: left
   visibility: hidden
+
+  &.has-border
+    text-align: center
+    border-radius: 4px
+    border: 1px solid
+
   &.show
     visibility: visible
 </style>
