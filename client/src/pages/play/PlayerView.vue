@@ -389,6 +389,8 @@ export default defineComponent({
     font-weight: bold
     background: rgba(0,0,0,0.35)
     border-radius: 2px
+    user-select: none
+    pointer-events: none
 
   .fixed-bottom-right
     margin-right: 12px

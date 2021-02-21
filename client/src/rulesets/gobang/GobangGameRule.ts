@@ -95,6 +95,7 @@ export default class GobangGameRule extends GameRule {
 
     const fiveInRowPoss: ChessPos[] = [];
     if (this.checkWin(action.chess, action.pos, fiveInRowPoss)) {
+      drawableChess.marked = false;
       this.gameOver(action.chess, fiveInRowPoss);
     }
 

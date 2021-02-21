@@ -15,7 +15,7 @@ export default class DrawableChess {
   constructor() {
     const el = document.createElement('div');
     el.classList.add('chess');
-    // 根据棋子类型设置类名
+
     this.el = el;
   }
 

@@ -49,6 +49,8 @@ export default defineComponent({
   color: white
   text-align: center
   border-radius: 2px
+  user-select: none
+  pointer-events: none
 
   span
     font-weight: bold

@@ -4,6 +4,7 @@
   .judgement {
     display: none;
     padding: 8px 40px;
+    min-width: fit-content;
     color: white;
     background: rgba(0,0,0,0.2);
     border-radius: 4px;
@@ -11,7 +12,7 @@
     opacity: 0;
     transition: all .2s ease;
     pointer-events: none;
-    min-width: fit-content;
+    user-select: none;
   }
 
   .eat-judgement {
