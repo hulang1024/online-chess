@@ -5,20 +5,17 @@
   >
     <q-btn
       label="邀请"
-      rounded
       color="light-green"
       @click.stop="onInviteClick"
     />
     <q-btn
       :label="label"
-      rounded
       color="primary"
       :disable="disable"
       @click="onReadyStart"
     />
     <q-btn
       label="离开"
-      rounded
       color="orange"
       @click="onQuitClick"
     />

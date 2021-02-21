@@ -1,147 +1,140 @@
 <template>
   <q-page :class="[isXSScreen ? 'xs-screen' : 'row items-center q-pl-sm']">
     <template v-if="isXSScreen">
-      <div>
-        <game-user-panel
-          ref="otherGameUserPanel"
-          v-bind="otherUser"
-          :game-type="gameType"
-          class="q-pt-sm q-ml-sm"
-          :class="reverse
-            ? 'fixed-bottom-right q-mr-sm q-mb-sm'
-            : 'absolute-top-left q-pt-sm q-ml-sm'"
-        />
-        <game-user-panel
-          ref="viewGameUserPanel"
-          v-bind="viewUser"
-          :game-type="gameType"
-          :class="reverse
-            ? 'absolute-top-left q-pt-sm q-ml-sm'
-            : 'fixed-bottom-right q-mr-sm q-mb-sm'"
-        />
-        <div class="row absolute-top-right q-mt-sm q-mr-sm">
-          <q-card
-            v-show="spectatorCount > 0"
-            flat
-            class="q-px-sm q-py-sm"
-          >
-            <spectator-count-display :count="spectatorCount" />
-          </q-card>
-        </div>
-        <playfield
-          ref="playfield"
-          class="absolute-center"
+      <game-user-panel
+        ref="otherGameUserPanel"
+        v-bind="otherUser"
+        :game-type="gameType"
+        :class="reverse ? 'fixed-bottom-right' : 'absolute-top-left'"
+      />
+      <game-user-panel
+        ref="viewGameUserPanel"
+        v-bind="viewUser"
+        :game-type="gameType"
+        :class="reverse ? 'absolute-top-left' : 'fixed-bottom-right'"
+      />
+      <div class="row absolute-top-right q-mt-sm q-mr-sm">
+        <q-card
+          v-show="spectatorCount > 0"
+          flat
+          class="q-px-sm q-py-sm"
         >
-          <div
-            v-if="gameState == 1"
-            class="absolute-center q-py-xs text-subtitle1 ready-info"
-          >{{ gameStatus.text }}</div>
-          <text-overlay
-            ref="textOverlay"
-            class="absolute-center"
-          />
-          <result-dialog ref="resultDialog" />
-          <div class="full-width" style="position: absolute; bottom: 30%">
-            <slot name="ready-overlay" />
-          </div>
-        </playfield>
+          <spectator-count-display :count="spectatorCount" />
+        </q-card>
+      </div>
+      <playfield
+        ref="playfield"
+        class="absolute-center"
+      >
         <div
-          class="fixed-bottom-left"
-          style="padding-left: 12px; padding-bottom: 12px"
+          v-if="gameState == 1"
+          class="absolute-center q-py-xs text-subtitle1 ready-info"
+        >{{ gameStatus.text }}</div>
+        <text-overlay
+          ref="textOverlay"
+          class="absolute-center"
+        />
+        <result-dialog ref="resultDialog" />
+        <div class="full-width" style="position: absolute; bottom: 30%">
+          <slot name="ready-overlay" />
+        </div>
+      </playfield>
+      <div
+        class="fixed-bottom-left"
+        style="padding-left: 12px; padding-bottom: 12px"
+      >
+        <q-btn
+          icon="menu"
+          round
+          color="white"
+          text-color="primary"
         >
-          <q-btn
-            icon="menu"
-            round
-            color="white"
-            text-color="primary"
+          <q-menu
+            transition-show="jump-up"
+            transition-hide="jump-down"
+            :offset="[0, 8]"
+            auto-close
           >
-            <q-menu
-              transition-show="jump-up"
-              transition-hide="jump-down"
-              :offset="[0, 8]"
-              auto-close
-            >
-              <q-list style="min-width: 110px">
-                <template v-if="enableGameRuleButtons">
-                  <q-item
-                    clickable
-                    v-close-popup
-                    :disable="!(isPlaying && canWithdraw)"
-                    @click="onWithdrawClick"
-                  >
-                    <q-item-section>
-                      <q-item-label><q-icon name="redo" /> 悔棋</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                  <q-separator />
-                  <q-item
-                    clickable
-                    v-close-popup
-                    :disable="!isPlaying"
-                    @click="onChessDrawClick"
-                  >
-                    <q-item-section>
-                      <q-item-label><q-icon name="mood" /> 求和</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                  <q-separator />
-                  <q-item
-                    clickable
-                    v-close-popup
-                    :disable="!isPlaying"
-                    @click="onWhiteFlagClick"
-                  >
-                    <q-item-section>
-                      <q-item-label><q-icon name="mood_bad" /> 认输</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                  <q-separator />
-                  <q-item
-                    v-close-popup
-                    clickable
-                    :disable="![2, 3].includes(gameState)"
-                    @click="onPauseOrResumeGameClick"
-                  >
-                    <q-item-section>
-                      <q-item-label>
-                        <q-icon name="access_time" />
-                        {{ viewUser.isRoomOwner ? '' : '请求' }}{{ gameState != 3 ? '暂停对局' : '继续对局' }}
-                      </q-item-label>
-                    </q-item-section>
-                  </q-item>
-                  <q-separator />
-                </template>
-                <slot name="xs-screen-main-buttons" />
+            <q-list style="min-width: 110px">
+              <template v-if="enableGameRuleButtons">
                 <q-item
                   clickable
                   v-close-popup
-                  @click="onQuitClick"
+                  :disable="!(isPlaying && canWithdraw)"
+                  @click="onWithdrawClick"
                 >
                   <q-item-section>
-                    <label><q-icon name="keyboard_arrow_left" />离开</label>
+                    <q-item-label><q-icon name="redo" /> 悔棋</q-item-label>
                   </q-item-section>
                 </q-item>
-              </q-list>
-            </q-menu>
-          </q-btn>
-          <q-btn
-            icon="chat"
-            color="white"
-            text-color="primary"
-            round
-            @click.stop="onChatClick"
-            class="q-ml-lg"
+                <q-separator />
+                <q-item
+                  clickable
+                  v-close-popup
+                  :disable="!isPlaying"
+                  @click="onChessDrawClick"
+                >
+                  <q-item-section>
+                    <q-item-label><q-icon name="mood" /> 求和</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item
+                  clickable
+                  v-close-popup
+                  :disable="!isPlaying"
+                  @click="onWhiteFlagClick"
+                >
+                  <q-item-section>
+                    <q-item-label><q-icon name="mood_bad" /> 认输</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item
+                  v-close-popup
+                  clickable
+                  :disable="![2, 3].includes(gameState)"
+                  @click="onPauseOrResumeGameClick"
+                >
+                  <q-item-section>
+                    <q-item-label>
+                      <q-icon name="access_time" />
+                      {{ viewUser.isRoomOwner ? '' : '请求' }}{{ gameState != 3 ? '暂停对局' : '继续对局' }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-separator />
+              </template>
+              <slot name="xs-screen-main-buttons" />
+              <q-item
+                clickable
+                v-close-popup
+                @click="onQuitClick"
+              >
+                <q-item-section>
+                  <label><q-icon name="keyboard_arrow_left" />离开</label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
+        <q-btn
+          icon="chat"
+          color="white"
+          text-color="primary"
+          round
+          @click.stop="onChatClick"
+          class="q-ml-lg"
+        >
+          <q-badge
+            v-show="unreadMessageCount > 0"
+            color="red"
+            floating
+            transparent
           >
-            <q-badge
-              v-show="unreadMessageCount > 0"
-              color="red"
-              floating
-              transparent
-            >
-              {{ unreadMessageCount }}
-            </q-badge>
-          </q-btn>
-        </div>
+            {{ unreadMessageCount }}
+          </q-badge>
+        </q-btn>
       </div>
     </template>
     <template v-else>
@@ -222,6 +215,7 @@
           flat
           class="q-mb-xs q-px-sm q-py-sm column"
           :class="{reverse}"
+          style="padding-left: 12px"
         >
           <game-user-panel
             ref="otherGameUserPanel"
@@ -396,10 +390,18 @@ export default defineComponent({
     background: rgba(0,0,0,0.35)
     border-radius: 2px
 
+  .fixed-bottom-right
+    margin-right: 12px
+    margin-bottom: 12px
+
+  .absolute-top-left
+    margin-left: 12px
+    padding-top: 12px
+
 .controls
   padding: 8px
-  width: 310px
-  min-width: 310px
+  width: 320px
+  min-width: 320px
   display: flex
   flex-direction: column
   min-height: inherit

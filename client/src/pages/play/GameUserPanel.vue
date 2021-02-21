@@ -4,7 +4,7 @@
     class="game-user-panel"
   >
     <div class="row items-center justify-between">
-      <div :class="['row', {reverse}]">
+      <div :class="['row', 'items-center', {reverse}]">
         <circle-timer
           ref="circleStepTimer"
           size="70px"
@@ -16,7 +16,10 @@
           <user-avatar
             :user="user"
             :online="online"
-            :class="[{afk: user && (status == UserStatus.AFK), 'shadow-1': !!user}]"
+            :class="[{
+              afk: user && (status == UserStatus.AFK),
+              'shadow-1': !!user && !active
+            }]"
             size="60px"
             @click="onUserAvatarClick"
           >
@@ -220,7 +223,7 @@ export default defineComponent({
 .user-avatar-frame
   position: relative
   border-radius: 100%
-  transition: all 0.15s ease-out
+  transition: all 0.2s ease-out
 
   .user-avatar
     &.afk
