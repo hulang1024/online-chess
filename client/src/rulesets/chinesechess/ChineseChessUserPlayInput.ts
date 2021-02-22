@@ -25,12 +25,8 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
     super(gameRule, gameState, localChessHost);
     this.chessboard = (gameRule as ChineseChessGameRule).getChessboard();
 
-    this.chessboard.clicked.add(() => {
-      if (this.gameState.value == GameState.PLAYING
-        && this.localChessHost.value != this.gameRule.activeChessHost.value) {
-        this.onReject();
-      }
-    });
+    this.chessboard.clicked.add(this.checkReject.bind(this));
+
     this.chessboard.chessPickupOrDrop.add(({ chess, isPickup }
       : {chess: DrawableChess, isPickup: boolean}) => {
       this.gameplayServer.pickChess(chess.getPos(), isPickup);

@@ -22,12 +22,7 @@ export default class GobangUserPlayInput extends UserPlayInput {
     super(gameRule, gameState, localChessHost);
     this.chessboard = (gameRule as GobangGameRule).getChessboard();
 
-    this.chessboard.clicked.add(() => {
-      if (this.gameState.value == GameState.PLAYING
-        && this.localChessHost.value != this.gameRule.activeChessHost.value) {
-        this.onReject();
-      }
-    });
+    this.chessboard.clicked.add(this.checkReject.bind(this));
 
     this.chessboard.onChessPosClick = this.onChessPosClick.bind(this);
   }

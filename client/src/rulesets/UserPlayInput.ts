@@ -40,4 +40,11 @@ export default abstract class UserPlayInput {
   public disable() {
     this.enabled = false;
   }
+
+  protected checkReject() {
+    if (this.gameState.value == GameState.PLAYING
+      && this.localChessHost.value != this.gameRule.activeChessHost.value) {
+      this.onReject();
+    }
+  }
 }
