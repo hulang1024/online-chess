@@ -104,6 +104,7 @@ export default class Player extends GameplayClient {
           this.localUser.chess,
         );
         this.userPlayInput.onReject = () => {
+          this.showText('对方回合', 500);
           const playerView = this.context.$refs.playerView as Vue;
           // eslint-disable-next-line
           (playerView.$refs.otherGameUserPanel as any).blink();
