@@ -32,7 +32,7 @@
           </user-avatar>
           <div
             v-show="user && (status == UserStatus.AFK || !online)"
-            class="absolute-bottom-right user-status"
+            :class="['user-status', `absolute-bottom-${reverse ? 'right' : 'left'}`]"
           >
             <span>({{ online ? '离开' : '离线' }})</span>
           </div>
@@ -50,30 +50,31 @@
             <div :class="['nickname', 'ellipsis', $q.screen.xs && 'xs-screen']">
               {{ user && user.nickname }}
             </div>
+          </div>
+          <div
+            class="row items-center"
+            :class="[reverse && 'reverse']"
+          >
             <div
-              v-if="$q.screen.xs && config.chessColor"
+              v-if="config.chessColor"
               class="chess"
-              :class="`q-m${reverse ? 'r' : 'l'}-sm`"
+              :class="`q-m${reverse ? 'l' : 'r'}-${$q.screen.xs ? 'xs' : 'sm'}`"
               :style="{backgroundColor: config.chessColor}"
             />
+            <span>{{ config.chessName }}棋</span>
           </div>
           <div class="time-panel">
-            <div class="item">
+            <div :class="`item q-mr-${$q.screen.xs ? 'xs' : 'sm'}`">
               <span class="label">步时</span>
-              <timer ref="stepTimer" class="step-timer" />
+              <timer ref="stepTimer" />
             </div>
             <div class="item">
               <span class="label">局时</span>
-              <timer ref="gameTimer" class="game-timer" />
+              <timer ref="gameTimer" />
             </div>
           </div>
         </div>
       </div>
-      <div
-        v-if="!$q.screen.xs && config.chessColor"
-        class="chess q-mr-xs"
-        :style="{backgroundColor: config.chessColor}"
-      />
       <ready-status-display
         v-if="!$q.screen.xs"
         :class="[(user && showReadyStatus) && 'show', !$q.screen.xs && 'has-border']"
@@ -239,7 +240,11 @@ export default defineComponent({
     box-shadow: 0px 0px 0px 6px rgba(205, 220, 57, 0.3)
 
   .user-status
+    padding: 2px
+    background: rgba(0, 0, 0, 0.3)
+    border-radius: 2px
     font-size: 12px
+    color: #fff
 
   .info-overlay
     width: 100%
@@ -253,10 +258,10 @@ export default defineComponent({
     transition: all 0.2s ease
 
 .time-panel
+  display: flex
   .item
     user-select: none
     .label
-      padding-right: 2px
       font-size: 1em
       &::after
         content: ':'
