@@ -10,8 +10,6 @@ import GobangGameRule from "./GobangGameRule";
 import ChessAction from "./ChessAction";
 
 export default class GobangUserPlayInput extends UserPlayInput {
-  private enabled: boolean;
-
   private chessboard: GobangDrawableChessboard;
 
   private gameplayServer = new GobangGameplayServer();
@@ -32,12 +30,6 @@ export default class GobangUserPlayInput extends UserPlayInput {
     });
 
     this.chessboard.onChessPosClick = this.onChessPosClick.bind(this);
-
-    gameState.changed.add(() => {
-      if (gameState.value != GameState.PLAYING) {
-        this.disable();
-      }
-    });
   }
 
   public onChessPosClick(pos: ChessPos) {
@@ -54,13 +46,5 @@ export default class GobangUserPlayInput extends UserPlayInput {
     action.chess = this.localChessHost.value as ChessHost;
     (this.gameRule as GobangGameRule).onChessAction(action);
     this.gameplayServer.putChess(action.pos, action.chess);
-  }
-
-  public enable() {
-    this.enabled = true;
-  }
-
-  public disable() {
-    this.enabled = false;
   }
 }

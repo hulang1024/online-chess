@@ -9,6 +9,8 @@ export default abstract class UserPlayInput {
 
   public onReject: () => void;
 
+  protected enabled: boolean;
+
   protected gameRule: GameRule;
 
   protected gameState: Bindable<GameState>;
@@ -23,9 +25,19 @@ export default abstract class UserPlayInput {
     this.gameRule = gameRule;
     this.gameState = gameState;
     this.localChessHost = localChessHost;
+
+    gameState.changed.add(() => {
+      if (gameState.value != GameState.PLAYING) {
+        this.disable();
+      }
+    });
   }
 
-  public abstract enable(): void;
+  public enable() {
+    this.enabled = true;
+  }
 
-  public abstract disable(): void;
+  public disable() {
+    this.enabled = false;
+  }
 }

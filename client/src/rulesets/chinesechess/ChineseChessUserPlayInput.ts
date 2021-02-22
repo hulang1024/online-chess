@@ -40,10 +40,6 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
 
     gameState.changed.add(() => {
       this.lastSelected = null;
-
-      if (gameState.value != GameState.PLAYING) {
-        this.disable();
-      }
     });
     this.gameRule.activeChessHost.changed.add(() => {
       this.lastSelected = null;
@@ -51,19 +47,21 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
   }
 
   public enable() {
+    super.enable();
     this.chessboard.getChessList().forEach((chess) => {
       chess.selectable = this.localChessHost.value == chess.getHost();
     });
   }
 
   public disable() {
+    super.disable();
     this.chessboard.getChessList().forEach((chess) => {
       chess.selectable = false;
     });
   }
 
   private onChessboardClick(event: { chess: DrawableChess, pos: ChessPos }) {
-    if (this.gameState.value != GameState.PLAYING) {
+    if (!this.enabled) {
       return;
     }
 
