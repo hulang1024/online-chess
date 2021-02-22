@@ -1,5 +1,5 @@
 import { onUnmounted, ref } from "@vue/composition-api";
-import GameAudio from "../../../rulesets/GameAudio";
+import GameAudio from "../../GameAudio";
 
 export enum TimerState {
   TICKING,

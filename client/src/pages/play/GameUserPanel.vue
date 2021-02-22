@@ -96,8 +96,8 @@ import User from "src/user/User";
 import UserStatus from "src/user/UserStatus";
 import ChessHost from "src/rulesets/chess_host";
 import { GameType } from "src/rulesets/GameType";
-import Timer from "./timer/Timer.vue";
-import CircleTimer from "./timer/CircleTimer.vue";
+import Timer from "../../rulesets/ui/timer/Timer.vue";
+import CircleTimer from "../../rulesets/ui/timer/CircleTimer.vue";
 import ReadyStatusDisplay from "./ReadyStatusDisplay.vue";
 
 export default defineComponent({

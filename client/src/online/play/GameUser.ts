@@ -3,7 +3,7 @@ import User from "src/user/User";
 import UserStatus from "src/user/UserStatus";
 import Bindable from "src/utils/bindables/Bindable";
 import BindableBool from "src/utils/bindables/BindableBool";
-import Timer from "../../pages/play/timer/Timer";
+import Timer from "../../rulesets/ui/timer/Timer";
 
 export default class GameUser {
   public user = new Bindable<User | null>();

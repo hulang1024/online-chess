@@ -24,8 +24,8 @@ import { ConfirmRequestType, toReadableText } from 'src/online/play/confirm_requ
 import SpectatorClient from 'src/online/play/SpectatorClient';
 import APIGameUser from 'src/online/play/APIGameUser';
 import GameUser from '../../online/play/GameUser';
-import Timer from './timer/Timer';
-import CircleTimer from './timer/CircleTimer';
+import Timer from '../../rulesets/ui/timer/Timer';
+import CircleTimer from '../../rulesets/ui/timer/CircleTimer';
 import GameAudio from '../../rulesets/GameAudio';
 import * as signals from './signals';
 
