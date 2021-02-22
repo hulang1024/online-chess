@@ -63,8 +63,11 @@
             />
             <span>{{ config.chessName }}棋</span>
           </div>
-          <div class="time-panel">
-            <div :class="`item q-mr-${$q.screen.xs ? 'xs' : 'sm'}`">
+          <div
+            class="row time-panel"
+            :class="[($q.screen.xs && reverse) && 'reverse']"
+          >
+            <div :class="`item q-m${reverse ? 'l' : 'r'}-${$q.screen.xs ? 'xs' : 'sm'}`">
               <span class="label">步时</span>
               <timer ref="stepTimer" />
             </div>
