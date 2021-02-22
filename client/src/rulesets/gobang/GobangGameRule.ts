@@ -3,6 +3,7 @@ import ChessHost from 'src/rulesets/chess_host';
 import HistoryRecorder from 'src/rulesets/gobang/HistoryRecorder';
 import ResponseGameStates from 'src/rulesets/game_states_response';
 import GameRule from 'src/rulesets/GameRule';
+import GameAudio from 'src/rulesets/GameAudio';
 import DrawableChess from "./ui/DrawableChess";
 import Playfield from '../../pages/play/Playfield';
 import GobangResponseGameStates, { ResponseGameStateChess } from './online/gameplay_server_messages';
@@ -88,6 +89,8 @@ export default class GobangGameRule extends GameRule {
     drawableChess.pos = action.pos;
     drawableChess.marked = true;
     drawableChess.draw(this.chessboard.sizes);
+
+    GameAudio.play('gameplay/chess_down');
 
     this.chessboardState.setChess(action.pos, action.chess);
 
