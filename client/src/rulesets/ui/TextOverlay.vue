@@ -1,13 +1,17 @@
 <template>
-  <q-card
-    v-show="visible"
-    transition-show="fade"
-    transition-hide="fade"
-    flat
-    :class="`q-py-${$q.screen.xs ? 'xs' : 'sm'}`"
+  <transition
+    enter-active-class="animated fadeIn"
+    leave-active-class="animated fadeOut"
+    :duration="200"
   >
-    <span class="text-subtitle1">{{ _text }}</span>
-  </q-card>
+    <q-card
+      v-show="visible"
+      flat
+      :class="`q-py-${$q.screen.xs ? 'xs' : 'sm'}`"
+    >
+      <span class="text-subtitle1">{{ _text }}</span>
+    </q-card>
+  </transition>
 </template>
 
 <script lang="ts">
