@@ -152,7 +152,7 @@ export default class GobangGameRule extends GameRule {
       let count = 0;
       let cur = origin.copy();
       for (let stop = false; !stop;) {
-        cur = new ChessPos(cur.row + dx, cur.col + dy);
+        cur = new ChessPos(cur.row + dy, cur.col + dx);
         if (true
           && (cur.row >= 0 && cur.row < this.chessboardState.size)
           && (cur.col >= 0 && cur.col < this.chessboardState.size)
