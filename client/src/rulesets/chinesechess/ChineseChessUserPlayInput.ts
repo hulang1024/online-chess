@@ -58,6 +58,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
 
   private onChessboardClick(event: { chess: DrawableChess, pos: ChessPos }) {
     if (!this.enabled) {
+      this.checkReject();
       return;
     }
 

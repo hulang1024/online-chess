@@ -29,6 +29,7 @@ export default class GobangUserPlayInput extends UserPlayInput {
 
   public onChessPosClick(pos: ChessPos) {
     if (!this.enabled) {
+      this.checkReject();
       return;
     }
 
