@@ -25,7 +25,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
   ) {
     super(gameRule, gameState, localChessHost, isWatchingMode);
 
-    if (!isWatchingMode) {
+    if (isWatchingMode) {
       return;
     }
 
