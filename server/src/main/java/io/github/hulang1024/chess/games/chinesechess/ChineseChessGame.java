@@ -1,7 +1,7 @@
 package io.github.hulang1024.chess.games.chinesechess;
 
 import io.github.hulang1024.chess.games.Game;
-import io.github.hulang1024.chess.games.GameState;
+import io.github.hulang1024.chess.games.GameStatesResponse;
 import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.games.chinesechess.rule.Chess;
 import io.github.hulang1024.chess.games.chinesechess.rule.ChessboardState;
@@ -47,22 +47,16 @@ public class ChineseChessGame extends Game {
     }
 
     @Override
+    public GameStatesResponse createGameStatesResponse() {
+        return new ChineseChessGameStatesResponse();
+    }
+
+    @Override
     public ChineseChessGameStatesResponse buildGameStatesResponse() {
-        ChineseChessGameStatesResponse gameStates = new ChineseChessGameStatesResponse();
-        if (getActiveChessHost() != null) {
-            gameStates.setActiveChessHost(getActiveChessHost().code());
-        }
-        gameStates.setFirstTimer(firstTimer);
-        gameStates.setSecondTimer(secondTimer);
-
-        gameStates.setChesses(toStateChesses());
-        gameStates.setActionStack(getActionStack());
-
-        if (state == GameState.PLAYING) {
-            getActiveTimer().useTime();
-        }
-
-        return gameStates;
+        ChineseChessGameStatesResponse response = (ChineseChessGameStatesResponse) super.buildGameStatesResponse();
+        response.setActionStack(getActionStack());
+        response.setChesses(toStateChesses());
+        return response;
     }
 
     private List<ChineseChessGameStatesResponse.Chess> toStateChesses() {

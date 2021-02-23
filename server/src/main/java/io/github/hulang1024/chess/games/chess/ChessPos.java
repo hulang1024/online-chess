@@ -11,4 +11,8 @@ public class ChessPos {
         this.row = row;
         this.col = col;
     }
+
+    public ChessPos copy() {
+        return new ChessPos(this.row, this.col);
+    }
 }

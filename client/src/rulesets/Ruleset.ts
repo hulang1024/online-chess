@@ -6,6 +6,7 @@ import GameRule from "./GameRule";
 import RulesetClient from "./RulesetClient";
 import DrawableChessboard from "./ui/DrawableChessboard";
 import GameSettings from "./GameSettings";
+import RulesetPlayer from "./RulesetPlayer";
 
 export default abstract class Ruleset {
   public gameSettings: GameSettings;
@@ -14,6 +15,7 @@ export default abstract class Ruleset {
     game: GameRule,
     gameState: Bindable<GameState>,
     localChessHost: Bindable<ChessHost | null>,
+    isWatchingMode: boolean,
   ): UserPlayInput;
 
   public abstract createGameRule(): GameRule;
@@ -22,4 +24,6 @@ export default abstract class Ruleset {
 
   public abstract createChessboard(
     stage: {width: number, height: number}, screen: any): DrawableChessboard;
+
+  public abstract createPlayer(): RulesetPlayer;
 }

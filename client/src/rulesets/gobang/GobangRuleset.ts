@@ -8,6 +8,7 @@ import GobangGameRule from "./GobangGameRule";
 import GobangUserPlayInput from "./GobangUserPlayInput";
 import GobangClient from "./GobangClient";
 import GobangGameSettings from "./GobangGameSettings";
+import GobangPlayer from "./GobangPlayer";
 
 export default class GobangRuleset extends Ruleset {
   // eslint-disable-next-line
@@ -15,11 +16,13 @@ export default class GobangRuleset extends Ruleset {
     game: GameRule,
     gameState: Bindable<GameState>,
     localChessHost: Bindable<ChessHost | null>,
+    isWatchingMode: boolean,
   ) {
     return new GobangUserPlayInput(
       game as GobangGameRule,
       gameState,
       localChessHost,
+      isWatchingMode,
     );
   }
 
@@ -37,5 +40,10 @@ export default class GobangRuleset extends Ruleset {
   public createChessboard(stage: {width: number, height: number}, screen: any) {
     return new GobangDrawableChessboard(stage,
       (this.gameSettings as GobangGameSettings).chessboardSize);
+  }
+
+  // eslint-disable-next-line
+  public createPlayer() {
+    return new GobangPlayer();
   }
 }

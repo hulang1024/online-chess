@@ -16,6 +16,7 @@ import Playfield from 'src/pages/play/Playfield';
 import GameRule from 'src/rulesets/GameRule';
 import UserPlayInput from 'src/rulesets/UserPlayInput';
 import RulesetClient from 'src/rulesets/RulesetClient';
+import RulesetPlayer from 'src/rulesets/RulesetPlayer';
 import RulesetFactory from 'src/rulesets/RulesetFactory';
 import Ruleset from 'src/rulesets/Ruleset';
 import GameplayClient from 'src/online/play/GameplayClient';
@@ -31,6 +32,8 @@ import * as signals from './signals';
 
 export default class Player extends GameplayClient {
   public game: GameRule;
+
+  private rulesetPlayer: RulesetPlayer;
 
   private userPlayInput: UserPlayInput;
 
@@ -83,6 +86,9 @@ export default class Player extends GameplayClient {
     const ruleset = RulesetFactory.create(gameSettings.gameType) as Ruleset;
     ruleset.gameSettings = gameSettings;
 
+    this.rulesetPlayer = ruleset.createPlayer();
+    this.rulesetPlayer.context = context;
+
     this.game = ruleset.createGameRule();
 
     this.rulesetClient = ruleset.createRulesetClient(this.game);
@@ -97,23 +103,24 @@ export default class Player extends GameplayClient {
     playfield.loaded.add(() => {
       this.game.setPlayfield(playfield);
 
-      if (!this.isWatchingMode) {
-        this.userPlayInput = ruleset.createUserPlayInput(
-          this.game,
-          this.gameState,
-          this.localUser.chess,
-        );
-        this.userPlayInput.onReject = () => {
-          this.showText('对方回合', 500);
-          const playerView = this.context.$refs.playerView as Vue;
-          // eslint-disable-next-line
-          (playerView.$refs.otherGameUserPanel as any).blink();
-        };
-        this.userPlayInput.inputDone.add(() => {
-          this.localUser.stepTimer.pause();
-          this.localUser.gameTimer.pause();
-        });
-      }
+      this.userPlayInput = ruleset.createUserPlayInput(
+        this.game,
+        this.gameState,
+        this.localUser.chess,
+        this.isWatchingMode,
+      );
+      this.rulesetPlayer.userPlayInput = this.userPlayInput;
+      this.rulesetClient.userPlayInput = this.userPlayInput;
+      this.userPlayInput.onReject = () => {
+        this.showText('对方回合', 500);
+        const playerView = this.context.$refs.playerView as Vue;
+        // eslint-disable-next-line
+        (playerView.$refs.otherGameUserPanel as any).blink();
+      };
+      this.userPlayInput.inputDone.add(() => {
+        this.localUser.stepTimer.pause();
+        this.localUser.gameTimer.pause();
+      });
 
       this.game.onGameOver = (winChessHost: ChessHost) => {
         if (this.isWatchingMode) {
@@ -529,7 +536,7 @@ export default class Player extends GameplayClient {
           let activeGameUser: GameUser;
           if (this.game.activeChessHost.value == this.localUser.chessHost) {
             activeGameUser = this.localUser;
-            if (this.userPlayInput) {
+            if (!this.isWatchingMode) {
               // 禁用过，现在应启用输入
               this.userPlayInput.enable();
             }
@@ -582,7 +589,7 @@ export default class Player extends GameplayClient {
       inactiveGameUser.gameTimer.pause();
     }
 
-    if (this.userPlayInput) {
+    if (!this.isWatchingMode) {
       if (activeChessHost == this.localUser.chessHost) {
         this.userPlayInput.enable();
       } else {
@@ -687,6 +694,10 @@ export default class Player extends GameplayClient {
         this.partRoom();
       });
     }
+  }
+
+  public onSettingsClick() {
+    this.rulesetPlayer.openSettings();
   }
 
   protected showText(text: string, duration?: number) {

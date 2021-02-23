@@ -67,7 +67,22 @@ public abstract class Game {
         return activeChessHost == ChessHost.FIRST ? firstTimer : secondTimer;
     }
 
-    public abstract GameStatesResponse buildGameStatesResponse();
+    protected abstract GameStatesResponse createGameStatesResponse();
+
+    public GameStatesResponse buildGameStatesResponse() {
+        GameStatesResponse gameStates = createGameStatesResponse();
+        if (getActiveChessHost() != null) {
+            gameStates.setActiveChessHost(getActiveChessHost().code());
+        }
+        gameStates.setFirstTimer(firstTimer);
+        gameStates.setSecondTimer(secondTimer);
+
+        if (state == GameState.PLAYING) {
+            getActiveTimer().useTime();
+        }
+
+        return gameStates;
+    }
 
     public abstract void withdraw();
 }

@@ -21,16 +21,19 @@ export default abstract class UserPlayInput {
     gameRule: GameRule,
     gameState: Bindable<GameState>,
     localChessHost: Bindable<ChessHost | null>,
+    isWatchingMode: boolean,
   ) {
     this.gameRule = gameRule;
     this.gameState = gameState;
     this.localChessHost = localChessHost;
 
-    gameState.changed.add(() => {
-      if (gameState.value != GameState.PLAYING) {
-        this.disable();
-      }
-    });
+    if (!isWatchingMode) {
+      gameState.changed.add(() => {
+        if (gameState.value != GameState.PLAYING) {
+          this.disable();
+        }
+      });
+    }
   }
 
   public enable() {

@@ -8,4 +8,8 @@ export default class GobangGameplayServer {
   public putChess(pos: ChessPos, chess: ChessHost): void {
     this.socketService.send('play.gobang.chess_put', { pos, chess });
   }
+
+  public pushChessTargetPos(pos: ChessPos, chess: ChessHost): void {
+    this.socketService.send('play.gobang.chess_target_pos', { pos, chess });
+  }
 }

@@ -8,7 +8,10 @@ export enum ConfigItem {
   theme = 'theme',
   audioVolume = 'audio_volume',
   audioGameplayEnabled = 'audio_gameplay_enabled',
-  desktopNotifyEnabled = 'desktop_notify_enabled'
+  desktopNotifyEnabled = 'desktop_notify_enabled',
+
+  // todo: 待组织
+  gobangInputMode = 'gobang.input_mode',
 }
 
 export default class ConfigManager {
@@ -30,7 +33,7 @@ export default class ConfigManager {
     [
       'username', 'password', 'token', 'login_auto',
       'theme', 'audio_volume', 'desktop_notify_enabled',
-      'audio_gameplay_enabled',
+      'audio_gameplay_enabled', 'gobang.input_mode',
     ].forEach((key) => {
       let val = localStorage.getItem(key);
       if (val == null) {

@@ -1,7 +1,7 @@
 package io.github.hulang1024.chess.games.gobang;
 
 import io.github.hulang1024.chess.games.Game;
-import io.github.hulang1024.chess.games.GameState;
+import io.github.hulang1024.chess.games.GameStatesResponse;
 import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.games.gobang.rule.ChessboardState;
 import lombok.Getter;
@@ -45,22 +45,16 @@ public class GobangGame extends Game {
     }
 
     @Override
+    protected GameStatesResponse createGameStatesResponse() {
+        return new GobangGameplayStatesResponse();
+    }
+
+    @Override
     public GobangGameplayStatesResponse buildGameStatesResponse() {
-        GobangGameplayStatesResponse gameStates = new GobangGameplayStatesResponse();
-        if (getActiveChessHost() != null) {
-            gameStates.setActiveChessHost(getActiveChessHost().code());
-        }
-        gameStates.setFirstTimer(firstTimer);
-        gameStates.setSecondTimer(secondTimer);
-
-        gameStates.setChesses(toStateChesses());
-        gameStates.setActionStack(getActionStack());
-
-        if (state == GameState.PLAYING) {
-            getActiveTimer().useTime();
-        }
-
-        return gameStates;
+        GobangGameplayStatesResponse response = (GobangGameplayStatesResponse) super.buildGameStatesResponse();
+        response.setActionStack(getActionStack());
+        response.setChesses(toStateChesses());
+        return response;
     }
 
     private List<GobangGameplayStatesResponse.Chess> toStateChesses() {

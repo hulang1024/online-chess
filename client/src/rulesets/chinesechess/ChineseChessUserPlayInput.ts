@@ -21,8 +21,14 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
     gameRule: GameRule,
     gameState: Bindable<GameState>,
     localChessHost: Bindable<ChessHost | null>,
+    isWatchingMode: boolean,
   ) {
-    super(gameRule, gameState, localChessHost);
+    super(gameRule, gameState, localChessHost, isWatchingMode);
+
+    if (!isWatchingMode) {
+      return;
+    }
+
     this.chessboard = (gameRule as ChineseChessGameRule).getChessboard();
 
     this.chessboard.clicked.add(this.checkReject.bind(this));

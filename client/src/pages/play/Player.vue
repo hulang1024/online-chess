@@ -29,6 +29,21 @@
         @quit="onQuitClick"
       />
     </template>
+    <!-- TODO: 消除硬编码 -->
+    <template
+      #xs-screen-main-buttons
+      v-if="room.roomSettings.gameSettings.gameType == 2">
+      <q-item
+        clickable
+        v-close-popup
+        @click="onSettingsClick"
+      >
+        <q-item-section>
+          <label><q-icon name="settings" />设置</label>
+        </q-item-section>
+      </q-item>
+      <q-separator />
+    </template>
   </player-view>
 </template>
 
@@ -65,6 +80,7 @@ export default defineComponent({
       onChessDrawClick: player.onChessDrawClick.bind(player),
       onWhiteFlagClick: player.onWhiteFlagClick.bind(player),
       onPauseOrResumeGameClick: player.onPauseOrResumeGameClick.bind(player),
+      onSettingsClick: player.onSettingsClick.bind(player),
     };
   },
 });

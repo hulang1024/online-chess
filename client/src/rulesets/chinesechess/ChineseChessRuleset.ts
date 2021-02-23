@@ -7,6 +7,7 @@ import ChineseChessUserPlayInput from "./ChineseChessUserPlayInput";
 import GameRule from "../GameRule";
 import Ruleset from "../Ruleset";
 import ChineseChessDrawableChessboard from "./ui/ChineseChessDrawableChessboard";
+import ChineseChessPlayer from "./ChineseChessPlayer";
 
 export default class ChineseChessRuleset extends Ruleset {
   // eslint-disable-next-line
@@ -14,11 +15,13 @@ export default class ChineseChessRuleset extends Ruleset {
     game: GameRule,
     gameState: Bindable<GameState>,
     localChessHost: Bindable<ChessHost | null>,
+    isWatchingMode: boolean,
   ) {
     return new ChineseChessUserPlayInput(
       game as ChineseChessGameRule,
       gameState,
       localChessHost,
+      isWatchingMode,
     );
   }
 
@@ -35,5 +38,10 @@ export default class ChineseChessRuleset extends Ruleset {
   // eslint-disable-next-line
   public createChessboard(stage: {width: number, height: number}, screen: any) {
     return new ChineseChessDrawableChessboard(stage, screen);
+  }
+
+  // eslint-disable-next-line
+  public createPlayer() {
+    return new ChineseChessPlayer();
   }
 }

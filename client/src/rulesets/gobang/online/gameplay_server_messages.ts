@@ -21,3 +21,8 @@ export interface ChessPutMsg extends ServerMsg {
   pos: ResponseChessPos;
   chess: number;
 }
+
+export interface ChessTargetPosMsg extends ServerMsg {
+  pos: ResponseChessPos;
+  chess: number;
+}

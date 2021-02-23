@@ -2,7 +2,8 @@ package io.github.hulang1024.chess.games;
 
 public enum GameType {
     chinesechess(1),
-    gobang(2);
+    gobang(2),
+    reversi(3);
 
     int code;
 

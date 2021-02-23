@@ -10,7 +10,7 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
 
   private gridNumber: number;
 
-  private canvas: HTMLCanvasElement;
+  public canvas: HTMLCanvasElement;
 
   private chesses: DrawableChess[] = [];
 
