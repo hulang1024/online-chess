@@ -1,6 +1,6 @@
 import GameState from "src/online/play/GameState";
 import Bindable from "src/utils/bindables/Bindable";
-import ChessHost from "../chess_host";
+import GameUser from "src/online/play/GameUser";
 import ChineseChessGameRule from "./ChineseChessGameRule";
 import ChineseChessClient from "./ChineseChessClient";
 import ChineseChessUserPlayInput from "./ChineseChessUserPlayInput";
@@ -14,13 +14,13 @@ export default class ChineseChessRuleset extends Ruleset {
   public createUserPlayInput(
     game: GameRule,
     gameState: Bindable<GameState>,
-    localChessHost: Bindable<ChessHost | null>,
+    localUser: GameUser,
     isWatchingMode: boolean,
   ) {
     return new ChineseChessUserPlayInput(
       game as ChineseChessGameRule,
       gameState,
-      localChessHost,
+      localUser,
       isWatchingMode,
     );
   }

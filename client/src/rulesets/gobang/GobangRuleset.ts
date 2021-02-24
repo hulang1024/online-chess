@@ -1,6 +1,6 @@
 import GameState from "src/online/play/GameState";
 import Bindable from "src/utils/bindables/Bindable";
-import ChessHost from "../chess_host";
+import GameUser from "src/online/play/GameUser";
 import GameRule from "../GameRule";
 import Ruleset from "../Ruleset";
 import GobangDrawableChessboard from "./ui/GobangDrawableChessboard";
@@ -15,13 +15,13 @@ export default class GobangRuleset extends Ruleset {
   public createUserPlayInput(
     game: GameRule,
     gameState: Bindable<GameState>,
-    localChessHost: Bindable<ChessHost | null>,
+    localUser: GameUser,
     isWatchingMode: boolean,
   ) {
     return new GobangUserPlayInput(
       game as GobangGameRule,
       gameState,
-      localChessHost,
+      localUser,
       isWatchingMode,
     );
   }

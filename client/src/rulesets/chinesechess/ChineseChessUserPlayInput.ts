@@ -1,8 +1,8 @@
 import GameState from "src/online/play/GameState";
 import ChessAction from "src/rulesets/chinesechess/ChessAction";
 import ChessPos from "src/rulesets/chinesechess/ChessPos";
-import ChessHost from "src/rulesets/chess_host";
 import Bindable from "src/utils/bindables/Bindable";
+import GameUser from "src/online/play/GameUser";
 import ChinesechessGameplayServer from "./online/ChinesechessGameplayServer";
 import DrawableChess from "./ui/DrawableChess";
 import DrawableChessboard from "./ui/ChineseChessDrawableChessboard";
@@ -20,10 +20,10 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
   constructor(
     gameRule: GameRule,
     gameState: Bindable<GameState>,
-    localChessHost: Bindable<ChessHost | null>,
+    localUser: GameUser,
     isWatchingMode: boolean,
   ) {
-    super(gameRule, gameState, localChessHost, isWatchingMode);
+    super(gameRule, gameState, localUser, isWatchingMode);
 
     if (isWatchingMode) {
       return;
@@ -51,7 +51,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
   public enable() {
     super.enable();
     this.chessboard.getChessList().forEach((chess) => {
-      chess.selectable = this.localChessHost.value == chess.getHost();
+      chess.selectable = this.localUser.chess.value == chess.getHost();
     });
   }
 
@@ -95,7 +95,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
         this.gameplayServer.pickChess(event.chess.getPos(), true);
         // 将非持棋方的棋子全部启用（这样下次才能点击要吃的目标棋子）
         this.chessboard.getChessList().forEach((chess) => {
-          if (chess.getHost() != this.localChessHost.value) {
+          if (chess.getHost() != this.localUser.chess.value) {
             chess.selectable = true;
           }
         });
@@ -103,13 +103,13 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
       return;
     }
 
-    if (event.chess.selected && event.chess.getHost() == this.localChessHost.value) {
+    if (event.chess.selected && event.chess.getHost() == this.localUser.chess.value) {
       // 重复点击，取消选中
       this.lastSelected.selected = false;
       this.gameplayServer.pickChess(event.chess.getPos(), false);
       this.lastSelected = null;
       this.chessboard.getChessList().forEach((chess) => {
-        if (chess.getHost() != this.localChessHost.value) {
+        if (chess.getHost() != this.localUser.chess.value) {
           chess.selectable = false;
         }
       });
@@ -141,7 +141,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
     if (toPos.equals(chess.getPos())) {
       return;
     }
-    if (chess.getHost() != this.localChessHost.value) {
+    if (chess.getHost() != this.localUser.chess.value) {
       return;
     }
     if (this.lastSelected) {
@@ -161,7 +161,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
     const action = new ChessAction();
     action.fromPos = fromPos;
     action.toPos = toPos;
-    action.chessHost = this.localChessHost.value as ChessHost;
+    action.chessHost = this.localUser.chess.value;
     (this.gameRule as ChineseChessGameRule).onChessAction(action, duration);
     this.gameplayServer.moveChess(fromPos, toPos);
   }

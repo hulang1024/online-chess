@@ -1,10 +1,11 @@
 import device from "current-device";
 import GameState from "src/online/play/GameState";
 import ChessPos from "src/rulesets/gobang/ChessPos";
-import ChessHost from "src/rulesets/chess_host";
 import Bindable from "src/utils/bindables/Bindable";
 import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
+import GameUser from "src/online/play/GameUser";
+import UserStatus from "src/user/UserStatus";
 import UserPlayInput from "../UserPlayInput";
 import GameRule from "../GameRule";
 import GobangGameplayServer from "./online/GobangGameplayServer";
@@ -34,39 +35,42 @@ export default class GobangUserPlayInput extends UserPlayInput {
   constructor(
     gameRule: GameRule,
     gameState: Bindable<GameState>,
-    localChessHost: Bindable<ChessHost | null>,
+    localUser: GameUser,
     isWatchingMode: boolean,
   ) {
-    super(gameRule, gameState, localChessHost, isWatchingMode);
+    super(gameRule, gameState, localUser, isWatchingMode);
 
     this.chessboard = (gameRule as GobangGameRule).getChessboard();
 
     this.mouseChessTarget = new MouseChessTarget(this.chessboard);
-    this.chessboard.canvas.addEventListener('mousemove', (event: MouseEvent) => {
-      if (!this.enabled) {
-        return;
-      }
-      const { offsetX, offsetY } = event;
-      const { cellSize } = this.chessboard.sizes;
-      const row = Math.round(offsetY / cellSize);
-      const col = Math.round(offsetX / cellSize);
-      this.mouseChessTarget.show(row, col);
-      if (this.localChessHost.value) {
-        this.gameplayServer.pushChessTargetPos(new ChessPos(row, col), this.localChessHost.value);
-      }
-    });
 
     if (isWatchingMode) {
       return;
     }
+
+    this.chessboard.onChessPosHover = (pos: ChessPos) => {
+      if (!this.enabled) {
+        return;
+      }
+      this.mouseChessTarget.show(pos);
+      this.gameplayServer.pushChessTargetPos(pos, this.localUser.chess.value);
+    };
+
+    this.chessboard.el.addEventListener('mouseleave', this.onIdle.bind(this));
+
+    this.localUser.status.changed.add((status: UserStatus) => {
+      if (status == UserStatus.AFK) {
+        this.onIdle();
+      }
+    });
 
     this._mode = configManager.get(ConfigItem.gobangInputMode) as InputMode
       // eslint-disable-next-line
       || (device.mobile() ? InputMode.CONFIRM : InputMode.NORMAL);
 
     this.gameRule.activeChessHost.addAndRunOnce((activeChessHost) => {
-      if (activeChessHost == this.localChessHost.value) {
-        this.mouseChessTarget.setChess(this.localChessHost.value as ChessHost);
+      if (activeChessHost == this.localUser.chess.value) {
+        this.mouseChessTarget.setChess(this.localUser.chess.value);
       }
     });
 
@@ -88,14 +92,14 @@ export default class GobangUserPlayInput extends UserPlayInput {
     if (this.mode == InputMode.CONFIRM) {
       if (!this.lastClickChessPos || !this.lastClickChessPos.equals(pos)) {
         this.lastClickChessPos = pos;
-        this.mouseChessTarget.show(pos.row, pos.col);
+        this.mouseChessTarget.show(pos);
         return;
       }
     }
 
     const action = new ChessAction();
     action.pos = pos;
-    action.chess = this.localChessHost.value as ChessHost;
+    action.chess = this.localUser.chess.value;
     (this.gameRule as GobangGameRule).onChessAction(action);
     this.gameplayServer.putChess(action.pos, action.chess);
     this.lastClickChessPos = null;
@@ -111,6 +115,7 @@ export default class GobangUserPlayInput extends UserPlayInput {
     configManager.save();
     if (this._mode == InputMode.NORMAL) {
       this.mouseChessTarget.hide();
+      this.lastClickChessPos = null;
     }
   }
 
@@ -121,5 +126,17 @@ export default class GobangUserPlayInput extends UserPlayInput {
   public disable() {
     super.disable();
     this.mouseChessTarget.hide();
+  }
+
+  public onIdle() {
+    if (!this.enabled) {
+      return;
+    }
+
+    this.mouseChessTarget.hide();
+    if (this.lastClickChessPos) {
+      this.lastClickChessPos = null;
+    }
+    this.gameplayServer.pushChessTargetPos(null, this.localUser.chess.value);
   }
 }

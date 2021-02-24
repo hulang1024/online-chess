@@ -1,6 +1,6 @@
 import GameState from "src/online/play/GameState";
 import Bindable from "src/utils/bindables/Bindable";
-import ChessHost from "./chess_host";
+import GameUser from "src/online/play/GameUser";
 import UserPlayInput from "./UserPlayInput";
 import GameRule from "./GameRule";
 import RulesetClient from "./RulesetClient";
@@ -14,7 +14,7 @@ export default abstract class Ruleset {
   public abstract createUserPlayInput(
     game: GameRule,
     gameState: Bindable<GameState>,
-    localChessHost: Bindable<ChessHost | null>,
+    localUser: GameUser,
     isWatchingMode: boolean,
   ): UserPlayInput;
 

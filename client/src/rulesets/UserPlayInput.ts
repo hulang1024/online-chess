@@ -1,7 +1,7 @@
 import GameState from "src/online/play/GameState";
+import GameUser from "src/online/play/GameUser";
 import Bindable from "src/utils/bindables/Bindable";
 import Signal from "src/utils/signals/Signal";
-import ChessHost from "./chess_host";
 import GameRule from "./GameRule";
 
 export default abstract class UserPlayInput {
@@ -15,17 +15,20 @@ export default abstract class UserPlayInput {
 
   protected gameState: Bindable<GameState>;
 
-  protected localChessHost: Bindable<ChessHost | null>;
+  protected localUser: GameUser;
+
+  protected isWatchingMode: boolean;
 
   constructor(
     gameRule: GameRule,
     gameState: Bindable<GameState>,
-    localChessHost: Bindable<ChessHost | null>,
+    localUser: GameUser,
     isWatchingMode: boolean,
   ) {
     this.gameRule = gameRule;
     this.gameState = gameState;
-    this.localChessHost = localChessHost;
+    this.localUser = localUser;
+    this.isWatchingMode = isWatchingMode;
 
     if (!isWatchingMode) {
       gameState.changed.add(() => {
@@ -46,7 +49,7 @@ export default abstract class UserPlayInput {
 
   protected checkReject() {
     if (this.gameState.value == GameState.PLAYING
-      && this.localChessHost.value != this.gameRule.activeChessHost.value) {
+      && this.localUser.chess.value != this.gameRule.activeChessHost.value) {
       this.onReject();
     }
   }

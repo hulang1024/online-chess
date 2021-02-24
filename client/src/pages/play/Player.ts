@@ -106,7 +106,7 @@ export default class Player extends GameplayClient {
       this.userPlayInput = ruleset.createUserPlayInput(
         this.game,
         this.gameState,
-        this.localUser.chess,
+        this.localUser,
         this.isWatchingMode,
       );
       this.rulesetPlayer.userPlayInput = this.userPlayInput;
