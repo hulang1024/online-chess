@@ -8,6 +8,8 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
 
   public onChessPosClick: (pos: ChessPos) => void;
 
+  public onChessPosHover: (pos: ChessPos) => void;
+
   private gridNumber: number;
 
   public canvas: HTMLCanvasElement;
@@ -37,6 +39,14 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
       this.onChessPosClick(new ChessPos(row, col));
     });
     canvasContainer.appendChild(canvas);
+
+    canvas.addEventListener('mousemove', (event: MouseEvent) => {
+      const { offsetX, offsetY } = event;
+      const { cellSize } = this.sizes;
+      const row = Math.round(offsetY / cellSize);
+      const col = Math.round(offsetX / cellSize);
+      this.onChessPosHover(new ChessPos(row, col));
+    });
 
     this.resizeAndDraw(stage);
   }
