@@ -10,12 +10,6 @@
 
       <q-card-actions align="center">
         <q-btn
-          label="退出"
-          @click="() => onAction('quit')"
-          color="negative"
-          v-close-popup
-        />
-        <q-btn
           v-if="showAgain"
           label="再来"
           @click="() => onAction('again')"

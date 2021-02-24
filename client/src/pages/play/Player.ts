@@ -420,9 +420,6 @@ export default class Player extends GameplayClient {
               }
               this.gameState.value = GameState.READY;
               break;
-            case 'quit':
-              this.partRoom();
-              break;
             default:
               break;
           }
