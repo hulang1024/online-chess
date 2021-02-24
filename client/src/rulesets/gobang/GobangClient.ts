@@ -30,7 +30,11 @@ export default class GobangClient extends RulesetClient {
 
   private chessTargetPos(msg: ChessTargetPosMsg) {
     const { mouseChessTarget } = (this.userPlayInput as GobangUserPlayInput);
-    mouseChessTarget.setChess(msg.chess);
-    mouseChessTarget.show(msg.pos.row, msg.pos.col);
+    if (msg.pos) {
+      mouseChessTarget.setChess(msg.chess);
+      mouseChessTarget.show(ChessPos.make(msg.pos));
+    } else {
+      mouseChessTarget.hide();
+    }
   }
 }
