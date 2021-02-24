@@ -16,8 +16,15 @@
           v-close-popup
         />
         <q-btn
+          v-if="showAgain"
           label="再来"
           @click="() => onAction('again')"
+          color="light-green"
+          v-close-popup
+        />
+        <q-btn
+          label="确定"
+          @click="() => onAction('ok')"
           color="primary"
           v-close-popup
         />
@@ -30,14 +37,20 @@
 import { defineComponent, ref } from '@vue/composition-api';
 
 export default defineComponent({
+  props: {
+    showAgain: {
+      type: Boolean,
+      default: false,
+    },
+  },
   setup() {
     const isOpen = ref<boolean>(false);
     const displayText = ref<string>('');
 
-    let actionCallback: (action: string) => void;
+    let actionCallback: (action: string | null) => void;
 
     const open = ({ result, isTimeout, action }:
-      {result: number, isTimeout: boolean, action: (action: string) => void}) => {
+      {result: number, isTimeout: boolean, action: (action: string | null) => void}) => {
       const textMap: { [t: number]: string } = {
         0: '平局',
         1: isTimeout ? '对方超时，你赢了！' : '你赢了！',

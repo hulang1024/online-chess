@@ -34,7 +34,10 @@
           ref="textOverlay"
           class="absolute-center"
         />
-        <result-dialog ref="resultDialog" />
+        <result-dialog
+          ref="resultDialog"
+          :show-again="!viewUser.isRoomOwner"
+        />
         <div class="full-width" style="position: absolute; bottom: 30%">
           <slot name="ready-overlay" />
         </div>
@@ -143,7 +146,10 @@
           ref="textOverlay"
           class="absolute-center"
         />
-        <result-dialog ref="resultDialog" />
+        <result-dialog
+          ref="resultDialog"
+          :show-again="!viewUser.isRoomOwner"
+        />
         <div class="absolute-center full-width">
           <slot name="ready-overlay" />
         </div>

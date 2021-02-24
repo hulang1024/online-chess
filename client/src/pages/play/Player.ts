@@ -408,13 +408,23 @@ export default class Player extends GameplayClient {
         result,
         isTimeout: gameOverMsg.timeout,
         action: (option: string) => {
-          if (option == 'again') {
-            if (!this.localUser.isRoomOwner.value) {
-              this.gameplayServer.toggleReady(true);
-            }
-            this.gameState.value = GameState.READY;
-          } else {
-            this.partRoom();
+          switch (option) {
+            case 'again':
+            case 'ok':
+              if (!this.localUser.isRoomOwner.value) {
+                if (option == 'again') {
+                  this.gameplayServer.toggleReady(true);
+                } else {
+                  this.localUser.ready.value = false;
+                }
+              }
+              this.gameState.value = GameState.READY;
+              break;
+            case 'quit':
+              this.partRoom();
+              break;
+            default:
+              break;
           }
         },
       });
