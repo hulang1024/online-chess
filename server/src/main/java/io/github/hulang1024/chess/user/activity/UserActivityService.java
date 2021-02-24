@@ -140,7 +140,7 @@ public class UserActivityService {
         broadcast(UserActivity.VIEW_ONLINE_USER, msg);
         Room joinedRoom = roomManager.getJoinedRoom(user);
         if (joinedRoom != null) {
-            roomManager.broadcast(joinedRoom, msg, user);
+            roomManager.broadcast(joinedRoom, msg);
         }
     }
 
