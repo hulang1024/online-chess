@@ -91,6 +91,7 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
       size: canvasSize - cellSize,
       padding: padding + borderWidth,
       cellSize,
+      gap: 3,
     };
 
     this.el.style.padding = `${padding}px`;
@@ -133,7 +134,7 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
 
     // 画网格
     context.lineWidth = 1;
-    for (let i = 1; i <= this.gridNumber; i++) {
+    for (let i = 1; i < this.gridNumber - 1; i++) {
       // 画横线
       const y = i * cellSize;
       context.moveTo(0, y);
@@ -144,7 +145,7 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
       context.moveTo(x, 0);
       context.lineTo(x, size);
     }
-    context.strokeStyle = '#ecb16a';
+    context.strokeStyle = '#daa06c';
     context.stroke();
 
     // 画圆点
@@ -180,4 +181,6 @@ export interface ChessboardSizes {
    */
   cellSize: number;
 
+  /** 棋子之间的间距 */
+  gap: number;
 }

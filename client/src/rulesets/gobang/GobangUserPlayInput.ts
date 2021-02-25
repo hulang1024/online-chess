@@ -52,8 +52,14 @@ export default class GobangUserPlayInput extends UserPlayInput {
       if (!this.enabled) {
         return;
       }
-      this.mouseChessTarget.show(pos);
-      this.gameplayServer.pushChessTargetPos(pos, this.localUser.chess.value);
+      const chess = this.localUser.chess.value;
+      if ((this.gameRule as GobangGameRule).chessboardState.isEmpty(pos)) {
+        this.mouseChessTarget.show(pos);
+        this.gameplayServer.pushChessTargetPos(pos, chess);
+      } else {
+        this.mouseChessTarget.hide();
+        this.gameplayServer.pushChessTargetPos(null, chess);
+      }
     };
 
     this.chessboard.el.addEventListener('mouseleave', this.onIdle.bind(this));

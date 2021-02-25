@@ -1,7 +1,6 @@
 import ChessHost from 'src/rulesets/chess_host';
 import ChessPos from 'src/rulesets/gobang/ChessPos';
 import GobangDrawableChessboard from './GobangDrawableChessboard';
-import { calcChessDisplayPos, calcChessSize } from './DrawableChess';
 import './chess.scss';
 
 export default class MouseChessTarget {
@@ -14,6 +13,7 @@ export default class MouseChessTarget {
 
     const el = document.createElement('div');
     el.classList.add('chess-target');
+
     this.el = el;
 
     this.chessboard.el.appendChild(el);
@@ -29,12 +29,13 @@ export default class MouseChessTarget {
     const { el } = this;
 
     el.classList.add('show');
-    const size = calcChessSize(this.chessboard.sizes);
-    el.style.width = `${size}px`;
-    el.style.height = `${size}px`;
-    const displayPos = calcChessDisplayPos(pos.row, pos.col, this.chessboard.sizes);
-    el.style.top = `${displayPos.top}px`;
-    el.style.left = `${displayPos.left}px`;
+
+    const { cellSize, padding } = this.chessboard.sizes;
+    const cellRadius = Math.round(cellSize / 2);
+    el.style.width = `${cellSize}px`;
+    el.style.height = `${cellSize}px`;
+    el.style.top = `${pos.row * cellSize + padding - cellRadius}px`;
+    el.style.left = `${pos.col * cellSize + padding - cellRadius}px`;
   }
 
   public hide() {

@@ -3,21 +3,6 @@ import ChessPos from 'src/rulesets/gobang/ChessPos';
 import { ChessboardSizes } from './GobangDrawableChessboard';
 import './chess.scss';
 
-export function calcChessSize(sizes: ChessboardSizes) {
-  const gap = 3; // 棋子之间的间距
-  return sizes.cellSize - gap;
-}
-
-export function calcChessDisplayPos(row: number, col: number, sizes: ChessboardSizes) {
-  const { cellSize, padding } = sizes;
-  const chessRadius = Math.round(calcChessSize(sizes) / 2);
-
-  return {
-    top: row * cellSize + padding - chessRadius,
-    left: col * cellSize + padding - chessRadius,
-  };
-}
-
 export default class DrawableChess {
   public el: HTMLElement;
 
@@ -39,12 +24,13 @@ export default class DrawableChess {
 
     el.classList.add(chess == ChessHost.FIRST ? 'black' : 'white');
 
-    const size = calcChessSize(sizes);
+    const { cellSize, padding } = sizes;
+    const size = sizes.cellSize - sizes.gap;
     el.style.width = `${size}px`;
     el.style.height = `${size}px`;
-    const displayPos = calcChessDisplayPos(this.pos.row, this.pos.col, sizes);
-    el.style.top = `${displayPos.top}px`;
-    el.style.left = `${displayPos.left}px`;
+    const chessRadius = Math.round(size / 2);
+    el.style.top = `${this.pos.row * cellSize + padding - chessRadius}px`;
+    el.style.left = `${this.pos.col * cellSize + padding - chessRadius}px`;
 
     this.el.classList.add('appear');
   }
