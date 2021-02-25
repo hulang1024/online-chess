@@ -1,4 +1,8 @@
 // app global css in SCSS form
+.q-page-container {
+  overflow: hidden;
+}
+
 .body--dark .q-page-container > .q-page {
   background-color: $dark;
 }
