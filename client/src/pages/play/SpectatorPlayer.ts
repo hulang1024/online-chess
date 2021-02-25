@@ -36,7 +36,9 @@ export default class SpectatorPlayer extends Player {
 
     this.playfield.loaded.addOnce(() => {
       this.playfield.chessboard.clicked.add(() => {
-        this.context.$q.notify('你正在旁观中');
+        if (this.gameState.value == GameState.PLAYING) {
+          this.showText('你正在旁观中', 1000);
+        }
       });
     });
   }
