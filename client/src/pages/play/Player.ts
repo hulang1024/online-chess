@@ -280,7 +280,7 @@ export default class Player extends GameplayClient {
       switch (status) {
         case UserStatus.OFFLINE:
           this.room.offlineAt = new Date().toString();
-          this.showText(`对方已下线/掉线，你可以等待对方回来继续`);
+          this.showText(`对方已断线，你可以等待对方回来继续`);
           break;
         case UserStatus.ONLINE:
           this.context.$q.notify(`${gameUser.user.value?.nickname as string}已上线`);
@@ -290,7 +290,11 @@ export default class Player extends GameplayClient {
       }
     };
 
-    gameplayClient.isConnected.changed.add(() => {
+    gameplayClient.isConnected.changed.add((isConnected: boolean) => {
+      if (isConnected) {
+        return;
+      }
+
       if (this.isWatchingMode) {
         this.exitScreen();
         return;
