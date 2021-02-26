@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.github.hulang1024.chess.database.DaoPageParam;
+import io.github.hulang1024.chess.games.GameType;
 import io.github.hulang1024.chess.http.params.PageParam;
 import io.github.hulang1024.chess.http.results.PageRet;
 import io.github.hulang1024.chess.play.GameResult;
@@ -18,7 +19,7 @@ public class UserStatsService {
     @Autowired
     private UserStatsDao userStatsDao;
 
-    public void updateUser(User user, GameResult result) {
+    public void updateUser(User user, GameType gameType, GameResult result) {
         if (user instanceof GuestUser) {
             return;
         }
@@ -27,15 +28,19 @@ public class UserStatsService {
             new UpdateWrapper<UserStats>()
                 .setSql("play_count = play_count + 1")
                 .setSql(updateField + "=" + updateField + "+1")
-                .eq("user_id", user.getId()));
+                .eq("user_id", user.getId())
+                .eq("game_type", gameType.getCode()));
         if (rows == 0) {
-            initializeUser(user);
-            updateUser(user, result);
+            initializeUser(user, gameType);
+            updateUser(user, gameType, result);
         }
     }
 
     public PageRet<SearchUserInfo> searchRanking(SearchRankingParam searchRankingParam, PageParam pageParam) {
         QueryWrapper query = new QueryWrapper<User>();
+
+        query.eq("game_type", searchRankingParam.getGameType());
+
         if (searchRankingParam.getRankingBy() == 1) {
             query.orderByDesc("win_count - lose_count");
         } else if (searchRankingParam.getRankingBy() == 2) {
@@ -46,9 +51,10 @@ public class UserStatsService {
         return new PageRet<>(userPage);
     }
 
-    private void initializeUser(User user) {
+    private void initializeUser(User user, GameType gameType) {
         UserStats userStats = new UserStats();
         userStats.setUserId(user.getId());
+        userStats.setGameType(gameType.getCode());
         userStatsDao.insert(userStats);
     }
 }

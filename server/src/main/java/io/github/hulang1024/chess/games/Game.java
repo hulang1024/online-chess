@@ -9,6 +9,7 @@ import lombok.Setter;
  * @author HuLang
  */
 public abstract class Game {
+    @Getter
     protected GameSettings gameSettings;
 
     @Getter

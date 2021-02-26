@@ -39,6 +39,8 @@ public class User {
 
     private LocalDateTime lastActiveTime;
 
+    private Integer playGameType;
+
     private String userIp;
 
     /**

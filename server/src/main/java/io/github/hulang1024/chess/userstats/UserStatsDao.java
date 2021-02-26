@@ -13,6 +13,7 @@ public interface UserStatsDao extends BaseMapper<UserStats> {
     @Select("" +
         " select" +
         "     users.*," +
+        "     user_stats.game_type 'userStats.gameType'," +
         "     user_stats.play_count 'userStats.playCount'," +
         "     user_stats.win_count 'userStats.winCount'," +
         "     user_stats.lose_count 'userStats.loseCount'," +

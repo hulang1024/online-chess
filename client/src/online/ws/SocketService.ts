@@ -159,7 +159,8 @@ export default class SocketService {
         case 3: {
           const lastLoginUser = this.api.localUser;
           const token = configManager.get(ConfigItem.token) as string;
-          if ((lastLoginUser.username && lastLoginUser.password) || token) {
+          if ((!(lastLoginUser instanceof GuestUser)
+            && (lastLoginUser.username && lastLoginUser.password)) || token) {
             await this.api.login(lastLoginUser, token);
           } else {
             await this.api.login(new GuestUser());

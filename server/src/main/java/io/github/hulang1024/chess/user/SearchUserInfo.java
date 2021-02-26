@@ -24,6 +24,7 @@ public class SearchUserInfo extends User {
         setEmail(user.getEmail());
         setLastLoginTime(user.getLastLoginTime());
         setLastActiveTime(user.getLastActiveTime());
+        setPlayGameType(user.getPlayGameType());
         setRegisterTime(user.getRegisterTime());
         setSource(user.getSource());
         setUserIp(user.getUserIp());

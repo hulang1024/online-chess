@@ -12,8 +12,8 @@
       >
 
         <div class="q-gutter-sm">
-          <q-radio v-model="gameType" :val="1" label="象棋" />
           <q-radio v-model="gameType" :val="2" label="五子棋" />
+          <q-radio v-model="gameType" :val="1" label="象棋" />
         </div>
 
         <q-input
@@ -112,6 +112,7 @@ import TimerSettings from 'src/rulesets/TimerSettings';
 import { GameType } from 'src/rulesets/GameType';
 import GobangGameSettings from 'src/rulesets/gobang/GobangGameSettings';
 import ChineseChessGameSettings from 'src/rulesets/chinesechess/ChineseChessGameSettings';
+import { api } from 'src/boot/main';
 
 export default defineComponent({
   setup() {
@@ -126,7 +127,7 @@ export default defineComponent({
       ...new TimerSettings(),
       // for gobang
       chessboardSize: 15,
-      gameType: 1,
+      gameType: 0,
     };
 
     const form = reactive({ ...INIT_VALUES });
@@ -141,6 +142,7 @@ export default defineComponent({
     }) => {
       action = options.action;
       Object.assign(form, INIT_VALUES);
+      form.gameType = api.localUser.playGameType || 2;
       createLoading.value = false;
       isOpen.value = true;
     };

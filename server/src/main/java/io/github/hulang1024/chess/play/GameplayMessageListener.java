@@ -1,20 +1,19 @@
 package io.github.hulang1024.chess.play;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.github.hulang1024.chess.chat.ChannelManager;
 import io.github.hulang1024.chess.chat.InfoMessage;
-import io.github.hulang1024.chess.games.Game;
-import io.github.hulang1024.chess.games.GameFactory;
-import io.github.hulang1024.chess.games.GameState;
-import io.github.hulang1024.chess.games.GameTimer;
+import io.github.hulang1024.chess.games.*;
 import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.play.ws.*;
 import io.github.hulang1024.chess.play.ws.servermsg.*;
-import io.github.hulang1024.chess.games.GameUser;
 import io.github.hulang1024.chess.room.Room;
 import io.github.hulang1024.chess.room.RoomManager;
 import io.github.hulang1024.chess.room.RoomStatus;
 import io.github.hulang1024.chess.room.ws.LobbyRoomUpdateServerMsg;
+import io.github.hulang1024.chess.user.GuestUser;
 import io.github.hulang1024.chess.user.User;
+import io.github.hulang1024.chess.user.UserDao;
 import io.github.hulang1024.chess.user.UserStatus;
 import io.github.hulang1024.chess.user.activity.UserActivity;
 import io.github.hulang1024.chess.user.activity.UserActivityService;
@@ -33,6 +32,8 @@ public class GameplayMessageListener extends AbstractMessageListener {
     private RoomManager roomManager;
     @Autowired
     private UserStatsService userStatsService;
+    @Autowired
+    private UserDao userDao;
     @Autowired
     private ChannelManager channelManager;
 
@@ -265,6 +266,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
     private void gameOver(boolean isNormal, Long winUserId, boolean isTimeout, Room room) {
         room.setStatus(RoomStatus.BEGINNING);
         Game game = room.getGame();
+        GameType gameType = game.getGameSettings().getGameType();
         game.over();
 
         room.getOtherUser(room.getOwner()).setReady(false);
@@ -276,16 +278,30 @@ public class GameplayMessageListener extends AbstractMessageListener {
                 .findAny();
             winUser = winUserOpt.get().getUser();
             User loseUser = room.getOtherUser(winUser).getUser();
-            userStatsService.updateUser(winUser, GameResult.WIN);
-            userStatsService.updateUser(loseUser, GameResult.LOSE);
+            userStatsService.updateUser(winUser, gameType, GameResult.WIN);
+            userStatsService.updateUser(loseUser, gameType, GameResult.LOSE);
         } else {
             room.getGameUsers().forEach(gameUser -> {
-                userStatsService.updateUser(gameUser.getUser(), GameResult.DRAW);
+                userStatsService.updateUser(gameUser.getUser(), gameType, GameResult.DRAW);
             });
         }
+
+        Object[] userIds = room.getGameUsers().stream()
+            .map(gameUser -> gameUser.getUser())
+            .filter(user -> !(user instanceof GuestUser))
+            .map(user -> user.getId())
+            .toArray();
+        if (userIds.length > 0) {
+            userDao.update(null,
+                new UpdateWrapper<User>()
+                    .set("play_game_type", gameType.getCode())
+                    .in("id", userIds));
+        }
+
         roomManager.broadcast(room, new GameOverServerMsg(winUserId, isNormal, isTimeout));
         userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
         room.getGameUsers().forEach(gameUser -> {
+            gameUser.getUser().setPlayGameType(gameType.getCode());
             userActivityService.enter(gameUser.getUser(), UserActivity.IN_ROOM);
         });
         channelManager.broadcast(room.getChannel(),

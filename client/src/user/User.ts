@@ -21,6 +21,8 @@ export default class User {
 
   lastActiveTime: string;
 
+  playGameType: number;
+
   userIp: string;
 
   static SYSTEM: User;

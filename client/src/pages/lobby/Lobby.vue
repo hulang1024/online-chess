@@ -27,12 +27,12 @@
         label="全部"
       />
       <q-tab
-        :name="1"
-        label="象棋"
-      />
-      <q-tab
         :name="2"
         label="五子棋"
+      />
+      <q-tab
+        :name="1"
+        label="象棋"
       />
     </q-tabs>
     <q-tabs
@@ -286,7 +286,8 @@ export default defineComponent({
         const room = new Room();
         room.name = '';
         const gameSettings = new GameSettings();
-        gameSettings.gameType = Math.random() > 0.5 ? GameType.chinesechess : GameType.gobang;
+        gameSettings.gameType = api.localUser.playGameType
+          || (Math.random() > 0.5 ? GameType.chinesechess : GameType.gobang);
         gameSettings.timer = new TimerSettings();
         room.roomSettings = new RoomSettings();
         room.roomSettings.gameSettings = gameSettings;

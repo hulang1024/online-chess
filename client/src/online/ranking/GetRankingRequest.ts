@@ -11,6 +11,7 @@ export default class GetRankingRequest extends APIRequest<APIPageResponse<Search
 
     this.addParam('page', params.page);
     this.addParam('size', params.size);
+    this.addParam('gameType', params.gameType);
     this.addParam('rankingBy', params.rankingBy);
   }
 }

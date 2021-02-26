@@ -3,5 +3,7 @@ export default class SearchRankingParams {
 
   size = 10;
 
+  gameType: number;
+
   rankingBy = 1;
 }

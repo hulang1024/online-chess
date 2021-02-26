@@ -150,26 +150,27 @@ public class UserManager {
         return new PageRet<>(pageData);
     }
 
-    public SearchUserInfo queryUser(long id) {
+    public UserDetails queryUser(long id) {
         User user = getLoggedInUser(id);
         if (user != null) {
-            SearchUserInfo userInfo = new SearchUserInfo(user);
+            UserDetails userInfo = new UserDetails(user);
             userInfo.setUserDeviceInfo(getUserDeviceInfo(user));
             user = userInfo;
         } else if (id > 0) {
-            user = new SearchUserInfo(getDatabaseUser(id));
+            user = new UserDetails(getDatabaseUser(id));
         }
 
         if (user != null) {
-            SearchUserInfo userInfo = (SearchUserInfo)user;
-            UserStats userStats = userStatsDao.selectById(id);
-            userInfo.setUserStats(userStats != null ? userStats : UserStats.NULL);
+            UserDetails userInfo = (UserDetails)user;
+            List<UserStats> userStats = userStatsDao.selectList(
+                new QueryWrapper<UserStats>().eq("user_id", id));
+            userInfo.setScoreStats(userStats);
             Optional<FriendRelation> relation = friendsManager.findUserFriendRelation(UserUtils.get(), user);
             userInfo.setIsFriend(relation.isPresent());
             userInfo.setIsMutual(relation.map(r -> r.getIsMutual()).orElse(false));
         }
 
-        return (SearchUserInfo)user;
+        return (UserDetails)user;
     }
 
     public RegisterResult register(UserRegisterParam param) {

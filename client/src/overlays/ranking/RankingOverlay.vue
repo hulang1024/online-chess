@@ -13,12 +13,30 @@
       class="content-card q-px-sm"
     >
       <q-tabs
-        v-model="activeTab"
+        v-model="gameTypeActiveTab"
         align="left"
         dense
         inline-label
         :breakpoint="0"
         indicator-color="primary"
+        class="col"
+      >
+        <q-tab
+          :name="2"
+          label="五子棋"
+        />
+        <q-tab
+          :name="1"
+          label="象棋"
+        />
+      </q-tabs>
+      <q-tabs
+        v-model="rankingByActiveTab"
+        align="left"
+        dense
+        inline-label
+        :breakpoint="0"
+        indicator-color="orange"
         class="col"
       >
         <q-tab
@@ -115,7 +133,8 @@ export default defineComponent({
   setup() {
     const context = getCurrentInstance() as Vue;
     const isOpen = ref(false);
-    const activeTab = ref(1);
+    const gameTypeActiveTab = ref(api.localUser.playGameType || 2);
+    const rankingByActiveTab = ref(1);
     const loading = ref(true);
 
     const columns = [
@@ -136,7 +155,8 @@ export default defineComponent({
       const searchParams = new SearchRankingParams();
       searchParams.size = 50;
       searchParams.page = 1;
-      searchParams.rankingBy = activeTab.value;
+      searchParams.gameType = gameTypeActiveTab.value;
+      searchParams.rankingBy = rankingByActiveTab.value;
       const req = new GetRankingRequest(searchParams);
       req.loading = loading;
       req.success = (userPage: APIPageResponse<SearchUserInfo>) => {
@@ -169,9 +189,8 @@ export default defineComponent({
       }
     };
 
-    watch(activeTab, () => {
-      queryRankingUsers();
-    });
+    watch(gameTypeActiveTab, queryRankingUsers);
+    watch(rankingByActiveTab, queryRankingUsers);
 
     const onUserClick = (u: User) => {
       // eslint-disable-next-line
@@ -184,7 +203,8 @@ export default defineComponent({
       show,
       hide,
 
-      activeTab,
+      gameTypeActiveTab,
+      rankingByActiveTab,
       loading,
       columns,
       users,

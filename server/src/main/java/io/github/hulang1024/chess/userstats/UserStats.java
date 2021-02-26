@@ -1,8 +1,6 @@
 package io.github.hulang1024.chess.userstats;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -12,8 +10,9 @@ public class UserStats {
     public static final UserStats NULL = new UserStats();
 
     @JSONField(serialize = false)
-    @TableId(type = IdType.INPUT)
     private Long userId;
+
+    private int gameType;
 
     private long playCount;
 

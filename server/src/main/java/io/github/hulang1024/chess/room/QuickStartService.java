@@ -5,7 +5,9 @@ import io.github.hulang1024.chess.user.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 public class QuickStartService {
@@ -18,7 +20,19 @@ public class QuickStartService {
         SearchRoomParam searchRoomParam = new SearchRoomParam();
         searchRoomParam.setStatus(RoomStatus.OPEN.code);
         searchRoomParam.setRequirePassword(false);
-        Optional<Room> roomOpt = roomManager.searchRooms(searchRoomParam).stream().findAny();
+
+        Optional<Room> roomOpt;
+        if (user.getPlayGameType() == null) {
+            roomOpt = roomManager.searchRooms(searchRoomParam).stream().findAny();
+        } else {
+            Function<Room, Integer> roomCmpValue = (room) -> {
+                int gameType = room.getGameSettings().getGameType().getCode();
+                return gameType == user.getPlayGameType() ? Integer.MIN_VALUE : gameType;
+            };
+            roomOpt = roomManager.searchRooms(searchRoomParam).stream()
+                .sorted(Comparator.comparingInt(roomCmpValue::apply))
+                .findAny();
+        }
         if (roomOpt.isPresent()) {
             Room room = roomOpt.get();
             // 加入房间

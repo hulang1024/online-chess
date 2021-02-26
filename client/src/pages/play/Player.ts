@@ -403,6 +403,8 @@ export default class Player extends GameplayClient {
       return;
     }
 
+    api.localUser.playGameType = this.room.roomSettings.gameSettings.gameType;
+
     const result = gameOverMsg.winUserId ? (this.localUser.id == gameOverMsg.winUserId ? 1 : 2) : 0;
 
     const onGameEnd = () => {

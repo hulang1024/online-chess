@@ -21,31 +21,48 @@
           <div class="nickname text-h5">{{ user.nickname }}</div>
         </div>
         <div
-          v-if="user.id > 0 && user.userStats"
+          v-if="user.id > 0"
           class="column items-center q-mt-sm"
         >
           <q-separator />
           <div class="text-h6">表现</div>
-          <div class="count-row">
-            <label>胜率</label>
-            <div class="count">{{ user.userStats.winRate.toFixed(2) }}%</div>
-          </div>
-          <div class="count-row">
-            <label>局数</label>
-            <div class="count">{{ user.userStats.playCount }}</div>
-          </div>
-          <div class="count-row">
-            <label>胜</label>
-            <div class="count">{{ user.userStats.winCount }}</div>
-          </div>
-          <div class="count-row">
-            <label>负</label>
-            <div class="count">{{ user.userStats.loseCount }}</div>
-          </div>
-          <div class="count-row">
-            <label>和</label>
-            <div class="count">{{ user.userStats.drawCount }}</div>
-          </div>
+          <q-tabs
+            v-model="gameTypeActiveTab"
+            align="center"
+            dense
+          >
+            <q-tab
+              :name="2"
+              label="五子棋"
+            />
+            <q-tab
+              :name="1"
+              label="象棋"
+            />
+          </q-tabs>
+          <template v-if="userStats">
+            <div class="count-row">
+              <label>胜率</label>
+              <div class="count">{{ userStats.winRate.toFixed(2) }}%</div>
+            </div>
+            <div class="count-row">
+              <label>局数</label>
+              <div class="count">{{ userStats.playCount }}</div>
+            </div>
+            <div class="count-row">
+              <label>胜</label>
+              <div class="count">{{ userStats.winCount }}</div>
+            </div>
+            <div class="count-row">
+              <label>负</label>
+              <div class="count">{{ userStats.loseCount }}</div>
+            </div>
+            <div class="count-row">
+              <label>和</label>
+              <div class="count">{{ userStats.drawCount }}</div>
+            </div>
+          </template>
+          <span v-else class="q-py-md">无记录</span>
         </div>
         <q-separator class="q-my-sm" />
         <div class="other-info">
@@ -103,23 +120,31 @@
 
 <script lang="ts">
 import {
-  computed, defineComponent, getCurrentInstance, ref,
+  computed, defineComponent, getCurrentInstance, ref, watch,
 } from '@vue/composition-api';
 import { api, channelManager } from 'src/boot/main';
 import GetUserRequest from 'src/online/user/GetUserRequest';
-import SearchUserInfo from 'src/online/user/SearchUserInfo';
+import UserDetails from 'src/online/user/UserDetails';
 import User from 'src/user/User';
 import { translateDeviceOS } from "src/user/device.ts";
 import UserAvatar from 'src/user/components/UserAvatar.vue';
 import AddFriendRequest from 'src/online/friend/AddFriendRequest';
+import UserStats from 'src/user/UserStats';
 
 export default defineComponent({
   components: { UserAvatar },
   setup() {
     const context = getCurrentInstance() as Vue;
     const { $q } = context;
-    const _user = ref<SearchUserInfo>();
+    const _user = ref<UserDetails>();
+    const userStats = ref<UserStats | null>(null);
+    const gameTypeActiveTab = ref(0);
     const isOpen = ref(false);
+
+    watch(gameTypeActiveTab, (gameType) => {
+      userStats.value = _user.value?.scoreStats
+        .find((item) => item.gameType == gameType) as UserStats;
+    });
 
     const lastActiveTimeDesc = computed(() => {
       const u = _user.value as User;
@@ -140,15 +165,18 @@ export default defineComponent({
       isOpen.value = false;
     };
 
-    const show = (user: SearchUserInfo) => {
+    const show = (user: UserDetails) => {
       _user.value = user;
 
       const req = new GetUserRequest(user.id);
       req.success = (resUser) => {
         _user.value = resUser;
+        gameTypeActiveTab.value = resUser.playGameType
+          || api.localUser.playGameType || 2;
       };
       req.failure = () => {
-        _user.value = { ..._user.value as SearchUserInfo, lastActiveTime: '' };
+        _user.value = { ..._user.value as UserDetails, lastActiveTime: '' };
+        gameTypeActiveTab.value = 1;
       };
       api.queue(req);
 
@@ -167,7 +195,7 @@ export default defineComponent({
         $q.notify({ type: 'warning', message: '你现在是游客，无法添加其他人为好友' });
         return;
       }
-      const user = _user.value as SearchUserInfo;
+      const user = _user.value as UserDetails;
       const req = new AddFriendRequest(user);
       req.success = (ret) => {
         user.isFriend = true;
@@ -180,10 +208,12 @@ export default defineComponent({
     return {
       show,
       hide,
+      gameTypeActiveTab,
       isOpen,
 
       localUser: api.localUser,
       user: _user,
+      userStats,
 
       lastActiveTimeDesc,
 

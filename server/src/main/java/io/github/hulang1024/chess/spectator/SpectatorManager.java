@@ -141,7 +141,13 @@ public class SpectatorManager {
 
     public void leaveRoom(long roomId, long userId) {
         User user = userManager.getLoggedInUser(userId);
+        if (user == null) {
+            return;
+        }
         Room room = roomManager.getRoom(roomId);
+        if (room == null) {
+            return;
+        }
         leaveRoom(user, room);
     }
 
