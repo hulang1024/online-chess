@@ -141,9 +141,9 @@ export default defineComponent({
     const gameTypeActiveTab = ref(0);
     const isOpen = ref(false);
 
-    watch(gameTypeActiveTab, (gameType) => {
+    watch([gameTypeActiveTab, _user], () => {
       userStats.value = _user.value?.scoreStats
-        .find((item) => item.gameType == gameType) as UserStats;
+        .find((item) => item.gameType == gameTypeActiveTab.value) as UserStats;
     });
 
     const lastActiveTimeDesc = computed(() => {
@@ -171,12 +171,24 @@ export default defineComponent({
       const req = new GetUserRequest(user.id);
       req.success = (resUser) => {
         _user.value = resUser;
-        gameTypeActiveTab.value = resUser.playGameType
-          || api.localUser.playGameType || 2;
+
+        let playGameType: number | undefined;
+        if (api.localUser.playGameType) {
+          playGameType = resUser.scoreStats
+            .find((item) => item.gameType == api.localUser.playGameType)?.gameType;
+        }
+        if (!playGameType) {
+          playGameType = resUser.scoreStats
+            .find((item) => item.gameType == resUser.playGameType)?.gameType;
+        }
+        if (!playGameType) {
+          playGameType = resUser.scoreStats.length ? resUser.scoreStats[0].gameType : 2;
+        }
+        gameTypeActiveTab.value = playGameType;
       };
       req.failure = () => {
         _user.value = { ..._user.value as UserDetails, lastActiveTime: '' };
-        gameTypeActiveTab.value = 1;
+        gameTypeActiveTab.value = 2;
       };
       api.queue(req);
 
