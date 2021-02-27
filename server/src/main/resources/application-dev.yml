@@ -5,7 +5,7 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     sql-script-encoding: utf-8
-    url: jdbc:mysql://127.0.0.1:3306/chess?useUnicode=true&characterEncoding=UTF8&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://127.0.0.1:3306/chess?useUnicode=true&characterEncoding=UTF8&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
     username: root
     password: 12345678
     driver-class-name: com.mysql.cj.jdbc.Driver
