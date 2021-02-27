@@ -237,10 +237,7 @@ export default defineComponent({
       InvitationEvents.reply.add(onInvitationReply);
     }
 
-    watch(roomStatusActiveTab, () => {
-      queryRooms();
-    });
-    watch(gameTypeActiveTab, () => {
+    watch([roomStatusActiveTab, gameTypeActiveTab], () => {
       queryRooms();
     });
 
