@@ -133,7 +133,7 @@ export default defineComponent({
   setup() {
     const context = getCurrentInstance() as Vue;
     const isOpen = ref(false);
-    const gameTypeActiveTab = ref(api.localUser.playGameType || 2);
+    const gameTypeActiveTab = ref(0);
     const rankingByActiveTab = ref(1);
     const loading = ref(true);
 
@@ -174,6 +174,7 @@ export default defineComponent({
       setTimeout(() => {
         queryRankingUsers();
       }, 300);
+      gameTypeActiveTab.value = api.localUser.playGameType || 2;
       isOpen.value = true;
     };
 
@@ -189,8 +190,7 @@ export default defineComponent({
       }
     };
 
-    watch(gameTypeActiveTab, queryRankingUsers);
-    watch(rankingByActiveTab, queryRankingUsers);
+    watch([gameTypeActiveTab, rankingByActiveTab], queryRankingUsers);
 
     const onUserClick = (u: User) => {
       // eslint-disable-next-line
