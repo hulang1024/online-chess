@@ -4,9 +4,11 @@ import GameState from "src/online/play/GameState";
 import { toReadableText } from 'src/online/play/confirm_request';
 import SpectateResponse from "src/online/spectator/APISpectateResponse";
 import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
+import JoinRoomRequest from "src/online/room/JoinRoomRequest";
 import User from "src/user/User";
 import Player from "./Player";
 import GameUser from "../../online/play/GameUser";
+import * as playPageSignals from './signals';
 
 export default class SpectatorPlayer extends Player {
   constructor(context: Vue, spectateResponse: SpectateResponse) {
@@ -17,6 +19,7 @@ export default class SpectatorPlayer extends Player {
 
     onMounted(() => {
       switch (room.gameStatus) {
+        case 0:
         case GameState.READY:
           this.showText('你正在旁观中，请等待游戏开始');
           break;
@@ -89,10 +92,39 @@ export default class SpectatorPlayer extends Player {
   }
 
   public onQuitClick() {
-    this.exitScreen();
+    this.partRoom();
   }
 
-  protected exitScreen(name = '/') {
+  public onJoinGameClick() {
+    if (this.localUser.user.value && this.otherUser.user.value) {
+      return;
+    }
+
+    playPageSignals.reload.dispatch();
+    playPageSignals.exited.addOnce(() => {
+      const { $q } = this.context;
+      $q.loading.show();
+      const req = new JoinRoomRequest(this.room);
+      req.success = async (result) => {
+        await this.context.$router.push({
+          name: 'play',
+          replace: true,
+          query: { id: result.room.id as unknown as string },
+          params: {
+            room: result.room as unknown as string,
+          },
+        });
+        $q.loading.hide();
+      };
+      req.failure = () => {
+        $q.notify({ type: 'warning', message: `加入棋桌失败` });
+        $q.loading.hide();
+      };
+      this.api.perform(req);
+    });
+  }
+
+  protected partRoom(name = '/') {
     const req = new SpectatorLeaveRequest(this.room);
     req.success = () => {
       super.exitScreen(name);

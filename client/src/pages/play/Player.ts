@@ -4,6 +4,8 @@ import ChannelType from 'src/online/chat/ChannelType';
 import ChannelManager from 'src/online/chat/ChannelManager';
 import GameState from 'src/online/play/GameState';
 import PartRoomRequest from 'src/online/room/PartRoomRequest';
+import SpectateRoomRequest from 'src/online/spectator/SpectateRoomRequest';
+import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import Room from 'src/online/room/Room';
 import * as GameplayMsgs from 'src/online/play/gameplay_server_messages';
 import ResponseGameStates, { ResponseGameStateTimer } from 'src/rulesets/game_states_response';
@@ -28,7 +30,7 @@ import GameUser from '../../online/play/GameUser';
 import Timer from '../../rulesets/ui/timer/Timer';
 import CircleTimer from '../../rulesets/ui/timer/CircleTimer';
 import GameAudio from '../../rulesets/GameAudio';
-import * as signals from './signals';
+import * as playPageSignals from './signals';
 
 export default class Player extends GameplayClient {
   public game: GameRule;
@@ -180,8 +182,8 @@ export default class Player extends GameplayClient {
       this.onExit();
     });
 
-    signals.reload.add(() => {
-      this.exitScreen('/reload');
+    playPageSignals.reload.add(() => {
+      this.partRoom('/reload');
     }, this);
   }
 
@@ -332,8 +334,8 @@ export default class Player extends GameplayClient {
     this.spectatorClient.exit();
     this.rulesetClient.exit();
     this.channelManager.leaveChannel(this.room.channelId);
-    signals.reload.removeAll();
-    signals.exited.dispatch();
+    playPageSignals.reload.removeAll();
+    playPageSignals.exited.dispatch();
   }
 
   protected resultsReady(msg: GameplayMsgs.ResultsReadyMsg) {
@@ -709,6 +711,39 @@ export default class Player extends GameplayClient {
     }
   }
 
+  public onToSpectateClick() {
+    const canToSpectate = (
+      (this.localUser.user.value && this.otherUser.user.value)
+      && (this.localUser.isRoomOwner.value
+        || (!this.localUser.isRoomOwner.value && !this.localUser.ready.value))
+      && this.gameState.value == GameState.READY
+    );
+    if (!canToSpectate) {
+      return;
+    }
+
+    playPageSignals.reload.dispatch();
+    playPageSignals.exited.addOnce(() => {
+      const { $q } = this.context;
+      $q.loading.show();
+      const req = new SpectateRoomRequest(this.room);
+      req.success = async (result: SpectateResponse) => {
+        await this.context.$router.push({
+          name: 'spectate',
+          replace: true,
+          query: { id: result.room.id as unknown as string },
+          params: { spectateResponse: result as unknown as string },
+        });
+        $q.loading.hide();
+      };
+      req.failure = () => {
+        $q.notify({ type: 'error', message: '旁观失败' });
+        $q.loading.hide();
+      };
+      api.perform(req);
+    });
+  }
+
   public onSettingsClick() {
     this.rulesetPlayer.openSettings();
   }
@@ -718,17 +753,17 @@ export default class Player extends GameplayClient {
     this.textOverlay.show(text, duration);
   }
 
-  public partRoom() {
+  protected partRoom(toScreen = '/') {
     if (!this.room) {
-      this.exitScreen();
+      this.exitScreen(toScreen);
       return;
     }
     const req = new PartRoomRequest(this.room);
     req.success = () => {
-      this.exitScreen();
+      this.exitScreen(toScreen);
     };
     req.failure = () => {
-      this.exitScreen();
+      this.exitScreen(toScreen);
     };
     this.api.queue(req);
   }

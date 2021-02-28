@@ -26,20 +26,21 @@
         ref="playfield"
         class="absolute-center"
       >
-        <div
-          v-if="gameState == 1"
-          class="absolute-center q-py-xs text-subtitle1 ready-info"
-        >{{ gameStatus.text }}</div>
         <text-overlay
           ref="textOverlay"
+          :visible="gameState == 1 && gameStatus.text"
+          :text="gameStatus.text"
           class="absolute-center"
         />
         <result-dialog
           ref="resultDialog"
           :show-again="!viewUser.isRoomOwner"
         />
-        <div class="full-width" style="position: absolute; bottom: 30%">
-          <slot name="ready-overlay" />
+        <div
+          class="absolute-center full-width"
+          style="position: absolute; top: calc(50% + 88px)"
+        >
+          <slot name="main-overlay" />
         </div>
       </playfield>
       <div
@@ -144,14 +145,19 @@
       <playfield ref="playfield">
         <text-overlay
           ref="textOverlay"
+          :visible="gameState == 1 && gameStatus.text"
+          :text="gameStatus.text"
           class="absolute-center"
         />
         <result-dialog
           ref="resultDialog"
           :show-again="!viewUser.isRoomOwner"
         />
-        <div class="absolute-center full-width">
-          <slot name="ready-overlay" />
+        <div
+          class="absolute-center full-width"
+          style="position: absolute; top: calc(50% + 88px)"
+        >
+          <slot name="main-overlay" />
         </div>
       </playfield>
       <div
@@ -388,16 +394,6 @@ export default defineComponent({
   flex-wrap: nowrap
 
 .xs-screen
-  .ready-info
-    width: calc(100% - 1px)
-    text-align: center
-    color: white
-    font-weight: bold
-    background: rgba(0,0,0,0.35)
-    border-radius: 2px
-    user-select: none
-    pointer-events: none
-
   .fixed-bottom-right
     margin-right: 12px
     margin-bottom: 12px

@@ -15,6 +15,17 @@
     @quit="onQuitClick"
     @chat="onChatClick"
   >
+    <template #main-overlay>
+      <main-buttons-overlay visible>
+        <q-btn
+          v-show="!(viewUser.user && otherUser.user)"
+          push
+          label="加入游戏"
+          color="primary"
+          @click="onJoinGameClick"
+        />
+      </main-buttons-overlay>
+    </template>
     <template #xs-screen-main-buttons>
       <q-item
         clickable
@@ -42,11 +53,13 @@ import PlayerView from './PlayerView.vue';
 import ReadyOverlay from './ReadyOverlay.vue';
 import SpectatorPlayer from './SpectatorPlayer';
 import { usePlayerStates } from './PlayerViewStates';
+import MainButtonsOverlay from './MainButtonsOverlay.vue';
 
 export default defineComponent({
   components: {
     PlayerView,
     ReadyOverlay,
+    MainButtonsOverlay,
   },
   setup() {
     const context = getCurrentInstance() as Vue;
@@ -60,6 +73,7 @@ export default defineComponent({
       ...usePlayerStates(player),
 
       onToggleViewClick: player.onToggleViewClick.bind(player),
+      onJoinGameClick: player.onJoinGameClick.bind(player),
     };
   },
 });

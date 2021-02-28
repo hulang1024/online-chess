@@ -31,6 +31,9 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
     const canvas = document.createElement('canvas');
     this.canvas = canvas;
     canvas.addEventListener('click', (event: MouseEvent) => {
+      if (!this.onChessPosClick) {
+        return;
+      }
       const { offsetX, offsetY } = event;
       const { cellSize } = this.sizes;
       const row = Math.round(offsetY / cellSize);
@@ -41,6 +44,9 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
     canvasContainer.appendChild(canvas);
 
     canvas.addEventListener('mousemove', (event: MouseEvent) => {
+      if (!this.onChessPosHover) {
+        return;
+      }
       const { offsetX, offsetY } = event;
       const { cellSize } = this.sizes;
       const row = Math.round(offsetY / cellSize);

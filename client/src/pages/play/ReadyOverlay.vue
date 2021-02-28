@@ -1,25 +1,37 @@
 <template>
-  <div
-    v-show="visible"
-    class="ready-overlay row justify-center"
-  >
-    <q-btn
-      label="邀请"
-      color="light-green"
-      @click.stop="onInviteClick"
-    />
-    <q-btn
-      :label="label"
-      color="primary"
-      :disable="disable"
-      @click="onReadyStart"
-    />
-    <q-btn
-      label="离开"
-      color="orange"
-      @click="onQuitClick"
-    />
-  </div>
+  <main-buttons-overlay :visible="visible">
+    <div>
+      <q-btn
+        push
+        label="邀请"
+        color="light-green"
+        @click.stop="$emit('invite')"
+      />
+      <q-btn
+        push
+        :label="label"
+        color="primary"
+        :disable="disable"
+        @click="$emit('ready-start')"
+      />
+      <q-btn
+        push
+        label="离开"
+        color="orange"
+        @click="$emit('quit')"
+      />
+    </div>
+    <div class="q-mt-md">
+      <q-btn
+        :disable="!canToSpectate"
+        push
+        label="转为旁观"
+        color="white"
+        text-color="black"
+        @click="$emit('to-spectate')"
+      />
+    </div>
+  </main-buttons-overlay>
 </template>
 
 <script lang="ts">
@@ -27,23 +39,29 @@ import {
   defineComponent, PropType, ref, watch,
 } from '@vue/composition-api';
 import GameState from 'src/online/play/GameState';
+import MainButtonsOverlay from './MainButtonsOverlay.vue';
 
 export default defineComponent({
   props: {
     ready: Boolean,
     otherReady: Boolean,
     isRoomOwner: Boolean,
+    isRoomOpen: Boolean,
     gameState: Number as PropType<GameState>,
   },
-  setup(props, { emit }) {
+  components: {
+    MainButtonsOverlay,
+  },
+  setup(props) {
     const visible = ref<boolean>(true);
     const label = ref<string>('');
     const disable = ref(true);
+    const canToSpectate = ref(false);
 
     let onPropsChange;
     watch(props, onPropsChange = () => {
       const {
-        ready, otherReady, isRoomOwner, gameState,
+        ready, otherReady, isRoomOwner, isRoomOpen, gameState,
       } = props;
       if (gameState == GameState.READY) {
         if (isRoomOwner) {
@@ -57,6 +75,9 @@ export default defineComponent({
       } else {
         visible.value = false;
       }
+      canToSpectate.value = !isRoomOpen
+        && (isRoomOwner || (!isRoomOwner && !ready))
+        && gameState == GameState.READY;
     });
 
     onPropsChange();
@@ -65,28 +86,8 @@ export default defineComponent({
       visible,
       label,
       disable,
-      onReadyStart: () => {
-        emit('ready-start');
-      },
-      onInviteClick() {
-        emit('invite');
-      },
-      onQuitClick() {
-        emit('quit');
-      },
+      canToSpectate,
     };
   },
 });
 </script>
-
-<style lang="sass" scoped>
-.ready-overlay
-  width: 100%
-
-  .q-btn
-    margin: 0px 4px
-    width: 96px
-    font-weight: bold
-    letter-spacing: 1px
-
-</style>

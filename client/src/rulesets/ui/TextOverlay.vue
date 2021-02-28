@@ -5,7 +5,7 @@
     :duration="200"
   >
     <q-card
-      v-show="visible"
+      v-show="_visible"
       flat
       :class="`q-py-${$q.screen.xs ? 'xs' : 'sm'}`"
     >
@@ -15,29 +15,44 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, ref, watch } from '@vue/composition-api';
 
 export default defineComponent({
-  setup() {
-    const visible = ref<boolean>(false);
-    const _text = ref<string>('');
+  props: {
+    visible: {
+      type: Boolean,
+      required: true,
+    },
+    text: {
+      type: String,
+      required: true,
+    },
+  },
+  setup(props) {
+    const _visible = ref<boolean>(props.visible);
+    const _text = ref<string>(props.text);
+
+    watch([() => props.visible, () => props.text], ([visible, text]) => {
+      _visible.value = visible as boolean;
+      _text.value = text as string;
+    });
 
     const show = (text: string, duration = 0) => {
       _text.value = text;
-      visible.value = true;
+      _visible.value = true;
       if (duration > 0) {
         setTimeout(() => {
-          visible.value = false;
+          _visible.value = false;
         }, duration);
       }
     };
 
     const hide = () => {
-      visible.value = false;
+      _visible.value = false;
     };
 
     return {
-      visible,
+      _visible,
       _text,
       show,
       hide,

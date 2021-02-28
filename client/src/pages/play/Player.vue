@@ -18,15 +18,17 @@
     @chess-draw="onChessDrawClick"
     @pause-or-resume="onPauseOrResumeGameClick"
   >
-    <template #ready-overlay>
+    <template #main-overlay>
       <ready-overlay
         :ready="viewUser.ready"
         :other-ready="otherUser.ready"
         :is-room-owner="viewUser.isRoomOwner"
+        :is-room-open="!(viewUser.user && otherUser.user)"
         :game-state="gameState"
         @invite="onInviteClick"
         @ready-start="onReadyStartClick"
         @quit="onQuitClick"
+        @to-spectate="onToSpectateClick"
       />
     </template>
     <!-- TODO: 消除硬编码 -->
@@ -76,6 +78,7 @@ export default defineComponent({
       ...usePlayerStates(player),
 
       onReadyStartClick: player.onReadyStartClick.bind(player),
+      onToSpectateClick: player.onToSpectateClick.bind(player),
       onWithdrawClick: player.onWithdrawClick.bind(player),
       onChessDrawClick: player.onChessDrawClick.bind(player),
       onWhiteFlagClick: player.onWhiteFlagClick.bind(player),
