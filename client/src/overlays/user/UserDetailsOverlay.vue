@@ -148,8 +148,8 @@ export default defineComponent({
     const isOpen = ref(false);
 
     watch([gameTypeActiveTab, _user], () => {
-      userStats.value = _user.value?.scoreStats
-        .find((item) => item.gameType == gameTypeActiveTab.value) as UserStats;
+      userStats.value = _user?.value?.scoreStats
+        ?.find((item) => item.gameType == gameTypeActiveTab.value) as UserStats;
     });
 
     const lastActiveTimeDesc = computed(() => {

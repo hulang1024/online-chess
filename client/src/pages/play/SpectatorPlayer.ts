@@ -21,7 +21,9 @@ export default class SpectatorPlayer extends Player {
       switch (room.gameStatus) {
         case 0:
         case GameState.READY:
-          this.showText('你正在旁观中，请等待游戏开始');
+          if (this.room.gameUsers.length == 2) {
+            this.showText('你正在旁观中，请等待游戏开始');
+          }
           break;
         case GameState.PAUSE:
           this.showText('你正在旁观中，游戏暂停，请等待游戏继续');
