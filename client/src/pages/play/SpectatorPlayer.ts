@@ -119,6 +119,7 @@ export default class SpectatorPlayer extends Player {
       req.failure = () => {
         $q.notify({ type: 'warning', message: `加入棋桌失败` });
         $q.loading.hide();
+        this.exitScreen();
       };
       this.api.perform(req);
     });

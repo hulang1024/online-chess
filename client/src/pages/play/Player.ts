@@ -739,6 +739,7 @@ export default class Player extends GameplayClient {
       req.failure = () => {
         $q.notify({ type: 'error', message: '旁观失败' });
         $q.loading.hide();
+        this.exitScreen();
       };
       api.perform(req);
     });
