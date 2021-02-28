@@ -28,7 +28,11 @@
       >
         <text-overlay
           ref="textOverlay"
-          :visible="gameState == 1 && gameStatus.text"
+          class="absolute-center"
+        />
+        <text-overlay
+          v-if="gameState == 1 && gameStatus.text"
+          visible
           :text="gameStatus.text"
           class="absolute-center"
         />
@@ -145,7 +149,11 @@
       <playfield ref="playfield">
         <text-overlay
           ref="textOverlay"
-          :visible="gameState == 1 && gameStatus.text"
+          class="absolute-center"
+        />
+        <text-overlay
+          v-if="gameState == 1 && gameStatus.text"
+          visible
           :text="gameStatus.text"
           class="absolute-center"
         />

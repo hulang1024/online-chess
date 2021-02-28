@@ -37,12 +37,17 @@ export default defineComponent({
       _text.value = text as string;
     });
 
+    let timer: NodeJS.Timeout | null = null;
     const show = (text: string, duration = 0) => {
+      if (timer) {
+        clearTimeout(timer);
+      }
       _text.value = text;
       _visible.value = true;
       if (duration > 0) {
-        setTimeout(() => {
+        timer = setTimeout(() => {
           _visible.value = false;
+          timer = null;
         }, duration);
       }
     };
