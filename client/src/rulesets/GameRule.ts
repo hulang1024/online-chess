@@ -29,7 +29,9 @@ export default abstract class GameRule {
   public abstract reverseChessLayoutView(): void;
 
   protected gameEnd() {
-    this.onGameEnd();
+    if (this.onGameEnd) {
+      this.onGameEnd();
+    }
     this.ended = true;
   }
 }
