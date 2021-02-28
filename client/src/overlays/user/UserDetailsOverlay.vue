@@ -40,7 +40,10 @@
               label="象棋"
             />
           </q-tabs>
-          <template v-if="userStats">
+          <div
+            v-if="userStats"
+            class="stat-rows"
+          >
             <div class="count-row">
               <label>胜率</label>
               <div class="count">{{ userStats.winRate.toFixed(2) }}%</div>
@@ -61,8 +64,11 @@
               <label>和</label>
               <div class="count">{{ userStats.drawCount }}</div>
             </div>
-          </template>
-          <span v-else class="q-py-md">无记录</span>
+          </div>
+          <div
+            v-else
+            class="stat-rows justify-center"
+          >无记录</div>
         </div>
         <q-separator class="q-my-sm" />
         <div class="other-info">
@@ -247,14 +253,20 @@ export default defineComponent({
     display: inline-block
     width: 100px
 
-.count-row
+.stat-rows
+  margin-top: 8px
   display: flex
-  label
-    display: inline-block
-    width: 40px
-    text-align: left
-  .count
-    width: 50px
-    font-weight: bold
-    text-align: right
+  flex-direction: column
+  min-height: 105px
+
+  .count-row
+    display: flex
+    label
+      display: inline-block
+      width: 40px
+      text-align: left
+    .count
+      width: 50px
+      font-weight: bold
+      text-align: right
 </style>
