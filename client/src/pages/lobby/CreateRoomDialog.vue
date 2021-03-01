@@ -73,6 +73,7 @@
         />
 
         <q-input
+          ref="passwordInput"
           v-show="requirePassword"
           v-model="password"
           type="password"
@@ -103,7 +104,7 @@
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, reactive, ref, toRefs,
+  defineComponent, getCurrentInstance, reactive, ref, watch, toRefs,
 } from '@vue/composition-api';
 import Room from 'src/online/room/Room';
 import RoomSettings from 'src/online/room/RoomSettings';
@@ -131,10 +132,13 @@ export default defineComponent({
     };
 
     const form = reactive({ ...INIT_VALUES });
-
     const isOpen = ref(false);
-
     const createLoading = ref(false);
+
+    watch(() => form.requirePassword, () => {
+      // eslint-disable-next-line
+      (ctx.$refs.passwordInput as any).focus();
+    });
 
     let action: (room: Room, success: (success: boolean) => void) => void;
     const show = (options: {

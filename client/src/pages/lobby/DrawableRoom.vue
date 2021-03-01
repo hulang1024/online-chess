@@ -13,7 +13,13 @@
       <div class="text-body1">
         {{ name }} <span class="text-caption">({{ gameTypeName }})</span>
       </div>
-      <div class="text-caption">{{ statusStates.text }}</div>
+      <div class="text-caption">
+        <span>{{ statusStates.text }}</span>
+        <q-icon
+          v-if="locked"
+          name="lock"
+        />
+      </div>
     </q-card-section>
     <q-card-section
       horizontal
@@ -53,7 +59,8 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const { $q, $router } = getCurrentInstance() as Vue;
+    const context = getCurrentInstance() as Vue;
+    const { $q, $router } = context;
 
     const room = reactive({
       ...props.room,
@@ -98,8 +105,9 @@ export default defineComponent({
       Object.assign(room, props.room);
     });
 
-    const joinRoom = () => {
+    const joinRoom = (password?: string) => {
       $q.loading.show();
+      room.password = password;
       const req = new JoinRoomRequest(room);
       req.success = async (result) => {
         await $router.push({
@@ -150,25 +158,47 @@ export default defineComponent({
         return;
       }
 
-      if (room.gameUsers.length == 1) {
-        if (room.locked) {
-          // todo
-        }
-        joinRoom();
-      } else {
-        let updated = false;
-        for (let i = 0; i < room.gameUsers.length; i++) {
-          const gameUser = room.gameUsers[i];
-          if (gameUser.user?.id == api.localUser.id) {
-            gameUser.user = null;
-            updated = true;
+      const joinOrSpectateRoom = (password?: string) => {
+        if (room.gameUsers.length == 1) {
+          joinRoom(password);
+        } else {
+          let updated = false;
+          for (let i = 0; i < room.gameUsers.length; i++) {
+            const gameUser = room.gameUsers[i];
+            if (gameUser.user?.id == api.localUser.id) {
+              gameUser.user = null;
+              updated = true;
+            }
+          }
+          if (updated) {
+            joinRoom(password);
+          } else {
+            spectateRoom();
           }
         }
-        if (updated) {
-          joinRoom();
-        } else {
-          spectateRoom();
-        }
+      };
+
+      if (room.locked) {
+        context.$q.dialog({
+          title: '该房间需要密码',
+          message: '请输入房间密码',
+          prompt: {
+            model: '',
+            type: 'text',
+          },
+          ok: {
+            label: '加入',
+            color: 'primary',
+          },
+          cancel: {
+            label: '取消',
+            color: 'orange',
+          },
+        }).onOk((passowrd: string) => {
+          joinOrSpectateRoom(passowrd);
+        });
+      } else {
+        joinOrSpectateRoom();
       }
     };
 
