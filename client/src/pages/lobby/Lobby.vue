@@ -129,12 +129,13 @@ export default defineComponent({
     };
     onMounted(resize);
 
-    // eslint-disable-next-line
-    ((ctx.$vnode.context as Vue).$refs.chatOverlay as Vue).$on('active', (isActive: boolean) => {
+    const onChatOverlayActive = (isActive: boolean) => {
       setTimeout(() => {
         resize(isActive);
       }, 0);
-    })
+    };
+    // eslint-disable-next-line
+    ((ctx.$vnode.context as Vue).$refs.chatOverlay as Vue).$on('active', onChatOverlayActive);
 
     const queryRooms = () => {
       let status: number | null = roomStatusActiveTab.value;
@@ -293,7 +294,7 @@ export default defineComponent({
       socketService.off('play.game_states', onGameStates);
       // eslint-disable-next-line
       (ctx.$vnode.context?.$refs.toolbar as any).exitActive();
-      ((ctx.$vnode.context as Vue).$refs.chatOverlay as Vue).$off('active');
+      ((ctx.$vnode.context as Vue).$refs.chatOverlay as Vue).$off('active', onChatOverlayActive);
     });
 
     const checkNotLoggedIn = (): boolean => {
