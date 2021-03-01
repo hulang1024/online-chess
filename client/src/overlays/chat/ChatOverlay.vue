@@ -44,6 +44,7 @@
 
       <div class="full-width">
         <q-input
+          ref="messageInput"
           v-model="messageText"
           :outlined="!$q.dark.isActive"
           :standout="$q.dark.isActive"
@@ -221,6 +222,12 @@ export default defineComponent({
 
     const onEmojiSelect = (emoji: string) => {
       messageText.value += emoji;
+      if (!ctx.$q.screen.xs) {
+        ctx.$nextTick(() => {
+          // eslint-disable-next-line
+          (ctx.$refs.messageInput as any).focus();
+        });
+      }
       // eslint-disable-next-line
       (ctx.$refs.emojiPanelProxy as any).hide();
     };
