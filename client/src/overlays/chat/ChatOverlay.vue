@@ -223,10 +223,11 @@ export default defineComponent({
 <style lang="scss" scoped>
 .chat-overlay {
   & .q-card {
+    height: 284px;
     background-color: #fff;
 
     & .q-tab-panels {
-      height: calc(100vh / 2.3 - 92px);
+      height: 200px;
       background: transparent;
       .q-tab-panel {
         padding: 4px 4px;

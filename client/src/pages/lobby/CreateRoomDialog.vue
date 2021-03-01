@@ -11,7 +11,7 @@
         class="q-gutter-md"
       >
 
-        <div class="q-gutter-sm">
+        <div class="q-gutter-x-sm">
           <q-radio v-model="gameType" :val="2" label="五子棋" />
           <q-radio v-model="gameType" :val="1" label="象棋" />
         </div>

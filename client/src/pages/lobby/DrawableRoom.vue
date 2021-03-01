@@ -2,9 +2,11 @@
   <q-card
     v-ripple
     :style="{
-      borderLeft: `5px solid ${statusStates.color}`,
+      borderColor: statusStates.color,
+      backgroundColor: statusStates.backgroundColor,
       cursor: 'pointer',
     }"
+    class="room"
     @click="onClick"
   >
     <q-card-section class="row justify-between items-center q-py-xs">
@@ -58,19 +60,22 @@ export default defineComponent({
     });
 
     const ROOM_STATUS_MAP: {
-      [n: number]: {text: string, color: string}
+      [n: number]: {text: string, color: string, backgroundColor: string}
     } = {
       1: {
         text: '可加入',
         color: '#22dd00',
+        backgroundColor: 'rgba(34, 221, 0, 0.08)',
       },
       2: {
         text: '即将开始(可旁观)',
         color: '#ff9800',
+        backgroundColor: 'rgba(255, 152, 0, 0.08)',
       },
       3: {
         text: '进行中(可旁观)',
         color: '#fdd835',
+        backgroundColor: 'rgba(253, 216, 53, 0.08)',
       },
     };
 
@@ -179,8 +184,14 @@ export default defineComponent({
 
 <style lang="sass" scoped>
 .q-card
-  width: 320px
+  width: calc(100% - 2px)
+  border-radius: 8px
+  box-shadow: 0px 0px 2px 1px rgb(0, 0, 0, 0.15)
+  border: 1px solid
+  transition: all 0.1s ease
+  user-select: none
 
+  &:hover,
   &:active
     box-shadow: none
 </style>

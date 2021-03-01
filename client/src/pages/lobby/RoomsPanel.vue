@@ -1,11 +1,20 @@
 <template>
-  <div class="rooms q-px-sm q-py-sm q-gutter-sm scroll">
+  <q-scroll-area
+    class="rooms q-py-sm scroll"
+    :delay="200"
+    :thumb-style="{
+      right: '0px',
+      borderRadius: '6px',
+      opacity: 0.8
+    }"
+  >
     <q-inner-loading
       :showing="spinnerShow"
       class="bg-transparent"
       color="primary"
       size="3em"
     />
+
     <transition
       v-for="room in rooms"
       :key="room.id"
@@ -18,7 +27,7 @@
         :room="room"
       />
     </transition>
-  </div>
+  </q-scroll-area>
 </template>
 
 <script lang="ts">
@@ -47,13 +56,18 @@ export default defineComponent({
 });
 </script>
 
-<style lang="sass" scoped>
-.rooms
-  display: flex
-  flex-wrap: wrap
-  justify-content: center
-  align-content: flex-start
-  align-items: flex-start
-  position: relative
-  flex-grow: 1
+<style scoped>
+.rooms >>> .full-width {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  align-items: flex-start;
+  position: relative;
+  flex-grow: 1;
+}
+
+.room {
+  margin-bottom: 8px;
+}
 </style>

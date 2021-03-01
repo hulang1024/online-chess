@@ -1,68 +1,88 @@
 <template>
-  <q-page class="column">
-    <!-- 头部 -->
-    <div class="row justify-evenly q-gutter-x-sm q-px-sm q-mb-sm">
-      <u-button
-        color="primary"
-        label="创建房间"
-        class="col float-right q-mt-sm"
-        @click="onCreateRoomClick"
+  <q-page class="column items-center">
+    <div
+      class="main-content"
+    >
+      <!-- 房间筛选选项卡 -->
+      <div class="filter-container q-mt-sm">
+        <q-tabs
+          v-model="gameTypeActiveTab"
+          dense
+          narrow-indicator
+          :class="[
+            'row',
+            $q.dark.isActive && 'text-white',
+            $q.dark.isActive ? 'bg-grey-6' : 'bg-grey-4'
+          ]"
+        >
+          <q-tab
+            :name="0"
+            label="全部"
+          />
+          <q-tab
+            :name="2"
+            label="五子棋"
+          />
+          <q-tab
+            :name="1"
+            label="象棋"
+          />
+        </q-tabs>
+        <q-tabs
+          v-model="roomStatusActiveTab"
+          dense
+          narrow-indicator
+          class="q-mt-xs"
+          :class="[
+            'row',
+            $q.dark.isActive && 'text-white',
+            $q.dark.isActive ? 'bg-grey-6' : 'bg-grey-4'
+          ]"
+        >
+          <q-tab
+            :name="0"
+            label="全部"
+          />
+          <q-tab
+            :name="1"
+            label="可加入"
+          />
+          <q-tab
+            :name="2"
+            label="即将开始"
+          />
+          <q-tab
+            :name="3"
+            label="进行中"
+          />
+        </q-tabs>
+      </div>
+      <rooms-panel
+        ref="roomsPanel"
+        :loading="roomsLoading"
+        :rooms="rooms"
       />
-      <u-button
-        color="light-green"
-        label="快速加入"
-        class="col float-right q-mt-sm"
-        :loading="joining"
-        @click="onQuickJoinClick"
-      />
+      <div
+        class="row justify-evenly q-gutter-x-sm"
+        :class="$q.screen.xs && 'q-px-sm'"
+      >
+        <u-button
+          color="primary"
+          label="创建房间"
+          class="col float-right q-mt-sm"
+          @click="onCreateRoomClick"
+        />
+        <u-button
+          color="orange"
+          label="快速加入"
+          class="col float-right q-mt-sm"
+          :loading="joining"
+          @click="onQuickJoinClick"
+        />
+      </div>
     </div>
-    <!-- 房间筛选选项卡 -->
-    <q-tabs
-      v-model="gameTypeActiveTab"
-      dense
-      :class="['row', $q.dark.isActive && 'text-white']"
-    >
-      <q-tab
-        :name="0"
-        label="全部"
-      />
-      <q-tab
-        :name="2"
-        label="五子棋"
-      />
-      <q-tab
-        :name="1"
-        label="象棋"
-      />
-    </q-tabs>
-    <q-tabs
-      v-model="roomStatusActiveTab"
-      dense
-      :class="['row', $q.dark.isActive && 'text-white']"
-    >
-      <q-tab
-        :name="0"
-        label="全部"
-      />
-      <q-tab
-        :name="1"
-        label="可加入"
-      />
-      <q-tab
-        :name="2"
-        label="即将开始"
-      />
-      <q-tab
-        :name="3"
-        label="进行中"
-      />
-    </q-tabs>
 
     <create-room-dialog ref="createRoomDialog" />
-    <rooms-panel
-      :loading="roomsLoading"
-      :rooms="rooms"
-    />
   </q-page>
 </template>
 
@@ -100,6 +120,21 @@ export default defineComponent({
     const joining = ref(false);
     const gameTypeActiveTab = ref(0);
     const roomStatusActiveTab = ref(0);
+
+    const resize = (isChatActive: boolean) => {
+      const pageEl = ctx.$el as HTMLElement;
+      const height = (pageEl?.parentElement?.offsetHeight || 0) - (182 + (isChatActive ? 284 : 0));
+      // eslint-disable-next-line
+      (ctx.$refs.roomsPanel as any).$el.style.height = `${height}px`;
+    };
+    onMounted(resize);
+
+    // eslint-disable-next-line
+    ((ctx.$vnode.context as Vue).$refs.chatOverlay as Vue).$on('active', (isActive: boolean) => {
+      setTimeout(() => {
+        resize(isActive);
+      }, 0);
+    })
 
     const queryRooms = () => {
       let status: number | null = roomStatusActiveTab.value;
@@ -258,6 +293,7 @@ export default defineComponent({
       socketService.off('play.game_states', onGameStates);
       // eslint-disable-next-line
       (ctx.$vnode.context?.$refs.toolbar as any).exitActive();
+      ((ctx.$vnode.context as Vue).$refs.chatOverlay as Vue).$off('active');
     });
 
     const checkNotLoggedIn = (): boolean => {
@@ -333,3 +369,14 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="sass" scoped>
+.main-content
+  padding: 0 4px
+  width: 100%
+  max-width: 400px
+
+  .filter-container
+    .q-tabs
+      border-radius: 8px
+</style>

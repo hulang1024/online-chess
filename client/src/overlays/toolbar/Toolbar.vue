@@ -175,7 +175,8 @@ export default defineComponent({
     font-size: 20px;
   }
   &.active {
-    background: #91b3f2;
+    background: #333;
+    color: #fff;
     border-radius: 0px;
   }
 }

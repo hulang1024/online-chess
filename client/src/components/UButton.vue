@@ -1,6 +1,5 @@
 <template>
   <q-btn
-    unelevated
     v-bind="$attrs"
     @click="$listeners.click"
   >
