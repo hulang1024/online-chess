@@ -123,7 +123,7 @@ export default defineComponent({
 
     const resize = (isChatActive: boolean) => {
       const pageEl = ctx.$el as HTMLElement;
-      const height = (pageEl?.parentElement?.offsetHeight || 0) - (182 + (isChatActive ? 284 : 0));
+      const height = (pageEl?.parentElement?.offsetHeight || 0) - (178 + (isChatActive ? 284 : 0));
       // eslint-disable-next-line
       (ctx.$refs.roomsPanel as any).$el.style.height = `${height}px`;
     };
