@@ -36,6 +36,7 @@ public class Room {
     @JSONField(serialize = false)
     private LocalDateTime updateAt;
 
+    @JSONField(serialize = false)
     private GameSettings gameSettings;
 
     @JSONField(serialize = false)
