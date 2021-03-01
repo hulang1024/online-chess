@@ -24,7 +24,21 @@
         :disable="!inputEnabled"
         class="message-input q-mt-sm"
         @keydown.enter="onSend"
-      />
+      >
+        <template v-slot:append>
+          <q-icon
+            name="mood"
+            class="cursor-pointer"
+          >
+            <q-popup-proxy
+              ref="emojiPanelProxy"
+              :offset="[11, 10]"
+            >
+              <emoji-panel @emoji-select="onEmojiSelect" />
+            </q-popup-proxy>
+          </q-icon>
+        </template>
+      </q-input>
     </div>
   </q-card>
 </template>
@@ -36,9 +50,10 @@ import {
 import { channelManager } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
 import DrawableChannel from 'src/overlays/chat/DrawableChannel.vue';
+import EmojiPanel from 'src/overlays/chat/EmojiPanel.vue';
 
 export default defineComponent({
-  components: { DrawableChannel },
+  components: { DrawableChannel, EmojiPanel },
   setup() {
     const context = getCurrentInstance() as Vue;
     // eslint-disable-next-line
@@ -83,6 +98,12 @@ export default defineComponent({
       messageText.value = '';
     };
 
+    const onEmojiSelect = (emoji: string) => {
+      messageText.value += emoji;
+      // eslint-disable-next-line
+      (context.$refs.emojiPanelProxy as any).hide();
+    };
+
     return {
       channel,
 
@@ -92,6 +113,7 @@ export default defineComponent({
 
       loadChannel,
 
+      onEmojiSelect,
       onSend,
     };
   },

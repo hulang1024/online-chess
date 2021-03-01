@@ -52,7 +52,21 @@
           :disable="!inputEnabled"
           class="message-input"
           @keydown.enter="onSend"
-        />
+        >
+          <template v-slot:append>
+            <q-icon
+              name="mood"
+              class="cursor-pointer"
+            >
+              <q-popup-proxy
+                ref="emojiPanelProxy"
+                :offset="[11, 10]"
+              >
+                <emoji-panel @emoji-select="onEmojiSelect" />
+              </q-popup-proxy>
+            </q-icon>
+          </template>
+        </q-input>
         <u-button
           class="btn-send"
           color="primary"
@@ -64,6 +78,7 @@
         />
       </div>
     </q-card>
+
   </q-dialog>
 </template>
 
@@ -78,9 +93,10 @@ import InfoMessage from 'src/online/chat/InfoMessage';
 import Message from 'src/online/chat/Message';
 import User from 'src/user/User';
 import DrawableChannel from './DrawableChannel.vue';
+import EmojiPanel from './EmojiPanel.vue';
 
 export default defineComponent({
-  components: { DrawableChannel },
+  components: { DrawableChannel, EmojiPanel },
   setup(props, { emit }) {
     const ctx = getCurrentInstance() as Vue;
     // eslint-disable-next-line
@@ -203,6 +219,12 @@ export default defineComponent({
       // todo: 记录输入历史，通过上下键查看
     };
 
+    const onEmojiSelect = (emoji: string) => {
+      messageText.value += emoji;
+      // eslint-disable-next-line
+      (ctx.$refs.emojiPanelProxy as any).hide();
+    };
+
     return {
       isOpen,
       toggle,
@@ -214,6 +236,7 @@ export default defineComponent({
       messageText,
       inputEnabled,
       seamless,
+      onEmojiSelect,
       onSend,
     };
   },
