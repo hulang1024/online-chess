@@ -1,8 +1,8 @@
-import Chess from 'src/rulesets/chinesechess/Chess';
-import ChessPos from 'src/rulesets/chinesechess/ChessPos';
+import Chess from 'src/rulesets/chinesechess/rule/Chess';
+import ChessPos from 'src/rulesets/chinesechess/rule/ChessPos';
 import ChessHost from 'src/rulesets/chess_host';
-import { chessClassToText } from 'src/rulesets/chinesechess/chess_map';
-import Game from 'src/rulesets/chinesechess/Game';
+import { chessClassToText } from 'src/rulesets/chinesechess/rule/chess_map';
+import Game from 'src/rulesets/chinesechess/rule/Game';
 import Signal from 'src/utils/signals/Signal';
 import './chess.scss';
 

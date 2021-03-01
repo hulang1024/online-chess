@@ -101,7 +101,7 @@ import {
   api, audioManager, channelManager, socketService,
 } from 'src/boot/main';
 import { InvitationReplyServerMsg, InvitationServerMsg } from 'src/online/invitation';
-import ResponseGameStates from 'src/rulesets/game_states_response';
+import ResponseGameStates from 'src/rulesets/online/game_states_response';
 import * as playPageSignals from 'src/pages/play/signals';
 import { GameType } from 'src/rulesets/GameType';
 import GameSettings from 'src/rulesets/GameSettings';

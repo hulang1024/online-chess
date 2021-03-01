@@ -2,7 +2,7 @@ import Playfield from "src/pages/play/Playfield";
 import Bindable from "src/utils/bindables/Bindable";
 import BindableBool from "src/utils/bindables/BindableBool";
 import ChessHost from "./chess_host";
-import ResponseGameStates from "./game_states_response";
+import ResponseGameStates from "./online/game_states_response";
 
 export default abstract class GameRule {
   public ended = false;

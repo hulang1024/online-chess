@@ -1,12 +1,12 @@
 import { socketService } from "src/boot/main";
-import ChessAction from "./ChessAction";
-import ChessPos from "./ChessPos";
-import { ChessPickUpMsg, ChessMoveMsg } from "./online/gameplay_server_messages";
-import DrawableChess from "./ui/DrawableChess";
-import ChineseChessDrawableChessboard from "./ui/ChineseChessDrawableChessboard";
-import RulesetClient from "../RulesetClient";
-import ChineseChessGameRule from "./ChineseChessGameRule";
-import GameRule from "../GameRule";
+import ChessAction from "../ChessAction";
+import ChessPos from "../rule/ChessPos";
+import { ChessPickUpMsg, ChessMoveMsg } from "./gameplay_server_messages";
+import DrawableChess from "../ui/DrawableChess";
+import ChineseChessDrawableChessboard from "../ui/ChineseChessDrawableChessboard";
+import RulesetClient from "../../online/RulesetClient";
+import ChineseChessGameRule from "../ChineseChessGameRule";
+import GameRule from "../../GameRule";
 
 export default class ChineseChessClient extends RulesetClient {
   constructor(game: GameRule) {

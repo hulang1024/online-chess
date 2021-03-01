@@ -1,5 +1,5 @@
 import ServerMsg from "../ws/ServerMsg";
-import ResponseGameStates from "../../rulesets/game_states_response";
+import ResponseGameStates from "../../rulesets/online/game_states_response";
 
 export interface ResultsReadyMsg extends ServerMsg {
   uid: number;

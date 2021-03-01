@@ -1,6 +1,6 @@
 import Playfield from "src/pages/play/Playfield";
-import GameRule from "./GameRule";
-import UserPlayInput from "./UserPlayInput";
+import GameRule from "../GameRule";
+import UserPlayInput from "../UserPlayInput";
 
 export default abstract class RulesetClient {
   public game: GameRule;

@@ -1,7 +1,7 @@
-import Chess from "../Chess";
+import Chess from "./Chess";
 import ChessHost from "../../chess_host";
-import ChessPos from "../ChessPos";
-import Game from "../Game";
+import ChessPos from "./ChessPos";
+import Game from "./Game";
 
 export const MAX_DISTANCE = 10;
 

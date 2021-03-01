@@ -1,5 +1,5 @@
-import Chess from "./Chess";
-import ChessPos from "./ChessPos";
+import Chess from "./rule/Chess";
+import ChessPos from "./rule/ChessPos";
 import ChessHost from "../chess_host";
 
 export default class ChessAction {

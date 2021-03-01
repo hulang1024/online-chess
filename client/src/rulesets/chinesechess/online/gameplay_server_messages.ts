@@ -1,4 +1,4 @@
-import ResponseGameStates, { ResponseChessPos } from "src/rulesets/game_states_response";
+import ResponseGameStates, { ResponseChessPos } from "src/rulesets/online/game_states_response";
 import ServerMsg from "src/online/ws/ServerMsg";
 
 export default interface ChineseChessResponseGameStates extends ResponseGameStates {

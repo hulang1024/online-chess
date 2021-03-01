@@ -1,13 +1,13 @@
 import Chess from './Chess';
-import ChessC from './chess/ChessC';
-import ChessG from './chess/ChessG';
-import ChessK from './chess/ChessK';
-import ChessM from './chess/ChessM';
-import ChessN from './chess/ChessN';
-import ChessR from './chess/ChessR';
-import ChessS from './chess/ChessS';
+import ChessC from './ChessC';
+import ChessG from './ChessG';
+import ChessK from './ChessK';
+import ChessM from './ChessM';
+import ChessN from './ChessN';
+import ChessR from './ChessR';
+import ChessS from './ChessS';
 import ChessPos from './ChessPos';
-import ChessHost from '../chess_host';
+import ChessHost from '../../chess_host';
 
 const CHESS_CLASS_KEY_MAP: {[type: string]: any} = {
   R: ChessR,

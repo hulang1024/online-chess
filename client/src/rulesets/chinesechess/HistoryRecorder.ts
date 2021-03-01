@@ -1,8 +1,8 @@
 import ChessAction from "src/rulesets/chinesechess/ChessAction";
-import Chess from "./Chess";
-import ChessPos from "./ChessPos";
+import Chess from "./rule/Chess";
+import ChessPos from "./rule/ChessPos";
 import ChessHost from "../chess_host";
-import CHESS_CLASS_KEY_MAP from "./chess_map";
+import CHESS_CLASS_KEY_MAP from "./rule/chess_map";
 import { ResponseGameStateChessAction } from "./online/gameplay_server_messages";
 
 export default class ReplayRecorder {

@@ -2,7 +2,7 @@ import GameState from "src/online/play/GameState";
 import Bindable from "src/utils/bindables/Bindable";
 import GameUser from "src/online/play/GameUser";
 import ChineseChessGameRule from "./ChineseChessGameRule";
-import ChineseChessClient from "./ChineseChessClient";
+import ChineseChessClient from "./online/ChineseChessClient";
 import ChineseChessUserPlayInput from "./ChineseChessUserPlayInput";
 import GameRule from "../GameRule";
 import Ruleset from "../Ruleset";

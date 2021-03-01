@@ -1,6 +1,6 @@
-import Chess from "src/rulesets/chinesechess/Chess";
+import Chess from "src/rulesets/chinesechess/rule/Chess";
 import ChessHost from "src/rulesets/chess_host";
-import { chessClassToText } from "src/rulesets/chinesechess/chess_map";
+import { chessClassToText } from "src/rulesets/chinesechess/rule/chess_map";
 import './judgement.scss';
 
 const TRANSITION_DURATION = 200;

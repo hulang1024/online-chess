@@ -1,5 +1,5 @@
-import ChessPos from "../ChessPos";
-import Game from "../Game";
+import ChessPos from "./ChessPos";
+import Game from "./Game";
 import AbstractChess from "./AbstractChess";
 import { isInBoundary, sign } from "./move_rules";
 

@@ -1,5 +1,5 @@
 import DrawableChessboard from "./ChineseChessDrawableChessboard";
-import ChessPos from "../ChessPos";
+import ChessPos from "../rule/ChessPos";
 
 export default class ChessTargetDrawer {
   private chessboard: DrawableChessboard;

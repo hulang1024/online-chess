@@ -1,7 +1,7 @@
 import Chess from "./Chess";
-import ChessK from "./chess/ChessK";
+import ChessK from "./ChessK";
 import ChessPos from "./ChessPos";
-import ChessHost from "../chess_host";
+import ChessHost from "../../chess_host";
 import Game from "./Game";
 
 export default class CheckmateJudgement {

@@ -1,9 +1,9 @@
 import GameState from "src/online/play/GameState";
 import ChessAction from "src/rulesets/chinesechess/ChessAction";
-import ChessPos from "src/rulesets/chinesechess/ChessPos";
+import ChessPos from "src/rulesets/chinesechess/rule/ChessPos";
 import Bindable from "src/utils/bindables/Bindable";
 import GameUser from "src/online/play/GameUser";
-import ChinesechessGameplayServer from "./online/ChinesechessGameplayServer";
+import ChineseChessGameplayServer from "./online/ChineseChessGameplayServer";
 import DrawableChess from "./ui/DrawableChess";
 import DrawableChessboard from "./ui/ChineseChessDrawableChessboard";
 import UserPlayInput from "../UserPlayInput";
@@ -15,7 +15,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
 
   private lastSelected: DrawableChess | null;
 
-  private gameplayServer = new ChinesechessGameplayServer();
+  private gameplayServer = new ChineseChessGameplayServer();
 
   constructor(
     gameRule: GameRule,

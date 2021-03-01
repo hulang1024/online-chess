@@ -3,7 +3,7 @@ import Bindable from "src/utils/bindables/Bindable";
 import GameUser from "src/online/play/GameUser";
 import UserPlayInput from "./UserPlayInput";
 import GameRule from "./GameRule";
-import RulesetClient from "./RulesetClient";
+import RulesetClient from "./online/RulesetClient";
 import DrawableChessboard from "./ui/DrawableChessboard";
 import GameSettings from "./GameSettings";
 import RulesetPlayer from "./RulesetPlayer";

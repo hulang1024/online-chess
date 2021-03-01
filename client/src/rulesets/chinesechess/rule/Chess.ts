@@ -1,5 +1,5 @@
 import ChessPos from './ChessPos';
-import ChessHost from '../chess_host';
+import ChessHost from '../../chess_host';
 import Game from './Game';
 
 /**

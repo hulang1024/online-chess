@@ -1,5 +1,5 @@
-import Chessboard from "./Chessboard";
-import ChessHost from "../chess_host";
+import Chessboard from "./chessboard";
+import ChessHost from "../../chess_host";
 
 export default abstract class Game {
   getChessboard: () => Chessboard;

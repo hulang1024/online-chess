@@ -1,11 +1,11 @@
 import { socketService } from 'src/boot/main';
-import GameRule from '../GameRule';
-import RulesetClient from '../RulesetClient';
-import ChessAction from './ChessAction';
-import ChessPos from './ChessPos';
-import GobangGameRule from './GobangGameRule';
-import GobangUserPlayInput from './GobangUserPlayInput';
-import { ChessPutMsg, ChessTargetPosMsg } from './online/gameplay_server_messages';
+import GameRule from '../../GameRule';
+import RulesetClient from '../../online/RulesetClient';
+import ChessAction from '../ChessAction';
+import ChessPos from '../ChessPos';
+import GobangGameRule from '../GobangGameRule';
+import GobangUserPlayInput from '../GobangUserPlayInput';
+import { ChessPutMsg, ChessTargetPosMsg } from './gameplay_server_messages';
 
 export default class GobangClient extends RulesetClient {
   constructor(game: GameRule) {

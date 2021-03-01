@@ -1,4 +1,4 @@
-import ResponseGameStates from "../../rulesets/game_states_response";
+import ResponseGameStates from "../../rulesets/online/game_states_response";
 import Room from "../room/Room";
 
 export default class SpectateResponse {

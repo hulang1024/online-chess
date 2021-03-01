@@ -6,7 +6,7 @@ import Ruleset from "../Ruleset";
 import GobangDrawableChessboard from "./ui/GobangDrawableChessboard";
 import GobangGameRule from "./GobangGameRule";
 import GobangUserPlayInput from "./GobangUserPlayInput";
-import GobangClient from "./GobangClient";
+import GobangClient from "./online/GobangClient";
 import GobangGameSettings from "./GobangGameSettings";
 import GobangPlayer from "./GobangPlayer";
 

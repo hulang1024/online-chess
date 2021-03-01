@@ -1,7 +1,7 @@
 import { socketService } from 'src/boot/main';
-import ChessPos from '../ChessPos';
+import ChessPos from '../rule/ChessPos';
 
-export default class ChinesechessGameplayServer {
+export default class ChineseChessGameplayServer {
   private socketService = socketService;
 
   public pickChess(pos: ChessPos, pickup: boolean): void {
