@@ -1,6 +1,6 @@
 <template>
   <q-scroll-area
-    class="rooms q-py-sm scroll"
+    class="rooms q-py-sm"
     :delay="200"
     :thumb-style="{
       right: '0px',
