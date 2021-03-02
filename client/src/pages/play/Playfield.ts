@@ -1,3 +1,4 @@
+import device from "current-device";
 import { onBeforeUnmount, onMounted } from "@vue/composition-api";
 import Signal from "src/utils/signals/Signal";
 import TweenAnimationUpdater from "src/rulesets/ui/TweenAnimationUpdater";
@@ -32,7 +33,9 @@ export default class Playfield {
             ? width
             // eslint-disable-next-line
             : width - ((context.$refs.playerView as Vue).$refs.controls as any).offsetWidth + 8,
-          height,
+          height: isXSScreen
+            ? height - ((70 + 8) * 2)
+            : height,
         };
       };
 
@@ -44,11 +47,15 @@ export default class Playfield {
       this.loaded.dispatch();
 
       window.addEventListener('resize', onReisze = () => {
-        if (isXSScreen) {
+        // eslint-disable-next-line
+        if (device.mobile()) {
+          // 可能包括是移动端键盘弹出导致的resize
           return;
         }
-        this.resize(recalcChessboardSize(), context.$q.screen);
-        this.resized.dispatch();
+        setTimeout(() => {
+          this.resize(recalcChessboardSize(), context.$q.screen);
+          this.resized.dispatch();
+        }, 0);
       });
     });
 
