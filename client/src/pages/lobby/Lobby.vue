@@ -9,6 +9,9 @@
           v-model="gameTypeActiveTab"
           dense
           narrow-indicator
+          indicator-color="primary"
+          active-color="primary"
+          align="justify"
           :class="[
             'row',
             $q.dark.isActive && 'text-white',
@@ -32,6 +35,8 @@
           v-model="roomStatusActiveTab"
           dense
           narrow-indicator
+          :indicator-color="roomStatusActiveColor"
+          :active-color="roomStatusActiveColor"
           class="q-mt-xs"
           :class="[
             'row',
@@ -88,7 +93,7 @@
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, onMounted, onBeforeUnmount, ref, watch,
+  defineComponent, getCurrentInstance, onMounted, onBeforeUnmount, ref, watch, computed,
 } from '@vue/composition-api';
 import CreateRoomRequest from 'src/online/room/CreateRoomRequest';
 import QuickStartRequest from 'src/online/room/QuickStartRequest';
@@ -110,6 +115,7 @@ import RoomSettings from 'src/online/room/RoomSettings';
 import CreateRoomDialog from './CreateRoomDialog.vue';
 import RoomsPanel from './RoomsPanel.vue';
 import { userActivityClient } from '../../boot/main';
+import { ROOM_STATUS_MAP } from './room_status';
 
 export default defineComponent({
   components: { CreateRoomDialog, RoomsPanel },
@@ -120,6 +126,16 @@ export default defineComponent({
     const joining = ref(false);
     const gameTypeActiveTab = ref(0);
     const roomStatusActiveTab = ref(0);
+
+    const roomStatusActiveColor = computed(() => {
+      const colorMap: { [k: number]: string } = {
+        0: 'primary',
+        1: 'green',
+        2: 'orange',
+        3: 'amber'
+      };
+      return colorMap[roomStatusActiveTab.value];
+    });
 
     const resize = (isChatActive: boolean) => {
       const pageEl = ctx.$el as HTMLElement;
@@ -359,6 +375,7 @@ export default defineComponent({
     return {
       gameTypeActiveTab,
       roomStatusActiveTab,
+      roomStatusActiveColor,
 
       rooms: roomManager.rooms,
       roomsLoading: roomManager.roomsLoading,
