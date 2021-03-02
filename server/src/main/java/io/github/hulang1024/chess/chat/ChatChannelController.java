@@ -90,11 +90,11 @@ public class ChatChannelController {
      * @return
      */
     @PostMapping("/channels/{channel_id}/messages")
-    public ResponseEntity<Long> postMessage(
+    public ResponseEntity<Message> postMessage(
         @NotNull @PathVariable("channel_id") Long channelId,
         @Validated @RequestBody PostMessageParam param) {
 
-        boolean ok = channelManager.postMessage(channelId, param);
-        return new ResponseEntity(ok ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+        Message message = channelManager.postMessage(channelId, param);
+        return new ResponseEntity(message, message != null ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 }

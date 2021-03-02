@@ -192,24 +192,26 @@ public class ChannelManager {
         message.setSender(sender);
         message.setContent(param.getContent());
         message.setChannelId(channel.getId());
+        boolean ok;
         if (param.isAction()) {
             commandService.execute(message, channel);
+            ok = true;
         } else {
-            broadcast(channelMap.get(channel.getId()), message);
+            ok = broadcast(channelMap.get(channel.getId()), message, sender);
         }
-        return new CreateNewPMRet(true, channel.getId());
+        return ok ? new CreateNewPMRet(true, channel.getId(), message) : CreateNewPMRet.fail();
     }
 
-    public boolean postMessage(Long channelId, PostMessageParam param) {
+    public Message postMessage(Long channelId, PostMessageParam param) {
         Channel channel = getChannelById(channelId);
         if (channel == null) {
-            return false;
+            return null;
         }
 
         User sender = UserUtils.get();
 
         if (!wordsNotAllowedCommandExecutor.isCanWords(sender, channel)) {
-            return false;
+            return null;
         }
         Message message = new Message();
         message.setChannelId(channel.getId());
@@ -219,10 +221,13 @@ public class ChannelManager {
 
         if (param.isAction()) {
             commandService.execute(message, channel);
-            return true;
+            return message;
         } else {
-            return broadcast(channel, message);
+            if (broadcast(channel, message, sender)) {
+                return message;
+            }
         }
+        return null;
     }
 
     public boolean broadcast(Channel channel, Message message, User... excludes) {
