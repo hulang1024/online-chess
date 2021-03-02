@@ -1,6 +1,6 @@
 <template>
   <main-buttons-overlay :visible="visible">
-    <div>
+    <div class="row justify-center items-center">
       <q-btn
         push
         label="邀请"
