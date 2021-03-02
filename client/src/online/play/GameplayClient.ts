@@ -10,7 +10,7 @@ import SearchUserInfo from '../user/SearchUserInfo';
 import GameplayServer from './GameplayServer';
 
 export default abstract class GameplayClient extends GameplayServer {
-  public isConnected = new BindableBool();
+  public isConnected = new BindableBool(true);
 
   public gameState = new Bindable<GameState>(GameState.READY);
 
