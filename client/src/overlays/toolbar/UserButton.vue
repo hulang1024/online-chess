@@ -7,14 +7,16 @@
     class="toolbar-button q-px-sm"
     @click="onUserButtonClick"
   >
-    <span v-show="user.id != -1" class="nickname ellipsis">{{ user.nickname }}</span>
-    <span v-show="user.id == -1">登录</span>
-    <user-avatar
-      v-show="user.id != -1"
-      :user="user"
-      size="28px"
-      class="q-ml-xs"
-    />
+    <div class="content flex items-center no-wrap">
+      <span v-show="user.id != -1" class="nickname ellipsis">{{ user.nickname }}</span>
+      <span v-show="user.id == -1">登录</span>
+      <user-avatar
+        v-show="user.id != -1"
+        :user="user"
+        size="28px"
+        class="q-ml-xs"
+      />
+    </div>
 
     <logged-in-user-overlay
       v-if="user.id > 0"
@@ -138,7 +140,7 @@ export default defineComponent({
 </script>
 
 <style lang="sass" scoped>
-.q-btn
+.content
   min-width: 80px
 .nickname
   max-width: 120px
