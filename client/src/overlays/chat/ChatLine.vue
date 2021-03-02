@@ -102,10 +102,6 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.row {
-  transition: opacity 0.2s ease-out;
-}
-
 .row > div {
   line-height: 1.4em;
   font-size: 1.1em;
@@ -113,10 +109,6 @@ export default defineComponent({
 
 .row.small > div {
   font-size: 1em;
-}
-
-.row.pending {
-  opacity: 0.5;
 }
 
 @media (max-width: $breakpoint-xs-max) {
