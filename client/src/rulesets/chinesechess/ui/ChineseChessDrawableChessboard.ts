@@ -278,21 +278,23 @@ export default class ChineseChessDrawableChessboard
   }
 
   private calcBounds(stage: {width: number, height: number}, screen: any) {
-    const MIN_SIZE = 240;
-    const MAX_SIZE = 800;
+    const MIN_SIZE = 100;
 
     // 计算匹配屏幕的画布的宽度
     let narrow = Math.min(stage.width, stage.height);
     narrow -= this.padding * 2;
-    if (narrow > MAX_SIZE) {
-      narrow = MAX_SIZE;
-    }
     if (narrow < MIN_SIZE) {
       narrow = MIN_SIZE;
     }
 
     // 根据网格宽度计算交叉点之间的距离
-    const gap = narrow / (stage.height < stage.width ? 10 : 9);
+    let gap;
+    if ((narrow / 9) * 10 > stage.height) {
+      gap = narrow / 10;
+    } else {
+      gap = narrow / 9;
+    }
+
     // 棋子宽度稍小于交叉点距离
     // eslint-disable-next-line
     const chessSize = gap - (screen.xs ? 4 : 12);
