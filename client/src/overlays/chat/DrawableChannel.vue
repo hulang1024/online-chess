@@ -32,6 +32,7 @@ import {
 } from '@vue/composition-api';
 import Channel from 'src/online/chat/Channel';
 import Message from 'src/online/chat/Message';
+import LocalEchoMessage from 'src/online/chat/LocalEchoMessage';
 import { createBoundRef } from 'src/utils/vue/vue_ref_utils';
 import { scroll } from 'quasar';
 import ChatLine from './ChatLine.vue';
@@ -67,9 +68,17 @@ export default defineComponent({
       updateScroll();
     });
 
-    channel.messageRemoved.add((msgId: number) => {
-      messages.value = messages.value?.filter((m) => m.id != msgId);
+    channel.messageRemoved.add((message: Message) => {
+      const pred = (m: Message) => (message.id ? m.id != message.id : m != message);
+      messages.value = messages.value?.filter(pred);
       updateScroll();
+    });
+
+    channel.pendingMessageResolved.add((echo: LocalEchoMessage, final: Message) => {
+      const message = messages.value.find((m) => m == echo);
+      if (message) {
+        ctx.$set(message, 'id', final.id);
+      }
     });
 
     onMounted(() => {

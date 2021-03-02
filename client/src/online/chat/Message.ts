@@ -13,7 +13,7 @@ export default class Message {
 
   isAction: boolean;
 
-  constructor(id?: number) {
+  constructor(id?: number | null) {
     if (id) {
       this.id = id;
     }

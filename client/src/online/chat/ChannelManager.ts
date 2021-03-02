@@ -172,31 +172,39 @@ export default class ChannelManager {
     message.content = text;
     message.isAction = isAction;
 
-    // this.currentChannel.addLocalEcho(message);
+    if (!isAction) {
+      target.addLocalEcho(message);
+    }
 
     // 如果这是一个私聊频道并且是第一条消息，需要一个特殊请求创建频道
     if (target.type == ChannelType.PM) {
       const request = new CreateNewPrivateMessageRequest(target.users[0], message);
       request.success = (res) => {
         target.id = res.channelId;
+        target.resolveMessage(message, Message.from(res.message));
       };
       request.failure = () => {
+        target.resolveMessage(message, null);
         target.addNewMessages(new ErrorMessage('消息发送失败，对方可能不在线'));
       };
       this.api.queue(request);
       return;
     }
 
-    const postMessagesRequest = new PostMessageRequest(message);
-    postMessagesRequest.failure = () => {
+    const req = new PostMessageRequest(message);
+    req.success = (final) => {
+      target.resolveMessage(message, Message.from(final));
+    };
+    req.failure = () => {
       let errorText = '消息发送失败';
       if (target.type == ChannelType.PM) {
         errorText += '，对方可能不在线';
         target.id = 0;
       }
+      target.resolveMessage(message, null);
       target.addNewMessages(new ErrorMessage(errorText));
     };
-    this.api.queue(postMessagesRequest);
+    this.api.queue(req);
   }
 
   public postCommand(text: string, channel?: Channel) {

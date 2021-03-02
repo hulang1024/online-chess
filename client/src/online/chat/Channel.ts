@@ -2,6 +2,7 @@ import Signal from "src/utils/signals/Signal";
 import User from "../../user/User";
 import BindableBool from "../../utils/bindables/BindableBool";
 import ChannelType from "./ChannelType";
+import LocalEchoMessage from "./LocalEchoMessage";
 import Message from "./Message";
 
 export default class Channel {
@@ -19,9 +20,11 @@ export default class Channel {
 
   public messagesLoaded = false;
 
-  public newMessagesArrived: Signal = new Signal();
+  public newMessagesArrived = new Signal();
 
-  public messageRemoved: Signal = new Signal();
+  public messageRemoved = new Signal();
+
+  public pendingMessageResolved = new Signal();
 
   public lastMessageId: number | null = null;
 
@@ -61,8 +64,25 @@ export default class Channel {
   }
 
   public removeMessage(messageId: number) {
-    this.messages = this.messages.filter((msg) => msg.id == messageId);
-    this.messageRemoved.dispatch(messageId);
+    const message = this.messages.find((msg) => msg.id == messageId);
+    if (!message) {
+      return;
+    }
+    this.messages = this.messages.filter((msg) => msg != message);
+    this.messageRemoved.dispatch(message);
+  }
+
+  public resolveMessage(echo: LocalEchoMessage, final: Message | null) {
+    if (final == null) {
+      this.messages = this.messages.filter((msg) => msg != echo);
+      this.messageRemoved.dispatch(echo);
+      return;
+    }
+
+    const index = this.messages.findIndex((msg) => msg == echo);
+    this.messages[index] = final;
+
+    this.pendingMessageResolved.dispatch(echo, final);
   }
 
   public getUnreadMessages() {

@@ -1,7 +1,7 @@
 import { APIRequest, HttpMethod } from "../api/api_request";
 import Message from "./Message";
 
-export default class PostMessageRequest extends APIRequest<void> {
+export default class PostMessageRequest extends APIRequest<Message> {
   constructor(message: Message) {
     super();
     this.method = HttpMethod.POST;
