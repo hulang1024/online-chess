@@ -4,7 +4,7 @@
     class="game-user-panel"
   >
     <div class="row items-center justify-between">
-      <div :class="['row', 'items-center', {reverse}]">
+      <div :class="['row', 'items-center', 'no-wrap', {reverse}]">
         <circle-timer
           ref="circleStepTimer"
           size="70px"
@@ -262,10 +262,16 @@ export default defineComponent({
 
 .time-panel
   display: flex
+  flex-wrap: nowrap
+
   .item
+    display: flex
+    flex-wrap: nowrap
     user-select: none
+
     .label
       font-size: 1em
+      word-break: keep-all
       &::after
         content: ':'
 
