@@ -34,7 +34,7 @@ export default class SampleStore {
       'room/user_join', 'room/user_left', 'room/unready', 'room/ready',
       'new_invitation',
       'gameplay/started.mp3',
-      'gameplay/chess_move', 'gameplay/chess_down.mp3',
+      'gameplay/chess_move', 'gameplay/chess_down1.mp3', 'gameplay/chess_down2.mp3',
     ];
     for (let count = 1; count <= 10; count++) {
       names.push(`gameplay/count/zh/${count}.mp3`);
