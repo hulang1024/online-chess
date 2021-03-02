@@ -115,7 +115,6 @@ import RoomSettings from 'src/online/room/RoomSettings';
 import CreateRoomDialog from './CreateRoomDialog.vue';
 import RoomsPanel from './RoomsPanel.vue';
 import { userActivityClient } from '../../boot/main';
-import { ROOM_STATUS_MAP } from './room_status';
 
 export default defineComponent({
   components: { CreateRoomDialog, RoomsPanel },
@@ -132,7 +131,7 @@ export default defineComponent({
         0: 'primary',
         1: 'green',
         2: 'orange',
-        3: 'amber'
+        3: 'amber',
       };
       return colorMap[roomStatusActiveTab.value];
     });
