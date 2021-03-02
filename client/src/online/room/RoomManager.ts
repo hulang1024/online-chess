@@ -46,8 +46,7 @@ export default class RoomManager {
   }
 
   private initSocketListeners() {
-    socketService.on('lobby.room_create', (msg: RoomCreatedMsg) => {
-      this.rooms.value.push(msg.room);
+    const filter = () => {
       this.rooms.value = this.rooms.value.filter((room) => {
         let ret = true;
         if (this.lastSearchParams?.gameType) {
@@ -58,6 +57,11 @@ export default class RoomManager {
         }
         return ret;
       });
+    };
+
+    socketService.on('lobby.room_create', (msg: RoomCreatedMsg) => {
+      this.rooms.value.push(msg.room);
+      filter();
     });
 
     socketService.on('lobby.room_update', (msg: RoomUpdatedMsg) => {
@@ -66,7 +70,12 @@ export default class RoomManager {
       }
 
       const i = this.rooms.value.findIndex((room: Room) => room.id == msg.room.id);
-      Object.assign(this.rooms.value[i], msg.room);
+      if (i > -1) {
+        Object.assign(this.rooms.value[i], msg.room);
+      } else {
+        this.rooms.value.push(msg.room);
+      }
+      filter();
     });
 
     socketService.on('lobby.room_remove', (msg: RoomRemovedMsg) => {
@@ -74,6 +83,7 @@ export default class RoomManager {
         return;
       }
       this.rooms.value = this.rooms.value.filter((room: Room) => room.id != msg.roomId);
+      filter();
     });
   }
 
