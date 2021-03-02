@@ -4,59 +4,68 @@
   >
     <q-card
       class="q-px-lg q-py-lg"
-      style="width: 400px"
+      style="max-width: 400px"
     >
       <q-form
         ref="form"
-        class="q-gutter-md"
+        class="q-gutter-md q-gutter-y-lg"
       >
-
-        <div class="q-gutter-x-sm">
-          <q-radio v-model="gameType" :val="2" label="五子棋" />
-          <q-radio v-model="gameType" :val="1" label="象棋" />
-        </div>
-
+        <q-btn-toggle
+          v-model="gameType"
+          toggle-color="primary"
+          :options="[
+            {label: '五子棋', value: 2},
+            {label: '象棋', value: 1},
+            {label: '随机', value: 0},
+          ]"
+        />
         <q-input
           v-model="name"
           standout
           dense
           label="房间名称"
           hint="可不填"
+          class="q-mt-md"
         />
 
-        <q-input
-          v-model.number="gameDuration"
-          type="number"
-          standout
-          dense
-          label="局时"
-          suffix="分钟"
-          hint="棋局可用总时间"
-          lazy-rules
-          :rules="[ val => val || '' ]"
-        />
-        <q-input
-          v-model.number="stepDuration"
-          type="number"
-          standout
-          dense
-          label="步时"
-          suffix="秒"
-          hint="局时内每步可用时间"
-          lazy-rules
-          :rules="[ val => val || '' ]"
-        />
-        <q-input
-          v-model.number="secondsCountdown"
-          type="number"
-          standout
-          dense
-          label="读秒"
-          suffix="秒"
-          hint="局时用完后每步可用时间"
-          lazy-rules
-          :rules="[ val => val || '' ]"
-        />
+        <div
+          class="row q-gutter-x-xs justify-between no-wrap"
+          style="margin-left: 12px"
+        >
+          <q-input
+            v-model.number="gameDuration"
+            type="number"
+            standout
+            dense
+            label="局时"
+            suffix="分钟"
+            hint="棋局可用总时间"
+            lazy-rules
+            :rules="[ val => val || '' ]"
+          />
+          <q-input
+            v-model.number="stepDuration"
+            type="number"
+            standout
+            dense
+            label="步时"
+            suffix="秒"
+            hint="局时用完前每步可用时间"
+            lazy-rules
+            :rules="[ val => val || '' ]"
+          />
+          <q-input
+            v-model.number="secondsCountdown"
+            type="number"
+            standout
+            dense
+            label="读秒"
+            suffix="秒"
+            hint="局时用完后每步可用时间"
+            lazy-rules
+            :rules="[ val => val || '' ]"
+          />
+        </div>
         <q-input
           v-if="gameType == 2"
           v-model.number="chessboardSize"
@@ -67,20 +76,24 @@
           lazy-rules
           :rules="[ val => (val && val >= 15 && val % 2 != 0) || '最小15*15且奇数' ]"
         />
-        <q-toggle
-          v-model="requirePassword"
-          label="需要密码"
-        />
 
-        <q-input
-          ref="passwordInput"
-          v-show="requirePassword"
-          v-model="password"
-          type="password"
-          standout
-          dense
-          label="房间密码"
-        />
+        <div class="row no-wrap">
+          <q-input
+            ref="passwordInput"
+            :disable="!requirePassword"
+            v-model="password"
+            type="password"
+            standout
+            dense
+            label="房间密码"
+            class="q-mr-sm"
+            style="flex-grow: 1;"
+          />
+          <q-toggle
+            v-model="requirePassword"
+            class="q-ml-none"
+          />
+        </div>
 
         <div class="q-gutter-y-md">
           <u-button
@@ -146,7 +159,7 @@ export default defineComponent({
     }) => {
       action = options.action;
       Object.assign(form, INIT_VALUES);
-      form.gameType = api.localUser.playGameType || 2;
+      form.gameType = api.localUser.playGameType || 0;
       createLoading.value = false;
       isOpen.value = true;
     };
@@ -167,7 +180,11 @@ export default defineComponent({
         const roomSettings = new RoomSettings();
 
         let gameSettings: GameSettings;
-        switch (form.gameType) {
+        let { gameType } = form;
+        if (gameType == 0) {
+          gameType = Math.random() > 0.5 ? GameType.chinesechess : GameType.gobang;
+        }
+        switch (gameType) {
           case GameType.chinesechess:
             gameSettings = new ChineseChessGameSettings();
             break;
@@ -177,7 +194,7 @@ export default defineComponent({
           default:
             return;
         }
-        gameSettings.gameType = form.gameType;
+        gameSettings.gameType = gameType;
 
         const timer = new TimerSettings();
         timer.gameDuration = form.gameDuration;
@@ -209,3 +226,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+>>> .q-field__bottom {
+  padding-left: 1px;
+}
+</style>
