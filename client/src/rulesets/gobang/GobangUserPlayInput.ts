@@ -41,8 +41,9 @@ export default class GobangUserPlayInput extends UserPlayInput {
     super(gameRule, gameState, localUser, isWatchingMode);
 
     this.chessboard = (gameRule as GobangGameRule).getChessboard();
-
     this.mouseChessTarget = new MouseChessTarget(this.chessboard);
+    this.chessboard.clicked.add(this.checkReject.bind(this));
+    this.chessboard.onChessPosClick = this.onChessPosClick.bind(this);
 
     if (isWatchingMode) {
       return;
@@ -79,10 +80,6 @@ export default class GobangUserPlayInput extends UserPlayInput {
         this.mouseChessTarget.setChess(this.localUser.chess.value);
       }
     });
-
-    this.chessboard.clicked.add(this.checkReject.bind(this));
-
-    this.chessboard.onChessPosClick = this.onChessPosClick.bind(this);
   }
 
   public onChessPosClick(pos: ChessPos) {

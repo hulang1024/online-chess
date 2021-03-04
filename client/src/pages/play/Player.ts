@@ -114,6 +114,10 @@ export default class Player extends GameplayClient {
       this.rulesetPlayer.userPlayInput = this.userPlayInput;
       this.rulesetClient.userPlayInput = this.userPlayInput;
       this.userPlayInput.onReject = () => {
+        if (this.isWatchingMode) {
+          this.showText('你正在旁观中', 1000);
+          return;
+        }
         this.showText('对方回合', 500);
         const playerView = this.context.$refs.playerView as Vue;
         // eslint-disable-next-line

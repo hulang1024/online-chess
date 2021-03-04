@@ -38,14 +38,6 @@ export default class SpectatorPlayer extends Player {
           break;
       }
     });
-
-    this.playfield.loaded.addOnce(() => {
-      this.playfield.chessboard.clicked.add(() => {
-        if (this.gameState.value == GameState.PLAYING) {
-          this.showText('你正在旁观中', 1000);
-        }
-      });
-    });
   }
 
   protected onUserLeft(leftUser: GameUser) {

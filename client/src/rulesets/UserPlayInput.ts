@@ -9,7 +9,7 @@ export default abstract class UserPlayInput {
 
   public onReject: () => void;
 
-  protected enabled: boolean;
+  protected enabled = false;
 
   protected gameRule: GameRule;
 
@@ -49,7 +49,8 @@ export default abstract class UserPlayInput {
 
   protected checkReject() {
     if (this.gameState.value == GameState.PLAYING
-      && this.localUser.chess.value != this.gameRule.activeChessHost.value) {
+      && (!this.enabled
+        || this.localUser.chess.value != this.gameRule.activeChessHost.value)) {
       this.onReject();
     }
   }

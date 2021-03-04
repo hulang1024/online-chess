@@ -25,20 +25,23 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
   ) {
     super(gameRule, gameState, localUser, isWatchingMode);
 
-    if (isWatchingMode) {
-      return;
-    }
-
     this.chessboard = (gameRule as ChineseChessGameRule).getChessboard();
-
     this.chessboard.clicked.add(this.checkReject.bind(this));
 
     this.chessboard.chessPickupOrDrop.add(({ chess, isPickup }
       : {chess: DrawableChess, isPickup: boolean}) => {
+      if (!this.enabled) {
+        this.checkReject();
+        return;
+      }
       this.gameplayServer.pickChess(chess.getPos(), isPickup);
     }, this);
     this.chessboard.chessPosClicked.add(this.onChessboardClick, this);
     this.chessboard.chessMoved.add(this.onInputChessMove, this);
+
+    if (isWatchingMode) {
+      return;
+    }
 
     gameState.changed.add(() => {
       this.lastSelected = null;
@@ -134,7 +137,8 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
   }
 
   private onInputChessMove({ chess, toPos }: {chess: DrawableChess, toPos: ChessPos}) {
-    if (this.gameState.value != GameState.PLAYING) {
+    if (!this.enabled) {
+      this.checkReject();
       return;
     }
 
