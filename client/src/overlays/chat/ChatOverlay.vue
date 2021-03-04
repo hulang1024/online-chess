@@ -31,7 +31,6 @@
         v-model="activeChannelTab"
         keep-alive
         animated
-        class="q-pb-xs"
       >
         <q-tab-panel
           v-for="channel in channels"
@@ -41,45 +40,8 @@
           <drawable-channel :channel="channel" />
         </q-tab-panel>
       </q-tab-panels>
-
-      <div class="full-width">
-        <q-input
-          ref="messageInput"
-          v-model="messageText"
-          :outlined="!$q.dark.isActive"
-          :standout="$q.dark.isActive"
-          dense
-          placeholder="键入你的消息"
-          :disable="!inputEnabled"
-          class="message-input"
-          @keydown.enter="onSend"
-        >
-          <template v-slot:append>
-            <q-icon
-              name="mood"
-              class="cursor-pointer"
-            >
-              <q-popup-proxy
-                ref="emojiPanelProxy"
-                :offset="[11, 10]"
-              >
-                <emoji-panel @emoji-select="onEmojiSelect" />
-              </q-popup-proxy>
-            </q-icon>
-          </template>
-        </q-input>
-        <u-button
-          class="btn-send"
-          color="primary"
-          rounded
-          dense
-          padding="sm"
-          label="发送"
-          @click="onSend"
-        />
-      </div>
+      <chat-input-box />
     </q-card>
-
   </q-dialog>
 </template>
 
@@ -93,21 +55,16 @@ import ChannelType from 'src/online/chat/ChannelType';
 import InfoMessage from 'src/online/chat/InfoMessage';
 import Message from 'src/online/chat/Message';
 import User from 'src/user/User';
+import ChatInputBox from './ChatInputBox.vue';
 import DrawableChannel from './DrawableChannel.vue';
-import EmojiPanel from './EmojiPanel.vue';
 
 export default defineComponent({
-  components: { DrawableChannel, EmojiPanel },
+  components: { DrawableChannel, ChatInputBox },
   setup(props, { emit }) {
     const ctx = getCurrentInstance() as Vue;
-    // eslint-disable-next-line
-    const notify = ctx.$q.notify;
-
     const isOpen = ref(false);
     const activeChannelTab = ref('#世界');
     const channels = ref<Channel[]>([]);
-    const messageText = ref('');
-    const inputEnabled = ref(true);
     const seamless = ref(true);
 
     const getChannelTabName = (channel: Channel) => (
@@ -173,10 +130,6 @@ export default defineComponent({
       channelManager.openChannel(1);
     };
 
-    channelManager.wordsEnableSignal.add((enabled: boolean) => {
-      inputEnabled.value = enabled;
-    });
-
     channelManager.initializeChannels();
     channelManager.openChannel(1);
     channelManager.addInfoMessage(1, new InfoMessage('欢迎'));
@@ -199,39 +152,6 @@ export default defineComponent({
       isOpen.value = false;
     };
 
-    const onSend = () => {
-      const text = messageText.value.trim();
-      if (!text) {
-        return;
-      }
-      if (text.length > 200) {
-        notify({ type: 'warning', message: '消息过长' });
-        return;
-      }
-
-      if (text[0] == '/' && text.length > 1) {
-        channelManager.postCommand(text);
-      } else {
-        channelManager.postMessage(text);
-      }
-
-      messageText.value = '';
-
-      // todo: 记录输入历史，通过上下键查看
-    };
-
-    const onEmojiSelect = (emoji: string) => {
-      messageText.value += emoji;
-      if (!ctx.$q.screen.xs) {
-        ctx.$nextTick(() => {
-          // eslint-disable-next-line
-          (ctx.$refs.messageInput as any).focus();
-        });
-      }
-      // eslint-disable-next-line
-      (ctx.$refs.emojiPanelProxy as any).hide();
-    };
-
     return {
       isOpen,
       toggle,
@@ -240,11 +160,7 @@ export default defineComponent({
       activeChannelTab,
       getChannelTabName,
       channels,
-      messageText,
-      inputEnabled,
       seamless,
-      onEmojiSelect,
-      onSend,
     };
   },
 });
@@ -267,34 +183,21 @@ export default defineComponent({
   & .q-card.q-dark {
     background-color: #191919;
   }
+}
+</style>
 
-  .message-input {
-    float: right;
-    margin-right: 8px;
-    margin-bottom: 8px;
-    width: calc(100% - 180px);/*减宽度等于标签宽度 */
-    font-size: 15px;
+<style scoped>
+.chat-input-box >>> .message-input {
+  float: right;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  width: calc(100% - 131px);/*减宽度等于标签宽度 */
+  font-size: 15px;
+}
 
-    input {/*todo */
-      caret-color: orange;
-    }
-  }
-  .btn-send {
-    display: none;
-  }
-
-  @media (max-width: $breakpoint-xs-max) {
-    .message-input {
-      float: left;
-      margin-left: 8px;
-      width: calc(100% - 16px - 60px - 8px);
-    }
-
-    .btn-send {
-      margin-right: 8px;
-      display: block;
-      width: 60px;
-    }
-  }
+.mobile .chat-input-box >>> .message-input {
+  float: left;
+  margin-left: 8px;
+  width: calc(100% - 16px);
 }
 </style>

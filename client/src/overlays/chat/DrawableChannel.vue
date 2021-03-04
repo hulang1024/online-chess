@@ -102,3 +102,9 @@ export default defineComponent({
     width: inherit
     height: inherit
 </style>
+
+<style scoped>
+.q-scrollarea >>> .scroll > div {
+  padding-bottom: 4px;
+}
+</style>
