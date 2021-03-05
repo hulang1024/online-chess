@@ -315,6 +315,7 @@ export default class ChannelManager {
         this.joinChannel(channel, false);
         this.openPrivateChannel(msg.sender);
       } else if (channel.type == ChannelType.ROOM) {
+        // todo: 房间频道不由服务端主动推送
         this.joinChannel(channel, false);
       }
       if (msg.recentMessages) {

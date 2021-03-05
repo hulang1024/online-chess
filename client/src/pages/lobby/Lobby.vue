@@ -224,6 +224,9 @@ export default defineComponent({
       const onAction = (isAccept: boolean) => {
         const req = new ReplyInvitationRequest(invitation.id, isAccept);
         req.success = (res) => {
+          if (!isAccept) {
+            return;
+          }
           const toPage = async () => {
             if (res.playRoom) {
               // eslint-disable-next-line
