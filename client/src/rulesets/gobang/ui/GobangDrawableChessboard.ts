@@ -23,10 +23,6 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
     this._el = document.createElement('div');
     this.el.classList.add('chessboard', 'gobang-chessboard');
 
-    const canvasContainer = document.createElement('div');
-    canvasContainer.className = 'chessboard_border';
-    this.el.appendChild(canvasContainer);
-
     // 创建canvas
     const canvas = document.createElement('canvas');
     this.canvas = canvas;
@@ -34,24 +30,19 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
       if (!this.onChessPosClick) {
         return;
       }
-      const { offsetX, offsetY } = event;
-      const { cellSize } = this.sizes;
-      const row = Math.round(offsetY / cellSize);
-      const col = Math.round(offsetX / cellSize);
       this.clicked.dispatch();
-      this.onChessPosClick(new ChessPos(row, col));
+      const chessPos = this.chessPosFromMouseEvent(event);
+      this.onChessPosClick(chessPos);
     });
-    canvasContainer.appendChild(canvas);
+    this.el.appendChild(canvas);
 
     canvas.addEventListener('mousemove', (event: MouseEvent) => {
       if (!this.onChessPosHover) {
         return;
       }
-      const { offsetX, offsetY } = event;
-      const { cellSize } = this.sizes;
-      const row = Math.round(offsetY / cellSize);
-      const col = Math.round(offsetX / cellSize);
-      this.onChessPosHover(new ChessPos(row, col));
+
+      const chessPos = this.chessPosFromMouseEvent(event);
+      this.onChessPosHover(chessPos);
     });
 
     this.resizeAndDraw(stage);
@@ -83,24 +74,24 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
 
   public resizeAndDraw(stage: {width: number, height: number}) {
     const size = Math.min(stage.width, stage.height);
-    const borderWidth = 2;
-    // 棋盘canvas尺寸
-    let canvasSize = size - (borderWidth * 2);
+    const padding = 4 * 2;
+    let canvasSize = size - padding;
     // 格子尺寸
     const cellSize = Math.round(canvasSize / this.gridNumber);
     const diff = canvasSize - cellSize * this.gridNumber;
     canvasSize = cellSize * this.gridNumber;
-    // 棋盘内边距
-    const padding = cellSize / 2 + Math.round(diff / 2);
+    const diffToPadding = Math.round(diff / 2);
 
     this.sizes = {
-      size: canvasSize - cellSize,
-      padding: padding + borderWidth,
+      canvasSize,
+      gridMargin: cellSize / 2,
       cellSize,
       gap: 3,
+      gridStart: cellSize / 2 + diffToPadding,
     };
 
-    this.el.style.padding = `${padding}px`;
+    this.canvas.style.padding = `${diffToPadding}px`;
+    this.canvas.style.padding = `${diffToPadding}px`;
     this.el.style.width = `${size}px`;
     this.el.style.height = `${size}px`;
 
@@ -114,7 +105,7 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
   private draw() {
     const { canvas } = this;
     const context = canvas.getContext('2d') as CanvasRenderingContext2D;
-    const { size, cellSize } = this.sizes;
+    const { canvasSize, gridMargin, cellSize } = this.sizes;
 
     const pixelRatio = (() => {
       const ctx: any = context;
@@ -132,30 +123,30 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
       ctx.backingStorePixelRatio || 1;
       return (window.devicePixelRatio || 1) / backingStore;
     })();
-    canvas.style.width = `${size}px`;
-    canvas.style.height = `${size}px`;
-    canvas.width = size * pixelRatio;
-    canvas.height = size * pixelRatio;
+    canvas.style.width = `${canvasSize}px`;
+    canvas.style.height = `${canvasSize}px`;
+    canvas.width = canvasSize * pixelRatio;
+    canvas.height = canvasSize * pixelRatio;
     context.scale(pixelRatio, pixelRatio);
 
     // 画网格
     context.lineWidth = 1;
-    for (let i = 1; i < this.gridNumber - 1; i++) {
+    for (let i = 0; i < this.gridNumber; i++) {
       // 画横线
-      const y = i * cellSize;
-      context.moveTo(0, y);
-      context.lineTo(size, y);
+      const y = gridMargin + i * cellSize;
+      context.moveTo(gridMargin, y);
+      context.lineTo(canvasSize - gridMargin, y);
 
       // 画竖线
-      const x = i * cellSize;
-      context.moveTo(x, 0);
-      context.lineTo(x, size);
+      const x = gridMargin + i * cellSize;
+      context.moveTo(x, gridMargin);
+      context.lineTo(x, canvasSize - gridMargin);
     }
-    context.strokeStyle = '#daa06c';
+    context.strokeStyle = '#a25e0b';
     context.stroke();
 
     // 画圆点
-    context.fillStyle = "#ecaa5b";
+    context.fillStyle = "#98590b";
     [
       [3, 3], [this.gridNumber - 3, 3],
       [(this.gridNumber - 1) / 2, (this.gridNumber - 1) / 2],
@@ -163,30 +154,36 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
     ].forEach(([row, col]) => {
       context.beginPath();
       context.arc(
-        cellSize * row,
-        cellSize * col,
+        gridMargin + cellSize * row,
+        gridMargin + cellSize * col,
         4, 0, Math.PI * 2, true,
       );
       context.closePath();
       context.fill();
     });
   }
+
+  private chessPosFromMouseEvent(event: MouseEvent) {
+    const { offsetX, offsetY } = event;
+    const { cellSize, gridMargin } = this.sizes;
+    let row = Math.round((offsetY - gridMargin) / cellSize);
+    let col = Math.round((offsetX - gridMargin) / cellSize);
+    if (row < 0) { row = 0; }
+    if (col < 0) { col = 0; }
+    if (row >= this.gridNumber) { row = this.gridNumber - 1; }
+    if (col >= this.gridNumber) { col = this.gridNumber - 1; }
+    return new ChessPos(row, col);
+  }
 }
 
 export interface ChessboardSizes {
-  /**
-   * 棋盘正方形的尺寸
-   */
-  size: number;
-  /**
-   * 内边距
-   */
-  padding: number;
-  /**
-   * 格子的大小
-   */
+  canvasSize: number;
+
+  gridMargin: number;
+
   cellSize: number;
 
-  /** 棋子之间的间距 */
   gap: number;
+
+  gridStart: number;
 }

@@ -30,12 +30,12 @@ export default class MouseChessTarget {
 
     el.classList.add('show');
 
-    const { cellSize, padding } = this.chessboard.sizes;
+    const { cellSize, gridStart } = this.chessboard.sizes;
     const cellRadius = Math.round(cellSize / 2);
     el.style.width = `${cellSize}px`;
     el.style.height = `${cellSize}px`;
-    el.style.top = `${pos.row * cellSize + padding - cellRadius}px`;
-    el.style.left = `${pos.col * cellSize + padding - cellRadius}px`;
+    el.style.top = `${pos.row * cellSize + gridStart - cellRadius}px`;
+    el.style.left = `${pos.col * cellSize + gridStart - cellRadius}px`;
   }
 
   public hide() {

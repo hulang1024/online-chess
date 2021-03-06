@@ -86,7 +86,7 @@ export default class DrawableChess implements Chess {
     const el = this._el;
     el.style.width = `${radius * 2}px`;
     el.style.height = `${radius * 2}px`;
-    el.style.fontSize = `${radius + 3}px`;
+    el.style.fontSize = `${radius + 4}px`;
     this.radius = radius;
   }
 

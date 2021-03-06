@@ -90,7 +90,7 @@ export default class GobangGameRule extends GameRule {
     drawableChess.marked = true;
     drawableChess.draw(this.chessboard.sizes);
 
-    GameAudio.play(`gameplay/chess_down${+action.chess}`);
+    GameAudio.play('gameplay/chess_down1');
 
     this.chessboardState.setChess(action.pos, action.chess);
 

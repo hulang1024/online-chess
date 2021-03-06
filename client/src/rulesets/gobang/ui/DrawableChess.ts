@@ -24,13 +24,13 @@ export default class DrawableChess {
 
     el.classList.add(chess == ChessHost.FIRST ? 'black' : 'white');
 
-    const { cellSize, padding } = sizes;
+    const { cellSize, gridStart } = sizes;
     const size = sizes.cellSize - sizes.gap;
     el.style.width = `${size}px`;
     el.style.height = `${size}px`;
     const chessRadius = Math.round(size / 2);
-    el.style.top = `${this.pos.row * cellSize + padding - chessRadius}px`;
-    el.style.left = `${this.pos.col * cellSize + padding - chessRadius}px`;
+    el.style.top = `${this.pos.row * cellSize + gridStart - chessRadius}px`;
+    el.style.left = `${this.pos.col * cellSize + gridStart - chessRadius}px`;
 
     this.el.classList.add('appear');
   }
