@@ -120,7 +120,7 @@
                 @click="onQuitClick"
               >
                 <q-item-section>
-                  <label><q-icon name="keyboard_arrow_left" />离开</label>
+                  <label><q-icon name="keyboard_arrow_left" />退出房间</label>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -167,6 +167,33 @@
         >
           <slot name="main-overlay" />
         </div>
+        <div class="absolute-bottom-right">
+          <div class="column justify-evenly q-gutter-y-sm">
+            <template v-if="enableGameRuleButtons">
+              <u-button
+                label="悔棋"
+                color="warning"
+                size="12px"
+                :disable="!(isPlaying && canWithdraw)"
+                @click="onWithdrawClick"
+              />
+              <u-button
+                label="求和"
+                color="warning"
+                size="12px"
+                :disable="!isPlaying"
+                @click="onChessDrawClick"
+              />
+              <u-button
+                label="认输"
+                color="warning"
+                size="12px"
+                :disable="!isPlaying"
+                @click="onWhiteFlagClick"
+              />
+            </template>
+          </div>
+        </div>
       </playfield>
       <div
         ref="controls"
@@ -178,58 +205,17 @@
           style="user-select:none"
         >
           <span class="text-subtitle1">
-            <span>棋桌#</span>
+            <span>房间#</span>
             <span>{{ room.id }}</span>
           </span>
           <span
             class="q-ml-sm"
-            :style="{width: '92px', color: gameStatus.color, userSelect: 'none'}"
+            :style="{flexGrow: 1, width: '92px', color: gameStatus.color, userSelect: 'none'}"
           >{{ `[${gameStatus.text}]` }}</span>
           <spectator-count-display
             :count="spectatorCount"
             class="q-ml-sm"
           />
-          <u-button
-            icon="menu"
-            flat
-            color="primary"
-            padding="6px 10px"
-            class="absolute-right"
-          >
-            <q-menu
-              transition-show="jump-up"
-              transition-hide="jump-down"
-              auto-close
-            >
-              <q-list style="min-width: 140px">
-                <q-item
-                  clickable
-                  v-close-popup
-                  @click="onQuitClick"
-                >
-                  <q-item-section>
-                    <q-item-label><q-icon name="keyboard_arrow_left" />离开</q-item-label>
-                  </q-item-section>
-                </q-item>
-                <template v-if="enableGameRuleButtons">
-                  <q-separator />
-                  <q-item
-                    v-close-popup
-                    clickable
-                    :disable="![2, 3].includes(gameState)"
-                    @click="onPauseOrResumeGameClick"
-                  >
-                    <q-item-section>
-                      <q-item-label>
-                        <q-icon name="access_time" />
-                        {{ viewUser.isRoomOwner ? '' : '请求' }}{{ gameState != 3 ? '暂停对局' : '继续对局' }}
-                      </q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </q-list>
-            </q-menu>
-          </u-button>
         </q-card>
         <q-card
           flat
@@ -249,36 +235,37 @@
             :game-type="gameType"
           />
         </q-card>
-        <q-card
-          flat
-          class="q-mb-xs q-py-sm"
-        >
-          <div class="flex justify-evenly q-gutter-y-sm">
-            <template v-if="enableGameRuleButtons">
-              <u-button
-                label="悔棋"
-                color="warning"
-                :disable="!(isPlaying && canWithdraw)"
-                @click="onWithdrawClick"
-              />
-              <u-button
-                label="求和"
-                color="warning"
-                :disable="!isPlaying"
-                @click="onChessDrawClick"
-              />
-              <u-button
-                label="认输"
-                color="warning"
-                :disable="!isPlaying"
-                @click="onWhiteFlagClick"
-              />
-            </template>
-            <slot name="main-buttons" />
-          </div>
-        </q-card>
-
         <chat-panel ref="chatPanel" />
+        <q-btn-group
+          unelevated
+          class="q-mt-sm"
+        >
+          <template v-if="enableGameRuleButtons">
+            <q-btn
+              color="white"
+              text-color="black"
+              :disable="![2, 3].includes(gameState)"
+              class="full-width"
+              @click="onPauseOrResumeGameClick"
+            >
+              <span>
+                <q-icon name="access_time" />
+                {{ viewUser.isRoomOwner ? '' : '请求' }}{{ gameState != 3 ? '暂停对局' : '继续对局' }}
+              </span>
+            </q-btn>
+          </template>
+          <slot name="main-buttons" />
+          <q-btn
+            color="primary"
+            class="full-width"
+            @click="onQuitClick"
+          >
+            <span>
+              <q-icon name="keyboard_arrow_left" />
+              退出房间
+            </span>
+          </q-btn>
+        </q-btn-group>
       </div>
     </template>
   </q-page>

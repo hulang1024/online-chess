@@ -4,7 +4,7 @@
       <q-btn
         push
         label="邀请"
-        color="light-green"
+        color="orange"
         @click.stop="$emit('invite')"
       />
       <q-btn
@@ -16,8 +16,8 @@
       />
       <q-btn
         push
-        label="离开"
-        color="orange"
+        label="退出房间"
+        color="light-green"
         @click="$emit('quit')"
       />
     </div>

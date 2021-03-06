@@ -121,13 +121,13 @@ export default defineComponent({
       req.failure = (result) => {
         const codeMsgMap: { [code: number]: string } = {
           2: '未连接到服务器',
-          3: '棋桌已满',
-          4: '你已加入本棋桌',
-          5: '你已加入其它棋桌',
+          3: '房间已满',
+          4: '你已加入本房间',
+          5: '你已加入其它房间',
           6: '密码错误',
-          7: '该棋桌已不存在',
+          7: '该房间已不存在',
         };
-        $q.notify({ type: 'warning', message: `加入棋桌失败：${codeMsgMap[result.code]}` });
+        $q.notify({ type: 'warning', message: `加入房间失败：${codeMsgMap[result.code]}` });
         $q.loading.hide();
       };
       api.perform(req);

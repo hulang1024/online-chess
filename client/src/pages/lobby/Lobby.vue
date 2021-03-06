@@ -78,7 +78,7 @@
           @click="onCreateRoomClick"
         />
         <u-button
-          color="orange"
+          color="light-green"
           label="快速加入"
           class="col float-right q-mt-sm"
           :loading="joining"

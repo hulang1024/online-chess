@@ -542,7 +542,7 @@ export default class Player extends GameplayClient {
     }
 
     if (this.isWatchingMode && (this.localUser.id == null && this.otherUser.id == null)) {
-      this.context.$q.notify({ message: '你观看的棋桌已经解散' });
+      this.context.$q.notify({ message: '你观看的房间已经解散' });
       this.exitScreen();
     }
   }
@@ -682,17 +682,17 @@ export default class Player extends GameplayClient {
     if ([GameState.READY, GameState.END].includes(this.gameState.value)) {
       this.partRoom();
     } else {
-      let label = '离开';
-      let text = '是否真的离开？';
+      let label = '退出房间';
+      let text = '是否真的退出房间？';
       if (this.gameState.value == GameState.PLAYING) {
-        text = '对局进行中，是否真的离开？';
+        text = '对局进行中，是否真的退出房间？';
       }
       if (this.gameState.value == GameState.PAUSE) {
         if (this.room.offlineAt) {
           text = '对局暂停中，是否解散棋局？<br>(你也可以退出登录，棋局将保留3小时)';
           label = '解散棋局';
         } else {
-          text = '对局暂停中，是否真的离开？';
+          text = '对局暂停中，是否真的退出房间？';
         }
       }
       this.context.$q.dialog({

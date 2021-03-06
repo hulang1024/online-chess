@@ -26,16 +26,19 @@ export default class Playfield {
     onMounted(() => {
       const pageEl = context.$el as HTMLElement;
       const recalcChessboardSize = () => {
-        const width = pageEl?.offsetWidth || 0;
-        const height = (pageEl?.parentElement?.offsetHeight || 0) - 40 - 16 || 0;
+        let width = pageEl?.offsetWidth || 0;
+        if (!isXSScreen) {
+          width -= 56 * 2 + 24;
+          // eslint-disable-next-line
+          width -= ((context.$refs.playerView as Vue).$refs.controls as any).offsetWidth + 8;
+        }
+        let height = (pageEl?.parentElement?.offsetHeight || 0) - 40 - 16;
+        if (isXSScreen) {
+          height -= (70 + 8) * 2;
+        }
         return {
-          width: isXSScreen
-            ? width
-            // eslint-disable-next-line
-            : width - ((context.$refs.playerView as Vue).$refs.controls as any).offsetWidth + 8,
-          height: isXSScreen
-            ? height - ((70 + 8) * 2)
-            : height,
+          width,
+          height,
         };
       };
 

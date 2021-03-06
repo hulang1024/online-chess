@@ -111,7 +111,7 @@ export default class SpectatorPlayer extends Player {
         $q.loading.hide();
       };
       req.failure = () => {
-        $q.notify({ type: 'warning', message: `加入棋桌失败` });
+        $q.notify({ type: 'warning', message: `加入房间失败` });
         $q.loading.hide();
         this.exitScreen();
       };

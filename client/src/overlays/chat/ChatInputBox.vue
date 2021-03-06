@@ -29,7 +29,7 @@
       <template v-slot:after>
         <q-btn
           icon="keyboard_return"
-          color="grey-8"
+          color="grey-7"
           unelevated
           padding="7px"
           label="发送"

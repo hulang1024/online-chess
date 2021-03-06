@@ -28,6 +28,7 @@
     </template>
     <template #xs-screen-main-buttons>
       <q-item
+        v-if="room.roomSettings.gameSettings.gameType == 1"
         clickable
         v-close-popup
         @click="onToggleViewClick"
@@ -37,9 +38,12 @@
       <q-separator />
     </template>
     <template #main-buttons>
-      <u-button
+      <q-btn
+        v-if="room.roomSettings.gameSettings.gameType == 1"
         label="切换"
-        color="warning"
+        color="white"
+        text-color="black"
+        class="full-width"
         @click="onToggleViewClick"
       />
     </template>

@@ -34,7 +34,8 @@
     <!-- TODO: 消除硬编码 -->
     <template
       #xs-screen-main-buttons
-      v-if="room.roomSettings.gameSettings.gameType == 2">
+      v-if="room.roomSettings.gameSettings.gameType == 2"
+    >
       <q-item
         clickable
         v-close-popup
