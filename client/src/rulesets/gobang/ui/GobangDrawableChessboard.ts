@@ -86,7 +86,7 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
       canvasSize,
       gridMargin: cellSize / 2,
       cellSize,
-      gap: 3,
+      gap: 2,
       gridStart: cellSize / 2 + diffToPadding,
     };
 
