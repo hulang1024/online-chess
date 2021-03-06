@@ -201,7 +201,7 @@
       >
         <q-card
           flat
-          class="q-mb-xs q-px-sm q-py-sm row items-center"
+          class="q-mb-sm q-px-sm q-py-sm row items-center"
           style="user-select:none"
         >
           <span class="text-subtitle1">
@@ -219,7 +219,7 @@
         </q-card>
         <q-card
           flat
-          class="q-mb-xs q-px-sm q-py-sm column"
+          class="q-mb-sm q-px-sm q-py-sm column"
           :class="{reverse}"
           style="padding-left: 12px"
         >
