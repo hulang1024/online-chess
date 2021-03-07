@@ -266,7 +266,7 @@ export default defineComponent({
       };
       $q.dialog({
         title: '邀请',
-        message: `${invitation.inviter.nickname}邀请你${invitation.subject == 'PLAY' ? '加入' : '观看'}游戏`,
+        message: `${invitation.inviter.nickname}邀请你${invitation.subject == 'PLAY' ? '加入' : '观战'}游戏`,
         persistent: true,
         ok: {
           label: '接受',

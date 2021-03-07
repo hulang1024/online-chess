@@ -22,17 +22,17 @@ export default class SpectatorPlayer extends Player {
         case 0:
         case GameState.READY:
           if (this.room.gameUsers.length == 2) {
-            this.showText('你正在旁观中，请等待游戏开始');
+            this.showText('你正在观战中，请等待游戏开始');
           }
           break;
         case GameState.PAUSE:
-          this.showText('你正在旁观中，游戏暂停，请等待游戏继续');
+          this.showText('你正在观战中，游戏暂停，请等待游戏继续');
           break;
         case GameState.PLAYING:
-          this.showText('你正在旁观中', 3000);
+          this.showText('你正在观战中', 3000);
           break;
         case GameState.END:
-          this.showText('你正在旁观中，对局已经结束，请等待新对局');
+          this.showText('你正在观战中，对局已经结束，请等待新对局');
           break;
         default:
           break;
@@ -74,7 +74,7 @@ export default class SpectatorPlayer extends Player {
     let watchingUser: User = this.api.localUser;
 
     if (targetUserId != null) {
-      // 如果是观看用户
+      // 如果是观战用户
       watchingUser = room.gameUsers.find((u) => u.user?.id == targetUserId)?.user as User;
     } else if (room.gameUsers.length == 2) {
       watchingUser = room.gameUsers[+(Math.random() > 0.5)].user as User;

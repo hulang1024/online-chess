@@ -73,8 +73,11 @@
           standout
           dense
           label="棋盘大小"
+          hint="最小9x9，最大19x19"
           lazy-rules
-          :rules="[ val => (val && val >= 15 && val % 2 != 0) || '最小15*15且奇数' ]"
+          :rules="[ val =>
+            (val && val >= 9 && val <= 19 && val % 2 != 0)
+            || '最小9x9，最大19x19' ]"
         />
 
         <div class="row no-wrap">

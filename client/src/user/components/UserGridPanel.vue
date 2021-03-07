@@ -93,7 +93,7 @@ export default defineComponent({
         color: '#fdd835',
       },
       [UserStatus.SPECTATING]: {
-        text: '正在旁观',
+        text: '正在观战',
         color: '#7870c2',
       },
     };

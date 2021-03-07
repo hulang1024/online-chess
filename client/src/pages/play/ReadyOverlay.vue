@@ -25,7 +25,7 @@
       <q-btn
         :disable="!canToSpectate"
         push
-        label="转为旁观"
+        label="转为观战"
         color="white"
         text-color="black"
         @click="$emit('to-spectate')"

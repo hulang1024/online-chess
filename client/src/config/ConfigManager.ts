@@ -11,7 +11,7 @@ export enum ConfigItem {
   desktopNotifyEnabled = 'desktop_notify_enabled',
 
   // todo: 待组织
-  gobangInputMode = 'gobang.input_mode',
+  gobangInputMethod = 'gobang.input_method',
 }
 
 export default class ConfigManager {

@@ -93,7 +93,7 @@
                     clickable
                     @click="onSpectateClick(user)"
                   >
-                    <q-item-section>观看游戏</q-item-section>
+                    <q-item-section>观战</q-item-section>
                   </q-item>
                   <q-separator />
                   <q-item
@@ -110,7 +110,7 @@
                     clickable
                     @click="onInviteClick(user, 2)"
                   >
-                    <q-item-section>邀请观看游戏</q-item-section>
+                    <q-item-section>邀请观战游戏</q-item-section>
                   </q-item>
                   <template v-if="user.isFriend">
                     <q-separator />
@@ -303,7 +303,7 @@ export default defineComponent({
       req.success = async (spectateResponse: SpectateResponse) => {
         isOpen.value = false;
         if (spectateResponse.isFollowedOtherSpectator) {
-          $q.loading.show({ message: `正在跟随${user.nickname}观看` });
+          $q.loading.show({ message: `正在跟随${user.nickname}观战` });
         }
         await $router.push({
           name: 'spectate',
@@ -318,8 +318,8 @@ export default defineComponent({
         const codeMsgMap: {[code: number]: string} = {
           2: '该用户未在线',
           3: '该用户未加入游戏',
-          4: '不满足观看条件',
-          5: '你在游戏中不能观看其它游戏',
+          4: '不满足观战条件',
+          5: '你在游戏中不能观战其它游戏',
         };
         $q.notify({
           type: 'warning',
@@ -342,7 +342,7 @@ export default defineComponent({
           1: '邀请失败',
           2: '该用户未在线',
           3: '请先加入游戏',
-          4: '请先加入或观看游戏',
+          4: '请先加入或观战游戏',
         };
         $q.notify({
           type: 'warning',

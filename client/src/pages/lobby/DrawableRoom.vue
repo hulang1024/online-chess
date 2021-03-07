@@ -75,12 +75,12 @@ export default defineComponent({
         backgroundColor: 'rgba(34, 221, 0, 0.08)',
       },
       2: {
-        text: '即将开始(可旁观)',
+        text: '即将开始(可观战)',
         color: '#ff9800',
         backgroundColor: 'rgba(255, 152, 0, 0.08)',
       },
       3: {
-        text: '进行中(可旁观)',
+        text: '进行中(可观战)',
         color: '#fdd835',
         backgroundColor: 'rgba(253, 216, 53, 0.08)',
       },
@@ -146,7 +146,7 @@ export default defineComponent({
         $q.loading.hide();
       };
       req.failure = () => {
-        $q.notify({ type: 'error', message: '观看请求失败' });
+        $q.notify({ type: 'error', message: '观战请求失败' });
         $q.loading.hide();
       };
       api.perform(req);

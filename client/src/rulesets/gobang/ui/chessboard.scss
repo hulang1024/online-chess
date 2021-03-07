@@ -1,8 +1,12 @@
 @import 'src/rulesets/ui/chessboard.scss';
 
 .gobang-chessboard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-radius: 1px;
-  border: 4px solid #d09c3e;
+  padding: 4px;
+  background: #d09c3e;
   box-sizing: border-box;
   overflow: hidden;
 

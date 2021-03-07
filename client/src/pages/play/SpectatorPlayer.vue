@@ -43,7 +43,6 @@
         label="切换"
         color="white"
         text-color="black"
-        class="full-width"
         @click="onToggleViewClick"
       />
     </template>

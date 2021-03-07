@@ -144,6 +144,10 @@
           </q-badge>
         </q-btn>
       </div>
+      <gamepad
+        ref="gamepad"
+        style="position: absolute; bottom: 60px"
+      />
     </template>
     <template v-else>
       <playfield ref="playfield">
@@ -238,6 +242,7 @@
         <chat-panel ref="chatPanel" />
         <q-btn-group
           unelevated
+          spread
           class="q-mt-sm"
         >
           <template v-if="enableGameRuleButtons">
@@ -245,7 +250,6 @@
               color="white"
               text-color="black"
               :disable="![2, 3].includes(gameState)"
-              class="full-width"
               @click="onPauseOrResumeGameClick"
             >
               <span>
@@ -257,7 +261,6 @@
           <slot name="main-buttons" />
           <q-btn
             color="primary"
-            class="full-width"
             @click="onQuitClick"
           >
             <span>
@@ -280,6 +283,7 @@ import Room from 'src/online/room/Room';
 import Playfield from 'src/pages/play/Playfield.vue';
 import ResultDialog from 'src/rulesets/ui/ResultDialog.vue';
 import TextOverlay from 'src/rulesets/ui/TextOverlay.vue';
+import Gamepad from 'src/rulesets/ui/Gamepad.vue';
 import GameUser from 'src/online/play/GameUser';
 import GameUserPanel from './GameUserPanel.vue';
 import SpectatorCountDisplay from './SpectatorCountDisplay.vue';
@@ -293,6 +297,7 @@ export default defineComponent({
     ResultDialog,
     TextOverlay,
     ChatPanel,
+    Gamepad,
   },
   inject: ['reload'],
   props: {

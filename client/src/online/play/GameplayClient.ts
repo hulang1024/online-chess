@@ -86,7 +86,7 @@ export default abstract class GameplayClient extends GameplayServer {
   }
 
   private handleUserJoined(msg: RoomUserJoinedMsg) {
-    // 旁观模式时，localUser可能为空
+    // 观战模式时，localUser可能为空
     const gameUser = this.localUser.id
       ? msg.user.id == this.localUser.id
         ? this.localUser

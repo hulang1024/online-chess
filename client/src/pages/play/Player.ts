@@ -111,11 +111,12 @@ export default class Player extends GameplayClient {
         this.localUser,
         this.isWatchingMode,
       );
+
       this.rulesetPlayer.userPlayInput = this.userPlayInput;
       this.rulesetClient.userPlayInput = this.userPlayInput;
       this.userPlayInput.onReject = () => {
         if (this.isWatchingMode) {
-          this.showText('你正在旁观中', 1000);
+          this.showText('你正在观战中', 1000);
           return;
         }
         this.showText('对方回合', 500);
@@ -151,6 +152,11 @@ export default class Player extends GameplayClient {
 
       this.resultDialog = playerView.$refs.resultDialog;
       this.textOverlay = playerView.$refs.textOverlay;
+
+      this.userPlayInput.setPlayerView(playerView);
+      if (!this.isWatchingMode && playerView.$refs.gamepad) {
+        this.userPlayInput.setGamepad(playerView.$refs.gamepad as Vue);
+      }
 
       this.initTimers();
       this.loadState(initialGameStates);
@@ -542,7 +548,7 @@ export default class Player extends GameplayClient {
     }
 
     if (this.isWatchingMode && (this.localUser.id == null && this.otherUser.id == null)) {
-      this.context.$q.notify({ message: '你观看的房间已经解散' });
+      this.context.$q.notify({ message: '你观战的房间已经解散' });
       this.exitScreen();
     }
   }
@@ -741,7 +747,7 @@ export default class Player extends GameplayClient {
         $q.loading.hide();
       };
       req.failure = () => {
-        $q.notify({ type: 'error', message: '旁观失败' });
+        $q.notify({ type: 'error', message: '观战失败' });
         $q.loading.hide();
         this.exitScreen();
       };

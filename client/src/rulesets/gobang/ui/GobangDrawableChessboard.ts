@@ -87,10 +87,9 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
       gridMargin: cellSize / 2,
       cellSize,
       gap: 2,
-      gridStart: cellSize / 2 + diffToPadding,
+      gridStart: cellSize / 2 + padding / 2 + diffToPadding,
     };
 
-    this.canvas.style.padding = `${diffToPadding}px`;
     this.canvas.style.padding = `${diffToPadding}px`;
     this.el.style.width = `${size}px`;
     this.el.style.height = `${size}px`;
@@ -147,11 +146,15 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
 
     // 画圆点
     context.fillStyle = "#98590b";
-    [
-      [3, 3], [this.gridNumber - 3, 3],
-      [(this.gridNumber - 1) / 2, (this.gridNumber - 1) / 2],
-      [3, this.gridNumber - 3], [this.gridNumber - 3, this.gridNumber - 3],
-    ].forEach(([row, col]) => {
+    const start = this.gridNumber < 11 ? 2 : 3;
+    const quarter = Math.floor((this.gridNumber - start * 2) / 2);
+    const posArray = [];
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        posArray.push([start + quarter * r, start + quarter * c]);
+      }
+    }
+    posArray.forEach(([row, col]) => {
       context.beginPath();
       context.arc(
         gridMargin + cellSize * row,

@@ -11,6 +11,10 @@ export default class ChessboardState {
     this.clear();
   }
 
+  public isValid(pos: ChessPos) {
+    return pos.row >= 0 && pos.row < this.size && pos.col >= 0 && pos.col < this.size;
+  }
+
   public isEmpty(pos: ChessPos): boolean {
     return this.chessAt(pos) == null;
   }

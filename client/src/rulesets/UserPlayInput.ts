@@ -17,6 +17,10 @@ export default abstract class UserPlayInput {
 
   protected localUser: GameUser;
 
+  protected playerView: Vue;
+
+  protected gamepad: Vue;
+
   protected isWatchingMode: boolean;
 
   constructor(
@@ -53,5 +57,13 @@ export default abstract class UserPlayInput {
         || this.localUser.chess.value != this.gameRule.activeChessHost.value)) {
       this.onReject();
     }
+  }
+
+  public setPlayerView(playerView: Vue) {
+    this.playerView = playerView;
+  }
+
+  public setGamepad(gamepad: Vue) {
+    this.gamepad = gamepad;
   }
 }
