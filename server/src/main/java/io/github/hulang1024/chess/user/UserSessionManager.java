@@ -16,9 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Component
 public class UserSessionManager {
-    public static int onlineUserCount = 0;
-    public static int guestCount = 0;
-
     @Autowired
     private OnlineListener onlineListener;
 
@@ -57,9 +54,9 @@ public class UserSessionManager {
         userSessionMap.put(user.getId(), session);
         sessionMap.put(session.id(), session);
 
-        onlineUserCount++;
+        UserOnlineCounter.online++;
         if (user instanceof GuestUser) {
-            guestCount++;
+            UserOnlineCounter.guest++;
         }
         onlineListener.onOnline(user);
 
@@ -84,9 +81,9 @@ public class UserSessionManager {
         userSessionMap.remove(userId);
         sessionMap.remove(session.id());
 
-        onlineUserCount--;
+        UserOnlineCounter.online--;
         if (user instanceof GuestUser) {
-            guestCount--;
+            UserOnlineCounter.guest--;
         }
         onlineListener.onOffline(user);
     }

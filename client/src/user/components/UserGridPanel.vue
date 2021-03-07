@@ -35,7 +35,9 @@
           <span
             v-if="userStatus != UserStatus.OFFLINE"
             class="q-mr-xs"
-          >[{{ loginDeviceOS != 'unknown' ? loginDeviceOS : '' }}在线]</span>
+          >[{{ (deviceInfo && deviceInfo.deviceOS != 'unknown')
+            ? translateDeviceOS(deviceInfo.deviceOS)
+            : '' }}在线]</span>
           <span>[{{ statusStates.text }}]</span>
         </div>
       </div>
@@ -64,7 +66,7 @@ export default defineComponent({
       userStatus: props.user?.status as UserStatus,
       isFriend: props.user?.isFriend,
       isMutual: props.user?.isMutual,
-      loginDeviceOS: translateDeviceOS(props.user?.loginDeviceOS),
+      deviceInfo: props.user?.deviceInfo,
     });
 
     const USER_STATUS_MAP = {
@@ -108,8 +110,8 @@ export default defineComponent({
       if (props.user?.isMutual != null) {
         states.isMutual = props.user?.isMutual;
       }
-      if (props.user?.loginDeviceOS) {
-        states.loginDeviceOS = translateDeviceOS(props.user?.loginDeviceOS);
+      if (props.user?.deviceInfo) {
+        states.deviceInfo = props.user?.deviceInfo;
       }
     });
 
@@ -118,6 +120,7 @@ export default defineComponent({
       ...props.user,
       ...toRefs(states),
       statusStates,
+      translateDeviceOS,
     };
   },
 });

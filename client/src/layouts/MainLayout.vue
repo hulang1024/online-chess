@@ -48,7 +48,7 @@ export default defineComponent({
 
     const onPageClick = () => {
       // eslint-disable-next-line
-      (<any>$refs.toolbar).exitActive();
+      (<any>$refs.toolbar).exitActive(ctx.$router.currentRoute.name == 'lobby' && 'chat');
     };
 
     const isViewAlive = ref(true);
@@ -63,6 +63,11 @@ export default defineComponent({
     provide('showUserDetails', (user: User) => {
       // eslint-disable-next-line
       (ctx.$refs.userDetailsOverlay as any).show(user);
+    });
+
+    provide('excludeToggle', (name: string, active?: boolean) => {
+      // eslint-disable-next-line
+      (<any>$refs.toolbar).excludeToggle(name, active);
     });
 
     return {

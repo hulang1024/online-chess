@@ -87,7 +87,7 @@ export default class SocketService {
   }
 
   public on(type: string, listener: any, listenerContext: any = null) {
-    const signal = new Signal();
+    const signal = this.messageTypeBoundSignalMap[type] || new Signal();
     signal.add(listener, listenerContext);
     this.addSignal(type, signal);
   }

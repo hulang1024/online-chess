@@ -12,8 +12,7 @@
       flat
       class="content-card q-px-sm"
     >
-      <span class="text-subtitle1">在线用户数<span class="count">{{ onlineCount }}</span></span>
-      <span class="q-ml-lg text-subtitle1">游客<span class="count">{{ guestCount }}</span></span>
+      <user-online-count-panel />
       <q-tabs
         v-model="activeTab"
         align="left"
@@ -63,68 +62,7 @@
               :user="user"
               @user-avatar-click="onUserAvatarClick(user)"
             >
-              <q-menu
-                v-if="isLoggedIn && !isMe(user)"
-                content-class="bg-primary text-white z-top"
-                touch-position
-              >
-                <q-list>
-                  <q-item
-                    key="details"
-                    v-close-popup
-                    clickable
-                    @click="onUserDetailsClick(user)"
-                  >
-                    <q-item-section>查看详情</q-item-section>
-                  </q-item>
-                  <q-separator />
-                  <q-item
-                    key="chat"
-                    v-close-popup
-                    clickable
-                    @click="onChatClick(user)"
-                  >
-                    <q-item-section>聊天</q-item-section>
-                  </q-item>
-                  <q-separator />
-                  <q-item
-                    key="spectate"
-                    v-close-popup
-                    clickable
-                    @click="onSpectateClick(user)"
-                  >
-                    <q-item-section>观战</q-item-section>
-                  </q-item>
-                  <q-separator />
-                  <q-item
-                    key="invite-play"
-                    v-close-popup
-                    clickable
-                    @click="onInviteClick(user, 1)"
-                  >
-                    <q-item-section>邀请加入游戏</q-item-section>
-                  </q-item>
-                  <q-item
-                    key="invite-spectate"
-                    v-close-popup
-                    clickable
-                    @click="onInviteClick(user, 2)"
-                  >
-                    <q-item-section>邀请观战游戏</q-item-section>
-                  </q-item>
-                  <template v-if="user.isFriend">
-                    <q-separator />
-                    <q-item
-                      key="deleteFriend"
-                      v-close-popup
-                      clickable
-                      @click="onDeleteFriendClick(user)"
-                    >
-                      <q-item-section>删除好友</q-item-section>
-                    </q-item>
-                  </template>
-                </q-list>
-              </q-menu>
+              <user-menu :user="user" />
             </user-grid-panel>
           </template>
         </template>
@@ -142,34 +80,29 @@
 import {
   defineComponent, getCurrentInstance, ref, watch,
 } from '@vue/composition-api';
-import DeleteFriendRequest from 'src/online/friend/DeleteFriendRequest';
-import SpectateUserRequest from 'src/online/spectator/SpectateUserRequest';
-import GetUsersRequest from 'src/online/user/GetUsersRequest';
-import InviteRequest from 'src/online/invitation/InviteRequest';
-import SearchUserInfo from 'src/online/user/SearchUserInfo';
-import { StatOnlineCountMsg } from "src/online/stat";
+import device from "current-device";
 import {
-  api, channelManager, socketService, userActivityClient, userManager,
+  api, socketService, userActivityClient, userManager,
 } from 'src/boot/main';
 import SearchUserParams from 'src/online/user/SearchUserParams';
 import UserStatus from 'src/user/UserStatus';
 import APIPageResponse from 'src/online/api/APIPageResponse';
-import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import UserGridPanel from 'src/user/components/UserGridPanel.vue';
+import GetUsersRequest from 'src/online/user/GetUsersRequest';
+import SearchUserInfo from 'src/online/user/SearchUserInfo';
+import UserMenu from '../user/UserMenu.vue';
+import UserOnlineCountPanel from '../user/UserOnlineCountPanel.vue';
 
 export default defineComponent({
-  components: { UserGridPanel },
+  components: { UserGridPanel, UserMenu, UserOnlineCountPanel },
   inject: ['showUserDetails'],
   setup(props, { emit }) {
     const context = getCurrentInstance() as Vue;
-    const { $router, $q } = context;
 
     const isOpen = ref(false);
     const activeTab = ref('all');
     const loading = ref(true);
     const users = ref<SearchUserInfo[]>([]);
-    const onlineCount = ref<number>(0);
-    const guestCount = ref<number>(0);
 
     watch(isOpen, () => {
       emit('active', isOpen.value, props);
@@ -205,12 +138,18 @@ export default defineComponent({
       setTimeout(() => {
         queryUsers();
       }, 300);
-      userActivityClient.enter(2);
+      // eslint-disable-next-line
+      if (device.mobile()) {
+        userActivityClient.enter(2);
+      }
     };
 
     const hide = () => {
       isOpen.value = false;
-      userActivityClient.exit(2);
+      // eslint-disable-next-line
+      if (device.mobile()) {
+        userActivityClient.exit(2);
+      }
     };
 
     const toggle = () => {
@@ -220,11 +159,6 @@ export default defineComponent({
         hide();
       }
     };
-
-    const isLoggedIn = ref<boolean>(api.isLoggedIn); // todo:全局加入响应式
-    api.state.changed.add(() => {
-      isLoggedIn.value = api.isLoggedIn;
-    });
 
     userManager.userStatusChanged.add((user: SearchUserInfo, status: UserStatus) => {
       const found = users.value.find((u) => u.id == user.id);
@@ -256,15 +190,12 @@ export default defineComponent({
       if (found) {
         found.status = status;
         found.isOnline = status != UserStatus.OFFLINE;
-        found.loginDeviceOS = user?.loginDeviceOS;
+        if (user?.deviceInfo) {
+          found.deviceInfo = user?.deviceInfo;
+        }
       }
 
       users.value = users.value.sort((a, b) => (a.isOnline ? (b.isOnline ? 0 : -1) : +1));
-    });
-
-    socketService.on('stat.online', (msg: StatOnlineCountMsg) => {
-      onlineCount.value = msg.online;
-      guestCount.value = msg.guest;
     });
 
     const isShowInTab = (user: SearchUserInfo) => {
@@ -283,83 +214,6 @@ export default defineComponent({
     const onUserAvatarClick = (user: SearchUserInfo) => {
       // eslint-disable-next-line
       (context as any).showUserDetails(user);
-    };
-
-    const onUserDetailsClick = (user: SearchUserInfo) => {
-      // eslint-disable-next-line
-      (context as any).showUserDetails(user);
-    };
-
-    const onChatClick = (user: SearchUserInfo) => {
-      isOpen.value = false;
-      // eslint-disable-next-line
-      (context.$vnode.context?.$refs.toolbar as any).excludeToggle('chat', true);
-      channelManager.openPrivateChannel(user);
-    };
-
-    const onSpectateClick = (user: SearchUserInfo) => {
-      const req = new SpectateUserRequest(user);
-      $q.loading.show();
-      req.success = async (spectateResponse: SpectateResponse) => {
-        isOpen.value = false;
-        if (spectateResponse.isFollowedOtherSpectator) {
-          $q.loading.show({ message: `正在跟随${user.nickname}观战` });
-        }
-        await $router.push({
-          name: 'spectate',
-          replace: true,
-          query: { id: spectateResponse.room.id as unknown as string },
-          params: { spectateResponse: spectateResponse as unknown as string },
-        });
-        $q.loading.hide();
-      };
-      req.failure = (res) => {
-        $q.loading.hide();
-        const codeMsgMap: {[code: number]: string} = {
-          2: '该用户未在线',
-          3: '该用户未加入游戏',
-          4: '不满足观战条件',
-          5: '你在游戏中不能观战其它游戏',
-        };
-        $q.notify({
-          type: 'warning',
-          message: codeMsgMap[res.code] || '原因未知',
-        });
-      };
-      api.perform(req);
-    };
-
-    const onInviteClick = (user: SearchUserInfo, subject: number) => {
-      const req = new InviteRequest(user, subject);
-      req.success = () => {
-        $q.notify({
-          type: 'positive',
-          message: `已发送邀请给${user.nickname}`,
-        });
-      };
-      req.failure = (res) => {
-        const codeMsgMap: {[code: number]: string} = {
-          1: '邀请失败',
-          2: '该用户未在线',
-          3: '请先加入游戏',
-          4: '请先加入或观战游戏',
-        };
-        $q.notify({
-          type: 'warning',
-          message: codeMsgMap[res.code],
-        });
-      };
-      api.perform(req);
-    };
-
-    const onDeleteFriendClick = (user: SearchUserInfo) => {
-      const req = new DeleteFriendRequest(user);
-      req.success = () => {
-        user.isFriend = false;
-        user.isMutual = false;
-        $q.notify({ type: 'positive', message: `已删除好友${user.nickname}` });
-      };
-      api.perform(req);
     };
 
     socketService.reconnected.add(() => {
@@ -381,17 +235,7 @@ export default defineComponent({
 
       isShowInTab,
       users,
-      onlineCount,
-      guestCount,
-      isLoggedIn,
-      isMe: (user: SearchUserInfo) => user.id == api.localUser.id,
-
       onUserAvatarClick,
-      onUserDetailsClick,
-      onChatClick,
-      onSpectateClick,
-      onInviteClick,
-      onDeleteFriendClick,
     };
   },
 });

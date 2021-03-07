@@ -72,9 +72,9 @@
         </div>
         <q-separator class="q-my-sm" />
         <div class="other-info">
-          <div v-if="user.loginDeviceOS">
+          <div v-if="user.deviceInfo">
             <label>登录设备: </label>
-            <span>{{ translateDeviceOS(user.loginDeviceOS) }}</span>
+            <span>{{ translateDeviceOS(user.deviceInfo.deviceOS) }}</span>
           </div>
           <div>
             <label>最后活动时间: </label>
@@ -132,7 +132,7 @@ import { api, channelManager } from 'src/boot/main';
 import GetUserRequest from 'src/online/user/GetUserRequest';
 import UserDetails from 'src/online/user/UserDetails';
 import User from 'src/user/User';
-import { translateDeviceOS } from "src/user/device.ts";
+import { translateDeviceOS } from "src/user/device";
 import UserAvatar from 'src/user/components/UserAvatar.vue';
 import AddFriendRequest from 'src/online/friend/AddFriendRequest';
 import UserStats from 'src/user/UserStats';

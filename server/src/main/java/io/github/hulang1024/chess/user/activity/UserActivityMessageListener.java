@@ -1,6 +1,5 @@
 package io.github.hulang1024.chess.user.activity;
 
-import io.github.hulang1024.chess.user.UserSessionManager;
 import io.github.hulang1024.chess.user.ws.OnlineStatServerMsg;
 import io.github.hulang1024.chess.user.ws.UserEnterActivityMsg;
 import io.github.hulang1024.chess.user.ws.UserExitActivityMsg;
@@ -24,9 +23,7 @@ public class UserActivityMessageListener extends AbstractMessageListener {
 
             if (userActivity == UserActivity.VIEW_ONLINE_USER) {
                 wsMessageService.send(
-                    new OnlineStatServerMsg(
-                        UserSessionManager.onlineUserCount,
-                        UserSessionManager.guestCount),
+                    new OnlineStatServerMsg(),
                     msg.getUser());
             }
         });

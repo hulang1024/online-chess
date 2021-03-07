@@ -10,5 +10,7 @@ public class UserLoginParam {
 
     private String token;
 
+    private Integer device;
+
     private String deviceOS;
 }

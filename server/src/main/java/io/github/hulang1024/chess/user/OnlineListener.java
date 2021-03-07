@@ -24,11 +24,13 @@ public class OnlineListener {
     private UserActivityService userActivityService;
 
     public void onOnline(User user) {
+        countOnline(user, true);
         sendOnlineStat();
         broadcastUserOnlineStatus(user, true);
     }
 
     public void onOffline(User user) {
+        countOnline(user, false);
         sendOnlineStat();
         broadcastUserOnlineStatus(user, false);
     }
@@ -36,7 +38,7 @@ public class OnlineListener {
     public void sendOnlineStat() {
         userActivityService.broadcast(
             UserActivity.VIEW_ONLINE_USER,
-            new OnlineStatServerMsg(UserSessionManager.onlineUserCount, UserSessionManager.guestCount));
+            new OnlineStatServerMsg());
     }
 
     private void broadcastUserOnlineStatus(User user, boolean isOnline) {
@@ -58,6 +60,19 @@ public class OnlineListener {
             UserActivity.VIEW_ONLINE_USER,
             new UserStatusChangedServerMsg(userInfo, isOnline ? UserStatus.ONLINE : UserStatus.OFFLINE),
             user);
+    }
+
+    private void countOnline(User user, boolean isOnline) {
+        UserDeviceInfo userDeviceInfo = userManager.getUserDeviceInfo(user);
+        if (userDeviceInfo == null || userDeviceInfo == UserDeviceInfo.NULL) {
+            return;
+        }
+        int inc = isOnline ? +1 : -1;
+        if (userDeviceInfo.getDevice().equals(1)) {
+            UserOnlineCounter.pc += inc;
+        } else {
+            UserOnlineCounter.mobile += inc;
+        }
     }
 
 }

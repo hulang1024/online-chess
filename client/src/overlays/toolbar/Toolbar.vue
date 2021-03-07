@@ -112,11 +112,16 @@ export default defineComponent({
       toggleActive(name, active);
     };
 
-    const exitActive = () => {
+    const exitActive = (exclude?: string) => {
       actives.value.forEach((name) => {
+        if (exclude && exclude == name) {
+          return;
+        }
         toggleActive(name, false);
       });
-
+      if (exclude == 'chat') {
+        return;
+      }
       toggleActive('chat', false); // chat会在其它地方打开，但可能没在actives中
     };
 

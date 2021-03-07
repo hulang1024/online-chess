@@ -266,6 +266,7 @@ public class UserManager {
         }
 
         UserDeviceInfo userDeviceInfo = new UserDeviceInfo();
+        userDeviceInfo.setDevice(param.getDevice());
         userDeviceInfo.setDeviceOS(param.getDeviceOS());
         loggedInUserDeviceInfoMap.put(user.getId(), userDeviceInfo);
 

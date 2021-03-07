@@ -1,10 +1,10 @@
 <template>
-  <q-page class="column items-center">
+  <q-page class="row q-pt-sm">
     <div
-      class="main-content"
+      class="main-content items-center"
     >
       <!-- 房间筛选选项卡 -->
-      <div class="filter-container q-mt-sm">
+      <div class="filter-container">
         <q-tabs
           v-model="gameTypeActiveTab"
           dense
@@ -86,6 +86,11 @@
         />
       </div>
     </div>
+    <users-panel
+      v-if="!$q.screen.xs"
+      ref="usersPanel"
+      class="q-ml-xs q-mr-sm"
+    />
 
     <create-room-dialog ref="createRoomDialog" />
   </q-page>
@@ -112,12 +117,17 @@ import { GameType } from 'src/rulesets/GameType';
 import GameSettings from 'src/rulesets/GameSettings';
 import TimerSettings from 'src/rulesets/TimerSettings';
 import RoomSettings from 'src/online/room/RoomSettings';
+import UsersPanel from 'src/overlays/user/UsersPanel.vue';
 import CreateRoomDialog from './CreateRoomDialog.vue';
 import RoomsPanel from './RoomsPanel.vue';
 import { userActivityClient } from '../../boot/main';
 
 export default defineComponent({
-  components: { CreateRoomDialog, RoomsPanel },
+  components: {
+    CreateRoomDialog,
+    RoomsPanel,
+    UsersPanel,
+  },
   setup() {
     const ctx = getCurrentInstance() as Vue;
     const { $refs, $router, $q } = ctx;
@@ -138,9 +148,13 @@ export default defineComponent({
 
     const resize = (isChatActive: boolean) => {
       const pageEl = ctx.$el as HTMLElement;
-      const height = (pageEl?.parentElement?.offsetHeight || 0) - (178 + (isChatActive ? 284 : 0));
+      const height = (pageEl?.parentElement?.offsetHeight || 0) - (56 + (isChatActive ? 284 : 0));
       // eslint-disable-next-line
-      (ctx.$refs.roomsPanel as any).$el.style.height = `${height}px`;
+      (ctx.$refs.roomsPanel as any).$el.style.height = `${height - 122}px`;
+      if (ctx.$refs.usersPanel) {
+        // eslint-disable-next-line
+        (ctx.$refs.usersPanel as any).$el.style.height = `${height}px`;
+      }
     };
     onMounted(resize);
 
@@ -393,8 +407,7 @@ export default defineComponent({
 <style lang="sass" scoped>
 .main-content
   padding: 0 4px
-  width: 100%
-  max-width: 400px
+  flex-grow: 1
 
   .filter-container
     .q-tabs

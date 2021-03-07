@@ -13,7 +13,7 @@ public class SearchUserInfo extends User {
     @JSONField(serialize = false)
     private UserStatus status;
 
-    private String loginDeviceOS;
+    private UserDeviceInfo deviceInfo;
 
     public SearchUserInfo() {}
 
@@ -31,8 +31,8 @@ public class SearchUserInfo extends User {
     }
 
     public void setUserDeviceInfo(UserDeviceInfo userDeviceInfo) {
-        if (userDeviceInfo != null) {
-            this.setLoginDeviceOS(userDeviceInfo.getDeviceOS());
+        if (userDeviceInfo != null && userDeviceInfo != UserDeviceInfo.NULL) {
+            this.setDeviceInfo(userDeviceInfo);
         }
     }
 
