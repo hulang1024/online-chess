@@ -23,7 +23,7 @@ export default defineComponent({
 
   .q-btn
     margin: 0px 4px
-    width: 96px
+    width: 100px
     font-weight: bold
     letter-spacing: 1px
 </style>
