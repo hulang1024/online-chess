@@ -139,6 +139,9 @@ public class UserManager {
                     if (searchUserParam.getStatus() != null) {
                         ret = ret && user.getStatus().code == searchUserParam.getStatus();
                     }
+                    if (searchUserParam.getOnline() != null) {
+                        ret = ret && user.getStatus().code != UserStatus.OFFLINE.code;
+                    }
                     return ret;
                 })
                 .sorted((a, b) -> a.getIsOnline() ? b.getIsOnline() ? 0 : -1 : +1)

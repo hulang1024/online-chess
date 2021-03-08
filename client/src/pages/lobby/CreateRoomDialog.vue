@@ -158,11 +158,12 @@ export default defineComponent({
 
     let action: (room: Room, success: (success: boolean) => void) => void;
     const show = (options: {
+      defaultGameType: GameType,
       action: (room: Room, success: (success: boolean) => void) => void
     }) => {
       action = options.action;
       Object.assign(form, INIT_VALUES);
-      form.gameType = api.localUser.playGameType || 0;
+      form.gameType = options.defaultGameType || api.localUser.playGameType || 0;
       createLoading.value = false;
       isOpen.value = true;
     };

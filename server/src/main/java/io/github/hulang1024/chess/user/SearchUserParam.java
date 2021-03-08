@@ -10,4 +10,6 @@ public class SearchUserParam {
     private Boolean onlyFriends;
 
     private Integer status;
+
+    private Boolean online;
 }

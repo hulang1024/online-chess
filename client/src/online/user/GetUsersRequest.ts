@@ -9,9 +9,9 @@ export default class GetUsersRequest extends APIRequest<APIPageResponse<SearchUs
     this.method = HttpMethod.GET;
     this.path = 'users';
 
-    this.addParam('page', params.page);
-    this.addParam('size', params.size);
-    this.addParam('onlyFriends', params.onlyFriends);
-    this.addParam('status', params.status);
+    Object.keys(params).forEach((name) => {
+      // eslint-disable-next-line
+      this.addParam(name, (params as any)[name as string]);
+    });
   }
 }

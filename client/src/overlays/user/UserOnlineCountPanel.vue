@@ -12,10 +12,6 @@
       <q-icon name="phone_iphone" />
       <span class="count">{{ mobile }}</span>
     </q-chip>
-    <q-chip square>
-      <span>游客</span>
-      <span class="count">{{ guest }}</span>
-    </q-chip>
   </div>
 </template>
 

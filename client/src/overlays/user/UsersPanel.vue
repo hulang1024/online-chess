@@ -3,7 +3,7 @@
     class="users-panel"
     flat
   >
-    <user-online-count-panel class="q-pl-sm" />
+    <user-online-count-panel class="q-pl-xs" />
     <q-tabs
       v-model="activeTab"
       align="left"
@@ -45,7 +45,6 @@
       flat
       hide-pagination
       hide-no-data
-      virtual-scroll
       separator="none"
       :pagination="{
         page: 1,
@@ -157,6 +156,7 @@ export default defineComponent({
     const queryUsers = () => {
       users.value = [];
       const searchParams = new SearchUserParams();
+      searchParams.online = true;
       searchParams.onlyFriends = activeTab.value == 'friends';
       if (searchParams.onlyFriends && api.localUser.id < 0) {
         return;
@@ -176,7 +176,6 @@ export default defineComponent({
 
     onMounted(() => {
       userActivityClient.enter(2);
-      queryUsers();
     });
 
     onBeforeMount(() => {
@@ -189,6 +188,14 @@ export default defineComponent({
 
     userManager.userStatusChanged.add((user: SearchUserInfo, status: UserStatus) => {
       const found = users.value.find((u) => u.id == user.id);
+      if (found) {
+        if (status == UserStatus.OFFLINE) {
+          users.value = users.value.filter((u) => u.id != found.id);
+          return;
+        }
+        found.isOnline = true;
+      }
+
       let isToAdd = false;
       switch (activeTab.value) {
         case 'all':
@@ -216,7 +223,6 @@ export default defineComponent({
       }
       if (found) {
         found.status = status;
-        found.isOnline = status != UserStatus.OFFLINE;
         if (user?.deviceInfo) {
           found.deviceInfo = user?.deviceInfo;
         }
@@ -261,6 +267,8 @@ export default defineComponent({
       isShowInTab,
       users,
       onUserDetailsClick,
+
+      queryUsers,
     };
   },
 });

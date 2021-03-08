@@ -17,7 +17,7 @@ export default class LoginRequest extends APIRequest<APILoginResult> {
     }
 
     // eslint-disable-next-line
-    this.addParam('device', device.desktop() ? 1 : 2);
+    this.addParam('device', device.mobile() ? 2 : 1);
     // eslint-disable-next-line
     this.addParam('deviceOS', device.os);
   }

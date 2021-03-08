@@ -70,7 +70,7 @@ public class OnlineListener {
         int inc = isOnline ? +1 : -1;
         if (userDeviceInfo.getDevice().equals(1)) {
             UserOnlineCounter.pc += inc;
-        } else {
+        } else if (userDeviceInfo.getDevice().equals(2)) {
             UserOnlineCounter.mobile += inc;
         }
     }

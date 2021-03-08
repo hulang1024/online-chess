@@ -199,6 +199,10 @@ export default defineComponent({
       if (!api.isLoggedIn) {
         return;
       }
+      if (ctx.$refs.usersPanel) {
+        // eslint-disable-next-line
+        (ctx.$refs.usersPanel as any).queryUsers();
+      }
       userActivityClient.enter(1);
     };
     api.state.changed.add(onLoggedIn);
@@ -377,6 +381,7 @@ export default defineComponent({
       }
       // eslint-disable-next-line
       (<any>$refs.createRoomDialog).show({
+        defaultGameType: gameTypeActiveTab.value,
         action: (room: Room, done: (success: boolean) => void) => {
           const req = roomManager.createRoom(room);
           req.success = async (createdRoom) => {

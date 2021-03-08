@@ -8,4 +8,6 @@ export default class SearchUserParams {
   onlyFriends = false;
 
   status: UserStatus;
+
+  online: boolean;
 }
