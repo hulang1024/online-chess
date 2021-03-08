@@ -192,7 +192,7 @@ export default class ChineseChessDrawableChessboard
     ) => {
       context.beginPath();
       // eslint-disable-next-line
-      context.lineWidth = lineWidth || (screen.xs ? 1 : 2);
+      context.lineWidth = lineWidth || (screen.xs ? 1 : 1.5);
       context.moveTo(grid.x + x1, grid.y + y1);
       context.lineTo(grid.x + x2, grid.y + y2);
       context.closePath();
@@ -245,8 +245,9 @@ export default class ChineseChessDrawableChessboard
        */
       const drawCross = (cx: number, cy: number, indexs: number[] = [0, 1, 2, 3]) => {
         // eslint-disable-next-line
-        const m = screen.xs ? 2 : 4; // 距离中心点
-        const l = 4; // 十字长度
+        const m = screen.xs ? 3 : 4; // 距离中心点
+        // eslint-disable-next-line
+        const l = screen.xs ? 6 : 8; // 十字长度
         const dt = [[-1, -1], [+1, -1], [+1, +1], [-1, +1]];
         indexs.forEach((i) => {
           const [xf, yf] = dt[i];
@@ -275,6 +276,18 @@ export default class ChineseChessDrawableChessboard
         drawCrossAt(row, 8, [0, 3]);
       }
     })();
+
+    // 边框
+    // eslint-disable-next-line
+    const padding = screen.xs ? 4 : 6;
+    // eslint-disable-next-line
+    context.lineWidth = screen.xs ? 2 : 3;
+    context.strokeRect(
+      grid.x - padding,
+      grid.y - padding,
+      grid.gap * 8 + padding * 2,
+      grid.gap * 9 + padding * 2,
+    );
   }
 
   private calcBounds(stage: {width: number, height: number}, screen: any) {
