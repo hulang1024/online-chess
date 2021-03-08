@@ -1,6 +1,5 @@
 import Chess from "./Chess";
 import ChessK from "./ChessK";
-import ChessPos from "./ChessPos";
 import ChessHost from "../../chess_host";
 import Game from "./Game";
 
@@ -11,19 +10,18 @@ export default class CheckmateJudgement {
 
   private blackK: Chess;
 
-  constructor(game: Game, viewChessHost: ChessHost) {
+  constructor(game: Game) {
     this.game = game;
 
-    const chessboard = this.game.getChessboard();
-    const topKPos = new ChessPos(9, 4);
-    const bottomKPos = new ChessPos(0, 4);
-    if (viewChessHost == ChessHost.FIRST) {
-      this.redK = chessboard.chessAt(topKPos) as Chess;
-      this.blackK = chessboard.chessAt(bottomKPos) as Chess;
-    } else {
-      this.redK = chessboard.chessAt(bottomKPos) as Chess;
-      this.blackK = chessboard.chessAt(topKPos) as Chess;
-    }
+    this.game.getChessboard().getChessList().forEach((chess) => {
+      if (chess.is(ChessK)) {
+        if (chess.getHost() == ChessHost.FIRST) {
+          this.redK = chess;
+        } else {
+          this.blackK = chess;
+        }
+      }
+    });
   }
 
   /**

@@ -86,7 +86,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       });
     }
 
-    this.checkmateJudgement = new CheckmateJudgement(this, this.viewChessHost);
+    this.checkmateJudgement = new CheckmateJudgement(this);
 
     this.chessboard.show();
 
