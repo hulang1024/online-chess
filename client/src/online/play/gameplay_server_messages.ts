@@ -9,6 +9,7 @@ export interface ResultsReadyMsg extends ServerMsg {
 export interface GameStartedMsg extends ServerMsg {
   firstChessUid: number;
   secondChessUid: number;
+  initialStates: unknown;
 }
 
 export interface GameOverMsg extends ServerMsg {

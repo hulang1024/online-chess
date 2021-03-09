@@ -12,6 +12,7 @@ export default class CreateRoomRequest extends APIRequest<Room> {
     this.addParam('name', room.name);
     const { roomSettings: { gameSettings } } = room;
     this.addParam('gameType', gameSettings.gameType);
+    this.addParam('canWithdraw', gameSettings.canWithdraw);
     this.addParam('gameDuration', gameSettings.timer.gameDuration);
     this.addParam('stepDuration', gameSettings.timer.stepDuration);
     this.addParam('secondsCountdown', gameSettings.timer.secondsCountdown);

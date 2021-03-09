@@ -6,6 +6,7 @@
     :game-status="gameStatus"
     :is-playing="isPlaying"
     :can-withdraw="canWithdraw"
+    :withdraw-enabled="withdrawEnabled"
     :view-user="viewUser"
     :other-user="otherUser"
     :spectator-count="spectatorCount"

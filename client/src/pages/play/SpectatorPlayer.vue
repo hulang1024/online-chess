@@ -5,7 +5,6 @@
     :game-state="gameState"
     :game-status="gameStatus"
     :is-playing="isPlaying"
-    :can-withdraw="canWithdraw"
     :view-user="viewUser"
     :other-user="otherUser"
     :spectator-count="spectatorCount"
@@ -28,7 +27,7 @@
     </template>
     <template #xs-screen-main-buttons>
       <q-item
-        v-if="room.roomSettings.gameSettings.gameType == 1"
+        v-if="[1, 3].includes(room.roomSettings.gameSettings.gameType)"
         clickable
         v-close-popup
         @click="onToggleViewClick"

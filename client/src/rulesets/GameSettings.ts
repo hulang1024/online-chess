@@ -4,5 +4,7 @@ import TimerSettings from "./TimerSettings";
 export default class GameSettings {
   gameType: GameType;
 
+  canWithdraw = true;
+
   timer: TimerSettings;
 }

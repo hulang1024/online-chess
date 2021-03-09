@@ -29,6 +29,10 @@
           :name="1"
           label="象棋"
         />
+        <q-tab
+          :name="3"
+          label="揭棋"
+        />
       </q-tabs>
       <q-tabs
         v-model="rankingByActiveTab"

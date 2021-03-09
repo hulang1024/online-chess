@@ -9,6 +9,4 @@ public class GameStatesResponse {
     private Integer activeChessHost;
     private GameTimer firstTimer;
     private GameTimer secondTimer;
-
-
 }

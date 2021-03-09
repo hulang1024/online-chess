@@ -53,7 +53,7 @@ export default class Player extends GameplayClient {
 
   protected playfield: Playfield;
 
-  protected room: Room;
+  public room: Room;
 
   public isWatchingMode = false;
 
@@ -377,7 +377,7 @@ export default class Player extends GameplayClient {
     GameAudio.play('gameplay/started');
     this.showText(`开始对局`, 1000);
 
-    this.game.start(this.localUser.chessHost);
+    this.game.start(this.localUser.chessHost, msg.initialStates);
     // 因为activeChessHost一般一直是先手，值相同将不能触发，这里手动触发一次
     this.onTurnActiveChessHost(ChessHost.FIRST);
   }

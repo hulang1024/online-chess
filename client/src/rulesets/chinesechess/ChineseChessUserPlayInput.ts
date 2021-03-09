@@ -79,7 +79,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
         const fromPos = this.lastSelected.getPos();
         const toPos = event.pos;
         const chess = this.chessboard.chessAt(fromPos);
-        if (chess?.canGoTo(toPos, (this.gameRule as ChineseChessGameRule))) {
+        if ((this.gameRule as ChineseChessGameRule).canGoTo(chess, toPos)) {
           this.onUserMoveChess(fromPos, toPos);
         }
       }
@@ -124,7 +124,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
       const fromPos = this.lastSelected.getPos();
       const toPos = event.pos;
       const chess = this.chessboard.chessAt(fromPos);
-      if (chess?.canGoTo(toPos, this.gameRule as ChineseChessGameRule)) {
+      if ((this.gameRule as ChineseChessGameRule).canGoTo(chess, toPos)) {
         this.onUserMoveChess(fromPos, toPos);
       }
     } else {
@@ -151,7 +151,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
     if (this.lastSelected) {
       this.lastSelected.selected = false;
     }
-    if (chess.canGoTo(toPos, this.gameRule as ChineseChessGameRule)) {
+    if ((this.gameRule as ChineseChessGameRule).canGoTo(chess, toPos)) {
       const isMove = this.chessboard.isEmpty(toPos.row, toPos.col);
       if (!isMove && this.chessboard.chessAt(toPos)?.getHost() == chess.getHost()) {
         return;

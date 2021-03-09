@@ -54,7 +54,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
   public start(viewChessHost: ChessHost, gameStates0?: ResponseGameStates) {
     super.start(viewChessHost, gameStates0);
     this.viewChessHost = viewChessHost;
-    this.canWithdraw.value = false;
+    this.withdrawEnabled.value = false;
 
     if (!this.fromPosTargetDrawer) {
       this.fromPosTargetDrawer = new ChessTargetDrawer(this.chessboard);
@@ -67,23 +67,18 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       this.chessboard.clear();
       gameStates.chesses.forEach((stateChess: ResponseGameStateChess) => {
         let pos = new ChessPos(stateChess.row, stateChess.col);
-        // 服务器保存数据默认视角是红方，如果当前视图是黑方就要翻转下
+        // 服务器保存数据默认视角是红方，如果当前视图是黑方位置就要反转下
         if (this.viewChessHost == ChessHost.SECOND) {
           pos = pos.reverseView();
         }
         // eslint-disable-next-line
         let chess: Chess = new (CHESS_CLASS_KEY_MAP[stateChess.type] as any)(pos, stateChess.chessHost);
+        chess.setFront(stateChess.isFront);
         this.chessboard.addChess(new DrawableChess(chess, this.chessboard.bounds.chessRadius));
       });
     } else {
       this.chessboard.clear();
-      // 对面棋方棋子在上部
-      const chessHost1 = ChessHost.reverse(this.viewChessHost);
-      // 视角棋方棋子在下部
-      const chessHost2 = this.viewChessHost;
-      createIntialLayoutChessList(chessHost1, chessHost2).forEach((chess) => {
-        this.chessboard.addChess(new DrawableChess(chess, this.chessboard.bounds.chessRadius));
-      });
+      this.initChessLayout();
     }
 
     this.checkmateJudgement = new CheckmateJudgement(this);
@@ -106,6 +101,16 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     }
 
     this.activeChessHost.value = (gameStates && gameStates.activeChessHost) || ChessHost.FIRST;
+  }
+
+  protected initChessLayout() {
+    // 对面棋方棋子在上部
+    const chessHost1 = ChessHost.reverse(this.viewChessHost);
+    // 视角棋方棋子在下部
+    const chessHost2 = this.viewChessHost;
+    createIntialLayoutChessList(chessHost1, chessHost2).forEach((chess) => {
+      this.chessboard.addChess(new DrawableChess(chess, this.chessboard.bounds.chessRadius));
+    });
   }
 
   public onChessAction(action: ChessAction, duration?: number) {
@@ -148,6 +153,10 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       chess,
       this.chessboard.calcChessDisplayPos(convertedToPos),
       () => {
+        // todo: 模块化揭棋代码
+        if (!chess.isFront()) {
+          chess.setFront(true);
+        }
         this.fromPosTargetDrawer.draw(fromPos.convertViewPos(chessHost, this.viewChessHost));
       },
       duration,
@@ -175,7 +184,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
 
     this.turnActiveChessHost();
 
-    this.canWithdraw.value = true;
+    this.withdrawEnabled.value = true;
   }
 
   private turnActiveChessHost() {
@@ -271,6 +280,10 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       false,
     ).start();
 
-    this.canWithdraw.value = !this.historyRecorder.isEmpty();
+    this.withdrawEnabled.value = !this.historyRecorder.isEmpty();
+  }
+
+  public canGoTo(chess: DrawableChess | null, destPos: ChessPos) {
+    return chess?.canGoTo(destPos, this);
   }
 }

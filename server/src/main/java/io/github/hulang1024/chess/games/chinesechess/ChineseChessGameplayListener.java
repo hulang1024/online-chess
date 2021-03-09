@@ -2,6 +2,7 @@ package io.github.hulang1024.chess.games.chinesechess;
 
 import io.github.hulang1024.chess.games.GameUser;
 import io.github.hulang1024.chess.games.GameUtils;
+import io.github.hulang1024.chess.games.chinesechess.rule.Chess;
 import io.github.hulang1024.chess.games.chinesechess.ws.ChessMoveMsg;
 import io.github.hulang1024.chess.games.chinesechess.ws.ChessMoveServerMsg;
 import io.github.hulang1024.chess.games.chinesechess.ws.ChessPickMsg;
@@ -51,10 +52,10 @@ public class ChineseChessGameplayListener extends AbstractMessageListener {
         GameUser gameUser = room.getGameUser(user).get();
 
         ChessAction action = new ChessAction();
-        action.setChessHost(gameUser.getChess());
+        action.setChess(new Chess(gameUser.getChess(), null));
         action.setFromPos(chessMoveMsg.getFromPos());
         action.setToPos(chessMoveMsg.getToPos());
-        ((ChineseChessGame)room.getGame()).moveChess(action);
+        ((BaseChineseChessGame)room.getGame()).moveChess(action);
 
         ChessMoveServerMsg result = new ChessMoveServerMsg();
         result.setChessHost(gameUser.getChess().code());

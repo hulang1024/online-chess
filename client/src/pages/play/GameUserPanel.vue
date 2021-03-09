@@ -140,6 +140,22 @@ export default defineComponent({
           timerColor: null,
           showChess: false,
         },
+        [GameType.chinesechessDark]: {
+          chessColor: {
+            [ChessHost.FIRST]: 'red',
+            [ChessHost.SECOND]: 'black',
+          },
+          activeClass: {
+            [ChessHost.FIRST]: 'red',
+            [ChessHost.SECOND]: 'black',
+          },
+          chessName: {
+            [ChessHost.FIRST]: '红',
+            [ChessHost.SECOND]: '黑',
+          },
+          timerColor: null,
+          showChess: false,
+        },
         [GameType.gobang]: {
           chessColor: {
             [ChessHost.FIRST]: 'black',
@@ -160,6 +176,7 @@ export default defineComponent({
           showChess: true,
         },
       };
+
       const cfg = GAME_TYPE_CONFIG_MAP[props.gameType as GameType];
       const chessColor = cfg.chessColor[props.chess as ChessHost];
       const timerColor = cfg.timerColor

@@ -41,7 +41,7 @@ export default class GobangGameRule extends GameRule {
   public start(viewChessHost: ChessHost, gameStates0?: ResponseGameStates) {
     super.start(viewChessHost, gameStates0);
     this.viewChessHost = viewChessHost;
-    this.canWithdraw.value = false;
+    this.withdrawEnabled.value = false;
     this.chessboard.clear();
     this.chessboardState.clear();
     this.drawableChessPool.add();
@@ -106,7 +106,7 @@ export default class GobangGameRule extends GameRule {
 
     this.drawableChessPool.add();
 
-    this.canWithdraw.value = true;
+    this.withdrawEnabled.value = true;
   }
 
   private turnActiveChessHost() {
@@ -143,7 +143,7 @@ export default class GobangGameRule extends GameRule {
 
     this.turnActiveChessHost();
 
-    this.canWithdraw.value = !this.historyRecorder.isEmpty();
+    this.withdrawEnabled.value = !this.historyRecorder.isEmpty();
   }
 
   public checkWin(checkChess: ChessHost, origin: ChessPos, fiveInRowPoss: ChessPos[]): boolean {

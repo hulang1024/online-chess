@@ -92,6 +92,9 @@ export default defineComponent({
       [GameType.chinesechess]: {
         text: '象棋',
       },
+      [GameType.chinesechessDark]: {
+        text: '揭棋',
+      },
       [GameType.gobang]: {
         text: '五子棋',
       },

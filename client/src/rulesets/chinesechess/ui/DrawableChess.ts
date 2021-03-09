@@ -143,6 +143,10 @@ export default class DrawableChess implements Chess {
     return this.chess.getPos();
   }
 
+  public setHost(host: ChessHost) {
+    this.chess.setHost(host);
+  }
+
   public getHost() {
     return this.chess.getHost();
   }

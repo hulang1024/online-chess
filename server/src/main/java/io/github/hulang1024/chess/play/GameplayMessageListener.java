@@ -169,7 +169,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
             .filter((u) -> u.getChess() == ChessHost.FIRST)
             .findFirst().get();
         GameUser secondGameUser = room.getOtherUser(firstGameUser.getUser());
-        roomManager.broadcast(room, new GameStartServerMsg(firstGameUser.getUser(), secondGameUser.getUser()));
+        roomManager.broadcast(room, new GameStartServerMsg(round, firstGameUser.getUser(), secondGameUser.getUser()));
         userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
         channelManager.broadcast(room.getChannel(), new InfoMessage("对局开始"));
     }

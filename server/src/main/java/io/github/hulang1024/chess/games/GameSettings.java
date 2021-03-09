@@ -7,7 +7,7 @@ import lombok.Data;
 public class GameSettings {
     @JSONField(serialize = false)
     private GameType gameType;
-
+    private boolean canWithdraw;
     private TimerSettings timer;
 
     @Data

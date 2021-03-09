@@ -16,6 +16,7 @@
           :options="[
             {label: '五子棋', value: 2},
             {label: '象棋', value: 1},
+            {label: '揭棋', value: 3},
             {label: '随机', value: 0},
           ]"
         />
@@ -129,6 +130,7 @@ import TimerSettings from 'src/rulesets/TimerSettings';
 import { GameType } from 'src/rulesets/GameType';
 import GobangGameSettings from 'src/rulesets/gobang/GobangGameSettings';
 import ChineseChessGameSettings from 'src/rulesets/chinesechess/ChineseChessGameSettings';
+import ChineseChessDarkGameSettings from 'src/rulesets/chinesechess-dark/ChineseChessDarkGameSettings';
 import { api } from 'src/boot/main';
 
 export default defineComponent({
@@ -186,11 +188,15 @@ export default defineComponent({
         let gameSettings: GameSettings;
         let { gameType } = form;
         if (gameType == 0) {
-          gameType = Math.random() > 0.5 ? GameType.chinesechess : GameType.gobang;
+          const gameTypes = [GameType.chinesechess, GameType.chinesechessDark, GameType.gobang];
+          gameType = gameTypes[Math.floor(Math.random() * gameTypes.length)];
         }
         switch (gameType) {
           case GameType.chinesechess:
             gameSettings = new ChineseChessGameSettings();
+            break;
+          case GameType.chinesechessDark:
+            gameSettings = new ChineseChessDarkGameSettings();
             break;
           case GameType.gobang:
             gameSettings = new GobangGameSettings(form.chessboardSize);

@@ -90,7 +90,8 @@ export function usePlayerStates(player: Player) {
     otherUser.showReadyStatus = gameState.value == GameState.READY && !otherUser.isRoomOwner;
   });
 
-  const canWithdraw: Ref<boolean> = createBoundRef(player.game.canWithdraw);
+  const { canWithdraw } = player.room.roomSettings.gameSettings;
+  const withdrawEnabled = createBoundRef(player.game.withdrawEnabled);
 
   const spectatorCount: Ref<number> = createBoundRef(player.spectatorClient.spectatorCount);
 
@@ -125,6 +126,7 @@ export function usePlayerStates(player: Player) {
     isPlaying,
     activeChessHost,
     canWithdraw,
+    withdrawEnabled,
 
     viewUser,
     otherUser,

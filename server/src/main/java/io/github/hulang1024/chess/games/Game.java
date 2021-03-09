@@ -68,6 +68,10 @@ public abstract class Game {
         return activeChessHost == ChessHost.FIRST ? firstTimer : secondTimer;
     }
 
+    public GameInitialStates createGameInitialStatesResponse() {
+        return null;
+    }
+
     protected abstract GameStatesResponse createGameStatesResponse();
 
     public GameStatesResponse buildGameStatesResponse() {

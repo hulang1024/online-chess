@@ -31,6 +31,10 @@ export default abstract class AbstractChess implements Chess {
     return this.pos;
   }
 
+  setHost(host: ChessHost) {
+    this.host = host;
+  }
+
   getHost() {
     return this.host;
   }

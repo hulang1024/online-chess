@@ -65,17 +65,19 @@
           >
             <q-list style="min-width: 110px">
               <template v-if="enableGameRuleButtons">
-                <q-item
-                  clickable
-                  v-close-popup
-                  :disable="!(isPlaying && canWithdraw)"
-                  @click="onWithdrawClick"
-                >
-                  <q-item-section>
-                    <q-item-label><q-icon name="redo" /> 悔棋</q-item-label>
-                  </q-item-section>
-                </q-item>
-                <q-separator />
+                <template v-if="canWithdraw">
+                  <q-item
+                    clickable
+                    v-close-popup
+                    :disable="!(isPlaying && withdrawEnabled)"
+                    @click="onWithdrawClick"
+                  >
+                    <q-item-section>
+                      <q-item-label><q-icon name="redo" /> 悔棋</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                  <q-separator />
+                </template>
                 <q-item
                   clickable
                   v-close-popup
@@ -175,10 +177,11 @@
           <div class="column justify-evenly q-gutter-y-sm">
             <template v-if="enableGameRuleButtons">
               <u-button
+                v-if="canWithdraw"
                 label="悔棋"
                 color="warning"
                 size="12px"
-                :disable="!(isPlaying && canWithdraw)"
+                :disable="!(isPlaying && withdrawEnabled)"
                 @click="onWithdrawClick"
               />
               <u-button
@@ -319,6 +322,8 @@ export default defineComponent({
     isPlaying: Boolean,
 
     canWithdraw: Boolean,
+
+    withdrawEnabled: Boolean,
 
     viewUser: {
       type: Object as PropType<GameUser>,

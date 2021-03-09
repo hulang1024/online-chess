@@ -7,6 +7,8 @@ export default class ChessAction {
 
   chessType: any;
 
+  isFront: boolean;
+
   fromPos: ChessPos;
 
   toPos: ChessPos;

@@ -2,7 +2,6 @@ import Playfield from "src/pages/play/Playfield";
 import Bindable from "src/utils/bindables/Bindable";
 import BindableBool from "src/utils/bindables/BindableBool";
 import ChessHost from "./chess_host";
-import ResponseGameStates from "./online/game_states_response";
 
 export default abstract class GameRule {
   public ended = false;
@@ -11,7 +10,7 @@ export default abstract class GameRule {
 
   public onGameEnd: () => void;
 
-  public canWithdraw = new BindableBool();
+  public withdrawEnabled = new BindableBool();
 
   public viewChessHost: ChessHost;
 
@@ -20,7 +19,7 @@ export default abstract class GameRule {
   public abstract setPlayfield(playfield: Playfield): void;
 
   // eslint-disable-next-line
-  public start(viewChessHost: ChessHost, gameStates?: ResponseGameStates) {
+  public start(viewChessHost: ChessHost, gameStates?: unknown) {
     this.ended = false;
   }
 

@@ -6,7 +6,7 @@ import io.github.hulang1024.chess.games.chess.ChessPos;
 public class ChessboardState {
     private Chess[][] array = new Chess[10][9];
 
-    public ChessboardState() {
+    public void initializeLayout() {
         array[0][0] = new Chess(ChessHost.SECOND, ChessEnum.R);
         array[0][1] = new Chess(ChessHost.SECOND, ChessEnum.N);
         array[0][2] = new Chess(ChessHost.SECOND, ChessEnum.M);

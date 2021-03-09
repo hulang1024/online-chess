@@ -11,11 +11,15 @@ export interface ResponseGameStateChess {
   col: number;
   chessHost: number;
   type: string;
+  isFront: boolean;
 }
 
 export interface ResponseGameStateChessAction {
-  chessHost: string;
-  chessType: string;
+  chess: {
+    chessHost: string;
+    type: string;
+    isFront: boolean;
+  },
   type: string;
   fromPos: ResponseChessPos,
   toPos: ResponseChessPos,

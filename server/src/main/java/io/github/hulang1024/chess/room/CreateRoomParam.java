@@ -13,6 +13,8 @@ public class CreateRoomParam {
 
     private int gameType;
 
+    private boolean canWithdraw;
+
     private Integer chessboardSize;
 
     /**
@@ -36,6 +38,7 @@ public class CreateRoomParam {
         timerSettings.setStepDuration(stepDuration);
         timerSettings.setSecondsCountdown(secondsCountdown);
         gameSettings.setTimer(timerSettings);
+        gameSettings.setCanWithdraw(canWithdraw);
 
         RoomSettings roomSettings = new RoomSettings();
         roomSettings.setGameSettings(gameSettings);

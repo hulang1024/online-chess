@@ -17,5 +17,6 @@ public class ChineseChessGameStatesResponse extends GameStatesResponse {
         private int col;
         private int chessHost;
         private char type;
+        private int isFront;
     }
 }

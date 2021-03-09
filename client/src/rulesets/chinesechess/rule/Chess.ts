@@ -12,6 +12,8 @@ export default interface Chess {
 
   setPos(pos: ChessPos): void;
 
+  setHost(host: ChessHost): void;
+
   getHost(): ChessHost;
 
   setFront(b: boolean): void;

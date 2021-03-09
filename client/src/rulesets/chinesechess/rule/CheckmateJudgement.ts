@@ -44,8 +44,8 @@ export default class CheckmateJudgement {
         if (chess.is(ChessK)) {
           return false;
         }
-        // 是否可吃对方将军
-        if (chess.canGoTo(checkKPos, this.game)) {
+        // 是否可吃对方将军 todo: isFront是揭棋判断，待模块化
+        if (chess.isFront() && chess.canGoTo(checkKPos, this.game)) {
           return true;
         }
         return false;

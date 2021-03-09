@@ -36,9 +36,10 @@ export default class ReplayRecorder {
 
     const actionStack: ChessAction[] = actions.map((act) => {
       const action = new ChessAction();
-      action.chessHost = act.chessHost == 'FIRST' ? ChessHost.FIRST : ChessHost.SECOND;
+      action.chessHost = act.chess.chessHost == 'FIRST' ? ChessHost.FIRST : ChessHost.SECOND;
       // eslint-disable-next-line
-      action.chessType = CHESS_CLASS_KEY_MAP[act.chessType];
+      action.chessType = CHESS_CLASS_KEY_MAP[act.chess.type];
+      action.isFront = act.chess.isFront;
       action.fromPos = ChessPos.make(act.fromPos);
       action.toPos = ChessPos.make(act.toPos);
       if (act.eatenChess) {
