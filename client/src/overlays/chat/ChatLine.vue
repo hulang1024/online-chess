@@ -91,7 +91,7 @@ export default defineComponent({
       nickname: sender.nickname,
       nicknameColor: `#${(nicknameColor).toString(16)}`,
       hasBackground: sender.isAdmin,
-      backgroundColor: sender.isAdmin ? '#1f78ff' : '',
+      backgroundColor: sender.isAdmin ? '#e91e63' : '',
       content: message.content,
       contentColor,
       pending: message.id == null,
@@ -102,6 +102,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.row {
+  align-items: center;
+}
+
 .row > div {
   line-height: 1.4em;
   font-size: 1.1em;
