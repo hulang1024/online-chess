@@ -38,7 +38,7 @@
     </template>
     <template #main-buttons>
       <q-btn
-        v-if="room.roomSettings.gameSettings.gameType == 1"
+        v-if="[1, 3].includes(room.roomSettings.gameSettings.gameType)"
         label="切换"
         color="white"
         text-color="black"
