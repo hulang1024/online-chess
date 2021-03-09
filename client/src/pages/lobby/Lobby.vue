@@ -121,6 +121,9 @@ import { GameType } from 'src/rulesets/GameType';
 import GameSettings from 'src/rulesets/GameSettings';
 import TimerSettings from 'src/rulesets/TimerSettings';
 import RoomSettings from 'src/online/room/RoomSettings';
+import ChineseChessGameSettings from 'src/rulesets/chinesechess/ChineseChessGameSettings';
+import ChineseChessDarkGameSettings from 'src/rulesets/chinesechess-dark/ChineseChessDarkGameSettings';
+import GobangGameSettings from 'src/rulesets/gobang/GobangGameSettings';
 import UsersPanel from 'src/overlays/user/UsersPanel.vue';
 import CreateRoomDialog from './CreateRoomDialog.vue';
 import RoomsPanel from './RoomsPanel.vue';
@@ -359,10 +362,24 @@ export default defineComponent({
       req.failure = () => {
         const room = new Room();
         room.name = '';
-        const gameSettings = new GameSettings();
+        let gameSettings: GameSettings;
         const gameTypes = [GameType.chinesechess, GameType.chinesechessDark, GameType.gobang];
-        gameSettings.gameType = api.localUser.playGameType
+        const gameType = api.localUser.playGameType
           || gameTypes[Math.floor(Math.random() * gameTypes.length)];
+        switch (gameType) {
+          case GameType.chinesechess:
+            gameSettings = new ChineseChessGameSettings();
+            break;
+          case GameType.chinesechessDark:
+            gameSettings = new ChineseChessDarkGameSettings();
+            break;
+          case GameType.gobang:
+            gameSettings = new GobangGameSettings();
+            break;
+          default:
+            return;
+        }
+        gameSettings.gameType = gameType;
         gameSettings.timer = new TimerSettings();
         room.roomSettings = new RoomSettings();
         room.roomSettings.gameSettings = gameSettings;
