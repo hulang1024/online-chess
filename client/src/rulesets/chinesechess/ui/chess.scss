@@ -9,7 +9,6 @@ $black: #443322;
     align-items: center;
     user-select: none;
     opacity: 1;
-    transition: transform,box-shadow 0.1s ease-in;
 
     cursor: default;
 
@@ -28,16 +27,17 @@ $black: #443322;
     }
 
 
-    &.selected {
+    &.selected,
+    &.overlay {
       z-index: 5;
       > div {
         box-shadow: 8px 8px 2px 0px rgb(0, 0, 0, 0.25);
       }
     }
 
-    &.lit > div:after,
-    &.selectable > div:hover:after,
-    &.selected > div:after {
+    &.lit > div:before,
+    &.selectable > div:hover:before,
+    &.selected > div:before {
       position: absolute;
       content: ' ';
       width: calc(100% + 4px);
@@ -61,27 +61,22 @@ $black: #443322;
       box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.25);
       backface-visibility: hidden; 
       transform-style: preserve-3d;
-      transition: transform,box-shadow 0.1s ease-in;
+      transition: transform 0.1s, box-shadow 0.05s ease;
     }
 
+    > .front {
+      transform: rotateX(0deg);
+    }
     > .back {
       background-color: #f8e2bf;
-    }
-
-    &.is-front {
-      .front {
-        transform: rotateX(0deg);
-      }
-      .back {
-        transform: rotateX(-180deg);
-      }
+      transform: rotateX(-180deg);
     }
 
     &.is-back {
-      .front {
+      > .front {
         transform: rotateX(180deg);
       }
-      .back {
+      > .back {
         transform: rotateX(0deg);
       }
     }
@@ -97,5 +92,13 @@ $black: #443322;
       pointer-events: none;
     }
     
+  }
+
+  .chess-target {
+    max-width: 22px;
+    max-height: 22px;
+    background-color: rgb(255, 255, 255, 0.8);
+    border-radius: 2px;
+    transform: rotate(45deg);
   }
 }

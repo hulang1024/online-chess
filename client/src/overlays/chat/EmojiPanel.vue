@@ -72,7 +72,7 @@ export default defineComponent({
         cursor: pointer
         text-align: center
         border-radius: 4px
-        transition: transform, background 0.1s ease-in
+        transition: transform 0.1s, background 0.1s ease-in
 
         &:hover
           background: rgba(0, 0, 0, 0.1)

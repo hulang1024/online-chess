@@ -163,8 +163,7 @@ export default class DrawableChess implements Chess {
 
   public setFront(b: boolean) {
     this.chess.setFront(b);
-    this.el.classList.remove('is-back', 'is-front');
-    this.el.classList.add(this.chess.isFront() ? 'is-front' : 'is-back');
+    this.el.classList[this.chess.isFront() ? 'remove' : 'add']('is-back');
   }
 
   public isFront() {

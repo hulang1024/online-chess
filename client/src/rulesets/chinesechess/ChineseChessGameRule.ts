@@ -133,34 +133,31 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     if (eatenChess) {
       // 吃目标棋子
       action.eatenChess = eatenChess;
+      this.chessboard.getChessArray()[eatenChess.getPos().row][eatenChess.getPos().col] = null;
     }
 
     this.historyRecorder.push(action);
 
-    const convertedToPos = toPos.convertViewPos(chessHost, this.viewChessHost);
     // 被移动棋子选择状态置不选中
     chess.selectable = true;
     chess.selected = false;
     chess.selectable = false;
+
+    const convertedToPos = toPos.convertViewPos(chessHost, this.viewChessHost);
+    // 设置棋盘状态
+    this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = null;
+    this.chessboard.getChessArray()[convertedToPos.row][convertedToPos.col] = chess;
+    chess.setPos(convertedToPos);
+
     ChessMoveAnimation.make(
       chess,
       this.chessboard.calcChessDisplayPos(convertedToPos),
       () => {
-        // 翻转棋子
-        // todo: 模块化揭棋代码
-        if (!chess.isFront()) {
-          chess.setFront(true);
-        }
-
         this.fromPosTargetDrawer.draw(fromPos.convertViewPos(chessHost, this.viewChessHost));
 
         if (eatenChess) {
           this.chessboard.removeChess(eatenChess);
         }
-        // 设置棋盘状态
-        this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = null;
-        this.chessboard.getChessArray()[convertedToPos.row][convertedToPos.col] = chess;
-        chess.setPos(convertedToPos);
       },
       duration,
     ).start();

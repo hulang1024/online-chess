@@ -64,7 +64,7 @@
     pointer-events: none;
     transform: scale(0.8);
     opacity: 0;
-    transition: opacity,transform 0.2s ease-out;
+    transition: opacity 0.2s, transform 0.2s ease-out;
     animation: chess-target-rotate 12s linear infinite forwards;
     animation-play-state: paused;
 

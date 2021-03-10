@@ -355,7 +355,6 @@ export default class ChineseChessDrawableChessboard
   }
 
   public removeChess(chess: DrawableChess) {
-    this.chessArray[chess.getPos().row][chess.getPos().col] = null;
     return this._el.removeChild(chess.el);
   }
 
@@ -386,6 +385,7 @@ export default class ChineseChessDrawableChessboard
       for (let col = 0; col < 9; col++) {
         const chess = this.chessAt(new ChessPos(row, col));
         if (chess) {
+          this.chessArray[row][col] = null;
           this.removeChess(chess);
         }
       }

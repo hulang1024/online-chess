@@ -12,7 +12,7 @@ public enum GameState {
     PLAYING(2),
 
     /**
-     * 暂停中，其中一方离线会是此状态
+     * 暂停中
      */
     PAUSE(3),
 
