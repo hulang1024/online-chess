@@ -310,7 +310,7 @@ export default class ChineseChessDrawableChessboard
 
     // 棋子宽度稍小于交叉点距离
     // eslint-disable-next-line
-    const chessSize = gap - (screen.xs ? 4 : 12);
+    const chessSize = gap - (screen.xs ? 6 : 12);
     // 最侧边的棋子需要占据半个位置
     const gridMargin = gap / 2;
     const canvasWidth = Math.floor(gap * 8 + gridMargin * 2);

@@ -127,6 +127,7 @@ export default class GobangUserPlayInput extends UserPlayInput {
       (this.gamepad as any).visible = true;
       return;
     }
+    this.mouseChessTarget.hide(true);
 
     const action = new ChessAction();
     action.pos = pos;
@@ -238,6 +239,7 @@ export default class GobangUserPlayInput extends UserPlayInput {
       if (!this.lastChessPos) {
         return;
       }
+      this.mouseChessTarget.hide(true);
       const action = new ChessAction();
       action.pos = this.lastChessPos;
       action.chess = this.localUser.chess.value;

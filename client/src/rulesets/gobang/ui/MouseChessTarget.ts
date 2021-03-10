@@ -27,7 +27,7 @@ export default class MouseChessTarget {
 
   public show(pos: ChessPos) {
     const { el } = this;
-
+    this.el.style.display = 'block';
     el.classList.add('show');
 
     const { cellSize, gridStart } = this.chessboard.sizes;
@@ -38,7 +38,10 @@ export default class MouseChessTarget {
     el.style.left = `${pos.col * cellSize + gridStart - cellRadius}px`;
   }
 
-  public hide() {
+  public hide(instant = false) {
+    if (instant) {
+      this.el.style.display = 'none';
+    }
     this.el.classList.remove('show');
   }
 }

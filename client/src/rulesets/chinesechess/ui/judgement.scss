@@ -9,18 +9,20 @@
     background: rgba(0,0,0,0.2);
     border-radius: 4px;
     text-align: center;
+    transform: translate(-50%, -50%) scale(0.5);
     opacity: 0;
-    transition: all .2s ease;
+    transition: all .2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
     pointer-events: none;
     user-select: none;
+
+    &.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
   }
 
   .eat-judgement {
     text-shadow: 0px 1px 1px black;
-
-    &.show {
-      opacity: 1;
-    }
 
     > .title {
       font-size: 3rem;
@@ -48,7 +50,6 @@
     text-shadow: 1px 1px 1px white;
 
     &.show {
-      opacity: 1;
       font-size: 3rem;
       font-weight: 500;
     }

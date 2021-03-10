@@ -19,13 +19,15 @@ export default class DrawableCheckmateJudgement {
     clearTimeout(this.timer);
 
     this.el.style.display = 'block';
-    const colorClass = actionChessHost == ChessHost.FIRST ? 'red' : 'black';
-    this.el.classList.add(colorClass, 'show');
-    this.timer = setTimeout(() => {
-      this.el.classList.remove(colorClass, 'show');
-      setTimeout(() => {
-        this.el.style.display = 'none';
-      }, TRANSITION_DURATION + 50);
-    }, 2000);
+    setTimeout(() => {
+      const colorClass = actionChessHost == ChessHost.FIRST ? 'red' : 'black';
+      this.el.classList.add(colorClass, 'show');
+      this.timer = setTimeout(() => {
+        this.el.classList.remove(colorClass, 'show');
+        setTimeout(() => {
+          this.el.style.display = 'none';
+        }, TRANSITION_DURATION + 50);
+      }, 2000);
+    }, 100);
   }
 }

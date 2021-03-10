@@ -35,18 +35,20 @@ export default class DrawableEatJudgement {
       return;
     }
 
-    this.el.style.display = 'block';
     const colorClass = eatenChess?.getHost() == ChessHost.FIRST ? 'red' : 'black';
     this.sub.innerHTML = `（<span class="chess-name ${colorClass}">`
       + `${chessClassToText(eatenChess)}</span>被吃）`;
-    this.el.classList.add('show');
+    this.el.style.display = 'block';
+    setTimeout(() => {
+      this.el.classList.add('show');
 
-    this.timer = setTimeout(() => {
-      this.el.classList.remove('show');
-      this.timer = null;
-      setTimeout(() => {
-        this.el.style.display = 'none';
-      }, TRANSITION_DURATION + 50);
-    }, 2000);
+      this.timer = setTimeout(() => {
+        this.el.classList.remove('show');
+        this.timer = null;
+        setTimeout(() => {
+          this.el.style.display = 'none';
+        }, TRANSITION_DURATION + 50);
+      }, 2000);
+    }, 100);
   }
 }
