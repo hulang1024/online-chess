@@ -73,10 +73,10 @@
       >
         <template v-slot:body="props">
           <q-tr :props="props" class="user-row">
-            <q-td key="rank" :props="props" class="rank-no">
+            <q-td key="rank" class="rank-no">
               #{{ props.row.rank }}
             </q-td>
-            <q-td key="avatarUrl" :props="props" class="avatar">
+            <q-td key="avatarUrl" class="avatar">
               <user-avatar
                 :user="props.row"
                 size="30px"
@@ -84,26 +84,26 @@
               />
             </q-td>
             <q-td
-              key="nickname" :props="props"
+              key="nickname"
               class="nickname ellipsis"
               :title="props.row.nickname"
               @click="onUserClick(props.row)"
             >
               {{ props.row.nickname }}
             </q-td>
-            <q-td key="winRate" :props="props" class="count win-rate">
-              {{ props.row.userStats.winRate.toFixed(2) }}%
+            <q-td key="winRate" class="count win-rate">
+              {{ props.row.userStats.winRate && props.row.userStats.winRate.toFixed(2) }}%
             </q-td>
-            <q-td key="playCount" :props="props" class="count">
+            <q-td key="playCount" class="count">
               {{ props.row.userStats.playCount }}
             </q-td>
-            <q-td key="winCount" :props="props" class="count">
+            <q-td key="winCount" class="count">
               {{ props.row.userStats.winCount }}
             </q-td>
-            <q-td key="loseCount" :props="props" class="count">
+            <q-td key="loseCount" class="count">
               {{ props.row.userStats.loseCount }}
             </q-td>
-            <q-td key="drawCount" :props="props" class="count">
+            <q-td key="drawCount" class="count">
               {{ props.row.userStats.drawCount }}
             </q-td>
           </q-tr>
