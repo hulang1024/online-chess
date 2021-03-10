@@ -30,7 +30,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
 
     this.chessboard.chessPickupOrDrop.add(({ chess, isPickup }
       : {chess: DrawableChess, isPickup: boolean}) => {
-      if (!this.enabled) {
+      if (isPickup && !this.enabled) {
         this.checkReject();
         return;
       }
