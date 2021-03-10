@@ -22,7 +22,6 @@ export default class ChessMoveAnimation {
       .onComplete(() => {
         // 高亮被移动棋子
         chess.setLit(true);
-
         onComplete();
       });
   }

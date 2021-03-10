@@ -96,12 +96,6 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
         this.lastSelected = event.chess;
         this.lastSelected.selected = true;
         this.gameplayServer.pickChess(event.chess.getPos(), true);
-        // 将非持棋方的棋子全部启用（这样下次才能点击要吃的目标棋子）
-        this.chessboard.getChessList().forEach((chess) => {
-          if (chess.getHost() != this.localUser.chess.value) {
-            chess.selectable = true;
-          }
-        });
       }
       return;
     }

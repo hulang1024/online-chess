@@ -21,16 +21,16 @@ export default defineComponent({
   props: {
     visible: {
       type: Boolean,
-      required: true,
+      required: false,
     },
     text: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   setup(props) {
-    const _visible = ref<boolean>(props.visible);
-    const _text = ref<string>(props.text);
+    const _visible = ref<boolean>(props.visible as boolean);
+    const _text = ref<string>(props.text as string);
 
     watch([() => props.visible, () => props.text], ([visible, text]) => {
       _visible.value = visible as boolean;

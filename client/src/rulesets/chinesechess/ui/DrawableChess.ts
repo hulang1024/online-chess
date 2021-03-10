@@ -45,10 +45,25 @@ export default class DrawableChess implements Chess {
     el.classList.add('chess', colorClass);
     el.style.lineHeight = `${this.radius * 2}px`;
 
-    const circle = document.createElement('div');
-    circle.className = 'chess__circle';
+    const front = document.createElement('div');
+    front.classList.add('front');
 
-    el.appendChild(circle);
+    const circle1 = document.createElement('div');
+    circle1.className = 'chess__circle';
+    circle1.innerText = chessClassToText(this.chess);
+
+    front.appendChild(circle1);
+
+    el.appendChild(front);
+
+    const back = document.createElement('div');
+    back.classList.add('back');
+
+    const circle2 = document.createElement('div');
+    circle2.className = 'chess__circle';
+    back.appendChild(circle2);
+
+    el.appendChild(back);
 
     this.setFront(this.chess.isFront());
 
@@ -76,7 +91,6 @@ export default class DrawableChess implements Chess {
       event.dataTransfer?.setData('chess-pos', `${row},${col}`);
     };
     el.ondragend = () => {
-      el.style.outline = '';
       this.selected = false;
       this.drop.dispatch();
     };
@@ -88,10 +102,6 @@ export default class DrawableChess implements Chess {
     el.style.height = `${radius * 2}px`;
     el.style.fontSize = `${radius + 4}px`;
     this.radius = radius;
-  }
-
-  public flip() {
-    this.setFront(!this.chess.isFront());
   }
 
   public set x(val: number) {
@@ -153,8 +163,8 @@ export default class DrawableChess implements Chess {
 
   public setFront(b: boolean) {
     this.chess.setFront(b);
-    const circle = this.el.firstChild as HTMLDivElement;
-    circle.innerText = this.chess.isFront() ? chessClassToText(this.chess) : '';
+    this.el.classList.remove('is-back', 'is-front');
+    this.el.classList.add(this.chess.isFront() ? 'is-front' : 'is-back');
   }
 
   public isFront() {
