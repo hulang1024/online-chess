@@ -90,7 +90,7 @@ export default defineComponent({
     const configState = reactive({
       darkEnabled: configManager.get(ConfigItem.theme) == 'dark',
       fullscreen: false,
-      desktopNotifyEnabled: false,
+      desktopNotifyEnabled: configManager.get(ConfigItem.desktopNotifyEnabled),
       audioGameplayEnabled: configManager.get(ConfigItem.audioGameplayEnabled) as boolean,
       audioVolume: configManager.get(ConfigItem.audioVolume) as number * 100,
     });
@@ -121,19 +121,26 @@ export default defineComponent({
     });
 
     watch(() => configState.desktopNotifyEnabled, () => {
-      if (!configState.desktopNotifyEnabled) {
-        return;
+      if (configState.desktopNotifyEnabled) {
+        Notification.requestPermission().then((permission) => {
+          if (permission == 'granted') {
+            ctx.$q.notify({ type: 'positive', message: '开启成功' });
+            configManager.set(ConfigItem.desktopNotifyEnabled, true);
+            configManager.save();
+          } else {
+            ctx.$q.notify({ type: 'warning', message: '开启失败，请点击允许' });
+            configManager.set(ConfigItem.desktopNotifyEnabled, false);
+            configManager.save();
+          }
+        }).catch(() => {
+          ctx.$q.notify({ type: 'positive', message: '开启失败了' });
+          configManager.set(ConfigItem.desktopNotifyEnabled, false);
+          configManager.save();
+        });
+      } else {
+        configManager.set(ConfigItem.desktopNotifyEnabled, false);
+        configManager.save();
       }
-
-      Notification.requestPermission().then((permission) => {
-        if (permission == 'granted') {
-          ctx.$q.notify({ type: 'positive', message: '开启成功' });
-        } else {
-          ctx.$q.notify({ type: 'warning', message: '开启失败，请点击允许' });
-        }
-      }).catch(() => {
-        ctx.$q.notify({ type: 'positive', message: '开启失败了' });
-      });
     });
 
     return {

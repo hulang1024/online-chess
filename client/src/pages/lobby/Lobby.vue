@@ -104,6 +104,7 @@
 import {
   defineComponent, getCurrentInstance, onMounted, onBeforeUnmount, ref, watch, computed,
 } from '@vue/composition-api';
+import desktopNotify from 'src/components/notify';
 import CreateRoomRequest from 'src/online/room/CreateRoomRequest';
 import QuickStartRequest from 'src/online/room/QuickStartRequest';
 import ReplyInvitationRequest from 'src/online/invitation/ReplyInvitationRequest';
@@ -289,9 +290,12 @@ export default defineComponent({
         };
         api.perform(req);
       };
+      const message = `${invitation.inviter.nickname}邀请你${invitation.subject == 'PLAY' ? '加入' : '观战'}游戏`;
+      // eslint-disable-next-line
+      desktopNotify(message);
       $q.dialog({
         title: '邀请',
-        message: `${invitation.inviter.nickname}邀请你${invitation.subject == 'PLAY' ? '加入' : '观战'}游戏`,
+        message,
         persistent: true,
         ok: {
           label: '接受',

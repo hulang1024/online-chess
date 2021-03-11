@@ -72,6 +72,7 @@ export default class ConfigManager {
     this.set(ConfigItem.loginAuto, true);
     this.set(ConfigItem.audioVolume, 0.2);
     this.set(ConfigItem.audioGameplayEnabled, true);
+    this.set(ConfigItem.desktopNotifyEnabled, false);
     this.set(ConfigItem.theme, 'default');
   }
 }

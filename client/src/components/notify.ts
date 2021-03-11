@@ -1,9 +1,12 @@
+import { configManager } from "src/boot/main";
+import { ConfigItem } from "src/config/ConfigManager";
+
 export function allowDesktopNotify(): boolean {
   return 'Notification' in window && Notification.permission == 'granted';
 }
 
 export default async function desktopNotify(msg: string): Promise<Notification | null> {
-  if (!('Notification' in window)) {
+  if (!('Notification' in window) || !configManager.get(ConfigItem.desktopNotifyEnabled)) {
     return null;
   }
 
