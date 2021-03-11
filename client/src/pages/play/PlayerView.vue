@@ -208,13 +208,13 @@
                 :disable="!isPlaying"
                 @click="onWhiteFlagClick"
               />
-              <u-button
-                label="帮助"
-                color="warning"
-                size="12px"
-                @click="onHelpClick"
-              />
             </template>
+            <u-button
+              label="帮助"
+              color="warning"
+              size="12px"
+              @click="onHelpClick"
+            />
           </div>
         </div>
         <gamepad

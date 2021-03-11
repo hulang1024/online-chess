@@ -91,7 +91,7 @@ export default defineComponent({
       nickname: sender.nickname,
       nicknameColor: `#${(nicknameColor).toString(16)}`,
       hasBackground: sender.isAdmin,
-      backgroundColor: sender.isAdmin ? '#e91e63' : '',
+      backgroundColor: sender.isAdmin ? '#512da8' : '',
       content: message.content,
       contentColor,
       pending: message.id == null,
