@@ -149,38 +149,34 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     this.chessboard.getChessArray()[convertedToPos.row][convertedToPos.col] = chess;
     chess.setPos(convertedToPos);
 
+    const judge = () => {
+      if (this.checkmateJudgement.judge(ChessHost.reverse(action.chessHost))) {
+        this.drawableCheckmateJudgement.show(action.chessHost);
+      } else if (eatenChess) {
+        // 判断胜负
+        if (eatenChess != null && eatenChess.is(ChessK)) {
+          this.onGameOver(chess.getHost());
+          setTimeout(() => {
+            this.gameEnd();
+          }, 500);
+          return;
+        }
+        this.drawableEatJudgement.show(eatenChess.chess);
+      }
+    };
+
     ChessMoveAnimation.make(
       chess,
       this.chessboard.calcChessDisplayPos(convertedToPos),
       () => {
         this.fromPosTargetDrawer.draw(fromPos.convertViewPos(chessHost, this.viewChessHost));
-
         if (eatenChess) {
           this.chessboard.removeChess(eatenChess);
         }
+        judge();
       },
       duration,
     ).start();
-
-    const judgementShowDelay = duration ? duration - 50 : duration;
-
-    if (this.checkmateJudgement.judge(ChessHost.reverse(action.chessHost))) {
-      setTimeout(() => {
-        this.drawableCheckmateJudgement.show(action.chessHost);
-      }, judgementShowDelay);
-    } else if (eatenChess) {
-      // 判断胜负
-      if (eatenChess != null && eatenChess.is(ChessK)) {
-        this.onGameOver(chess.getHost());
-        setTimeout(() => {
-          this.gameEnd();
-        }, 500);
-        return;
-      }
-      setTimeout(() => {
-        this.drawableEatJudgement.show(eatenChess.chess);
-      }, judgementShowDelay);
-    }
 
     this.turnActiveChessHost();
 

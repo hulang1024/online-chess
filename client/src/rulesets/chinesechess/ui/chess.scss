@@ -9,7 +9,7 @@ $black: #443322;
     align-items: center;
     user-select: none;
     opacity: 1;
-
+    z-index: 2;
     cursor: default;
 
     &.red {
@@ -29,7 +29,7 @@ $black: #443322;
 
     &.selected,
     &.overlay {
-      z-index: 5;
+      z-index: 3;
       > div {
         box-shadow: 8px 8px 2px 0px rgb(0, 0, 0, 0.25);
       }
@@ -100,5 +100,6 @@ $black: #443322;
     background-color: rgb(255, 255, 255, 0.8);
     border-radius: 2px;
     transform: rotate(45deg);
+    z-index: 1;
   }
 }

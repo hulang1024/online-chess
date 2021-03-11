@@ -14,7 +14,7 @@ export default class DrawableEatJudgement {
 
   constructor() {
     const el = document.createElement('div');
-    el.className = 'judgement eat-judgement absolute-center z-top';
+    el.className = 'judgement eat-judgement absolute-center';
     const title = document.createElement('div');
     title.className = 'title';
     title.innerText = '吃';
@@ -38,17 +38,10 @@ export default class DrawableEatJudgement {
     const colorClass = eatenChess?.getHost() == ChessHost.FIRST ? 'red' : 'black';
     this.sub.innerHTML = `（<span class="chess-name ${colorClass}">`
       + `${chessClassToText(eatenChess)}</span>被吃）`;
-    this.el.style.display = 'block';
-    setTimeout(() => {
-      this.el.classList.add('show');
-
-      this.timer = setTimeout(() => {
-        this.el.classList.remove('show');
-        this.timer = null;
-        setTimeout(() => {
-          this.el.style.display = 'none';
-        }, TRANSITION_DURATION + 50);
-      }, 2000);
-    }, 100);
+    this.el.classList.add('show');
+    this.timer = setTimeout(() => {
+      this.el.classList.remove('show');
+      this.timer = null;
+    }, 2000);
   }
 }

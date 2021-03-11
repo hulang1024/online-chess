@@ -29,20 +29,23 @@
         <text-overlay
           ref="textOverlay"
           class="absolute-center"
+          style="z-index: 11;"
         />
         <text-overlay
           v-if="gameState == 1 && gameStatus.text"
           visible
           :text="gameStatus.text"
           class="absolute-center"
+          style="z-index: 11;"
         />
         <result-dialog
           ref="resultDialog"
           :show-again="!viewUser.isRoomOwner"
+          style="z-index: 11;"
         />
         <div
           class="absolute-center full-width"
-          style="position: absolute; top: calc(50% + 88px)"
+          style="position: absolute; top: calc(50% + 88px); z-index: 11;"
         >
           <slot name="main-overlay" />
         </div>
@@ -166,20 +169,23 @@
         <text-overlay
           ref="textOverlay"
           class="absolute-center"
+          style="z-index: 11;"
         />
         <text-overlay
           v-if="gameState == 1 && gameStatus.text"
           visible
           :text="gameStatus.text"
           class="absolute-center"
+          style="z-index: 11;"
         />
         <result-dialog
           ref="resultDialog"
           :show-again="!viewUser.isRoomOwner"
+          style="z-index: 12;"
         />
         <div
           class="absolute-center full-width"
-          style="position: absolute; top: calc(50% + 88px)"
+          style="position: absolute; top: calc(50% + 88px); z-index: 11;"
         >
           <slot name="main-overlay" />
         </div>

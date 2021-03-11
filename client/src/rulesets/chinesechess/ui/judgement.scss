@@ -2,7 +2,6 @@
 
 .playfield {
   .judgement {
-    display: none;
     padding: 8px 40px;
     min-width: max-content;
     color: white;
@@ -14,8 +13,10 @@
     transition: all .2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
     pointer-events: none;
     user-select: none;
+    z-index: 0;
 
     &.show {
+      z-index: 10;
       opacity: 1;
       transform: translate(-50%, -50%) scale(1);
     }

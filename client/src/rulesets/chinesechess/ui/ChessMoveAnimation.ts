@@ -28,8 +28,8 @@ export default class ChessMoveAnimation {
           if (enableAudio) {
             GameAudio.play('gameplay/chess_move');
           }
-          onComplete();
         }, dropDuration);
+        onComplete();
       }, flip ? flipDuration : 0);
     }, duration);
     chess.el.classList.add('overlay');
