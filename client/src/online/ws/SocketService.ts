@@ -116,7 +116,9 @@ export default class SocketService {
       return;
     }
 
-    this.socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}:9099`);
+    const isHttps = window.location.protocol === 'https:';
+    const url = `${isHttps ? 'wss' : 'ws'}://${window.location.hostname}:${isHttps ? 9099 : 9097}`;
+    this.socket = new WebSocket(url);
 
     this.socket.onopen = () => {
       this.connected = true;
