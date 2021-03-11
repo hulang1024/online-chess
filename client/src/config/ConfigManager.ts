@@ -33,7 +33,7 @@ export default class ConfigManager {
     [
       'username', 'password', 'token', 'login_auto',
       'theme', 'audio_volume', 'desktop_notify_enabled',
-      'audio_gameplay_enabled', 'gobang.input_mode',
+      'audio_gameplay_enabled', 'gobang.input_method',
     ].forEach((key) => {
       let val = localStorage.getItem(key);
       if (val == null) {

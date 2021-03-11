@@ -119,6 +119,16 @@
               <q-item
                 clickable
                 v-close-popup
+                @click="onHelpClick"
+              >
+                <q-item-section>
+                  <label><q-icon name="info" /> 帮助</label>
+                </q-item-section>
+              </q-item>
+              <q-separator />
+              <q-item
+                clickable
+                v-close-popup
                 @click="onQuitClick"
               >
                 <q-item-section>
@@ -198,9 +208,19 @@
                 :disable="!isPlaying"
                 @click="onWhiteFlagClick"
               />
+              <u-button
+                label="帮助"
+                color="warning"
+                size="12px"
+                @click="onHelpClick"
+              />
             </template>
           </div>
         </div>
+        <gamepad
+          ref="gamepad"
+          class="absolute-bottom"
+        />
       </playfield>
       <div
         ref="controls"
@@ -248,6 +268,7 @@
           spread
           class="q-mt-sm"
         >
+          <slot name="main-buttons" />
           <template v-if="enableGameRuleButtons">
             <q-btn
               color="white"
@@ -257,11 +278,10 @@
             >
               <span>
                 <q-icon name="access_time" />
-                {{ viewUser.isRoomOwner ? '' : '请求' }}{{ gameState != 3 ? '暂停对局' : '继续对局' }}
+                {{ gameState != 3 ? '暂停游戏' : '继续游戏' }}
               </span>
             </q-btn>
           </template>
-          <slot name="main-buttons" />
           <q-btn
             color="primary"
             @click="onQuitClick"
@@ -368,15 +388,18 @@ export default defineComponent({
     };
     const onChessDrawClick = () => {
       emit('chess-draw');
-    }
+    };
     const onWhiteFlagClick = () => {
       emit('white-flag');
-    }
+    };
     const onPauseOrResumeGameClick = () => {
       emit('pause-or-resume');
     };
     const onQuitClick = () => {
       emit('quit');
+    };
+    const onHelpClick = () => {
+      emit('help');
     };
 
     return {
@@ -387,6 +410,7 @@ export default defineComponent({
       onWithdrawClick,
       onChessDrawClick,
       onWhiteFlagClick,
+      onHelpClick,
       onPauseOrResumeGameClick,
       onQuitClick,
     };
@@ -417,4 +441,9 @@ export default defineComponent({
 
   .chat-panel
     flex-grow: 1
+</style>
+<style scoped>
+.q-btn-group >>> .q-btn__wrapper {
+  padding: 0px;
+}
 </style>

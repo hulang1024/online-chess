@@ -93,7 +93,7 @@ export default class GobangUserPlayInput extends UserPlayInput {
         useInputMode = InputMethod.NORMAL;
       }
     }
-    this._method = useInputMode;
+    this.method = useInputMode;
 
     this.gameRule.activeChessHost.addAndRunOnce((activeChessHost) => {
       if (activeChessHost == this.localUser.chess.value) {

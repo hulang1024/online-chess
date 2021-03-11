@@ -11,6 +11,9 @@
       class="q-px-md q-py-md full-width"
       style="max-width: 340px;"
     >
+      <q-card-section v-if="$q.screen.xs" class="absolute-top-right q-pb-none">
+        <q-btn icon="close" class="text-grey-6" flat round dense v-close-popup />
+      </q-card-section>
       <div v-if="user">
         <div class="column items-center">
           <user-avatar

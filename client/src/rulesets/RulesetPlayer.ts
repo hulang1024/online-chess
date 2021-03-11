@@ -6,4 +6,6 @@ export default abstract class RulesetPlayer {
   public userPlayInput: UserPlayInput;
 
   public abstract openSettings(): void;
+
+  public abstract openHelp(): void;
 }

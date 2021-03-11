@@ -122,16 +122,16 @@ export default defineComponent({
         color: context.$q.dark.isActive ? '#616161' : '#bdbdbd',
       },
       [UserStatus.ONLINE]: {
-        text: '现在空闲',
-        color: '#e1f5fe',
+        text: '空闲',
+        color: '#4caf50',
       },
       [UserStatus.AFK]: {
         text: '暂时离开',
         color: '#757575',
       },
       [UserStatus.IN_LOBBY]: {
-        text: '正在大厅',
-        color: '#3f51b5',
+        text: '空闲',
+        color: '#4caf50',
       },
       [UserStatus.IN_ROOM]: {
         text: '准备游戏',

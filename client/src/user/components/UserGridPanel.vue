@@ -75,8 +75,8 @@ export default defineComponent({
         color: ctx.$q.dark.isActive ? '#1f1f1f' : '#f5f5f5',
       },
       [UserStatus.ONLINE]: {
-        text: '现在空闲',
-        color: '#e1f5fe',
+        text: '空闲',
+        color: '#8bc34a',
       },
       [UserStatus.AFK]: {
         text: '暂时离开',

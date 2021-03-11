@@ -13,6 +13,7 @@
     :reverse="reverse"
     @quit="onQuitClick"
     @chat="onChatClick"
+    @help="onHelpClick"
   >
     <template #main-overlay>
       <main-buttons-overlay visible>

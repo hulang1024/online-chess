@@ -27,4 +27,9 @@ export default class GobangPlayer extends RulesetPlayer {
       userPlayInput.method = +opt;
     });
   }
+
+  // eslint-disable-next-line
+  public openHelp() {
+    window.open('https://baike.baidu.com/item/%E4%BA%94%E5%AD%90%E6%A3%8B/130266');
+  }
 }

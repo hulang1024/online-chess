@@ -17,6 +17,7 @@
     @withdraw="onWithdrawClick"
     @white-flag="onWhiteFlagClick"
     @chess-draw="onChessDrawClick"
+    @help="onHelpClick"
     @pause-or-resume="onPauseOrResumeGameClick"
   >
     <template #main-overlay>
@@ -43,10 +44,20 @@
         @click="onSettingsClick"
       >
         <q-item-section>
-          <label><q-icon name="settings" />设置</label>
+          <label><q-icon name="settings" /> 设置</label>
         </q-item-section>
       </q-item>
       <q-separator />
+    </template>
+    <template #main-buttons>
+      <q-btn
+        v-if="[2].includes(room.roomSettings.gameSettings.gameType)"
+        icon="settings"
+        color="white"
+        text-color="black"
+        style="flex: 40px"
+        @click="onSettingsClick"
+      />
     </template>
   </player-view>
 </template>

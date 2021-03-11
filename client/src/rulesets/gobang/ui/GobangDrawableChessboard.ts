@@ -8,7 +8,7 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
 
   public onChessPosClick: (pos: ChessPos) => void;
 
-  public onChessPosHover: (pos: ChessPos) => void;
+  public onChessPosHover: ((pos: ChessPos) => void) | null;
 
   private gridNumber: number;
 

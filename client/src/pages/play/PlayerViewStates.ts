@@ -136,5 +136,6 @@ export function usePlayerStates(player: Player) {
     onChatClick,
     onInviteClick,
     onQuitClick: player.onQuitClick.bind(player),
+    onHelpClick: player.onHelpClick.bind(player),
   };
 }
