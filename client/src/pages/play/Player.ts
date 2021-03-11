@@ -289,10 +289,11 @@ export default class Player extends GameplayClient {
     gameplayClient.userLeft = this.onUserLeft;
 
     gameplayClient.otherUserStatusChanged = (status: UserStatus) => {
+      const name = this.isWatchingMode ? '玩家' : '对方';
       switch (status) {
         case UserStatus.OFFLINE:
           this.room.offlineAt = new Date().toString();
-          this.showText(`对方已断线，你可以等待对方回来继续`);
+          this.showText(`${name}已断线，你可以等待${name}回来继续`);
           break;
         case UserStatus.ONLINE:
           break;
