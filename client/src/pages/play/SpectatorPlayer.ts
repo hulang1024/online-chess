@@ -103,7 +103,7 @@ export default class SpectatorPlayer extends Player {
         await this.context.$router.push({
           name: 'play',
           replace: true,
-          query: { id: result.room.id as unknown as string },
+          query: { room_id: result.room.id as unknown as string },
           params: {
             room: result.room as unknown as string,
           },

@@ -741,7 +741,7 @@ export default class Player extends GameplayClient {
         await this.context.$router.push({
           name: 'spectate',
           replace: true,
-          query: { id: result.room.id as unknown as string },
+          query: { room_id: result.room.id as unknown as string },
           params: { spectateResponse: result as unknown as string },
         });
         $q.loading.hide();

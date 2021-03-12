@@ -6,7 +6,6 @@
   >
     <q-card
       v-show="_visible"
-      flat
       :class="`q-py-${$q.screen.xs ? 'xs' : 'sm'}`"
     >
       <span class="text-subtitle1">{{ _text }}</span>
@@ -69,7 +68,8 @@ export default defineComponent({
 <style lang="sass" scoped>
 .q-card
   width: calc(100% - 1px)
-  background: rgba(0,0,0,0.35)
+  background: rgba(0,0,0,0.5)
+  box-shadow: 0px 3px 6px 0px rgba(128, 128, 128, 0.7)
   color: white
   text-align: center
   border-radius: 2px

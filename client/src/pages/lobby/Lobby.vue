@@ -187,7 +187,7 @@ export default defineComponent({
       await $router.push({
         name: 'play',
         replace: true,
-        query: { id: room?.id as unknown as string },
+        query: { room_id: room?.id as unknown as string },
         params: {
           room: room as unknown as string,
           initialGameStates: states as unknown as string,
@@ -263,7 +263,7 @@ export default defineComponent({
               await $router.push({
                 name: 'spectate',
                 replace: true,
-                query: { id: res.spectateResponse.room.id as unknown as string },
+                query: { room_id: res.spectateResponse.room.id as unknown as string },
                 params: { spectateResponse: res.spectateResponse as unknown as string },
               });
               $q.loading.hide();

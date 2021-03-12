@@ -116,7 +116,7 @@ export default defineComponent({
         await $router.push({
           name: 'play',
           replace: true,
-          query: { id: result.room.id as unknown as string },
+          query: { room_id: result.room.id as unknown as string },
           params: { room: result.room as unknown as string },
         });
         $q.loading.hide();
@@ -143,7 +143,7 @@ export default defineComponent({
         await $router.push({
           name: 'spectate',
           replace: true,
-          query: { id: spectateResponse.room.id as unknown as string },
+          query: { room_id: spectateResponse.room.id as unknown as string },
           params: { spectateResponse: spectateResponse as unknown as string },
         });
         $q.loading.hide();

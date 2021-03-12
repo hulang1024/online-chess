@@ -32,9 +32,11 @@ export default class Playfield {
           // eslint-disable-next-line
           width -= ((context.$refs.playerView as Vue).$refs.controls as any).offsetWidth + 8;
         }
-        let height = (pageEl?.parentElement?.offsetHeight || 0) - 40 - 16;
+        let height = (pageEl?.parentElement?.offsetHeight || 0) - 40;
         if (isXSScreen) {
           height -= (70 + 8) * 2;
+        } else {
+          height -= 64;
         }
         return {
           width,
