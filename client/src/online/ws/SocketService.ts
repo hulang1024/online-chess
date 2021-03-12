@@ -251,7 +251,7 @@ export default class SocketService {
       } else {
         this.isQueueLooping = false;
       }
-    }, 1000);
+    }, 500);
   }
 
   private lastNotify: ((opts: any) => any) | null = null;

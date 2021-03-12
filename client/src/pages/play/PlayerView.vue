@@ -118,7 +118,6 @@
                 </q-item>
                 <q-separator />
               </template>
-              <slot name="xs-screen-main-buttons" />
               <q-item
                 clickable
                 v-close-popup
@@ -129,6 +128,7 @@
                 </q-item-section>
               </q-item>
               <q-separator />
+              <slot name="xs-screen-main-buttons" />
               <q-item
                 clickable
                 v-close-popup

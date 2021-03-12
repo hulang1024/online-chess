@@ -50,11 +50,17 @@ export default class DrawableChess implements Chess {
 
     const circle1 = document.createElement('div');
     circle1.className = 'chess__circle';
-    circle1.innerText = chessClassToText(this.chess);
 
     front.appendChild(circle1);
 
     el.appendChild(front);
+
+    if (this.chess.isFront()) {
+      // 防止审查DOM作弊，当初始值是正面才显示字
+      this.drawFront();
+    } else {
+      this.el.classList.add('is-back');
+    }
 
     const back = document.createElement('div');
     back.classList.add('back');
@@ -64,8 +70,6 @@ export default class DrawableChess implements Chess {
     back.appendChild(circle2);
 
     el.appendChild(back);
-
-    this.setFront(this.chess.isFront());
 
     this.setupDragable();
 
@@ -161,9 +165,22 @@ export default class DrawableChess implements Chess {
     return this.chess.getHost();
   }
 
-  public setFront(b: boolean) {
-    this.chess.setFront(b);
-    this.el.classList[this.chess.isFront() ? 'remove' : 'add']('is-back');
+  /**
+   * 从反面翻转到正面
+   */
+  public flipToFront() {
+    this.chess.setFront(true);
+    this.el.classList.remove('is-back');
+  }
+
+  public drawFront() {
+    const frontEl = (this.el.children[0] as HTMLDivElement);
+    (frontEl.firstChild as HTMLDivElement).innerText = chessClassToText(this.chess);
+  }
+
+  // eslint-disable-next-line
+  public setFront(isFront: boolean) {
+    throw Error('不支持调用');
   }
 
   public isFront() {

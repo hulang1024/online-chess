@@ -10,15 +10,18 @@ export default class ChessMoveAnimation {
     duration = 200,
     enableAudio = true,
   ) {
-    const flipDuration = 200;
+    const flipDuration = 150;
     const dropDuration = 50;
+    // todo: 模块化揭棋代码
+    // 是否需要翻转棋子
+    const flip = !chess.isFront();
+    if (flip) {
+      chess.drawFront();
+    }
     // 使用setTimeout而不是动画onComplete，因为浏览器后台会暂停动画
     setTimeout(() => {
-      // todo: 模块化揭棋代码
-      // 是否需要翻转棋子
-      const flip = !chess.isFront();
       if (flip) {
-        chess.setFront(true);
+        chess.flipToFront();
       }
       setTimeout(() => {
         chess.el.classList.remove('overlay');

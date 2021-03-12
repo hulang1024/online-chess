@@ -99,10 +99,6 @@
             <label>用户ID: </label>
             <span>{{ user.id }}</span>
           </div>
-          <div v-if="localUser.isAdmin">
-            <label>用户IP: </label>
-            <span>{{ user.userIp }}</span>
-          </div>
         </div>
         <template v-if="localUser.id != user.id">
           <q-separator class="q-my-sm" />

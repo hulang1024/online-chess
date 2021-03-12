@@ -127,6 +127,7 @@ public class UserManager {
                 user.setIsMutual(relation.map(r -> r.getIsMutual()).orElse(false));
             }
 
+            user.setUserIp(null);
             user.setIsOnline(isOnline(user.getId()));
             user.setStatus(getUserStatus(user, user.getIsOnline()));
             user.setUserDeviceInfo(getUserDeviceInfo(user));

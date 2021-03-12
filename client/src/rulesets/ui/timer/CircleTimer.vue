@@ -9,7 +9,7 @@
     reverse
     v-bind="$attrs"
     class="circle-timer"
-    :class="blink || blinkState ? 'blink-start' : 'blink-pause'"
+    :class="blink || blinkState ? 'blink-start1' : 'blink-pause1'"
   >
     <slot />
   </q-circular-progress>
