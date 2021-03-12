@@ -138,7 +138,11 @@ export default class SocketService {
   private onMessage(message: string) {
     const serverMsg = JSON.parse(message) as ServerMsg;
     console.log("<收到socket消息", serverMsg);
-    const signal = this.messageTypeBoundSignalMap[serverMsg.type];
+    let signal = this.messageTypeBoundSignalMap[serverMsg.type];
+    if (!signal) {
+      signal = new Signal();
+      this.addSignal(serverMsg.type, signal);
+    }
     if (signal?.getNumListeners() > 0) {
       signal.dispatch(serverMsg);
     } else {
