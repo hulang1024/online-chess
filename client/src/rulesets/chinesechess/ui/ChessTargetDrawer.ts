@@ -39,15 +39,17 @@ export default class ChessTargetDrawer {
   }
 
   private makeTarget(pos: ChessPos): HTMLElement {
-    const radius = this.chessboard.bounds.chessRadius * 0.3;
+    let size = (this.chessboard.bounds.chessRadius * 2) / 3;
     const { x, y } = this.chessboard.calcChessDisplayPos(pos);
     const el = document.createElement('div');
     el.className = 'chess-target';
     el.style.position = 'absolute';
+    const radius = Math.round(size / 2);
     el.style.left = `${x - radius}px`;
     el.style.top = `${y - radius}px`;
-    el.style.width = `${radius * 2}px`;
-    el.style.height = `${radius * 2}px`;
+    size = Math.round(size);
+    el.style.width = `${size}px`;
+    el.style.height = `${size}px`;
     el.setAttribute('chess-pos', `${pos.row},${pos.col}`);
     return el;
   }

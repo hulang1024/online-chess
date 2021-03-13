@@ -3,7 +3,7 @@ import ChessHost from "src/rulesets/chess_host";
 import { chessClassToText } from "src/rulesets/chinesechess/rule/chess_map";
 import './judgement.scss';
 
-const TRANSITION_DURATION = 200;
+const TRANSITION_DURATION = 100;
 
 export default class DrawableEatJudgement {
   public el: HTMLDivElement;

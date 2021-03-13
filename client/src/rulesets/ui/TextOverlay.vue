@@ -69,7 +69,7 @@ export default defineComponent({
 .q-card
   width: calc(100% - 1px)
   background: rgba(0,0,0,0.5)
-  box-shadow: 0px 3px 6px 0px rgba(128, 128, 128, 0.7)
+  box-shadow: 0px 3px 6px 0px rgba(60, 60, 60, 0.5)
   color: white
   text-align: center
   border-radius: 2px

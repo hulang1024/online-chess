@@ -168,12 +168,19 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     ChessMoveAnimation.make(
       chess,
       this.chessboard.calcChessDisplayPos(convertedToPos),
-      () => {
-        this.fromPosTargetDrawer.draw(fromPos.convertViewPos(chessHost, this.viewChessHost));
-        if (eatenChess) {
-          this.chessboard.removeChess(eatenChess);
-        }
-        judge();
+      {
+        moveEnd: () => {
+          judge();
+        },
+        dropStart: () => {
+          if (eatenChess) {
+            this.chessboard.removeChess(eatenChess);
+          }
+        },
+        dropEnd: () => {
+          this.fromPosTargetDrawer.draw(fromPos.convertViewPos(chessHost, this.viewChessHost));
+          chess.setLit(true);
+        },
       },
       duration,
     ).start();
@@ -237,40 +244,42 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     ChessMoveAnimation.make(
       chess,
       this.chessboard.calcChessDisplayPos(fromPos),
-      () => {
-        // 恢复之前的状态
-        chess.setPos(fromPos);
-        this.chessboard.getChessArray()[fromPos.row][fromPos.col] = chess;
-        this.chessboard.getChessArray()[toPos.row][toPos.col] = null;
+      {
+        dropEnd: () => {
+          // 恢复之前的状态
+          chess.setPos(fromPos);
+          this.chessboard.getChessArray()[fromPos.row][fromPos.col] = chess;
+          this.chessboard.getChessArray()[toPos.row][toPos.col] = null;
 
-        // 如果吃了子，把被吃的子加回来
-        if (lastAction.eatenChess) {
-          let drawableChess: DrawableChess;
-          if (lastAction.eatenChess instanceof DrawableChess) {
-            drawableChess = lastAction.eatenChess;
-          } else {
-            drawableChess = new DrawableChess(
-              lastAction.eatenChess,
-              this.chessboard.bounds.chessRadius,
-            );
+          // 如果吃了子，把被吃的子加回来
+          if (lastAction.eatenChess) {
+            let drawableChess: DrawableChess;
+            if (lastAction.eatenChess instanceof DrawableChess) {
+              drawableChess = lastAction.eatenChess;
+            } else {
+              drawableChess = new DrawableChess(
+                lastAction.eatenChess,
+                this.chessboard.bounds.chessRadius,
+              );
+            }
+            this.chessboard.addChess(drawableChess);
           }
-          this.chessboard.addChess(drawableChess);
-        }
 
-        // 画上手的棋子走位标记
-        if (!this.historyRecorder.isEmpty()) {
-          const prevAction = this.historyRecorder.get(-1);
-          const convertedToPos = prevAction.toPos.convertViewPos(
-            prevAction.chessHost, this.viewChessHost,
-          );
-          const convertedFromPos = prevAction.fromPos.convertViewPos(
-            prevAction.chessHost, this.viewChessHost,
-          );
-          (this.chessboard.chessAt(convertedToPos) as DrawableChess).setLit(true);
-          this.fromPosTargetDrawer.draw(convertedFromPos);
-        }
+          // 画上手的棋子走位标记
+          if (!this.historyRecorder.isEmpty()) {
+            const prevAction = this.historyRecorder.get(-1);
+            const convertedToPos = prevAction.toPos.convertViewPos(
+              prevAction.chessHost, this.viewChessHost,
+            );
+            const convertedFromPos = prevAction.fromPos.convertViewPos(
+              prevAction.chessHost, this.viewChessHost,
+            );
+            (this.chessboard.chessAt(convertedToPos) as DrawableChess).setLit(true);
+            this.fromPosTargetDrawer.draw(convertedFromPos);
+          }
 
-        this.turnActiveChessHost();
+          this.turnActiveChessHost();
+        },
       },
       200,
       false,
