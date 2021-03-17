@@ -13,7 +13,7 @@
       <user-avatar
         v-show="user.id != -1"
         :user="user"
-        size="28px"
+        size="26px"
         class="q-ml-xs"
       />
     </div>

@@ -29,7 +29,6 @@
       <template v-slot:after>
         <q-btn
           icon="keyboard_return"
-          color="grey-7"
           unelevated
           padding="7px"
           label="发送"
@@ -115,6 +114,11 @@ export default defineComponent({
 <style scoped>
 .message-input >>> .q-field__before {
   padding-right: 2px;
+}
+
+.send {
+  background-color: #575757;
+  color: #fff;
 }
 
 .send >>> .q-icon.on-left {

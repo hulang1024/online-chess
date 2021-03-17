@@ -274,10 +274,16 @@ export default class Player extends GameplayClient {
     this.otherUser.stepTimer = otherGameUserPanelRefs.stepTimer as unknown as Timer;
     this.otherUser.stepTimer.setSoundEnabled(this.isWatchingMode);
 
-    (viewGameUserPanelRefs.circleStepTimer as unknown as CircleTimer)
-      .setSyncTimer(this.localUser.stepTimer);
-    (otherGameUserPanelRefs.circleStepTimer as unknown as CircleTimer)
-      .setSyncTimer(this.otherUser.stepTimer);
+    let circleStepTimer;
+    circleStepTimer = (viewGameUserPanelRefs.circleStepTimer as unknown as CircleTimer);
+    if (circleStepTimer) {
+      circleStepTimer.setSyncTimer(this.localUser.stepTimer);
+    }
+
+    circleStepTimer = (otherGameUserPanelRefs.circleStepTimer as unknown as CircleTimer);
+    if (circleStepTimer) {
+      circleStepTimer.setSyncTimer(this.otherUser.stepTimer);
+    }
   }
 
   private initListeners() {

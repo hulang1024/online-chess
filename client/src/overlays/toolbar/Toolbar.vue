@@ -169,18 +169,18 @@ export default defineComponent({
 .q-toolbar {
   padding-left: 0px;
   padding-right: 0px;
-  height: 40px !important;
-  min-height: 40px;
+  height: 36px !important;
+  min-height: 36px;
 }
 
 .toolbar-button {
   height: 100%;
 
   .fas {
-    font-size: 20px;
+    font-size: 19px;
   }
   &.active {
-    background: #333;
+    background: #666;
     color: #fff;
     border-radius: 0px;
   }

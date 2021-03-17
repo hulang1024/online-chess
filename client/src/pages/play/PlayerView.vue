@@ -238,7 +238,7 @@
           style="user-select:none"
         >
           <span class="text-subtitle1">
-            <span>房间#</span>
+            <span>{{ GAME_TYPE_MAP[gameType].text }} 房#</span>
             <span>{{ room.id }}</span>
           </span>
           <span
@@ -250,24 +250,21 @@
             class="q-ml-sm"
           />
         </q-card>
-        <q-card
-          flat
-          class="q-mb-sm q-px-sm q-py-sm column"
+        <div
+          class="row user-panels q-gutter-y-xs q-mb-sm"
           :class="{reverse}"
-          style="padding-left: 12px"
         >
-          <game-user-panel
-            ref="otherGameUserPanel"
-            v-bind="otherUser"
-            :game-type="gameType"
-          />
-          <q-separator class="q-my-sm" />
           <game-user-panel
             ref="viewGameUserPanel"
             v-bind="viewUser"
             :game-type="gameType"
           />
-        </q-card>
+          <game-user-panel
+            ref="otherGameUserPanel"
+            v-bind="otherUser"
+            :game-type="gameType"
+          />
+        </div>
         <chat-panel ref="chatPanel" />
         <q-btn-group
           unelevated
@@ -314,6 +311,7 @@ import ResultDialog from 'src/rulesets/ui/ResultDialog.vue';
 import TextOverlay from 'src/rulesets/ui/TextOverlay.vue';
 import Gamepad from 'src/rulesets/ui/Gamepad.vue';
 import GameUser from 'src/online/play/GameUser';
+import { GameType } from 'src/rulesets/GameType';
 import GameUserPanel from './GameUserPanel.vue';
 import SpectatorCountDisplay from './SpectatorCountDisplay.vue';
 import ChatPanel from './ChatPanel.vue';
@@ -386,6 +384,20 @@ export default defineComponent({
     const isXSScreen = context.$q.screen.xs;
     const { gameType } = props.room.roomSettings.gameSettings;
 
+    const GAME_TYPE_MAP: {
+      [n: number]: {text: string}
+    } = {
+      [GameType.chinesechess]: {
+        text: '象棋',
+      },
+      [GameType.chinesechessDark]: {
+        text: '揭棋',
+      },
+      [GameType.gobang]: {
+        text: '五子棋',
+      },
+    };
+
     const onChatClick = () => {
       emit('chat')
     };
@@ -411,6 +423,7 @@ export default defineComponent({
     return {
       isXSScreen,
       gameType,
+      GAME_TYPE_MAP,
 
       onChatClick,
       onWithdrawClick,
@@ -439,11 +452,21 @@ export default defineComponent({
 
 .controls
   padding: 8px
-  width: 320px
-  min-width: 320px
+  width: 380px
+  min-width: 380px
   display: flex
   flex-direction: column
   min-height: inherit
+
+  .user-panels
+    justify-content: space-between
+    .game-user-panel
+      padding: 8px
+      padding-left: 8px
+      width: 49%
+      border-radius: 4px
+      box-shadow: 1px 1px 6px 0px rgb(0, 0, 0, 0.1)
+      background: white
 
   .chat-panel
     flex-grow: 1

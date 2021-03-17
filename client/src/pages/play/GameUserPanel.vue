@@ -1,90 +1,75 @@
 <template>
-  <q-card
-    flat
-    class="game-user-panel"
+  <div
+    class="game-user-panel column no-wrap"
+    :class="[$q.screen.xs && 'xs-screen']"
   >
-    <div class="row items-center justify-between">
-      <div :class="['row', 'items-center', 'no-wrap', {reverse}]">
-        <circle-timer
-          ref="circleStepTimer"
-          size="70px"
-          class="user-avatar-frame"
-          :class="{[config.activeClass]: active}"
-          :blink="blinkState"
-          :color="config.timerColor"
+    <div
+      class="row justify-between avatar-time-row"
+      :class="{reverse}"
+    >
+      <div
+        class="user-avatar-frame"
+        :class="{[config.activeClass]: active}"
+        :blink="blinkState"
+        :color="config.timerColor"
+      >
+        <user-avatar
+          :user="user"
+          :online="online"
+          :class="{
+            afk: user && (status == UserStatus.AFK),
+            'shadow-1': !!user && !active
+          }"
+          rounded
+          size="60px"
+          @click="onUserAvatarClick"
         >
-          <user-avatar
-            :user="user"
-            :online="online"
-            :class="[{
-              afk: user && (status == UserStatus.AFK),
-              'shadow-1': !!user && !active
-            }]"
-            size="60px"
-            @click="onUserAvatarClick"
-          >
-            <ready-status-display
-              v-if="$q.screen.xs"
-              :is-ready="ready"
-              class="info-overlay absolute-center"
-              :class="(user && showReadyStatus) && 'show'"
-            />
-          </user-avatar>
-          <div
-            v-show="user && (status == UserStatus.AFK || !online)"
-            :class="['user-status', `absolute-bottom-${reverse ? 'right' : 'left'}`]"
-          >
-            <span>({{ online ? '离开' : '离线' }})</span>
-          </div>
-        </circle-timer>
+          <ready-status-display
+            v-if="user && showReadyStatus"
+            :is-ready="ready"
+            class="info-overlay absolute-center"
+          />
+        </user-avatar>
         <div
-          v-show="user"
-          class="user-info"
-          :class="`q-m${reverse ? 'r' : 'l'}-sm`"
-          :style="{textAlign: reverse ? 'right' : 'left'}"
+          v-show="user && (status == UserStatus.AFK || !online)"
+          :class="['user-status', `absolute-bottom-${reverse ? 'right' : 'left'}`]"
         >
-          <div
-            class="row items-center"
-            :class="[reverse && 'reverse']"
-          >
-            <div :class="['nickname', 'ellipsis', $q.screen.xs && 'xs-screen']">
-              {{ user && user.nickname }}
-            </div>
-          </div>
-          <div
-            class="row items-center"
-            :class="[reverse && 'reverse']"
-          >
-            <div
-              v-if="config.chessColor"
-              class="chess"
-              :class="`q-m${reverse ? 'l' : 'r'}-${$q.screen.xs ? 'xs' : 'sm'}`"
-              :style="{backgroundColor: config.chessColor}"
-            />
-            <span>{{ config.chessName }}棋</span>
-          </div>
-          <div
-            class="row time-panel"
-            :class="[($q.screen.xs && reverse) && 'reverse']"
-          >
-            <div :class="`item q-m${reverse ? 'l' : 'r'}-${$q.screen.xs ? 'xs' : 'sm'}`">
-              <span class="label">步时</span>
-              <timer ref="stepTimer" />
-            </div>
-            <div class="item">
-              <span class="label">局时</span>
-              <timer ref="gameTimer" />
-            </div>
-          </div>
+          <span>({{ online ? '离开' : '离线' }})</span>
         </div>
       </div>
-      <ready-status-display
+      <div
+        v-show="user"
+        class="column time-panel"
+        :class="[`q-m${reverse ? 'r' : 'l'}-sm`]"
+      >
+        <div class="item">
+          <span class="label">步时</span>
+          <timer ref="stepTimer" />
+        </div>
+        <div class="item">
+          <span class="label">局时</span>
+          <timer ref="gameTimer" />
+        </div>
+      </div>
+    </div>
+    <div
+      class="row items-center q-mt-sm"
+      :class="{reverse}"
+    >
+      <div
         v-if="!$q.screen.xs"
-        :class="[(user && showReadyStatus) && 'show', !$q.screen.xs && 'has-border']"
-        :is-ready="ready"
+        class="nickname ellipsis"
+        :style="{textAlign: reverse ? 'right' : 'left'}"
+      >
+        {{ user && user.nickname }}
+      </div>
+      <div
+        v-if="!$q.screen.xs && config.chessColor"
+        class="chess"
+        :style="{backgroundColor: config.chessColor}"
       />
     </div>
-  </q-card>
+  </div>
 </template>
 
 <script lang="ts">
@@ -97,14 +82,12 @@ import UserStatus from "src/user/UserStatus";
 import ChessHost from "src/rulesets/chess_host";
 import { GameType } from "src/rulesets/GameType";
 import Timer from "../../rulesets/ui/timer/Timer.vue";
-import CircleTimer from "../../rulesets/ui/timer/CircleTimer.vue";
 import ReadyStatusDisplay from "./ReadyStatusDisplay.vue";
 
 export default defineComponent({
   components: {
     UserAvatar,
     Timer,
-    CircleTimer,
     ReadyStatusDisplay,
   },
   props: {
@@ -224,16 +207,11 @@ export default defineComponent({
 </script>
 
 <style lang="sass" scoped>
-.game-user-panel
-  background: transparent
-
 .nickname
-  width: 118px
+  flex-grow: 1
   font-size: 1.1em
   font-weight: 400
-  &.xs-screen
-    width: unset
-    max-width: 118px
+  text-align: center
 
 .chess-host
   &::before
@@ -243,21 +221,24 @@ export default defineComponent({
 
 .user-avatar-frame
   position: relative
-  border-radius: 100%
+  border-radius: 4px
   transition: all 0.2s ease-out
+  animation-duration: 2s
+  animation-timing-function: linear
+  animation-iteration-count: infinite
 
   .user-avatar
     &.afk
       opacity: 0.6 !important
 
   &.red
-    box-shadow: 0px 0px 0px 6px rgba(255, 0, 0, 0.3)
+    animation-name: user-avatar-frame-red
 
   &.black
-    box-shadow: 0px 0px 0px 6px rgba(0, 0, 0, 0.2)
+    animation-name: user-avatar-frame-black
 
   &.chess-active
-    box-shadow: 0px 0px 0px 6px rgba(205, 220, 57, 0.3)
+    animation-name: user-avatar-frame-active
 
   .user-status
     padding: 2px
@@ -274,27 +255,40 @@ export default defineComponent({
     align-items: center
     font-size: 14px
     background: rgba(0,0,0,0.3)
-    border-radius: 100%
+    border-radius: inherit
     transition: all 0.2s ease
 
 .time-panel
   display: flex
   flex-wrap: nowrap
+  justify-content: space-evenly
+  min-width: 86px
 
   .item
     display: flex
     flex-wrap: nowrap
+    justify-content: space-evenly
     user-select: none
+    font-size: 14px
 
     .label
-      font-size: 1em
       word-break: keep-all
       &::after
         content: ':'
 
     .time
-      font-size: 1em
       font-weight: 500
+
+.xs-screen
+  .avatar-time-row
+    align-items: center
+
+  .time-panel
+    min-width: 120px
+    padding: 2px 4px
+    background: rgba(0, 0, 0, 0.2)
+    box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1)
+    border-radius: 4px
 
 .chess
   display: inline-block
@@ -302,16 +296,22 @@ export default defineComponent({
   height: 16px
   border-radius: 100%
   box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.1)
+</style>
+<style>
+@keyframes user-avatar-frame-red {
+  from {
+    box-shadow: 0px 0px 6px 6px rgba(255, 0, 0, 0.5)
+  }
+}
 
-.ready-status
-  width: 62px
-  visibility: hidden
-
-  &.has-border
-    text-align: center
-    border-radius: 4px
-    border: 1px solid
-
-  &.show
-    visibility: visible
+@keyframes user-avatar-frame-black {
+  from {
+    box-shadow: 0px 0px 6px 6px rgba(0, 0, 0, 0.5)
+  }
+}
+@keyframes user-avatar-frame-active {
+  from {
+    box-shadow: 0px 0px 6px 6px rgba(205, 220, 57, 0.5)
+  }
+}
 </style>

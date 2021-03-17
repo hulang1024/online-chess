@@ -53,7 +53,7 @@
           >
             <div class="count-row">
               <label>胜率</label>
-              <div class="count">{{ userStats.winRate.toFixed(2) }}%</div>
+              <div class="count">{{ userStats.winRate ? userStats.winRate.toFixed(2) : 0 }}%</div>
             </div>
             <div class="count-row">
               <label>局数</label>

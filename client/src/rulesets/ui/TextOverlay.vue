@@ -69,10 +69,10 @@ export default defineComponent({
 .q-card
   width: calc(100% - 1px)
   background: rgba(0,0,0,0.5)
-  box-shadow: 0px 3px 6px 0px rgba(60, 60, 60, 0.5)
+  box-shadow: 0px 3px 6px 0px rgba(30, 30, 30, 0.4)
   color: white
   text-align: center
-  border-radius: 2px
+  border-radius: 4px
   user-select: none
   pointer-events: none
 

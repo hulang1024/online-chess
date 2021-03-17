@@ -24,6 +24,7 @@ export default defineComponent({
   .q-btn
     margin: 0px 4px
     width: 100px
+    padding: 2px
     font-weight: bold
     letter-spacing: 1px
 </style>

@@ -35,6 +35,7 @@ export function usePlayerStates(player: Player) {
   viewUser.reverse = isXSScreen;
 
   const otherUser = toReactive(player.otherUser);
+  otherUser.reverse = !isXSScreen;
 
   const reverse: Ref<boolean> = createBoundRef(player.reverse);
 
@@ -42,6 +43,9 @@ export function usePlayerStates(player: Player) {
     if (isXSScreen) {
       viewUser.reverse = !val;
       otherUser.reverse = val;
+    } else {
+      viewUser.reverse = val;
+      otherUser.reverse = !val;
     }
   });
 
@@ -83,8 +87,13 @@ export function usePlayerStates(player: Player) {
 
   watchEffect(() => {
     // activeChessHost.value可能为空
-    viewUser.active = activeChessHost.value == viewUser.chess;
-    otherUser.active = activeChessHost.value == otherUser.chess;
+    if (gameState.value == GameState.PLAYING) {
+      viewUser.active = activeChessHost.value == viewUser.chess;
+      otherUser.active = activeChessHost.value == otherUser.chess;
+    } else {
+      viewUser.active = false;
+      otherUser.active = false;
+    }
 
     viewUser.showReadyStatus = gameState.value == GameState.READY && !viewUser.isRoomOwner;
     otherUser.showReadyStatus = gameState.value == GameState.READY && !otherUser.isRoomOwner;

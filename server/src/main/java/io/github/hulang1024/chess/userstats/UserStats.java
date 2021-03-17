@@ -23,6 +23,8 @@ public class UserStats {
     private long loseCount;
 
     public float getWinRate() {
-        return playCount > 0 ? (float)winCount / (playCount - drawCount) * 100 : 0;
+        return playCount > 0 && (playCount - drawCount) > 0
+            ? (float)winCount / (playCount - drawCount) * 100
+            : 0;
     }
 }

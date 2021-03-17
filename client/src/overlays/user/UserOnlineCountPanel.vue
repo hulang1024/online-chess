@@ -50,7 +50,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .q-chip {
   color: #fff;
-  background: rgba(0, 0, 0, 0.5);
+  background: #575757;
   user-select: none;
 
   .q-icon {

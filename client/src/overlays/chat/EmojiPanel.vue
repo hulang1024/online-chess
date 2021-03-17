@@ -68,16 +68,12 @@ export default defineComponent({
         height: 40px
         box-sizing: border-box
         user-select: none
-        font-size: 21px
-        cursor: pointer
+        font-size: 24px
         text-align: center
         border-radius: 4px
-        transition: transform 0.1s, background 0.1s ease-in
 
         &:hover
           background: rgba(0, 0, 0, 0.1)
-          > span
-            transform: scale(1.2)
 
 .emoji-panel.q-dark .emoji-grid .emoji-cell:hover
   background: rgba(255, 255, 255, 0.2)

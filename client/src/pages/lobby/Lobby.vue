@@ -77,13 +77,15 @@
       >
         <u-button
           color="primary"
-          label="创建房间"
+          label="创建游戏"
+          icon="fa fa-cog"
           class="col float-right q-mt-sm"
           @click="onCreateRoomClick"
         />
         <u-button
-          color="light-green"
-          label="快速加入"
+          color="primary"
+          label="快速匹配"
+          icon="fa fa-clock"
           class="col float-right q-mt-sm"
           :loading="joining"
           @click="onQuickJoinClick"
@@ -156,9 +158,9 @@ export default defineComponent({
 
     const resize = (isChatActive: boolean) => {
       const pageEl = ctx.$el as HTMLElement;
-      const height = (pageEl?.parentElement?.offsetHeight || 0) - (56 + (isChatActive ? 284 : 0));
+      const height = (pageEl?.parentElement?.offsetHeight || 0) - (52 + (isChatActive ? 284 : 0));
       // eslint-disable-next-line
-      (ctx.$refs.roomsPanel as any).$el.style.height = `${height - 122}px`;
+      (ctx.$refs.roomsPanel as any).$el.style.height = `${height - 124}px`;
       if (ctx.$refs.usersPanel) {
         // eslint-disable-next-line
         (ctx.$refs.usersPanel as any).$el.style.height = `${height}px`;
@@ -443,4 +445,8 @@ export default defineComponent({
   .filter-container
     .q-tabs
       border-radius: 8px
+
+  .q-btn
+    padding: 2px
+    font-weight: bolder
 </style>

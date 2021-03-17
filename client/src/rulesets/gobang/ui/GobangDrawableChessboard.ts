@@ -73,11 +73,17 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
   }
 
   public resizeAndDraw(stage: {width: number, height: number}) {
-    const size = Math.min(stage.width, stage.height);
+    let size = Math.min(stage.width, stage.height);
     const padding = 4 * 2;
     let canvasSize = size - padding;
     // 格子尺寸
-    const cellSize = Math.round(canvasSize / this.gridNumber);
+    let cellSize = Math.round(canvasSize / this.gridNumber);
+    if (cellSize > 36) {
+      cellSize = 36;
+      canvasSize = cellSize * this.gridNumber;
+      size = canvasSize + padding;
+    }
+
     const diff = canvasSize - cellSize * this.gridNumber;
     canvasSize = cellSize * this.gridNumber;
     const diffToPadding = Math.round(diff / 2);
@@ -141,11 +147,11 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
       context.moveTo(x, gridMargin);
       context.lineTo(x, canvasSize - gridMargin);
     }
-    context.strokeStyle = '#a25e0b';
+    context.strokeStyle = '#333';
     context.stroke();
 
     // 画圆点
-    context.fillStyle = "#98590b";
+    context.fillStyle = "#444";
     const start = this.gridNumber < 11 ? 2 : 3;
     const quarter = Math.floor((this.gridNumber - start * 2) / 2);
     const posArray = [];
@@ -159,7 +165,7 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
       context.arc(
         gridMargin + cellSize * row,
         gridMargin + cellSize * col,
-        4, 0, Math.PI * 2, true,
+        3, 0, Math.PI * 2, true,
       );
       context.closePath();
       context.fill();
