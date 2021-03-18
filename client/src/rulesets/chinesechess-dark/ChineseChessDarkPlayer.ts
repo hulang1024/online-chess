@@ -1,12 +1,6 @@
-import RulesetPlayer from "../RulesetPlayer";
+import ChineseChessPlayer from "../chinesechess/ChineseChessPlayer";
 
-export default class ChineseChessDarkPlayer extends RulesetPlayer {
-  // eslint-disable-next-line
-  public openSettings() {
-    // eslint-disable-next-line
-    return;
-  }
-
+export default class ChineseChessDarkPlayer extends ChineseChessPlayer {
   // eslint-disable-next-line
   public openHelp() {
     window.open('https://baike.baidu.com/item/%E6%8F%AD%E6%A3%8B/20436136');

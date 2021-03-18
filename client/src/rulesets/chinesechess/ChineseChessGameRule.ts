@@ -1,3 +1,5 @@
+import { configManager } from 'src/boot/main';
+import { ConfigItem } from 'src/config/ConfigManager';
 import ChessK from 'src/rulesets/chinesechess/rule/ChessK';
 import ChessAction from 'src/rulesets/chinesechess/ChessAction';
 import ChessPos from 'src/rulesets/chinesechess/rule/ChessPos';
@@ -17,9 +19,12 @@ import DrawableCheckmateJudgement from './ui/DrawableCheckmateJudgement';
 import Playfield from '../../pages/play/Playfield';
 import ChineseChessResponseGameStates, { ResponseGameStateChess } from './online/gameplay_server_messages';
 import ChineseChessDrawableChessboard from './ui/ChineseChessDrawableChessboard';
+import ChessStatusDisplay from './ChessStatusDisplay';
 
 export default class ChineseChessGameRule extends GameRule implements Game {
   public chessboard: ChineseChessDrawableChessboard;
+
+  public chessStatusDisplay = new ChessStatusDisplay(this);
 
   private historyRecorder = new HistoryRecorder();
 
@@ -59,6 +64,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     if (!this.fromPosTargetDrawer) {
       this.fromPosTargetDrawer = new ChessTargetDrawer(this.chessboard);
     }
+    this.chessStatusDisplay.clear();
     this.fromPosTargetDrawer.clear();
 
     const gameStates = gameStates0 as ChineseChessResponseGameStates;
@@ -76,6 +82,9 @@ export default class ChineseChessGameRule extends GameRule implements Game {
         chess.setFront(stateChess.isFront);
         this.chessboard.addChess(new DrawableChess(chess, this.chessboard.bounds.chessRadius));
       });
+      if (configManager.get(ConfigItem.chinesechessChessStatus)) {
+        this.chessStatusDisplay.update(this.viewChessHost);
+      }
     } else {
       this.chessboard.clear();
       this.initChessLayout();
@@ -157,6 +166,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
         if (eatenChess != null && eatenChess.is(ChessK)) {
           this.onGameOver(chess.getHost());
           setTimeout(() => {
+            this.chessStatusDisplay.clear();
             this.gameEnd();
           }, 500);
           return;
@@ -180,6 +190,10 @@ export default class ChineseChessGameRule extends GameRule implements Game {
         dropEnd: () => {
           this.fromPosTargetDrawer.draw(fromPos.convertViewPos(chessHost, this.viewChessHost));
           chess.setLit(true);
+
+          if (configManager.get(ConfigItem.chinesechessChessStatus)) {
+            this.chessStatusDisplay.update(this.viewChessHost);
+          }
         },
       },
       duration,
@@ -277,7 +291,9 @@ export default class ChineseChessGameRule extends GameRule implements Game {
             (this.chessboard.chessAt(convertedToPos) as DrawableChess).setLit(true);
             this.fromPosTargetDrawer.draw(convertedFromPos);
           }
-
+          if (configManager.get(ConfigItem.chinesechessChessStatus)) {
+            this.chessStatusDisplay.update(this.viewChessHost);
+          }
           this.turnActiveChessHost();
         },
       },

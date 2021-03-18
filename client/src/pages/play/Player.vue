@@ -33,10 +33,8 @@
         @to-spectate="onToSpectateClick"
       />
     </template>
-    <!-- TODO: 消除硬编码 -->
     <template
       #xs-screen-main-buttons
-      v-if="room.roomSettings.gameSettings.gameType == 2"
     >
       <q-item
         clickable
@@ -51,7 +49,6 @@
     </template>
     <template #main-buttons>
       <q-btn
-        v-if="[2].includes(room.roomSettings.gameSettings.gameType)"
         icon="settings"
         color="white"
         text-color="black"

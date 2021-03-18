@@ -1,10 +1,38 @@
+import { configManager } from "src/boot/main";
+import { ConfigItem } from "src/config/ConfigManager";
 import RulesetPlayer from "../RulesetPlayer";
+import ChineseChessGameRule from "./ChineseChessGameRule";
 
 export default class ChineseChessPlayer extends RulesetPlayer {
   // eslint-disable-next-line
   public openSettings() {
-    // eslint-disable-next-line
-    return;
+    this.context.$q.dialog({
+      title: '设置',
+      options: {
+        type: 'toggle',
+        model: configManager.get(ConfigItem.chinesechessChessStatus) as string,
+        items: [
+          { label: '提示' },
+        ],
+      },
+      ok: {
+        label: '确定',
+        color: 'primary',
+      },
+      cancel: {
+        label: '取消',
+        color: 'warning',
+      },
+    }).onOk((value: boolean) => {
+      configManager.set(ConfigItem.chinesechessChessStatus, value);
+      configManager.save();
+
+      if (value) {
+        (this.game as ChineseChessGameRule).chessStatusDisplay.update(this.game.viewChessHost);
+      } else {
+        (this.game as ChineseChessGameRule).chessStatusDisplay.clear();
+      }
+    });
   }
 
   // eslint-disable-next-line

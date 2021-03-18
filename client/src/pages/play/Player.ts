@@ -92,6 +92,7 @@ export default class Player extends GameplayClient {
     this.rulesetPlayer.context = context;
 
     this.game = ruleset.createGameRule();
+    this.rulesetPlayer.game = this.game;
 
     this.rulesetClient = ruleset.createRulesetClient(this.game);
 

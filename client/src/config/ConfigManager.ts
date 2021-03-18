@@ -12,6 +12,7 @@ export enum ConfigItem {
 
   // todo: 待组织
   gobangInputMethod = 'gobang.input_method',
+  chinesechessChessStatus = 'chinesechess.chess_status',
 }
 
 export default class ConfigManager {
@@ -33,7 +34,7 @@ export default class ConfigManager {
     [
       'username', 'password', 'token', 'login_auto',
       'theme', 'audio_volume', 'desktop_notify_enabled',
-      'audio_gameplay_enabled', 'gobang.input_method',
+      'audio_gameplay_enabled', 'gobang.input_method', 'chinesechess.chess_status',
     ].forEach((key) => {
       let val = localStorage.getItem(key);
       if (val == null) {
@@ -73,6 +74,7 @@ export default class ConfigManager {
     this.set(ConfigItem.audioVolume, 0.2);
     this.set(ConfigItem.audioGameplayEnabled, true);
     this.set(ConfigItem.desktopNotifyEnabled, false);
+    this.set(ConfigItem.chinesechessChessStatus, true);
     this.set(ConfigItem.theme, 'default');
   }
 }

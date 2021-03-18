@@ -46,7 +46,7 @@ export default class DrawableChess implements Chess {
     el.style.lineHeight = `${this.radius * 2}px`;
 
     const front = document.createElement('div');
-    front.classList.add('front');
+    front.classList.add('side', 'front');
 
     const circle1 = document.createElement('div');
     circle1.className = 'chess__circle';
@@ -63,7 +63,7 @@ export default class DrawableChess implements Chess {
     }
 
     const back = document.createElement('div');
-    back.classList.add('back');
+    back.classList.add('side', 'back');
 
     const circle2 = document.createElement('div');
     circle2.className = 'chess__circle';

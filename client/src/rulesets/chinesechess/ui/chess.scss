@@ -30,14 +30,14 @@ $black: #443322;
     &.selected,
     &.overlay {
       z-index: 3;
-      > div {
+      > .side {
         box-shadow: 8px 8px 2px 0px rgb(0, 0, 0, 0.25);
       }
     }
 
-    &.lit > div:before,
-    &.selectable > div:hover:before,
-    &.selected > div:before {
+    &.lit > .side:before,
+    &.selectable > .side:hover:before,
+    &.selected > .side:before {
       position: absolute;
       content: ' ';
       width: calc(100% + 4px);
@@ -99,5 +99,39 @@ $black: #443322;
     border-radius: 2px;
     transform: rotate(45deg);
     z-index: 1;
+  }
+
+  .status-circle {
+    position: absolute;
+    border-radius: 100%;
+    border: 2px solid;
+    animation: animation-status-circle-danger 2s linear infinite;
+    z-index: 1;
+
+    &.danger {
+      border-color: rgb(255, 0, 0, 0.8);
+      box-shadow:
+        inset 0px 0px 2px 3px rgb(255, 0, 0, 0.1),
+        0px 0px 3px 4px rgb(255, 0, 0, 0.1);
+    }
+
+    &.eatable {
+      border-color: rgb(0, 210, 0, 0.8);
+      box-shadow:
+        inset 0px 0px 2px 3px rgb(0, 210, 0, 0.1),
+        0px 0px 3px 4px rgb(0, 210, 0, 0.1);
+    }
+  }
+
+  @keyframes animation-status-circle-danger {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.15);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 }

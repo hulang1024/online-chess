@@ -18,7 +18,7 @@
           :online="online"
           :class="{
             afk: user && (status == UserStatus.AFK),
-            'shadow-1': !!user && !active
+            'shadow-1': !!user
           }"
           rounded
           size="60px"
@@ -50,6 +50,12 @@
           <span class="label">局时</span>
           <timer ref="gameTimer" />
         </div>
+        <div
+          v-if="$q.screen.xs && config.chessColor"
+          class="chess"
+          :class="reverse ? 'absolute-top-right' : 'absolute-top-left'"
+          :style="{backgroundColor: config.chessColor}"
+        />
       </div>
     </div>
     <div
@@ -223,7 +229,7 @@ export default defineComponent({
   position: relative
   border-radius: 4px
   transition: all 0.2s ease-out
-  animation-duration: 2s
+  animation-duration: 1.5s
   animation-timing-function: linear
   animation-iteration-count: infinite
 
@@ -243,7 +249,7 @@ export default defineComponent({
   .user-status
     padding: 2px
     background: rgba(0, 0, 0, 0.3)
-    border-radius: 2px
+    border-radius: 4px
     font-size: 12px
     color: #fff
 
@@ -259,6 +265,7 @@ export default defineComponent({
     transition: all 0.2s ease
 
 .time-panel
+  position: relative
   display: flex
   flex-wrap: nowrap
   justify-content: space-evenly
@@ -299,19 +306,37 @@ export default defineComponent({
 </style>
 <style>
 @keyframes user-avatar-frame-red {
-  from {
-    box-shadow: 0px 0px 6px 6px rgba(255, 0, 0, 0.5)
+  0% {
+    box-shadow: 0px 0px 1px 1px rgba(255, 0, 0, 0.3)
+  }
+  50% {
+    box-shadow: 0px 0px 4px 6px rgba(255, 0, 0, 0.5)
+  }
+  100% {
+    box-shadow: 0px 0px 1px 1px rgba(255, 0, 0, 0.3)
   }
 }
 
 @keyframes user-avatar-frame-black {
-  from {
-    box-shadow: 0px 0px 6px 6px rgba(0, 0, 0, 0.5)
+  0% {
+    box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.3)
+  }
+  50% {
+    box-shadow: 0px 0px 4px 6px rgba(0, 0, 0, 0.5)
+  }
+  100% {
+    box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.3)
   }
 }
 @keyframes user-avatar-frame-active {
-  from {
-    box-shadow: 0px 0px 6px 6px rgba(205, 220, 57, 0.5)
+  0% {
+    box-shadow: 0px 0px 1px 1px rgba(205, 220, 57, 0.3)
+  }
+  50% {
+    box-shadow: 0px 0px 4px 6px rgba(205, 220, 57, 1)
+  }
+  100% {
+    box-shadow: 0px 0px 1px 1px rgba(205, 220, 57, 0.3)
   }
 }
 </style>
