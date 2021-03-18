@@ -9,7 +9,12 @@
     >
       <div
         class="user-avatar-frame"
-        :class="{[config.activeClass]: active}"
+        :class="[
+          {active},
+          $q.screen.xs
+            ? 'dark'
+            : $q.dark.isActive ? 'light' : 'dark'
+        ]"
         :blink="blinkState"
         :color="config.timerColor"
       >
@@ -118,10 +123,6 @@ export default defineComponent({
             [ChessHost.FIRST]: 'red',
             [ChessHost.SECOND]: 'black',
           },
-          activeClass: {
-            [ChessHost.FIRST]: 'red',
-            [ChessHost.SECOND]: 'black',
-          },
           chessName: {
             [ChessHost.FIRST]: '红',
             [ChessHost.SECOND]: '黑',
@@ -131,10 +132,6 @@ export default defineComponent({
         },
         [GameType.chinesechessDark]: {
           chessColor: {
-            [ChessHost.FIRST]: 'red',
-            [ChessHost.SECOND]: 'black',
-          },
-          activeClass: {
             [ChessHost.FIRST]: 'red',
             [ChessHost.SECOND]: 'black',
           },
@@ -149,10 +146,6 @@ export default defineComponent({
           chessColor: {
             [ChessHost.FIRST]: 'black',
             [ChessHost.SECOND]: 'white',
-          },
-          activeClass: {
-            [ChessHost.FIRST]: 'chess-active',
-            [ChessHost.SECOND]: 'chess-active',
           },
           chessName: {
             [ChessHost.FIRST]: '黑',
@@ -178,7 +171,6 @@ export default defineComponent({
         chessName: props.user && cfg.chessName[props.chess as ChessHost],
         showChess: cfg.showChess,
         chessColor: (props.user && cfg.showChess) ? chessColor : null,
-        activeClass: cfg.activeClass[props.chess as ChessHost],
       };
     });
 
@@ -227,29 +219,27 @@ export default defineComponent({
 
 .user-avatar-frame
   position: relative
-  border-radius: 4px
+  border-radius: 6px
   transition: all 0.2s ease-out
   animation-duration: 1.5s
   animation-timing-function: linear
   animation-iteration-count: infinite
 
   .user-avatar
+    border-radius: inherit
     &.afk
       opacity: 0.6 !important
 
-  &.red
-    animation-name: user-avatar-frame-red
+  &.active.light
+    animation-name: animation-user-avatar-frame-active-light
 
-  &.black
-    animation-name: user-avatar-frame-black
-
-  &.chess-active
-    animation-name: user-avatar-frame-active
+  &.active.dark
+    animation-name: animation-user-avatar-frame-active-dark
 
   .user-status
-    padding: 2px
+    padding: 2px 6px
     background: rgba(0, 0, 0, 0.3)
-    border-radius: 4px
+    border-radius: inherit
     font-size: 12px
     color: #fff
 
@@ -305,38 +295,27 @@ export default defineComponent({
   box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.1)
 </style>
 <style>
-@keyframes user-avatar-frame-red {
+@keyframes animation-user-avatar-frame-active-light {
   0% {
-    box-shadow: 0px 0px 1px 1px rgba(255, 0, 0, 0.3)
+    box-shadow: 0px 0px 1px 1px rgba(255, 249, 196, 0.3)
   }
   50% {
-    box-shadow: 0px 0px 4px 6px rgba(255, 0, 0, 0.5)
+    box-shadow: 0px 0px 4px 6px rgba(255, 249, 196, 1)
   }
   100% {
-    box-shadow: 0px 0px 1px 1px rgba(255, 0, 0, 0.3)
+    box-shadow: 0px 0px 1px 1px rgba(255, 249, 196, 0.3)
   }
 }
 
-@keyframes user-avatar-frame-black {
+@keyframes animation-user-avatar-frame-active-dark {
   0% {
-    box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.3)
+    box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.3)
   }
   50% {
-    box-shadow: 0px 0px 4px 6px rgba(0, 0, 0, 0.5)
+    box-shadow: 0px 0px 4px 6px rgba(255, 241, 118, 1)
   }
   100% {
-    box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.3)
-  }
-}
-@keyframes user-avatar-frame-active {
-  0% {
-    box-shadow: 0px 0px 1px 1px rgba(205, 220, 57, 0.3)
-  }
-  50% {
-    box-shadow: 0px 0px 4px 6px rgba(205, 220, 57, 1)
-  }
-  100% {
-    box-shadow: 0px 0px 1px 1px rgba(205, 220, 57, 0.3)
+    box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.3)
   }
 }
 </style>

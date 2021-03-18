@@ -192,7 +192,9 @@ export default class ChineseChessGameRule extends GameRule implements Game {
           chess.setLit(true);
 
           if (configManager.get(ConfigItem.chinesechessChessStatus)) {
-            this.chessStatusDisplay.update(this.viewChessHost);
+            setTimeout(() => {
+              this.chessStatusDisplay.update(this.viewChessHost);
+            }, 100);
           }
         },
       },

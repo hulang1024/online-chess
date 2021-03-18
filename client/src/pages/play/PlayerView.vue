@@ -252,7 +252,7 @@
         </q-card>
         <div
           class="row user-panels q-gutter-y-xs q-mb-sm"
-          :class="{reverse}"
+          :class="{reverse, dark: $q.dark.isActive}"
         >
           <game-user-panel
             ref="viewGameUserPanel"
@@ -466,7 +466,14 @@ export default defineComponent({
       width: 49%
       border-radius: 4px
       box-shadow: 1px 1px 6px 0px rgb(0, 0, 0, 0.1)
-      background: white
+
+    &:not(.dark)
+      .game-user-panel
+        background: #fff
+
+    &.dark
+      .game-user-panel
+        background: #1d1d1d
 
   .chat-panel
     flex-grow: 1
