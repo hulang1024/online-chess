@@ -1,34 +1,36 @@
 import ChessHost from "../chess_host";
+import ChineseChessGameRule from "./ChineseChessGameRule";
 import Chess from "./rule/Chess";
+import ChessK from "./rule/ChessK";
 import Game from "./rule/Game";
-import ChineseChessDrawableChessboard from "./ui/ChineseChessDrawableChessboard";
-import StatusCircle, { ChessStatus } from './ui/StatusCircle';
+import { ChessStatus } from './ui/StatusCircle';
+import StatusCirclePool from "./ui/StatusCirclePool";
 
 export default class ChessStatusDisplay {
-  private game: Game;
+  private game: ChineseChessGameRule;
 
-  private statusCircles: StatusCircle[] = [];
+  private statusCirclePool: StatusCirclePool;
 
   constructor(game: Game) {
-    this.game = game;
+    this.game = game as ChineseChessGameRule;
+
+    this.statusCirclePool = new StatusCirclePool(this.game.getChessboard());
   }
 
   public update(host: ChessHost) {
     const chessStatusMap = this.findChessStatusMap(host);
-    const chessboard = this.game.getChessboard() as ChineseChessDrawableChessboard;
     this.clear();
     chessStatusMap.forEach((status, chess) => {
-      const statusCircle = new StatusCircle(status, chess.getPos(), chessboard);
-      this.statusCircles.push(statusCircle);
-      chessboard.el.appendChild(statusCircle.el);
+      const statusCircle = this.statusCirclePool.get();
+      statusCircle.draw(status, chess.getPos());
+      this.statusCirclePool.markAsUsed(statusCircle, true);
     });
   }
 
   public clear() {
-    this.statusCircles.forEach((statusCircle) => {
-      if (statusCircle.el.parentElement) {
-        statusCircle.el.parentElement.removeChild(statusCircle.el);
-      }
+    this.statusCirclePool.getUsed().forEach((statusCircle) => {
+      statusCircle.hide();
+      this.statusCirclePool.markAsUsed(statusCircle, false);
     });
   }
 
@@ -40,8 +42,7 @@ export default class ChessStatusDisplay {
       for (let i = 0; i < chesses.length; i++) {
         const chess = chesses[i];
         if (chess != target && chess.getHost() == target.getHost()
-          && chess.isFront()
-          && chess.canGoTo(target.getPos(), this.game)) {
+          && this.game.canGoTo(chess, target.getPos())) {
           return true;
         }
       }
@@ -50,11 +51,11 @@ export default class ChessStatusDisplay {
 
     const canEat = (targetHost: ChessHost, asStatus: ChessStatus) => {
       chesses.forEach((target) => {
-        if (target.getHost() == targetHost && !isProtectee(target)) {
+        if (target.getHost() == targetHost
+          && (target.is(ChessK) || !isProtectee(target))) {
           chesses.forEach((chess) => {
             if (chess.getHost() != targetHost
-              && chess.isFront()
-              && chess.canGoTo(target.getPos(), this.game)) {
+              && this.game.canGoTo(chess, target.getPos())) {
               found.set(target, asStatus);
             }
           });

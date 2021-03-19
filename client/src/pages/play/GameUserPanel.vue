@@ -12,7 +12,7 @@
         :class="[
           {active},
           $q.screen.xs
-            ? 'dark'
+            ? 'light'
             : $q.dark.isActive ? 'light' : 'dark'
         ]"
         :blink="blinkState"
@@ -23,7 +23,7 @@
           :online="online"
           :class="{
             afk: user && (status == UserStatus.AFK),
-            'shadow-1': !!user
+            'shadow-2': !!user
           }"
           rounded
           size="60px"
@@ -221,7 +221,7 @@ export default defineComponent({
   position: relative
   border-radius: 6px
   transition: all 0.2s ease-out
-  animation-duration: 1.5s
+  animation-duration: 1.25s
   animation-timing-function: linear
   animation-iteration-count: infinite
 
@@ -297,13 +297,13 @@ export default defineComponent({
 <style>
 @keyframes animation-user-avatar-frame-active-light {
   0% {
-    box-shadow: 0px 0px 1px 1px rgba(255, 249, 196, 0.3)
+    box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.3)
   }
   50% {
-    box-shadow: 0px 0px 4px 6px rgba(255, 249, 196, 1)
+    box-shadow: 0px 0px 4px 6px rgba(255, 241, 118, 0.8)
   }
   100% {
-    box-shadow: 0px 0px 1px 1px rgba(255, 249, 196, 0.3)
+    box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.3)
   }
 }
 

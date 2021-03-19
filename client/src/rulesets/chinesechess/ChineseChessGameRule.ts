@@ -24,7 +24,7 @@ import ChessStatusDisplay from './ChessStatusDisplay';
 export default class ChineseChessGameRule extends GameRule implements Game {
   public chessboard: ChineseChessDrawableChessboard;
 
-  public chessStatusDisplay = new ChessStatusDisplay(this);
+  public chessStatusDisplay: ChessStatusDisplay;
 
   private historyRecorder = new HistoryRecorder();
 
@@ -47,6 +47,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
 
   public setPlayfield(playfield: Playfield) {
     this.chessboard = playfield.chessboard as ChineseChessDrawableChessboard;
+    this.chessStatusDisplay = new ChessStatusDisplay(this);
     playfield.resized.add(() => {
       if (this.fromPosTargetDrawer?.getSavePos()) {
         this.fromPosTargetDrawer.draw(this.fromPosTargetDrawer.getSavePos());
@@ -173,6 +174,10 @@ export default class ChineseChessGameRule extends GameRule implements Game {
         }
         this.drawableEatJudgement.show(eatenChess.chess);
       }
+
+      if (configManager.get(ConfigItem.chinesechessChessStatus)) {
+        this.chessStatusDisplay.update(this.viewChessHost);
+      }
     };
 
     ChessMoveAnimation.make(
@@ -190,12 +195,6 @@ export default class ChineseChessGameRule extends GameRule implements Game {
         dropEnd: () => {
           this.fromPosTargetDrawer.draw(fromPos.convertViewPos(chessHost, this.viewChessHost));
           chess.setLit(true);
-
-          if (configManager.get(ConfigItem.chinesechessChessStatus)) {
-            setTimeout(() => {
-              this.chessStatusDisplay.update(this.viewChessHost);
-            }, 100);
-          }
         },
       },
       duration,

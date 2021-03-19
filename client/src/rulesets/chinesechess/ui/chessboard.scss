@@ -2,11 +2,15 @@
 
 .chinesechess-chessboard {
   border-radius: 5px;
-  background-color: #774d0d;
+  background-color: #8b5338;
 
   > canvas {
-    background-color: #efba6c;
+    background-color: #e3b78a;
     border-radius: inherit;
     box-shadow: 0px 1px 1px 1px rgb(0, 0, 0, 0.1);
   }
+}
+
+.mobile .q-page.play:not(.dark) {
+  background: radial-gradient(#f5f5f5, #f5f5f5, #e0e0e0);
 }

@@ -1,5 +1,6 @@
 import DrawableChessboard from "./ChineseChessDrawableChessboard";
 import ChessPos from "../rule/ChessPos";
+import './status_circle.scss';
 
 export enum ChessStatus {
   danger = 1,
@@ -9,17 +10,29 @@ export enum ChessStatus {
 export default class StatusCircle {
   public el: HTMLDivElement;
 
-  constructor(status: ChessStatus, pos: ChessPos, chessboard: DrawableChessboard) {
-    const radius = chessboard.bounds.chessRadius + 3;
+  public chessboard: DrawableChessboard;
+
+  constructor(chessboard: DrawableChessboard) {
+    this.chessboard = chessboard;
+    const radius = chessboard.bounds.chessRadius + 2;
     const size = radius * 2;
-    const { x, y } = chessboard.calcChessDisplayPos(pos);
     const el = document.createElement('div');
-    el.classList.add('status-circle',
-      status == ChessStatus.danger ? 'danger' : 'eatable');
-    el.style.left = `${x - radius}px`;
-    el.style.top = `${y - radius}px`;
+    el.classList.add('status-circle');
     el.style.width = `${size}px`;
     el.style.height = `${size}px`;
     this.el = el;
+  }
+
+  public draw(status: ChessStatus, pos: ChessPos) {
+    const { el } = this;
+    const { x, y } = this.chessboard.calcChessDisplayPos(pos);
+    const radius = this.chessboard.bounds.chessRadius + 2;
+    el.style.left = `${x - radius}px`;
+    el.style.top = `${y - radius}px`;
+    this.el.classList.add(status == ChessStatus.danger ? 'danger' : 'eatable', 'show');
+  }
+
+  public hide() {
+    this.el.classList.remove('show');
   }
 }

@@ -1,5 +1,11 @@
 <template>
-  <q-page :class="[isXSScreen ? 'xs-screen' : 'row items-center q-pl-sm']">
+  <q-page
+    :class="[
+      'play',
+      isXSScreen ? 'xs-screen' : 'row items-center q-pl-sm',
+      $q.dark.isActive && 'dark'
+    ]"
+  >
     <template v-if="isXSScreen">
       <game-user-panel
         ref="otherGameUserPanel"

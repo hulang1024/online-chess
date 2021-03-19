@@ -1,0 +1,43 @@
+.chinesechess-chessboard {
+  .status-circle {
+    position: absolute;
+    border-radius: 100%;
+    border: 2px solid;
+    opacity: 0;
+    z-index: 2;
+    box-sizing: border-box;
+    pointer-events: none;
+    transition: opacity 0.2s ease-out;
+
+    &.show {
+      opacity: 1;
+      animation: animation-status-circle-danger 2s linear infinite;
+    }
+
+    &.danger {
+      border-color: rgb(245, 0, 0, 1);
+      box-shadow:
+        inset 0px 0px 3px 3px rgba(245, 166, 166, 0.2),
+        0px 0px 3px 3px rgb(255, 0, 0, 0.2);
+    }
+
+    &.eatable {
+      border-color: rgb(0, 190, 0, 1);
+      box-shadow:
+        inset 0px 0px 3px 3px rgb(0, 210, 0, 0.2),
+        0px 0px 3px 3px rgb(0, 210, 0, 0.2);
+    }
+  }
+
+  @keyframes animation-status-circle-danger {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.18);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}

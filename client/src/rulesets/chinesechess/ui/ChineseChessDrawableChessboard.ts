@@ -196,7 +196,7 @@ export default class ChineseChessDrawableChessboard
       context.moveTo(grid.x + x1, grid.y + y1);
       context.lineTo(grid.x + x2, grid.y + y2);
       context.closePath();
-      context.strokeStyle = color || '#8b622d';
+      context.strokeStyle = color || '#b2805b';
       context.stroke();
     };
 
