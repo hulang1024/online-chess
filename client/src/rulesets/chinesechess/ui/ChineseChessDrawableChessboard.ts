@@ -52,6 +52,8 @@ export default class ChineseChessDrawableChessboard
     const drawBackground = () => {
       const isDark = configManager.get(ConfigItem.theme) == 'dark';
       this.el.classList[isDark ? 'add' : 'remove']('dark');
+      // eslint-disable-next-line
+      this.el.classList.add(`${screen.name}-screen`);
     };
     drawBackground();
     configManager.changed.add((key: string) => {

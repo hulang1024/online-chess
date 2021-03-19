@@ -4,11 +4,9 @@ import StatusCircle from "./StatusCircle";
 export default class StatusCirclePool {
   private chessboard: ChineseChessDrawableChessboard;
 
-  private array: StatusCircle[] = [];
+  private notUsedArray: StatusCircle[] = [];
 
   private usedArray: StatusCircle[] = [];
-
-  private countGet = 0;
 
   constructor(chessboard: ChineseChessDrawableChessboard) {
     this.chessboard = chessboard;
@@ -16,11 +14,11 @@ export default class StatusCirclePool {
     this.grow();
   }
 
-  public get() {
-    if (this.countGet + 1 > this.array.length) {
+  public getNotUsed() {
+    if (this.notUsedArray.length <= 1) {
       this.grow();
     }
-    return this.array[this.countGet++];
+    return this.notUsedArray.pop() as StatusCircle;
   }
 
   public markAsUsed(statusCircle: StatusCircle, used: boolean) {
@@ -28,17 +26,18 @@ export default class StatusCirclePool {
       this.usedArray.push(statusCircle);
     } else {
       this.usedArray = this.usedArray.filter((item) => item != statusCircle);
+      this.notUsedArray.push(statusCircle);
     }
   }
 
-  public getUsed() {
+  public getUsedArray() {
     return this.usedArray;
   }
 
   private grow() {
     for (let n = 0; n < 10; n++) {
       const statusCircle = new StatusCircle(this.chessboard);
-      this.array.push(statusCircle);
+      this.notUsedArray.push(statusCircle);
       this.chessboard.el.appendChild(statusCircle.el);
     }
   }

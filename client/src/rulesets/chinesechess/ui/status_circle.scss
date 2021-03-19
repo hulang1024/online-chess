@@ -1,17 +1,23 @@
 .chinesechess-chessboard {
+
   .status-circle {
     position: absolute;
     border-radius: 100%;
     border: 2px solid;
     opacity: 0;
+    transition: opacity 0.1s ease-out;
+    animation-play-state: paused;
     z-index: 2;
     box-sizing: border-box;
     pointer-events: none;
-    transition: opacity 0.2s ease-out;
 
     &.show {
       opacity: 1;
+    }
+
+    &.play {
       animation: animation-status-circle-danger 2s linear infinite;
+      animation-play-state: running;
     }
 
     &.danger {
@@ -28,7 +34,11 @@
         0px 0px 3px 3px rgb(0, 210, 0, 0.2);
     }
   }
-
+  &.xs-screen {
+    .status-circle {
+      border-width: 1.5px;
+    }
+  }
   @keyframes animation-status-circle-danger {
     0% {
       transform: scale(1);

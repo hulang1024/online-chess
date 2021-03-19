@@ -28,6 +28,7 @@ export default class ChineseChessPlayer extends RulesetPlayer {
       configManager.save();
 
       if (value) {
+        // eslint-disable-next-line
         (this.game as ChineseChessGameRule).chessStatusDisplay.update(this.game.viewChessHost);
       } else {
         (this.game as ChineseChessGameRule).chessStatusDisplay.clear();

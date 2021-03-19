@@ -17,21 +17,27 @@ export default class ChessStatusDisplay {
     this.statusCirclePool = new StatusCirclePool(this.game.getChessboard());
   }
 
-  public update(host: ChessHost) {
+  public async update(host: ChessHost) {
     const chessStatusMap = this.findChessStatusMap(host);
-    this.clear();
+
+    await Promise.all(this.clear());
+
     chessStatusMap.forEach((status, chess) => {
-      const statusCircle = this.statusCirclePool.get();
-      statusCircle.draw(status, chess.getPos());
+      const statusCircle = this.statusCirclePool.getNotUsed();
       this.statusCirclePool.markAsUsed(statusCircle, true);
+      statusCircle.draw(status, chess.getPos());
+      statusCircle.play();
     });
   }
 
   public clear() {
-    this.statusCirclePool.getUsed().forEach((statusCircle) => {
-      statusCircle.hide();
+    const promises: Promise<void>[] = [];
+    this.statusCirclePool.getUsedArray().forEach((statusCircle) => {
       this.statusCirclePool.markAsUsed(statusCircle, false);
+      // eslint-disable-next-line
+      promises.push(statusCircle.stop());
     });
+    return promises;
   }
 
   public findChessStatusMap(host: ChessHost): Map<Chess, ChessStatus> {

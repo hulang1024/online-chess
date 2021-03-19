@@ -52,6 +52,9 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       if (this.fromPosTargetDrawer?.getSavePos()) {
         this.fromPosTargetDrawer.draw(this.fromPosTargetDrawer.getSavePos());
       }
+      if (configManager.get(ConfigItem.chinesechessChessStatus)) {
+        this.chessStatusDisplay.clear();
+      }
     });
     playfield.el.appendChild(this.drawableEatJudgement.el);
     playfield.el.appendChild(this.drawableCheckmateJudgement.el);
@@ -84,6 +87,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
         this.chessboard.addChess(new DrawableChess(chess, this.chessboard.bounds.chessRadius));
       });
       if (configManager.get(ConfigItem.chinesechessChessStatus)) {
+        // eslint-disable-next-line
         this.chessStatusDisplay.update(this.viewChessHost);
       }
     } else {
@@ -176,6 +180,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       }
 
       if (configManager.get(ConfigItem.chinesechessChessStatus)) {
+        // eslint-disable-next-line
         this.chessStatusDisplay.update(this.viewChessHost);
       }
     };
@@ -293,6 +298,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
             this.fromPosTargetDrawer.draw(convertedFromPos);
           }
           if (configManager.get(ConfigItem.chinesechessChessStatus)) {
+            // eslint-disable-next-line
             this.chessStatusDisplay.update(this.viewChessHost);
           }
           this.turnActiveChessHost();

@@ -10,12 +10,20 @@ export enum ChessStatus {
 export default class StatusCircle {
   public el: HTMLDivElement;
 
+  public status: ChessStatus;
+
+  public pos: ChessPos;
+
   public chessboard: DrawableChessboard;
+
+  private radius: number;
+
+  private onAnimationCancel: () => void;
 
   constructor(chessboard: DrawableChessboard) {
     this.chessboard = chessboard;
-    const radius = chessboard.bounds.chessRadius + 2;
-    const size = radius * 2;
+    this.radius = chessboard.bounds.chessRadius + 2;
+    const size = this.radius * 2;
     const el = document.createElement('div');
     el.classList.add('status-circle');
     el.style.width = `${size}px`;
@@ -24,15 +32,26 @@ export default class StatusCircle {
   }
 
   public draw(status: ChessStatus, pos: ChessPos) {
+    this.status = status;
+    this.pos = pos;
     const { el } = this;
     const { x, y } = this.chessboard.calcChessDisplayPos(pos);
-    const radius = this.chessboard.bounds.chessRadius + 2;
-    el.style.left = `${x - radius}px`;
-    el.style.top = `${y - radius}px`;
-    this.el.classList.add(status == ChessStatus.danger ? 'danger' : 'eatable', 'show');
+    el.style.left = `${x - this.radius}px`;
+    el.style.top = `${y - this.radius}px`;
+    this.el.classList.add(status == ChessStatus.danger ? 'danger' : 'eatable');
   }
 
-  public hide() {
-    this.el.classList.remove('show');
+  public play() {
+    this.el.classList.add('show', 'play');
+  }
+
+  public stop(): Promise<void> {
+    this.el.classList.remove('show', 'danger', 'eatable', 'play');
+    this.el.removeEventListener('animationcancel', this.onAnimationCancel);
+    return new Promise((resolve) => {
+      this.el.addEventListener('animationcancel', this.onAnimationCancel = () => {
+        resolve();
+      });
+    });
   }
 }
