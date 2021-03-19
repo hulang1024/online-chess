@@ -458,8 +458,8 @@ export default defineComponent({
 
 .controls
   padding: 8px
-  width: 380px
-  min-width: 380px
+  width: 366px
+  min-width: 366px
   display: flex
   flex-direction: column
   min-height: inherit
@@ -471,7 +471,7 @@ export default defineComponent({
       padding-left: 8px
       width: 49%
       border-radius: 4px
-      box-shadow: 1px 1px 6px 0px rgb(0, 0, 0, 0.1)
+      box-shadow: 1px 1px 4px 0px rgb(0, 0, 0, 0.1)
 
     &:not(.dark)
       .game-user-panel

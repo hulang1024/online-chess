@@ -34,7 +34,18 @@
             :is-ready="ready"
             class="info-overlay absolute-center"
           />
+          <div
+            v-show="emojiShow"
+            class="emoji-background absolute-center"
+          />
         </user-avatar>
+        <div
+          ref="emojiRef"
+          class="emoji absolute-center"
+          :class="{show: emojiShow}"
+        >
+          <span>{{ emoji }}</span>
+        </div>
         <div
           v-show="user && (status == UserStatus.AFK || !online)"
           :class="['user-status', `absolute-bottom-${reverse ? 'right' : 'left'}`]"
@@ -57,8 +68,10 @@
         </div>
         <div
           v-if="$q.screen.xs && config.chessColor"
-          class="chess"
-          :class="reverse ? 'absolute-top-right' : 'absolute-top-left'"
+          :class="[
+            'chess',
+            reverse ? 'absolute-top-right' : 'absolute-top-left'
+          ]"
           :style="{backgroundColor: config.chessColor}"
         />
       </div>
@@ -76,7 +89,7 @@
       </div>
       <div
         v-if="!$q.screen.xs && config.chessColor"
-        class="chess"
+        :class="['chess', {active}]"
         :style="{backgroundColor: config.chessColor}"
       />
     </div>
@@ -191,12 +204,32 @@ export default defineComponent({
       }, 200 * 3);
     };
 
+    const emoji = ref('');
+    const emojiShow = ref(false);
+    let emojiTimer: NodeJS.Timeout | null = null;
+
+    const showEmoji = (s: string) => {
+      if (emojiTimer) {
+        clearTimeout(emojiTimer);
+        emojiTimer = null;
+      }
+      emoji.value = s;
+      emojiShow.value = true;
+      emojiTimer = setTimeout(() => {
+        emojiShow.value = false;
+      }, 1500);
+    };
+
     return {
       UserStatus,
       config,
 
       blink,
       blinkState,
+
+      showEmoji,
+      emojiShow,
+      emoji,
 
       onUserAvatarClick,
     };
@@ -276,6 +309,40 @@ export default defineComponent({
     .time
       font-weight: 500
 
+.chess
+  display: inline-block
+  width: 15px
+  height: 15px
+  border-radius: 100%
+  box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.1)
+  transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28)
+
+  &.active
+    transform: scale(1.3)
+
+.emoji-background
+  width: 100%
+  height: 100%
+  background: rgba(0,0,0,0.3)
+  border-radius: inherit
+
+.emoji
+  z-index: 2
+  position: absolute
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.3)
+  text-align: center
+  opacity: 0
+  transition: opacity 0.1s, font-size 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28)
+  font-size: 30px
+
+  span
+    top: 3px
+    position: relative
+
+  &.show
+    opacity: 1
+    font-size: 60px
+
 .xs-screen
   .avatar-time-row
     align-items: center
@@ -286,36 +353,29 @@ export default defineComponent({
     background: rgba(0, 0, 0, 0.2)
     box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1)
     border-radius: 4px
-
-.chess
-  display: inline-block
-  width: 16px
-  height: 16px
-  border-radius: 100%
-  box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.1)
 </style>
 <style>
 @keyframes animation-user-avatar-frame-active-light {
   0% {
-    box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.3)
+    box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.5)
   }
   50% {
-    box-shadow: 0px 0px 4px 6px rgba(255, 241, 118, 0.8)
+    box-shadow: 0px 0px 4px 5px rgba(255, 241, 118, 1)
   }
   100% {
-    box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.3)
+    box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.5)
   }
 }
 
 @keyframes animation-user-avatar-frame-active-dark {
   0% {
-    box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.3)
+    box-shadow: 0px 0px 1px 1px rgba(251, 192, 45, 0.3)
   }
   50% {
-    box-shadow: 0px 0px 4px 6px rgba(255, 241, 118, 1)
+    box-shadow: 0px 0px 4px 5px rgba(251, 192, 45, 1)
   }
   100% {
-    box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.3)
+    box-shadow: 0px 0px 1px 1px rgba(251, 192, 45, 0.3)
   }
 }
 </style>

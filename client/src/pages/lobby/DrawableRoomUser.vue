@@ -3,6 +3,8 @@
     <user-avatar
       :user="user"
       size="28px"
+      rounded
+      class="shadow-1"
     />
     <span
       class="nickname ellipsis"

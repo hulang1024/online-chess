@@ -108,10 +108,19 @@ export function usePlayerStates(player: Player) {
   channelManager.currentChannel.addAndRunOnce((channel: Channel) => {
     if (channel.type == ChannelType.ROOM) {
       channel.newMessagesArrived.add((messages: Message[]) => {
-        if (messages[0].sender.id == api.localUser.id) {
+        const message = messages[messages.length - 1];
+        if (message.sender.id == api.localUser.id
+          || (new Date().getTime() - message.timestamp) > 4000) {
           return;
         }
-        unreadMessageCount.value = channel.getUnreadMessages().length;
+        const excludeEmojiUserIds = [];
+        if (viewUser.user) {
+          excludeEmojiUserIds.push(viewUser.user.id);
+        }
+        if (otherUser.user) {
+          excludeEmojiUserIds.push(otherUser.user.id);
+        }
+        unreadMessageCount.value = channel.getUnreadMessages(excludeEmojiUserIds).length;
       });
     }
   });

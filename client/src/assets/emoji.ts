@@ -10,7 +10,7 @@ function csvToArray(csv: string) {
   return csv.split(',');
 }
 
-const emojiMap = {
+const emojiMap: {[key: string]: string[]} = {
   // 黄脸
   yellowFace: code2ToArray('😁😂😃😄👿😉😊☺️😌😍😏😒😓😔😖😘😚😜😝😞😠😡😢😣😥😨😪😭😰😱😲😳😷🙃😋😗😛🤑🤓😎🤗🙄🤔😩😤🤐🤒😴😀😆😅😇🙂😙😟😕🙁☹️😫😶😐😑😯😦😧😮😵😬🤕😈👻🥺🥴🤣🥰🤩🤤🤫🤪🧐🤬🤧🤭🤠🤯🤥🥳🤨🤢🤡🤮🥵🥶💩☠️💀👽👾👺👹🤖'),
   // 动物
@@ -24,5 +24,14 @@ const emojiMap = {
   // 节日
   festival: csvToArray('🎉,🎊,✨,🎈,🎁,🎃,🎄,🛶,🐲,⛄,☃️,🎅🏻'),
 };
+
+export function existsEmoji(str: string) {
+  for (let keys = Object.keys(emojiMap), i = 0; i < keys.length; i++) {
+    if (emojiMap[keys[i]].includes(str)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 export default emojiMap;

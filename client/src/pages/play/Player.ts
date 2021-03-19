@@ -12,6 +12,8 @@ import ResponseGameStates, { ResponseGameStateTimer } from 'src/rulesets/online/
 import BindableBool from 'src/utils/bindables/BindableBool';
 import { onBeforeUnmount, onMounted } from '@vue/composition-api';
 import { api, channelManager, userActivityClient } from 'src/boot/main';
+import Message from 'src/online/chat/Message';
+import { existsEmoji } from 'src/assets/emoji';
 import UserStatus from 'src/user/UserStatus';
 import ChessHost from 'src/rulesets/chess_host';
 import Playfield from 'src/pages/play/Playfield';
@@ -177,6 +179,25 @@ export default class Player extends GameplayClient {
       channel.lastReadId = initialGameStates ? null : channel.lastMessageId;
       // eslint-disable-next-line
       (playerView.$refs.chatPanel as any)?.loadChannel(channel);
+      channel.newMessagesArrived.add((messages: Message[]) => {
+        const message = messages[messages.length - 1];
+        if (!(message.content.length <= 4 && existsEmoji(message.content)
+          && (new Date().getTime() - message.timestamp) < 4000)) {
+          return;
+        }
+        const viewGameUserPanel = playerView.$refs.viewGameUserPanel as Vue;
+        const otherGameUserPanel = playerView.$refs.otherGameUserPanel as Vue;
+        // eslint-disable-next-line
+        if ((viewGameUserPanel as any).user.id == message.sender.id) {
+          // eslint-disable-next-line
+          (viewGameUserPanel as any).showEmoji(message.content);
+        }
+        // eslint-disable-next-line
+        if ((otherGameUserPanel as any).user.id == message.sender.id) {
+          // eslint-disable-next-line
+          (otherGameUserPanel as any).showEmoji(message.content);
+        }
+      });
 
       if (this.gameState.value == GameState.PAUSE) {
         this.showText('对局暂停中，等待对手回来继续');

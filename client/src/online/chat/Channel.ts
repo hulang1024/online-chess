@@ -1,3 +1,4 @@
+import { existsEmoji } from "src/assets/emoji";
 import Signal from "src/utils/signals/Signal";
 import User from "../../user/User";
 import BindableBool from "../../utils/bindables/BindableBool";
@@ -85,8 +86,10 @@ export default class Channel {
     this.pendingMessageResolved.dispatch(echo, final);
   }
 
-  public getUnreadMessages() {
-    return this.messages.filter((m) => m.id > 0
+  public getUnreadMessages(excludeEmojiUserIds: number[]) {
+    return this.messages.filter((m) => m.sender.id > 0
+      && (!(m.content.length <= 4 && existsEmoji(m.content))
+        || !excludeEmojiUserIds.includes(m.sender.id))
       && (this.lastReadId == null || this.lastReadId < m.id));
   }
 
