@@ -10,10 +10,6 @@ export enum ChessStatus {
 export default class StatusCircle {
   public el: HTMLDivElement;
 
-  public status: ChessStatus;
-
-  public pos: ChessPos;
-
   public chessboard: DrawableChessboard;
 
   private radius: number;
@@ -32,12 +28,11 @@ export default class StatusCircle {
   }
 
   public draw(status: ChessStatus, pos: ChessPos) {
-    this.status = status;
-    this.pos = pos;
     const { el } = this;
     const { x, y } = this.chessboard.calcChessDisplayPos(pos);
     el.style.left = `${x - this.radius}px`;
     el.style.top = `${y - this.radius}px`;
+    this.el.classList.remove('danger', 'eatable');
     this.el.classList.add(status == ChessStatus.danger ? 'danger' : 'eatable');
   }
 
@@ -46,7 +41,7 @@ export default class StatusCircle {
   }
 
   public stop(): Promise<void> {
-    this.el.classList.remove('show', 'danger', 'eatable', 'play');
+    this.el.classList.remove('show', 'play');
     this.el.removeEventListener('animationcancel', this.onAnimationCancel);
     return new Promise((resolve) => {
       this.el.addEventListener('animationcancel', this.onAnimationCancel = () => {
