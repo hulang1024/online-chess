@@ -18,10 +18,9 @@ export default class ChessStatusDisplay {
   }
 
   public async update(host: ChessHost) {
-    const chessStatusMap = this.findChessStatusMap(host);
-
+    // 多动画同步
     await Promise.all(this.clear());
-
+    const chessStatusMap = this.findChessStatusMap(host);
     chessStatusMap.forEach((status, chess) => {
       const statusCircle = this.statusCirclePool.getNotUsed();
       this.statusCirclePool.markAsUsed(statusCircle, true);
