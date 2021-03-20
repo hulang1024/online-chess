@@ -236,8 +236,11 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     if (fromPos) {
       this.fromPosTargetDrawer.draw(ChessPos.reverseView(fromPos));
     }
-
     this.viewChessHost = ChessHost.reverse(this.viewChessHost);
+    if (configManager.get(ConfigItem.chinesechessChessStatus)) {
+      // eslint-disable-next-line
+      this.chessStatusDisplay.update(this.viewChessHost);
+    }
   }
 
   /** 悔棋 */

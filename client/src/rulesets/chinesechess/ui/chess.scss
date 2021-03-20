@@ -31,7 +31,9 @@ $black: #443322;
     &.overlay {
       z-index: 3;
       > .side {
-        box-shadow: 8px 8px 2px 0px rgb(0, 0, 0, 0.25);
+        box-shadow:
+          0px 2px 0px 0px #f0c175,
+          4px 10px 2px 2px rgb(0, 0, 0, 0.25);
       }
     }
 
@@ -40,10 +42,14 @@ $black: #443322;
     &.selected > .side:before {
       position: absolute;
       content: ' ';
-      width: calc(100% + 4px);
-      height: calc(100% + 4px);
-      border: 1px solid #fff;
+      width: calc(100% + 8px);
+      height: calc(100% + 8px);
+      border: 2px solid #fff;
       border-radius: 2px;
+    }
+
+    &.selected > .side:before {
+      animation: animation-chess-selected 1.5s linear infinite;
     }
 
     > .front,
@@ -58,7 +64,10 @@ $black: #443322;
       border-radius: 100%;
       text-align: center;
       background-color: #f8e2bf;
-      box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.25);
+      box-shadow:
+        0px 2px 0px 0px #f0c175,
+        1px 4px 2px 2px rgba(0, 0, 0, 0.25);
+      
       backface-visibility: hidden; 
       transform-style: preserve-3d;
       transition: transform 0.1s, box-shadow 0.05s ease-out;
@@ -99,5 +108,17 @@ $black: #443322;
     border-radius: 2px;
     transform: rotate(45deg);
     z-index: 1;
+  }
+}
+
+@keyframes animation-chess-selected {
+  0% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.2;
   }
 }
