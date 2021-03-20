@@ -147,11 +147,11 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
       context.moveTo(x, gridMargin);
       context.lineTo(x, canvasSize - gridMargin);
     }
-    context.strokeStyle = '#333';
+    context.strokeStyle = '#8b4a0b';
     context.stroke();
 
     // 画圆点
-    context.fillStyle = "#444";
+    context.fillStyle = "#8b4a0b";
     const start = this.gridNumber < 11 ? 2 : 3;
     const quarter = Math.floor((this.gridNumber - start * 2) / 2);
     const posArray = [];

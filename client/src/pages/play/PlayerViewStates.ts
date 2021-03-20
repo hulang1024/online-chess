@@ -113,14 +113,8 @@ export function usePlayerStates(player: Player) {
           || (new Date().getTime() - message.timestamp) > 4000) {
           return;
         }
-        const excludeEmojiUserIds = [];
-        if (viewUser.user) {
-          excludeEmojiUserIds.push(viewUser.user.id);
-        }
-        if (otherUser.user) {
-          excludeEmojiUserIds.push(otherUser.user.id);
-        }
-        unreadMessageCount.value = channel.getUnreadMessages(excludeEmojiUserIds).length;
+
+        unreadMessageCount.value = channel.getUnreadMessages().length;
       });
     }
   });

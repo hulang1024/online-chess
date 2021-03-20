@@ -22,7 +22,7 @@
       />
       <q-btn
         icon="check"
-        text-color="light-green"
+        text-color="lime-14"
         class="ok"
         @click="onOkClick()"
       />
@@ -68,7 +68,7 @@ export default defineComponent({
 
 .gamepad >>> button {
   padding: 2px;
-  background: rgb(29, 29, 29, 0.7) !important;
+  background: rgb(29, 29, 29, 0.6) !important;
 }
 
 .gamepad >>> button:not(.ok) {
@@ -76,9 +76,9 @@ export default defineComponent({
 }
 
 .gamepad >>> i {
-  font-weight: bold;
-  font-size: 2em;
-  text-shadow: 1px 1px 2px rgb(29, 29, 29, 0.7);
+  font-weight: bolder;
+  font-size: 2.4em;
+  text-shadow: 0px 0px 4px rgb(29, 29, 29, 0.7);
 }
 
 .gamepad >>> button.ok i:active {

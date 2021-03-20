@@ -1,0 +1,53 @@
+.gobang-chessboard {
+  .chess-target {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    z-index: 3;
+    border-radius: 100%;
+    border: 2px dashed;
+    pointer-events: none;
+    transform: scale(0.8);
+    opacity: 0;
+    background-clip: content-box;
+    box-sizing: border-box;
+    transition: opacity 0.2s, transform 0.2s ease-out;
+    animation: chess-target-rotate 12s linear infinite forwards;
+    animation-play-state: paused;
+
+    &::after {
+      content: "";
+      width: 40%;
+      height: 40%;
+      max-width: 12px;
+      max-height: 12px;
+      border-radius: 100%;
+    }
+
+    &.show {
+      transform: scale(1);
+      opacity: 1;
+      animation-play-state: running;
+    }
+
+    &.black {
+      border-color: #111;
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    &.white {
+      border-color:#fff;
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+@keyframes chess-target-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

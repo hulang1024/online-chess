@@ -188,12 +188,12 @@ export default class Player extends GameplayClient {
         const viewGameUserPanel = playerView.$refs.viewGameUserPanel as Vue;
         const otherGameUserPanel = playerView.$refs.otherGameUserPanel as Vue;
         // eslint-disable-next-line
-        if ((viewGameUserPanel as any).user.id == message.sender.id) {
+        if ((viewGameUserPanel as any).user?.id == message.sender.id) {
           // eslint-disable-next-line
           (viewGameUserPanel as any).showEmoji(message.content);
         }
         // eslint-disable-next-line
-        if ((otherGameUserPanel as any).user.id == message.sender.id) {
+        if ((otherGameUserPanel as any).user?.id == message.sender.id) {
           // eslint-disable-next-line
           (otherGameUserPanel as any).showEmoji(message.content);
         }

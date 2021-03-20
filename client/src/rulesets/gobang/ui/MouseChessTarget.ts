@@ -1,7 +1,7 @@
 import ChessHost from 'src/rulesets/chess_host';
 import ChessPos from 'src/rulesets/gobang/ChessPos';
 import GobangDrawableChessboard from './GobangDrawableChessboard';
-import './chess.scss';
+import './mouse_chess_target.scss';
 
 export default class MouseChessTarget {
   private el: HTMLElement;
@@ -30,12 +30,13 @@ export default class MouseChessTarget {
     this.el.style.display = 'block';
     el.classList.add('show');
 
-    const { cellSize, gridStart } = this.chessboard.sizes;
-    const cellRadius = Math.round(cellSize / 2);
-    el.style.width = `${cellSize}px`;
-    el.style.height = `${cellSize}px`;
-    el.style.top = `${pos.row * cellSize + gridStart - cellRadius}px`;
-    el.style.left = `${pos.col * cellSize + gridStart - cellRadius}px`;
+    const { cellSize, gap, gridStart } = this.chessboard.sizes;
+    const size = cellSize - gap;
+    el.style.width = `${size}px`;
+    el.style.height = `${size}px`;
+    const radius = Math.round(size / 2);
+    el.style.top = `${pos.row * cellSize + gridStart - radius}px`;
+    el.style.left = `${pos.col * cellSize + gridStart - radius}px`;
   }
 
   public hide(instant = false) {
