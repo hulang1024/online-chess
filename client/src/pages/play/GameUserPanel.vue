@@ -16,7 +16,6 @@
             : $q.dark.isActive ? 'light' : 'dark'
         ]"
         :blink="blinkState"
-        :color="config.timerColor"
       >
         <user-avatar
           :user="user"
@@ -66,14 +65,19 @@
           <span class="label">局时</span>
           <timer ref="gameTimer" />
         </div>
-        <div
-          v-if="$q.screen.xs && config.chessColor"
-          :class="[
-            'chess',
-            reverse ? 'absolute-top-right' : 'absolute-top-left'
-          ]"
-          :style="{backgroundColor: config.chessColor}"
-        />
+        <template v-if="$q.screen.xs">
+          <!-- todo: 消除硬编码 -->
+          <chess-king-icon
+            v-if="[1, 3].includes(gameType)"
+            :chess="chess"
+            :class="['chess', reverse ? 'absolute-right center' : 'absolute-left center']"
+          />
+          <pure-chess-icon
+            v-else
+            :chess="chess"
+            :class="['chess', reverse ? 'absolute-right center' : 'absolute-left center']"
+          />
+        </template>
       </div>
     </div>
     <div
@@ -87,23 +91,33 @@
       >
         {{ user && user.nickname }}
       </div>
-      <div
-        v-if="!$q.screen.xs && config.chessColor"
-        :class="['chess', {active}]"
-        :style="{backgroundColor: config.chessColor}"
-      />
+      <template v-if="!$q.screen.xs">
+        <!-- todo: 消除硬编码 -->
+        <chess-king-icon
+          v-if="[1, 3].includes(gameType)"
+          :chess="chess"
+          :class="['chess', {active}]"
+        />
+        <pure-chess-icon
+          v-else
+          :chess="chess"
+          :class="['chess', {active}]"
+        />
+      </template>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import {
-  computed, defineComponent, getCurrentInstance, PropType, ref,
+  defineComponent, getCurrentInstance, PropType, ref,
 } from "@vue/composition-api";
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import User from "src/user/User";
 import UserStatus from "src/user/UserStatus";
 import ChessHost from "src/rulesets/chess_host";
+import ChessKingIcon from "src/rulesets/chinesechess/ui/ChessKingIcon.vue";
+import PureChessIcon from "src/rulesets/gobang/ui/PureChessIcon.vue";
 import { GameType } from "src/rulesets/GameType";
 import Timer from "../../rulesets/ui/timer/Timer.vue";
 import ReadyStatusDisplay from "./ReadyStatusDisplay.vue";
@@ -113,6 +127,8 @@ export default defineComponent({
     UserAvatar,
     Timer,
     ReadyStatusDisplay,
+    ChessKingIcon,
+    PureChessIcon,
   },
   props: {
     user: Object as PropType<User>,
@@ -128,64 +144,6 @@ export default defineComponent({
   inject: ['showUserDetails'],
   setup(props) {
     const context = getCurrentInstance() as Vue;
-
-    const config = computed(() => {
-      const GAME_TYPE_CONFIG_MAP = {
-        [GameType.chinesechess]: {
-          chessColor: {
-            [ChessHost.FIRST]: 'red',
-            [ChessHost.SECOND]: 'black',
-          },
-          chessName: {
-            [ChessHost.FIRST]: '红',
-            [ChessHost.SECOND]: '黑',
-          },
-          timerColor: null,
-          showChess: false,
-        },
-        [GameType.chinesechessDark]: {
-          chessColor: {
-            [ChessHost.FIRST]: 'red',
-            [ChessHost.SECOND]: 'black',
-          },
-          chessName: {
-            [ChessHost.FIRST]: '红',
-            [ChessHost.SECOND]: '黑',
-          },
-          timerColor: null,
-          showChess: false,
-        },
-        [GameType.gobang]: {
-          chessColor: {
-            [ChessHost.FIRST]: 'black',
-            [ChessHost.SECOND]: 'white',
-          },
-          chessName: {
-            [ChessHost.FIRST]: '黑',
-            [ChessHost.SECOND]: '白',
-          },
-          timerColor: {
-            [ChessHost.FIRST]: context.$q.dark.isActive ? 'black' : 'light-green',
-            [ChessHost.SECOND]: context.$q.dark.isActive ? 'white' : 'light-green',
-          },
-          showChess: true,
-        },
-      };
-
-      const cfg = GAME_TYPE_CONFIG_MAP[props.gameType as GameType];
-      const chessColor = cfg.chessColor[props.chess as ChessHost];
-      const timerColor = cfg.timerColor
-        ? cfg.timerColor[props.chess as ChessHost]
-        : chessColor;
-      return {
-        timerColor: ((props.user && props.active)
-          ? timerColor
-          : 'transparent'),
-        chessName: props.user && cfg.chessName[props.chess as ChessHost],
-        showChess: cfg.showChess,
-        chessColor: (props.user && cfg.showChess) ? chessColor : null,
-      };
-    });
 
     const onUserAvatarClick = () => {
       if (!props.user) {
@@ -222,7 +180,6 @@ export default defineComponent({
 
     return {
       UserStatus,
-      config,
 
       blink,
       blinkState,
@@ -310,11 +267,6 @@ export default defineComponent({
       font-weight: 500
 
 .chess
-  display: inline-block
-  width: 15px
-  height: 15px
-  border-radius: 100%
-  box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.1)
   transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28)
 
   &.active
@@ -348,11 +300,17 @@ export default defineComponent({
     align-items: center
 
   .time-panel
-    min-width: 120px
+    min-width: 140px
     padding: 2px 4px
     background: rgba(0, 0, 0, 0.2)
     box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1)
     border-radius: 4px
+
+.center
+  &.absolute-right,
+  &.absolute-left
+    top: 50%
+    transform: translateY(-50%)
 </style>
 <style>
 @keyframes animation-user-avatar-frame-active-light {

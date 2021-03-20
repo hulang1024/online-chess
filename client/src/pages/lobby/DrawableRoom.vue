@@ -21,20 +21,24 @@
         />
       </div>
     </q-card-section>
-    <q-card-section
-      horizontal
-      class="row justify-between q-pb-sm q-px-md"
-    >
-      <drawable-room-user
-        v-if="gameUsers[0]"
-        :game-user="gameUsers[0]"
-      />
-      <drawable-room-user
-        v-if="gameUsers[1]"
-        :game-user="gameUsers[1]"
-        :reverse="!!(gameUsers.length == 2)"
-      />
-    </q-card-section>
+    <div class="row justify-center items-center q-pb-xs q-px-xs no-wrap">
+      <room-user-place :reverse="false">
+        <drawable-room-user
+          v-if="gameUsers[0]"
+          :game-user="gameUsers[0]"
+          :game-type="gameType"
+        />
+      </room-user-place>
+      <vs-icon />
+      <room-user-place :reverse="!!gameUsers[1]">
+        <drawable-room-user
+          v-if="gameUsers[1]"
+          :game-user="gameUsers[1]"
+          :game-type="gameType"
+          :reverse="!!gameUsers[1]"
+        />
+      </room-user-place>
+    </div>
   </q-card>
 </template>
 
@@ -47,11 +51,13 @@ import SpectateRoomRequest from 'src/online/spectator/SpectateRoomRequest';
 import { api } from 'src/boot/main';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import { GameType } from 'src/rulesets/GameType';
+import VsIcon from 'src/rulesets/ui/VsIcon.vue';
 import DrawableRoomUser from './DrawableRoomUser.vue';
 import Room from '../../online/room/Room';
+import RoomUserPlace from './RoomUserPlace.vue';
 
 export default defineComponent({
-  components: { DrawableRoomUser },
+  components: { DrawableRoomUser, RoomUserPlace, VsIcon },
   props: {
     room: {
       type: (Object as unknown) as PropType<Room>,
@@ -209,6 +215,7 @@ export default defineComponent({
       ...toRefs(room),
       statusStates,
       gameTypeName,
+      gameType: gameSettings.gameType,
       onClick,
     };
   },
@@ -218,13 +225,15 @@ export default defineComponent({
 <style lang="sass" scoped>
 .q-card
   width: calc(100% - 2px)
-  border-radius: 8px
-  box-shadow: 0px 0px 2px 1px rgb(0, 0, 0, 0.15)
+  border-radius: 6px
+  box-shadow: 0px 2px 4px 2px rgb(0, 0, 0, 0.15)
   border: 1px solid
   transition: all 0.1s ease
   user-select: none
 
   &:hover,
+  &:active
+    opacity: 0.8
   &:active
     box-shadow: none
 </style>

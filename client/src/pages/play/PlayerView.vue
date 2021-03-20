@@ -44,18 +44,18 @@
           class="absolute-center"
           style="z-index: 11;"
         />
-        <result-dialog
-          ref="resultDialog"
-          :show-again="!viewUser.isRoomOwner"
-          class="absolute-center"
-          style="z-index: 11;"
-        />
         <div
           class="absolute-center full-width"
           style="position: absolute; top: calc(50% + 88px); z-index: 11;"
         >
           <slot name="main-overlay" />
         </div>
+        <result-dialog
+          ref="resultDialog"
+          :show-again="!viewUser.isRoomOwner"
+          class="absolute-center"
+          style="z-index: 11;"
+        />
       </playfield>
       <div
         class="fixed-bottom-left"
@@ -188,18 +188,18 @@
           class="absolute-center"
           style="z-index: 11;"
         />
-        <result-dialog
-          ref="resultDialog"
-          :show-again="!viewUser.isRoomOwner"
-          class="absolute-center"
-          style="z-index: 12;"
-        />
         <div
           class="absolute-center full-width"
           style="position: absolute; top: calc(50% + 88px); z-index: 11;"
         >
           <slot name="main-overlay" />
         </div>
+        <result-dialog
+          ref="resultDialog"
+          :show-again="!viewUser.isRoomOwner"
+          class="absolute-center"
+          style="z-index: 12;"
+        />
         <div class="absolute-bottom-right">
           <div class="column justify-evenly q-gutter-y-sm">
             <template v-if="enableGameRuleButtons">
@@ -262,7 +262,7 @@
           />
         </q-card>
         <div
-          class="row user-panels q-gutter-y-xs q-mb-sm"
+          class="relative-position row user-panels q-gutter-y-xs q-mb-sm"
           :class="{reverse, dark: $q.dark.isActive}"
         >
           <game-user-panel
@@ -275,6 +275,7 @@
             v-bind="otherUser"
             :game-type="gameType"
           />
+          <vs-icon class="absolute-center" />
         </div>
         <chat-panel ref="chatPanel" />
         <q-btn-group
@@ -323,6 +324,7 @@ import TextOverlay from 'src/rulesets/ui/TextOverlay.vue';
 import Gamepad from 'src/rulesets/ui/Gamepad.vue';
 import GameUser from 'src/online/play/GameUser';
 import { GameType } from 'src/rulesets/GameType';
+import VsIcon from 'src/rulesets/ui/VsIcon.vue';
 import GameUserPanel from './GameUserPanel.vue';
 import SpectatorCountDisplay from './SpectatorCountDisplay.vue';
 import ChatPanel from './ChatPanel.vue';
@@ -336,6 +338,7 @@ export default defineComponent({
     TextOverlay,
     ChatPanel,
     Gamepad,
+    VsIcon,
   },
   inject: ['reload'],
   props: {
@@ -474,7 +477,7 @@ export default defineComponent({
     .game-user-panel
       padding: 8px
       padding-left: 8px
-      width: 49%
+      width: calc(50% - 4px)
       border-radius: 4px
       box-shadow: 1px 1px 4px 0px rgb(0, 0, 0, 0.1)
 
