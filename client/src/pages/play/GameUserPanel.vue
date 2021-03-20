@@ -77,7 +77,7 @@
       </div>
     </div>
     <div
-      class="row items-center q-mt-sm"
+      class="row items-center"
       :class="{reverse}"
     >
       <div

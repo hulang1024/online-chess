@@ -11,7 +11,7 @@ export default class ChessMoveAnimation {
       dropStart?: (() => void) | null,
       dropEnd: () => void,
     },
-    duration = 200,
+    duration = 180,
     enableAudio = true,
   ) {
     const flipDuration = 150;

@@ -47,6 +47,7 @@
         <result-dialog
           ref="resultDialog"
           :show-again="!viewUser.isRoomOwner"
+          class="absolute-center"
           style="z-index: 11;"
         />
         <div
@@ -61,10 +62,12 @@
         style="padding-left: 12px; padding-bottom: 12px"
       >
         <q-btn
-          icon="menu"
-          round
+          icon="navigation"
           color="white"
           text-color="primary"
+          round
+          push
+          size="16px"
         >
           <q-menu
             transition-show="jump-up"
@@ -152,8 +155,9 @@
           color="white"
           text-color="primary"
           round
+          push
           @click.stop="onChatClick"
-          class="q-ml-lg"
+          class="q-ml-md"
         >
           <q-badge
             v-show="unreadMessageCount > 0"
@@ -187,6 +191,7 @@
         <result-dialog
           ref="resultDialog"
           :show-again="!viewUser.isRoomOwner"
+          class="absolute-center"
           style="z-index: 12;"
         />
         <div
