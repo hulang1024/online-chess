@@ -1,6 +1,6 @@
 <template>
   <label v-show="count > 0">
-    观战(<span class="count" :class="{gtzero: count}">{{ count }}</span>)
+    观战:<span class="count" :class="{gtzero: count}">{{ count }}</span>
   </label>
 </template>
 

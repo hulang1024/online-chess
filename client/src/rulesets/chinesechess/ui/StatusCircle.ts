@@ -18,7 +18,7 @@ export default class StatusCircle {
 
   constructor(chessboard: DrawableChessboard) {
     this.chessboard = chessboard;
-    this.radius = chessboard.bounds.chessRadius + 2;
+    this.radius = chessboard.bounds.chessRadius + 3;
     const size = this.radius * 2;
     const el = document.createElement('div');
     el.classList.add('status-circle');

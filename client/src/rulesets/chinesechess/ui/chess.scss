@@ -11,7 +11,8 @@ $black: #443322;
     opacity: 1;
     z-index: 2;
     cursor: default;
-
+    transition: transform 0.1s, box-shadow 0.05s ease-in;
+  
     &.red {
       color: $red;
       border-color: $red;
@@ -22,17 +23,13 @@ $black: #443322;
       border-color: $black;
     }
 
-    &.selectable {
-      cursor: pointer;
-    }
-
-
     &.selected,
     &.overlay {
       z-index: 3;
+      transform: scale(1.1);
       > .side {
         box-shadow:
-          0px 2px 0px 0px #f0c175,
+          0px 2px 0px 0px #e5be80,
           4px 10px 2px 2px rgb(0, 0, 0, 0.25);
       }
     }
@@ -47,10 +44,10 @@ $black: #443322;
       width: calc(100% + 9px);
       height: calc(100% + 9px);
       box-shadow:
-        0px 0px 4px 1px rgb(255, 255, 255),
-        inset 0px 0px 4px 1px rgba(255, 255, 255, 0.8);
+        0px 0px 5px 1px rgb(255, 255, 255),
+        inset 0px 0px 5px 1px rgba(255, 255, 255, 0.8);
       border-radius: 100%;
-      transform: translateY(1px);
+      transform: translateY(1.5px);
     }
 
     &.selectable > .side:hover:before,
@@ -80,7 +77,7 @@ $black: #443322;
       text-align: center;
       background-color: #f8e2bf;
       box-shadow:
-        0px 2px 0px 0px #f0c175,
+        0px 2px 0px 0px #e5be80,
         1px 4px 2px 2px rgba(0, 0, 0, 0.25);
       
       backface-visibility: hidden; 
@@ -119,8 +116,8 @@ $black: #443322;
   }
 
   .chess-target {
-    background-color: rgb(255, 255, 255, 0.8);
-    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.2);
+    background-color: rgb(255, 255, 255, 0.7);
+    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.15);
     border-radius: 100%;
     z-index: 1;
   }

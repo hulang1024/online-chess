@@ -54,7 +54,7 @@ import Channel from 'src/online/chat/Channel';
 import ChannelType from 'src/online/chat/ChannelType';
 import InfoMessage from 'src/online/chat/InfoMessage';
 import Message from 'src/online/chat/Message';
-import User from 'src/user/User';
+import User, { isSystemUser } from 'src/user/User';
 import ChatInputBox from './ChatInputBox.vue';
 import DrawableChannel from './DrawableChannel.vue';
 
@@ -89,7 +89,7 @@ export default defineComponent({
       channel.newMessagesArrived.add((messages: Message[]) => {
         const last = messages[messages.length - 1];
         // 系统用户发送的消息
-        if (last.sender.id == 0 || (last.sender.id < 0 && last.sender.id > -100)) {
+        if (isSystemUser(last.sender)) {
           return;
         }
 

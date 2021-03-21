@@ -38,7 +38,7 @@ export default defineComponent({
   user-select: none;
   background: #f8e2bf;
   box-shadow:
-    0px 2px 0px 0px #f0c175,
+    0px 2px 0px 0px #e5be80,
     0px 2px 3px 1px rgb(0, 0, 0, 0.3);
 
   .circle {

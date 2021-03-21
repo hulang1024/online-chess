@@ -34,7 +34,12 @@ export default class User {
   }
 }
 
-const user = new User(0);
-user.nickname = '系统';
+User.SYSTEM = (() => {
+  const user = new User(0);
+  user.nickname = '系统';
+  return user;
+})();
 
-User.SYSTEM = user;
+export function isSystemUser(user: User) {
+  return user.id == 0 || (user.id < 0 && user.id > -100);
+}

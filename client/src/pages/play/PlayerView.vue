@@ -57,10 +57,7 @@
           style="z-index: 11;"
         />
       </playfield>
-      <div
-        class="fixed-bottom-left"
-        style="padding-left: 12px; padding-bottom: 12px"
-      >
+      <div class="fixed-bottom-left">
         <q-btn
           icon="navigation"
           color="white"
@@ -275,7 +272,7 @@
             v-bind="otherUser"
             :game-type="gameType"
           />
-          <vs-icon class="absolute-center" />
+          <vs-icon :animated="isPlaying" class="absolute-center" />
         </div>
         <chat-panel ref="chatPanel" />
         <q-btn-group
@@ -457,12 +454,16 @@ export default defineComponent({
 
 .xs-screen
   .fixed-bottom-right
-    margin-right: 12px
-    margin-bottom: 12px
+    padding-right: 8px
+    padding-bottom: 8px
+
+  .fixed-bottom-left
+    padding-left: 8px
+    padding-bottom: 8px
 
   .absolute-top-left
-    margin-left: 12px
-    padding-top: 12px
+    padding-left: 8px
+    padding-top: 8px
 
 .controls
   padding: 8px
@@ -479,7 +480,6 @@ export default defineComponent({
       padding-left: 8px
       width: calc(50% - 4px)
       border-radius: 4px
-      box-shadow: 1px 1px 4px 0px rgb(0, 0, 0, 0.1)
 
     &:not(.dark)
       .game-user-panel

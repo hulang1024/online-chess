@@ -1,5 +1,5 @@
 import Signal from "src/utils/signals/Signal";
-import User from "../../user/User";
+import User, { isSystemUser } from "../../user/User";
 import BindableBool from "../../utils/bindables/BindableBool";
 import ChannelType from "./ChannelType";
 import LocalEchoMessage from "./LocalEchoMessage";
@@ -86,7 +86,7 @@ export default class Channel {
   }
 
   public getUnreadMessages() {
-    return this.messages.filter((m) => m.sender.id > 0
+    return this.messages.filter((m) => !isSystemUser(m.sender)
       && (this.lastReadId == null || this.lastReadId < m.id));
   }
 

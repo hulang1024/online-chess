@@ -1,7 +1,7 @@
 <template>
   <div
     class="game-user-panel column no-wrap"
-    :class="[$q.screen.xs && 'xs-screen']"
+    :class="[$q.screen.xs && 'xs-screen', {active}]"
   >
     <div
       class="row justify-between avatar-time-row"
@@ -91,7 +91,7 @@
       >
         {{ user && user.nickname }}
       </div>
-      <template v-if="!$q.screen.xs">
+      <template v-if="user && !$q.screen.xs">
         <!-- todo: 消除硬编码 -->
         <chess-king-icon
           v-if="[1, 3].includes(gameType)"
@@ -195,6 +195,12 @@ export default defineComponent({
 </script>
 
 <style lang="sass" scoped>
+.game-user-panel:not(.xs-screen)
+  box-shadow: 1px 1px 4px 1px rgb(0, 0, 0, 0.05)
+
+  &.active
+    box-shadow: 1px 1px 4px 4px rgb(0, 0, 0, 0.1)
+
 .nickname
   flex-grow: 1
   font-size: 1.1em

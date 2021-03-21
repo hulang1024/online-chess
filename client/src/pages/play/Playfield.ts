@@ -34,7 +34,8 @@ export default class Playfield {
         }
         let height = (pageEl?.parentElement?.offsetHeight || 0) - 36;
         if (isXSScreen) {
-          height -= (70 + 8) * 2;
+          const userCardHeight = 68;
+          height -= (userCardHeight + 8) * 2;
         } else {
           height -= 64;
         }
