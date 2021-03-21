@@ -16,7 +16,7 @@
     }
 
     &.play {
-      animation: animation-status-circle-danger 2s linear infinite;
+      animation: animation-status-circle 2s linear infinite;
       animation-play-state: running;
     }
 
@@ -39,7 +39,8 @@
       border-width: 1.5px;
     }
   }
-  @keyframes animation-status-circle-danger {
+
+  @keyframes animation-status-circle {
     0% {
       transform: scale(1);
     }

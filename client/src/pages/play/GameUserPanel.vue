@@ -235,7 +235,7 @@ export default defineComponent({
 
   .user-status
     padding: 2px 6px
-    background: rgba(0, 0, 0, 0.3)
+    background: rgba(0, 0, 0, 0.4)
     width: 100%
     border-radius: inherit
     border-top-left-radius: 0px

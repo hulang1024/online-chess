@@ -2,10 +2,10 @@
 
 .chinesechess-chessboard {
   border-radius: 5px;
-  background-color: #8b5338;
+  background: #8b5338;
 
   > canvas {
-    background-color: #e3b78a;
+    background: radial-gradient(#e7c29c, #e5bd94, #e5bd94);
     border-radius: inherit;
     box-shadow: 0px 1px 1px 1px rgb(0, 0, 0, 0.1);
   }

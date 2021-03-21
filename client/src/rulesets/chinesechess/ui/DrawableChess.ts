@@ -129,7 +129,8 @@ export default class DrawableChess implements Chess {
   public get x() { return this._el.offsetLeft + this.radius; }
 
   public set y(val: number) {
-    this._el.style.top = `${val - this.radius}px`;
+    const shadowOffset = 2;
+    this._el.style.top = `${val - this.radius - shadowOffset}px`;
   }
 
   public get y() { return this._el.offsetTop + this.radius; }

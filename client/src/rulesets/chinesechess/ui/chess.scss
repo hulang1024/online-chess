@@ -61,7 +61,7 @@ $black: #443322;
     }
 
     &.selected > .side:before {
-      animation: animation-chess-selected 1s linear infinite;
+      animation: animation-chinesechess-chess-selected-focus 1s linear infinite;
     }
 
     > .front,
@@ -123,7 +123,7 @@ $black: #443322;
   }
 }
 
-@keyframes animation-chess-selected {
+@keyframes animation-chinesechess-chess-selected-focus {
   0% {
     opacity: 0.2;
   }
