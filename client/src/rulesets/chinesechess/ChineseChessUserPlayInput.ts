@@ -48,8 +48,12 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
 
     this.goDisplay = new GoDisplay(this.gameRule as ChineseChessGameRule);
 
-    gameState.changed.add(() => {
-      this.lastSelected = null;
+    gameState.changed.add((newGameState: GameState) => {
+      if (newGameState == GameState.PAUSE) {
+        this.goDisplay.clear();
+      } else if (newGameState == GameState.PLAYING && this.lastSelected) {
+        this.goDisplay.update(this.lastSelected);
+      }
     });
     this.gameRule.activeChessHost.changed.add(() => {
       this.lastSelected = null;

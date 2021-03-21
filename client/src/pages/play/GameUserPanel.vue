@@ -196,6 +196,7 @@ export default defineComponent({
 
 <style lang="sass" scoped>
 .game-user-panel:not(.xs-screen)
+  transition: box-shadow 0.1s ease-out
   box-shadow: 1px 1px 4px 1px rgb(0, 0, 0, 0.05)
 
   &.active
@@ -235,9 +236,13 @@ export default defineComponent({
   .user-status
     padding: 2px 6px
     background: rgba(0, 0, 0, 0.3)
+    width: 100%
     border-radius: inherit
+    border-top-left-radius: 0px
+    border-top-right-radius: 0px
     font-size: 12px
     color: #fff
+    text-align: center
 
   .info-overlay
     width: 100%
