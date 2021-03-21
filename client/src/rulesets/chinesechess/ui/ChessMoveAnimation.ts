@@ -1,19 +1,31 @@
 import TWEEN from "tween.ts";
 import DrawableChess from "./DrawableChess";
 import GameAudio from "../../GameAudio";
+import ChessPos from "../rule/ChessPos";
+
+function calcSteps(from: ChessPos, to: ChessPos) {
+  return Math.max(Math.abs(to.col - from.col), Math.abs(to.row - from.row));
+}
 
 export default class ChessMoveAnimation {
   public static make(
     chess: DrawableChess,
+    toPos: ChessPos,
     to: { x: number, y: number },
     events: {
       moveEnd?: (() => void) | null,
       dropStart?: (() => void) | null,
       dropEnd: () => void,
     },
-    duration = 200,
+    instant = false,
     enableAudio = true,
   ) {
+    // 移动一个格子的动画时长
+    const stepDuration = 100;
+    const steps = calcSteps(chess.getPos(), toPos);
+    // 总移动动画时长
+    const duration = instant ? 0 : (steps < 2 ? stepDuration * 2 : stepDuration * steps);
+    // 翻转动画时长
     const flipDuration = 150;
     // todo: 模块化揭棋代码
     // 是否需要翻转棋子

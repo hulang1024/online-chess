@@ -1,7 +1,7 @@
 export default class TimerSettings {
-  gameDuration = 10;
+  gameDuration = 15;
 
-  stepDuration = 60;
+  stepDuration = 90;
 
   secondsCountdown = 10;
 }

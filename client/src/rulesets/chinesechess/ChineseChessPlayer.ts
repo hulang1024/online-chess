@@ -2,36 +2,35 @@ import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
 import RulesetPlayer from "../RulesetPlayer";
 import ChineseChessGameRule from "./ChineseChessGameRule";
+import ChineseChessUserPlayInput from "./ChineseChessUserPlayInput";
+import Settings from './ui/Settings.vue';
 
 export default class ChineseChessPlayer extends RulesetPlayer {
   // eslint-disable-next-line
   public openSettings() {
     this.context.$q.dialog({
-      title: '设置',
-      options: {
-        type: 'toggle',
-        model: configManager.get(ConfigItem.chinesechessChessStatus) as string,
-        items: [
-          { label: '提示' },
-        ],
-      },
-      ok: {
-        label: '确定',
-        color: 'primary',
-      },
-      cancel: {
-        label: '取消',
-        color: 'warning',
-      },
-    }).onOk((value: boolean) => {
-      configManager.set(ConfigItem.chinesechessChessStatus, value);
+      component: Settings,
+    }).onOk(({ chessStatus, goDisplay, chessDraggable }:
+        { chessStatus: boolean, goDisplay: boolean, chessDraggable: boolean }) => {
+      configManager.set(ConfigItem.chinesechessChessStatus, chessStatus);
+      configManager.set(ConfigItem.chinesechessGoDisplay, goDisplay);
+      configManager.set(ConfigItem.chinesechessChessDraggable, chessDraggable);
       configManager.save();
 
-      if (value) {
+      if (chessStatus) {
         // eslint-disable-next-line
         (this.game as ChineseChessGameRule).chessStatusDisplay.update(this.game.viewChessHost);
       } else {
         (this.game as ChineseChessGameRule).chessStatusDisplay.clear();
+      }
+
+      const userPlayInput = this.userPlayInput as ChineseChessUserPlayInput;
+      if (goDisplay) {
+        if (userPlayInput.lastSelected) {
+          userPlayInput.goDisplay.update(userPlayInput.lastSelected);
+        }
+      } else {
+        userPlayInput.goDisplay.clear();
       }
     });
   }

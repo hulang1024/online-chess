@@ -127,7 +127,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     });
   }
 
-  public onChessAction(action: ChessAction, duration?: number) {
+  public onChessAction(action: ChessAction, instant = false) {
     const { chessboard } = this;
     const { chessHost, fromPos, toPos } = action;
 
@@ -161,9 +161,10 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     // 设置棋盘状态
     this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = null;
     this.chessboard.getChessArray()[convertedToPos.row][convertedToPos.col] = chess;
-    chess.setPos(convertedToPos);
 
     const judge = () => {
+      chess.setPos(convertedToPos);
+
       if (this.checkmateJudgement.judge(ChessHost.reverse(action.chessHost))) {
         this.drawableCheckmateJudgement.show(action.chessHost);
       } else if (eatenChess) {
@@ -187,6 +188,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
 
     ChessMoveAnimation.make(
       chess,
+      convertedToPos,
       this.chessboard.calcChessDisplayPos(convertedToPos),
       {
         moveEnd: () => {
@@ -202,7 +204,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
           chess.setLit(true);
         },
       },
-      duration,
+      instant,
     ).start();
 
     this.turnActiveChessHost();
@@ -266,6 +268,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     chess.setLit(false);
     ChessMoveAnimation.make(
       chess,
+      fromPos,
       this.chessboard.calcChessDisplayPos(fromPos),
       {
         dropEnd: () => {
@@ -307,7 +310,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
           this.turnActiveChessHost();
         },
       },
-      200,
+      false,
       false,
     ).start();
 

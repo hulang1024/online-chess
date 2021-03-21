@@ -9,11 +9,14 @@ import DrawableChessboard from "./ui/ChineseChessDrawableChessboard";
 import UserPlayInput from "../UserPlayInput";
 import ChineseChessGameRule from "./ChineseChessGameRule";
 import GameRule from "../GameRule";
+import GoDisplay from "./GoDisplay";
 
 export default class ChineseChessUserPlayInput extends UserPlayInput {
   private chessboard: DrawableChessboard;
 
-  private lastSelected: DrawableChess | null;
+  public goDisplay: GoDisplay;
+
+  public lastSelected: DrawableChess | null;
 
   private gameplayServer = new ChineseChessGameplayServer();
 
@@ -42,6 +45,8 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
     if (isWatchingMode) {
       return;
     }
+
+    this.goDisplay = new GoDisplay(this.gameRule as ChineseChessGameRule);
 
     gameState.changed.add(() => {
       this.lastSelected = null;
@@ -81,6 +86,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
         const chess = this.chessboard.chessAt(fromPos);
         if ((this.gameRule as ChineseChessGameRule).canGoTo(chess, toPos)) {
           this.onUserMoveChess(fromPos, toPos);
+          this.goDisplay.clear();
         }
       }
       return;
@@ -90,12 +96,14 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
       if (!event.chess.selectable) {
         return;
       }
+
       // 并且之前并未选择棋子
       // 现在是选择要走的棋子，只能先选中持棋方棋子
       if (event.chess.getHost() == this.gameRule.activeChessHost.value) {
         this.lastSelected = event.chess;
         this.lastSelected.selected = true;
         this.gameplayServer.pickChess(event.chess.getPos(), true);
+        this.goDisplay.update(event.chess);
       }
       return;
     }
@@ -110,6 +118,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
           chess.selectable = false;
         }
       });
+      this.goDisplay.clear();
       return;
     }
 
@@ -120,6 +129,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
       const chess = this.chessboard.chessAt(fromPos);
       if ((this.gameRule as ChineseChessGameRule).canGoTo(chess, toPos)) {
         this.onUserMoveChess(fromPos, toPos);
+        this.goDisplay.clear();
       }
     } else {
       // 选中了本方的，取消上个选中
@@ -127,6 +137,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
       event.chess.selected = true;
       this.lastSelected = event.chess;
       this.gameplayServer.pickChess(this.lastSelected?.getPos(), true);
+      this.goDisplay.update(event.chess);
     }
   }
 
@@ -150,17 +161,17 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
       if (!isMove && this.chessboard.chessAt(toPos)?.getHost() == chess.getHost()) {
         return;
       }
-      this.onUserMoveChess(chess.getPos(), toPos, 0);
+      this.onUserMoveChess(chess.getPos(), toPos, true);
     }
   }
 
-  private onUserMoveChess(fromPos: ChessPos, toPos: ChessPos, duration?: number) {
+  private onUserMoveChess(fromPos: ChessPos, toPos: ChessPos, instant = false) {
     this.inputDone.dispatch();
     const action = new ChessAction();
     action.fromPos = fromPos;
     action.toPos = toPos;
     action.chessHost = this.localUser.chess.value;
-    (this.gameRule as ChineseChessGameRule).onChessAction(action, duration);
+    (this.gameRule as ChineseChessGameRule).onChessAction(action, instant);
     this.gameplayServer.moveChess(fromPos, toPos);
   }
 }

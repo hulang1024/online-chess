@@ -59,7 +59,7 @@ export default class SpectatorPlayer extends Player {
     super.resultsGameOver(msg);
     const winner = msg.winUserId ? this.getGameUserByUserId(msg.winUserId) as GameUser : null;
     const winnerName = winner?.user.value?.nickname || '';
-    this.showText(msg.winUserId == null ? '平局' : `${winnerName} 赢！`);
+    this.showText(msg.winUserId == null ? '平局' : `${winnerName} 胜！`);
   }
 
   protected resultsConfirmRequest(msg: GameEvents.ConfirmRequestMsg) {

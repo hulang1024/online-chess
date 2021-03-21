@@ -5,6 +5,8 @@ import { chessClassToText } from 'src/rulesets/chinesechess/rule/chess_map';
 import Game from 'src/rulesets/chinesechess/rule/Game';
 import Signal from 'src/utils/signals/Signal';
 import './chess.scss';
+import { configManager } from 'src/boot/main';
+import { ConfigItem } from 'src/config/ConfigManager';
 
 export default class DrawableChess implements Chess {
   private _el: HTMLDivElement;
@@ -31,6 +33,8 @@ export default class DrawableChess implements Chess {
   public readonly chess: Chess;
 
   private radius: number;
+
+  private supportDraggable: boolean;
 
   constructor(chess: Chess, radius: number) {
     this.chess = chess;
@@ -98,6 +102,16 @@ export default class DrawableChess implements Chess {
       this.selected = false;
       this.drop.dispatch();
     };
+
+    this.supportDraggable = configManager.get(ConfigItem.chinesechessChessDraggable) as boolean;
+    configManager.changed.add((key: string, value: boolean) => {
+      if (key == ConfigItem.chinesechessChessDraggable) {
+        this.supportDraggable = value;
+        if (this.selectable) {
+          this.el.draggable = value;
+        }
+      }
+    });
   }
 
   public resizeAndDraw(radius: number) {
@@ -122,7 +136,9 @@ export default class DrawableChess implements Chess {
 
   public set selectable(val: boolean) {
     this._selectable = val;
-    this._el.draggable = val;
+    if (this.supportDraggable) {
+      this._el.draggable = val;
+    }
     this._el.classList[val ? 'add' : 'remove']('selectable');
   }
 

@@ -39,7 +39,7 @@ export default class ChessStatusDisplay {
     return promises;
   }
 
-  public findChessStatusMap(host: ChessHost): Map<Chess, ChessStatus> {
+  private findChessStatusMap(host: ChessHost): Map<Chess, ChessStatus> {
     const found = new Map<Chess, ChessStatus>();
     const chesses = this.game.getChessboard().getChessList();
 

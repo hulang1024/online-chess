@@ -13,6 +13,8 @@ export enum ConfigItem {
   // todo: 待组织
   gobangInputMethod = 'gobang.input_method',
   chinesechessChessStatus = 'chinesechess.chess_status',
+  chinesechessGoDisplay = 'chinesechess.go_display',
+  chinesechessChessDraggable = 'chinesechess.chess_draggable',
 }
 
 export default class ConfigManager {
@@ -31,10 +33,12 @@ export default class ConfigManager {
   public load() {
     if (this.loaded) return;
 
+    // todo: 消除硬编码
     [
       'username', 'password', 'token', 'login_auto',
       'theme', 'audio_volume', 'desktop_notify_enabled',
-      'audio_gameplay_enabled', 'gobang.input_method', 'chinesechess.chess_status',
+      'audio_gameplay_enabled', 'gobang.input_method',
+      'chinesechess.chess_status', 'chinesechess.go_display', 'chinesechess.chess_draggable',
     ].forEach((key) => {
       let val = localStorage.getItem(key);
       if (val == null) {
@@ -75,6 +79,8 @@ export default class ConfigManager {
     this.set(ConfigItem.audioGameplayEnabled, true);
     this.set(ConfigItem.desktopNotifyEnabled, false);
     this.set(ConfigItem.chinesechessChessStatus, true);
+    this.set(ConfigItem.chinesechessGoDisplay, true);
+    this.set(ConfigItem.chinesechessChessDraggable, false);
     this.set(ConfigItem.theme, 'default');
   }
 }
