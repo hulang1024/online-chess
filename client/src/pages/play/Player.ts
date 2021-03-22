@@ -2,6 +2,7 @@ import APIAccess, { APIState } from 'src/online/api/APIAccess';
 import Channel from 'src/online/chat/Channel';
 import ChannelType from 'src/online/chat/ChannelType';
 import ChannelManager from 'src/online/chat/ChannelManager';
+import desktopNotify from 'src/components/notify';
 import GameState from 'src/online/play/GameState';
 import PartRoomRequest from 'src/online/room/PartRoomRequest';
 import SpectateRoomRequest from 'src/online/spectator/SpectateRoomRequest';
@@ -313,6 +314,8 @@ export default class Player extends GameplayClient {
     gameplayClient.connect();
     gameplayClient.userJoined = () => {
       GameAudio.play('room/user_join');
+      // eslint-disable-next-line
+      desktopNotify('有玩家加入房间');
     };
     gameplayClient.userLeft = this.onUserLeft;
 
@@ -404,6 +407,8 @@ export default class Player extends GameplayClient {
 
     GameAudio.play('gameplay/started');
     this.showText(`开始对局`, 1000);
+    // eslint-disable-next-line
+    desktopNotify('对局开始了');
 
     this.game.start(this.localUser.chessHost, msg.initialStates);
     // 因为activeChessHost一般一直是先手，值相同将不能触发，这里手动触发一次

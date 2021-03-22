@@ -243,6 +243,7 @@ export default defineComponent({
     font-size: 12px
     color: #fff
     text-align: center
+    pointer-events: none
 
   .info-overlay
     width: 100%

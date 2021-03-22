@@ -21,10 +21,10 @@ export default class ChessMoveAnimation {
     enableAudio = true,
   ) {
     // 移动一个格子的动画时长
-    const stepDuration = 100;
+    const stepDuration = 50;
     const steps = calcSteps(chess.getPos(), toPos);
     // 总移动动画时长
-    const duration = instant ? 0 : (steps < 2 ? stepDuration * 2 : stepDuration * steps);
+    const duration = instant ? 0 : Math.max(200, stepDuration * steps);
     // 翻转动画时长
     const flipDuration = 150;
     // todo: 模块化揭棋代码
@@ -44,7 +44,7 @@ export default class ChessMoveAnimation {
     chess.el.classList.add('overlay');
     return new TWEEN.Tween(chess)
       .to(to, duration)
-      .easing(TWEEN.Easing.Circular.Out)
+      .easing(TWEEN.Easing.Cubic.Out)
       .onComplete(() => {
         if (flip) {
           chess.flipToFront();

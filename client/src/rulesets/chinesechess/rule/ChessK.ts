@@ -13,6 +13,10 @@ export default class ChessK extends AbstractChess {
 
     // 如果走了大于一步，判断是不是吃碰面的对方将军
     if (Math.abs(rowOffset) > 1) {
+      // 不能斜着走
+      if (colOffset != 0) {
+        return false;
+      }
       const targetChess = game.getChessboard().chessAt(destPos);
       if (targetChess == null || !targetChess.is(ChessK)) {
         return false;

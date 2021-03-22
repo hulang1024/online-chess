@@ -1,5 +1,6 @@
 import { api, socketService } from "src/boot/main";
 import Signal from "src/utils/signals/Signal";
+import desktopNotify from "src/components/notify";
 import User from "../../user/User";
 import Bindable from "../../utils/bindables/Bindable";
 import BindableList from "../../utils/bindables/BindableList";
@@ -300,7 +301,10 @@ export default class ChannelManager {
     this.socketService.on('chat.message', (msg: ChatServerMsgs.ChatMessageMsg) => {
       const channel = this.getChannel(msg.channelId);
       channel.addNewMessages(Message.from(msg));
-
+      if (channel.type == ChannelType.PM && document.hidden) {
+        // eslint-disable-next-line
+        desktopNotify(`${msg.sender.nickname} 给您发送了一条私信: ${msg.content}`);
+      }
       if (msg.sender.id == this.api.localUser.id) {
         this.markChannelAsRead(this.getChannel(msg.channelId, false, false));
       }

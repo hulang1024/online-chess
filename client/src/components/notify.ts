@@ -10,6 +10,11 @@ export default async function desktopNotify(msg: string): Promise<Notification |
     return null;
   }
 
+  // 只在应用后台时可用
+  if (!document.hidden) {
+    return null;
+  }
+
   await new Promise((resolve, reject) => {
     if (Notification.permission == 'granted') {
       resolve();
@@ -28,11 +33,19 @@ export default async function desktopNotify(msg: string): Promise<Notification |
     }
   });
 
-  const options = {
+  const options: NotificationOptions = {
+    icon: '/icons/favicon.png',
+    timestamp: new Date().getTime(),
     body: msg,
   };
 
   const notification = new Notification('通知', options);
+  notification.onclick = () => {
+    window.focus();
+    setTimeout(() => {
+      notification.close();
+    }, 1000);
+  };
 
   return notification;
 }
