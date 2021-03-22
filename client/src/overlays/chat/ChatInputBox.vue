@@ -44,6 +44,7 @@
 import {
   defineComponent, getCurrentInstance, PropType, ref,
 } from '@vue/composition-api';
+import { existsEmoji } from 'src/assets/emoji';
 import { channelManager } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
 import EmojiPanel from './EmojiPanel.vue';
@@ -82,8 +83,14 @@ export default defineComponent({
       }
 
       messageText.value = '';
-
       // todo: 记录输入历史，通过上下键查看
+
+      if (context.$router.currentRoute.name == 'play'
+        && context.$q.screen.xs
+        && text.length <= 4 && existsEmoji(text)) {
+        // eslint-disable-next-line
+        (context.$vnode.context as any).hide();
+      }
     };
 
     const onEmojiSelect = (emoji: string) => {

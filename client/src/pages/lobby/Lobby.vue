@@ -106,7 +106,7 @@
 import {
   defineComponent, getCurrentInstance, onMounted, onBeforeUnmount, ref, watch, computed,
 } from '@vue/composition-api';
-import desktopNotify from 'src/components/notify';
+import desktopNotify, { requestNotificationPermission } from 'src/components/notify';
 import CreateRoomRequest from 'src/online/room/CreateRoomRequest';
 import QuickStartRequest from 'src/online/room/QuickStartRequest';
 import ReplyInvitationRequest from 'src/online/invitation/ReplyInvitationRequest';
@@ -214,6 +214,8 @@ export default defineComponent({
         (ctx.$refs.usersPanel as any).queryUsers();
       }
       userActivityClient.enter(1);
+
+      requestNotificationPermission();
     };
     api.state.changed.add(onLoggedIn);
 

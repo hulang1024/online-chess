@@ -224,6 +224,7 @@ export default class ChannelManager {
       case 'logout':
       case 'recall':
       case 'roll':
+      case 'command':
         this.postMessage(text, true, channel);
         break;
       case 'help': {
@@ -338,6 +339,16 @@ export default class ChannelManager {
 
     this.socketService.on('chat.words_enable', (msg: ChatServerMsgs.WordsEnableMsg) => {
       this.wordsEnableSignal.dispatch(msg.enabled);
+    });
+
+    this.socketService.on('client_command', (msg: ChatServerMsgs.ClientCommandMsg) => {
+      switch (msg.command) {
+        case 'reload':
+          window.location.reload();
+          break;
+        default:
+          break;
+      }
     });
 
     this.socketService.reconnected.add(() => {

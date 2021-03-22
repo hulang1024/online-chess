@@ -36,3 +36,26 @@ export default async function desktopNotify(msg: string): Promise<Notification |
 
   return notification;
 }
+
+export function requestNotificationPermission() {
+  if (!('Notification' in window) || allowDesktopNotify()) {
+    return;
+  }
+
+  if (!configManager.get(ConfigItem.desktopNotifyEnabled)) {
+    Notification.requestPermission().then((permission) => {
+      if (permission == 'granted') {
+        configManager.set(ConfigItem.desktopNotifyEnabled, true);
+      } else {
+        configManager.set(ConfigItem.desktopNotifyEnabled, false);
+      }
+      configManager.save();
+    }).catch(() => {
+      configManager.set(ConfigItem.desktopNotifyEnabled, false);
+      configManager.save();
+    });
+  } else {
+    configManager.set(ConfigItem.desktopNotifyEnabled, false);
+    configManager.save();
+  }
+}

@@ -36,3 +36,7 @@ export interface ChatRecallMessageMsg extends ServerMsg {
 export interface WordsEnableMsg extends ServerMsg {
   enabled: boolean;
 }
+
+export interface ClientCommandMsg extends ServerMsg {
+  command: string;
+}

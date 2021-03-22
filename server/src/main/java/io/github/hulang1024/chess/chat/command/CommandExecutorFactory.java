@@ -24,6 +24,8 @@ public class CommandExecutorFactory {
                 return applicationContext.getBean(RecallCommandExecutor.class);
             case "roll":
                 return applicationContext.getBean(RollCommandExecutor.class);
+            case "command":
+                return applicationContext.getBean(ClientCommandExecutor.class);
             default:
                 return null;
         }

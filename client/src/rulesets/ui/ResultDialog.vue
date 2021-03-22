@@ -89,17 +89,20 @@ export default defineComponent({
   box-shadow: 0px 3px 6px 4px rgba(0, 0, 0, 0.2)
   border-radius: 6px
 
+$text-shadow-base: 1px 2px 4px rgba(0, 0, 0, 0.2)
+
 .result-text
-  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.2)
   font-weight: bolder
 
   &.draw
     color: #ff9800
+    text-shadow: $text-shadow-base, 0px 0px 20px rgba(#ff9800, 40%)
   &.win
     color: #e91e63
+    text-shadow: $text-shadow-base, 0px 0px 20px rgba(#e91e63, 40%)
   &.lose
     color: #2196f3
-
+    text-shadow: $text-shadow-base, 0px 0px 20px rgba(#2196f3, 40%)
 .q-btn
   padding: 2px 14px
 </style>

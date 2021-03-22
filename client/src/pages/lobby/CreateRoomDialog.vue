@@ -42,7 +42,7 @@
             suffix="分钟"
             hint="棋局可用总时间"
             lazy-rules
-            :rules="[ val => val || '' ]"
+            :rules="[ val => (val && val >= 0.5 && val <= 8640) || '最小0.5最大8640' ]"
           />
           <q-input
             v-model.number="stepDuration"
@@ -53,7 +53,7 @@
             suffix="秒"
             hint="局时用完前每步可用时间"
             lazy-rules
-            :rules="[ val => val || '' ]"
+            :rules="[ val => (val && val >= 3 && val <= 86400) || '最小3最大86400' ]"
           />
           <q-input
             v-model.number="secondsCountdown"
@@ -64,7 +64,7 @@
             suffix="秒"
             hint="局时用完后每步可用时间"
             lazy-rules
-            :rules="[ val => val || '' ]"
+            :rules="[ val => (val && val >= 3 && val <= 86400) || '最小3最大86400' ]"
           />
         </div>
         <q-input

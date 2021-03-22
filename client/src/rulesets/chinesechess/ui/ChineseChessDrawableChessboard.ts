@@ -22,7 +22,7 @@ export default class ChineseChessDrawableChessboard
 
   private canvas: HTMLCanvasElement;
 
-  private readonly padding = 3;
+  private readonly padding = 4;
 
   private chessArray: Array<Array<DrawableChess | null>>;
 
