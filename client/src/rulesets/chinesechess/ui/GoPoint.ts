@@ -6,7 +6,7 @@ export default class GoPoint {
   public el: HTMLDivElement;
 
   constructor(pos: ChessPos, chessboard: DrawableChessboard) {
-    const radius = chessboard.bounds.chessRadius + 4;
+    const radius = chessboard.bounds.chessRadius + chessboard.bounds.chessGap / 2 - 1;
     const size = radius * 2;
     const el = document.createElement('div');
     el.classList.add('go-point');
