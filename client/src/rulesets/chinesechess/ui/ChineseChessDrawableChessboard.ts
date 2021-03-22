@@ -142,14 +142,14 @@ export default class ChineseChessDrawableChessboard
     } else if (offsetY > bounds.canvas.height - bounds.grid.y) {
       row = 9;
     } else {
-      row = Math.round((offsetY - bounds.grid.y) / bounds.grid.gap);
+      row = Math.round((offsetY - bounds.grid.y) / bounds.grid.cellSize);
     }
     if (offsetX < bounds.grid.x) {
       col = 0;
     } else if (offsetX > bounds.canvas.width - bounds.grid.x) {
       col = 8;
     } else {
-      col = Math.round((offsetX - bounds.grid.x) / bounds.grid.gap);
+      col = Math.round((offsetX - bounds.grid.x) / bounds.grid.cellSize);
     }
     return new ChessPos(row, col);
   }
@@ -203,16 +203,16 @@ export default class ChineseChessDrawableChessboard
     };
 
     const drawXLine = (baseRow: number, startCol: number, endCol: number) => {
-      const y = baseRow * grid.gap;
-      const startX = startCol * grid.gap;
-      const endX = endCol * grid.gap;
+      const y = baseRow * grid.cellSize;
+      const startX = startCol * grid.cellSize;
+      const endX = endCol * grid.cellSize;
       drawLine(startX, y, endX, y);
     };
 
     const drawYLine = (baseCol: number, startRow: number, endRow: number) => {
-      const x = baseCol * grid.gap;
-      const startY = startRow * grid.gap;
-      const endY = endRow * grid.gap;
+      const x = baseCol * grid.cellSize;
+      const startY = startRow * grid.cellSize;
+      const endY = endRow * grid.cellSize;
       drawLine(x, startY, x, endY);
     };
 
@@ -228,11 +228,11 @@ export default class ChineseChessDrawableChessboard
 
     // 画中间九宫的斜线
     const drawXGraph = (row: number) => {
-      const x1 = 3 * grid.gap;
-      const x2 = 5 * grid.gap;
-      const baseY = grid.gap * row;
-      drawLine(x1, baseY, x2, baseY + 2 * grid.gap);
-      drawLine(x1, baseY + 2 * grid.gap, x2, baseY);
+      const x1 = 3 * grid.cellSize;
+      const x2 = 5 * grid.cellSize;
+      const baseY = grid.cellSize * row;
+      drawLine(x1, baseY, x2, baseY + 2 * grid.cellSize);
+      drawLine(x1, baseY + 2 * grid.cellSize, x2, baseY);
     };
     drawXGraph(0);
     drawXGraph(7);
@@ -262,7 +262,7 @@ export default class ChineseChessDrawableChessboard
         });
       };
       const drawCrossAt = (row: number, col: number, indexs?: number[]) => {
-        drawCross(grid.gap * col, grid.gap * row, indexs);
+        drawCross(grid.cellSize * col, grid.cellSize * row, indexs);
       };
 
       drawCrossAt(2, 1);
@@ -287,8 +287,8 @@ export default class ChineseChessDrawableChessboard
     context.strokeRect(
       grid.x - padding,
       grid.y - padding,
-      grid.gap * 8 + padding * 2,
-      grid.gap * 9 + padding * 2,
+      grid.cellSize * 8 + padding * 2,
+      grid.cellSize * 9 + padding * 2,
     );
   }
 
@@ -303,20 +303,21 @@ export default class ChineseChessDrawableChessboard
     }
 
     // 根据网格宽度计算交叉点之间的距离
-    let gap;
+    let cellSize;
     if ((narrow / 9) * 10 > stage.height) {
-      gap = narrow / 10;
+      cellSize = narrow / 10;
     } else {
-      gap = narrow / 9;
+      cellSize = narrow / 9;
     }
 
     // 棋子宽度稍小于交叉点距离
     // eslint-disable-next-line
-    const chessSize = gap - (screen.xs ? 6 : 12);
+    const chessGap = screen.xs ? 6 : 12;
+    const chessSize = cellSize - chessGap;
     // 最侧边的棋子需要占据半个位置
-    const gridMargin = gap / 2;
-    const canvasWidth = Math.floor(gap * 8 + gridMargin * 2);
-    const canvasHeight = Math.floor(gap * 9 + gridMargin * 2);
+    const gridMargin = cellSize / 2;
+    const canvasWidth = Math.floor(cellSize * 8 + gridMargin * 2);
+    const canvasHeight = Math.floor(cellSize * 9 + gridMargin * 2);
 
     this._bounds = {
       canvas: {
@@ -326,8 +327,9 @@ export default class ChineseChessDrawableChessboard
       grid: {
         x: Math.round(gridMargin),
         y: Math.round(gridMargin),
-        gap: Math.round(gap),
+        cellSize: Math.round(cellSize),
       },
+      chessGap,
       chessRadius: Math.round(chessSize / 2),
     };
   }
@@ -396,8 +398,8 @@ export default class ChineseChessDrawableChessboard
 
   public calcChessDisplayPos(pos: ChessPos) {
     const { grid } = this.bounds;
-    const x = grid.x + this.padding + pos.col * grid.gap;
-    const y = grid.y + this.padding + pos.row * grid.gap;
+    const x = grid.x + this.padding + pos.col * grid.cellSize;
+    const y = grid.y + this.padding + pos.row * grid.cellSize;
     return { x, y };
   }
 }
@@ -410,7 +412,8 @@ interface ChessboardBounds {
   grid: {
     x: number,
     y: number,
-    gap: number
+    cellSize: number
   },
+  chessGap: number,
   chessRadius: number,
 }
