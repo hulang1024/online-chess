@@ -42,10 +42,9 @@
         @click="onSettingsClick"
       >
         <q-item-section>
-          <label><q-icon name="settings" /> 设置</label>
+          <label><q-icon name="fas fa-cog" /> 设置</label>
         </q-item-section>
       </q-item>
-      <q-separator />
     </template>
     <template #main-buttons>
       <q-btn

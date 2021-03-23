@@ -73,6 +73,16 @@
             auto-close
           >
             <q-list style="min-width: 110px">
+              <q-item
+                clickable
+                v-close-popup
+                @click="onQuitClick"
+              >
+                <q-item-section>
+                  <label><q-icon name="fas fa-chevron-left" />退出</label>
+                </q-item-section>
+              </q-item>
+              <q-separator />
               <template v-if="enableGameRuleButtons">
                 <template v-if="canWithdraw">
                   <q-item
@@ -82,7 +92,7 @@
                     @click="onWithdrawClick"
                   >
                     <q-item-section>
-                      <q-item-label><q-icon name="redo" /> 悔棋</q-item-label>
+                      <q-item-label><q-icon name="fas fa-redo" /> 悔棋</q-item-label>
                     </q-item-section>
                   </q-item>
                   <q-separator />
@@ -94,7 +104,7 @@
                   @click="onChessDrawClick"
                 >
                   <q-item-section>
-                    <q-item-label><q-icon name="mood" /> 求和</q-item-label>
+                    <q-item-label><q-icon name="far fa-handshake" /> 求和</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-separator />
@@ -105,7 +115,7 @@
                   @click="onWhiteFlagClick"
                 >
                   <q-item-section>
-                    <q-item-label><q-icon name="mood_bad" /> 认输</q-item-label>
+                    <q-item-label><q-icon name="far fa-frown" /> 认输</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-separator />
@@ -117,7 +127,7 @@
                 >
                   <q-item-section>
                     <q-item-label>
-                      <q-icon name="access_time" />
+                      <q-icon name="far fa-clock" />
                       {{ viewUser.isRoomOwner ? '' : '请求' }}{{ gameState != 3 ? '暂停对局' : '继续对局' }}
                     </q-item-label>
                   </q-item-section>
@@ -130,20 +140,11 @@
                 @click="onHelpClick"
               >
                 <q-item-section>
-                  <label><q-icon name="info" /> 帮助</label>
+                  <label><q-icon name="far fa-question-circle" /> 帮助</label>
                 </q-item-section>
               </q-item>
               <q-separator />
               <slot name="xs-screen-main-buttons" />
-              <q-item
-                clickable
-                v-close-popup
-                @click="onQuitClick"
-              >
-                <q-item-section>
-                  <label><q-icon name="keyboard_arrow_left" />退出房间</label>
-                </q-item-section>
-              </q-item>
             </q-list>
           </q-menu>
         </q-btn>
@@ -495,5 +496,9 @@ export default defineComponent({
 <style scoped>
 .q-btn-group >>> .q-btn__wrapper {
   padding: 0px;
+}
+
+.q-list >>> .q-item {
+  font-size: 16px;
 }
 </style>

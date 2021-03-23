@@ -83,7 +83,6 @@ export default defineComponent({
       }
 
       messageText.value = '';
-      // todo: 记录输入历史，通过上下键查看
 
       if (context.$router.currentRoute.name == 'play'
         && context.$q.screen.xs

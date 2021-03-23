@@ -105,7 +105,9 @@ export default defineComponent({
         if (channel.type == ChannelType.PM) {
           // todo: 暂时不支持回显，而是绕一圈，这里判断不是自己
           if (last.sender.id != api.localUser.id) {
-            isOpen.value = !isPlayActicity;
+            if (isPlayActicity) {
+              ctx.$q.notify('你有一条私信');
+            }
             channelManager.openPrivateChannel(last.sender);
           }
         }
@@ -117,9 +119,6 @@ export default defineComponent({
     });
 
     channelManager.currentChannel.changed.add((channel: Channel) => {
-      if (channel.type == ChannelType.PM && !isOpen.value) {
-        isOpen.value = true;
-      }
       ctx.$nextTick(() => {
         activeChannelTab.value = getChannelTabName(channel);
       });

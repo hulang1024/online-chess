@@ -35,7 +35,6 @@
       >
         <q-item-section>切换</q-item-section>
       </q-item>
-      <q-separator />
     </template>
     <template #main-buttons>
       <q-btn

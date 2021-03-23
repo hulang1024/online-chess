@@ -98,7 +98,7 @@ module.exports = configure((ctx) => ({
     config: {
       cssAddon: true,
       notify: {
-        position: 'bottom-right',
+        position: 'top',
       },
       loading: { },
     },

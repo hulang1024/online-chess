@@ -42,6 +42,6 @@ export default class DrawableEatJudgement {
     this.timer = setTimeout(() => {
       this.el.classList.remove('show');
       this.timer = null;
-    }, 2000);
+    }, 1000);
   }
 }

@@ -20,6 +20,6 @@ export default class DrawableCheckmateJudgement {
     this.el.classList.add(colorClass, 'show');
     this.timer = setTimeout(() => {
       this.el.classList.remove(colorClass, 'show');
-    }, 2000);
+    }, 1000);
   }
 }
