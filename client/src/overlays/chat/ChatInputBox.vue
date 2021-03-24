@@ -47,6 +47,7 @@ import {
 import { existsEmoji } from 'src/assets/emoji';
 import { channelManager } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
+import ChannelType from 'src/online/chat/ChannelType';
 import EmojiPanel from './EmojiPanel.vue';
 
 export default defineComponent({
@@ -84,9 +85,10 @@ export default defineComponent({
 
       messageText.value = '';
 
-      if (context.$router.currentRoute.name == 'play'
+      if ((channel || channelManager.currentChannel.value)?.type == ChannelType.ROOM
         && context.$q.screen.xs
-        && text.length <= 4 && existsEmoji(text)) {
+        && context.$router.currentRoute.name == 'play'
+        && (text.length <= 4 && existsEmoji(text))) {
         // eslint-disable-next-line
         (context.$vnode.context as any).hide();
       }
