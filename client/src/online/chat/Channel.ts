@@ -54,10 +54,11 @@ export default class Channel {
     if (messages.length == 0) {
       return;
     }
-    const maxMessageId = messages.reduce((max, m) => Math.max(m.id, max), 0);
-    if (this.lastMessageId == null || maxMessageId > this.lastMessageId) {
-      this.lastMessageId = maxMessageId;
-    }
+
+    const lastMessage = messages[messages.length - 1];
+    // 当为EchoMessage时，可能为null
+    this.lastMessageId = lastMessage.id;
+
     this.messages = this.messages.concat(messages);
 
     this.newMessagesArrived.dispatch(messages);
@@ -82,12 +83,19 @@ export default class Channel {
     const index = this.messages.findIndex((msg) => msg == echo);
     this.messages[index] = final;
 
+    if (!this.lastMessageId) {
+      this.lastMessageId = final.id;
+    }
+
     this.pendingMessageResolved.dispatch(echo, final);
   }
 
-  public getUnreadMessages() {
-    return this.messages.filter((m) => !isSystemUser(m.sender)
-      && (this.lastReadId == null || this.lastReadId < m.id));
+  public countUnreadMessage(): number {
+    if (this.lastReadId == null) {
+      return this.messages.length;
+    }
+    const lastReadIndex = this.messages.findIndex((m) => this.lastReadId == m.id);
+    return this.messages.filter((m, i) => i > lastReadIndex && !isSystemUser(m.sender)).length;
   }
 
   public static from(ch: Channel) {

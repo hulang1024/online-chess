@@ -1,10 +1,9 @@
 import {
-  computed, reactive, ref, Ref, watchEffect, watch, getCurrentInstance,
+  computed, reactive, ref, Ref, watchEffect, watch, getCurrentInstance, onBeforeUnmount,
 } from "@vue/composition-api";
-import { api, channelManager } from "src/boot/main";
+import { channelManager } from "src/boot/main";
 import Channel from "src/online/chat/Channel";
 import ChannelType from "src/online/chat/ChannelType";
-import Message from "src/online/chat/Message";
 import GameState from "src/online/play/GameState";
 import ChessHost from "src/rulesets/chess_host";
 import { createBoundRef } from "src/utils/vue/vue_ref_utils";
@@ -105,24 +104,30 @@ export function usePlayerStates(player: Player) {
   const spectatorCount: Ref<number> = createBoundRef(player.spectatorClient.spectatorCount);
 
   const unreadMessageCount = ref(0);
-  channelManager.currentChannel.addAndRunOnce((channel: Channel) => {
-    if (channel.type == ChannelType.ROOM) {
-      channel.newMessagesArrived.add((messages: Message[]) => {
-        const message = messages[messages.length - 1];
-        if (message.sender.id == api.localUser.id
-          || (new Date().getTime() - message.timestamp) > 4000) {
-          return;
-        }
+  const updateUnreadMessageCount = () => {
+    let count = 0;
+    channelManager.joinedChannels.value.forEach((ch: Channel) => {
+      if ([ChannelType.ROOM, ChannelType.PM].includes(ch.type)) {
+        count += ch.countUnreadMessage();
+      }
+    });
+    unreadMessageCount.value = count;
+  };
 
-        unreadMessageCount.value = channel.getUnreadMessages().length;
-      });
-    }
+  channelManager.currentChannel.addAndRunOnce((channel: Channel) => {
+    channel.newMessagesArrived.add(updateUnreadMessageCount);
+  });
+
+  const chatOverlay = ((context.$vnode.context as Vue).$refs.chatOverlay as Vue);
+  chatOverlay.$on('active', updateUnreadMessageCount);
+
+  onBeforeUnmount(() => {
+    chatOverlay.$off('active', updateUnreadMessageCount);
   });
 
   const onChatClick = () => {
     // eslint-disable-next-line
     (context.$vnode.context?.$refs.toolbar as any).toggle('chat');
-    unreadMessageCount.value = 0;
   };
 
   const onInviteClick = () => {

@@ -19,17 +19,22 @@
         class="col"
       >
         <q-tab
-          v-for="channel in channels"
+          v-for="(channel, index) in channels"
           :key="channel.name"
           :name="getChannelTabName(channel)"
           :label="channel.name"
           no-caps
-        />
+        >
+          <q-badge
+            v-show="channelUnreadCounts[index] > 0"
+            color="red"
+            floating
+          >{{ channelUnreadCounts[index] }}</q-badge>
+        </q-tab>
       </q-tabs>
 
       <q-tab-panels
         v-model="activeChannelTab"
-        keep-alive
         animated
       >
         <q-tab-panel
@@ -65,12 +70,21 @@ export default defineComponent({
     const isOpen = ref(false);
     const activeChannelTab = ref('#世界');
     const channels = ref<Channel[]>([]);
+    const channelUnreadCounts = ref<number[]>([]);
     const seamless = ref(true);
 
     const getChannelTabName = (channel: Channel) => (
       channel.type == ChannelType.PM
         ? `pm_${channel.users[0].id}`
         : channel.id.toString());
+
+    const updateUnreadCounts = () => {
+      const currentChannel = channelManager.currentChannel.value;
+      channelManager.markChannelAsRead(currentChannel);
+      channels.value.forEach((ch, index) => {
+        ctx.$set(channelUnreadCounts.value, index, ch.countUnreadMessage());
+      });
+    };
 
     watch(isOpen, () => {
       emit('active', isOpen.value, props);
@@ -82,11 +96,19 @@ export default defineComponent({
       } else {
         channelManager.openChannel(+activeChannelTab.value);
       }
+
+      if (isOpen.value) {
+        updateUnreadCounts();
+      }
     });
 
     channelManager.joinedChannels.added.add((channel: Channel) => {
       channels.value.push(channel);
       channel.newMessagesArrived.add((messages: Message[]) => {
+        if (isOpen.value && (messages.length > 1 || messages[0].id)) {
+          updateUnreadCounts();
+        }
+
         const last = messages[messages.length - 1];
         // 系统用户发送的消息
         if (isSystemUser(last.sender)) {
@@ -94,10 +116,9 @@ export default defineComponent({
         }
 
         // 解决当弹出窗口之后，当棋盘已有选中棋子点击棋盘误触移动的问题
-        const isPlayActicity = ['play', 'spectate'].includes(
-          ctx.$router.currentRoute.name as string,
-        );
-        if (isPlayActicity) {
+        const isSpectating = ctx.$router.currentRoute.name as string == 'spectate';
+        const isPlaying = ctx.$router.currentRoute.name as string == 'play';
+        if (isPlaying || isSpectating) {
           // 使用遮罩
           seamless.value = false;
         }
@@ -105,12 +126,18 @@ export default defineComponent({
         if (channel.type == ChannelType.PM) {
           // todo: 暂时不支持回显，而是绕一圈，这里判断不是自己
           if (last.sender.id != api.localUser.id) {
-            if (isPlayActicity) {
+            if (isPlaying && !isOpen.value) {
               ctx.$q.notify('你有一条私信');
+            } else if (isSpectating && !isOpen.value) {
+              isOpen.value = true;
+              channelManager.openPrivateChannel(last.sender);
             }
-            channelManager.openPrivateChannel(last.sender);
           }
         }
+      });
+
+      channel.pendingMessageResolved.add(() => {
+        updateUnreadCounts();
       });
     });
 
@@ -141,10 +168,9 @@ export default defineComponent({
     };
 
     const show = () => {
+      updateUnreadCounts();
       seamless.value = !['play', 'spectate'].includes(ctx.$router.currentRoute.name as string);
       isOpen.value = true;
-
-      channelManager.markChannelAsRead(channelManager.currentChannel.value);
     };
 
     const hide = () => {
@@ -156,6 +182,7 @@ export default defineComponent({
       toggle,
       show,
       hide,
+      channelUnreadCounts,
       activeChannelTab,
       getChannelTabName,
       channels,
