@@ -186,6 +186,9 @@ export default class DrawableChess implements Chess {
    * 从反面翻转到正面
    */
   public flipToFront() {
+    if (this.chess.isFront()) {
+      return;
+    }
     this.chess.setFront(true);
     this.el.classList.remove('is-back');
   }

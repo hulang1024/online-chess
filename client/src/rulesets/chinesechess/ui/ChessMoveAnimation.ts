@@ -33,38 +33,47 @@ export default class ChessMoveAnimation {
     if (flip) {
       chess.drawFront();
     }
-    // 使用setTimeout而不是动画onComplete，因为浏览器后台会暂停动画
-    let audioPlayed = false;
-    setTimeout(() => {
-      if (enableAudio && !audioPlayed) {
-        GameAudio.play('gameplay/chess_move');
-        audioPlayed = true;
+
+    const emited = {
+      dropStart: false,
+      dropEnd: false,
+      moveEnd: false,
+    };
+
+    const onComplete = () => {
+      if (flip) {
+        chess.flipToFront();
       }
-    }, duration + (flip ? flipDuration : 0) + 100);
+      setTimeout(() => {
+        if (events.dropStart && !emited.dropStart) {
+          events.dropStart();
+          emited.dropStart = true;
+          chess.el.classList.remove('overlay');
+          if (enableAudio) {
+            GameAudio.play('gameplay/chess_move');
+          }
+        }
+        setTimeout(() => {
+          if (!emited.dropEnd) {
+            events.dropEnd();
+            emited.dropEnd = true;
+          }
+        }, 50);
+      }, flip ? flipDuration : 0);
+      if (events.moveEnd && !emited.moveEnd) {
+        events.moveEnd();
+        emited.moveEnd = true;
+      }
+    };
+    // 额外的setTimeout代码，是解决浏览器后台会暂停动画，导致回调不能及时执行，累积状态错误
+    setTimeout(() => {
+      onComplete();
+    }, duration);
+
     chess.el.classList.add('overlay');
     return new TWEEN.Tween(chess)
       .to(to, duration)
       .easing(TWEEN.Easing.Cubic.Out)
-      .onComplete(() => {
-        if (flip) {
-          chess.flipToFront();
-        }
-        setTimeout(() => {
-          if (events.dropStart) {
-            events.dropStart();
-          }
-          chess.el.classList.remove('overlay');
-          if (enableAudio && !audioPlayed) {
-            GameAudio.play('gameplay/chess_move');
-            audioPlayed = true;
-          }
-          setTimeout(() => {
-            events.dropEnd();
-          }, 50);
-        }, flip ? flipDuration : 0);
-        if (events.moveEnd) {
-          events.moveEnd();
-        }
-      });
+      .onComplete(onComplete);
   }
 }
