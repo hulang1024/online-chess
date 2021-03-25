@@ -6,6 +6,7 @@ import SpectateResponse from "src/online/spectator/APISpectateResponse";
 import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
 import JoinRoomRequest from "src/online/room/JoinRoomRequest";
 import User from "src/user/User";
+import ChessHost from "src/rulesets/chess_host";
 import Player from "./Player";
 import GameUser from "../../online/play/GameUser";
 import * as playPageSignals from './signals';
@@ -21,9 +22,6 @@ export default class SpectatorPlayer extends Player {
       switch (room.gameStatus) {
         case 0:
         case GameState.READY:
-          if (this.room.gameUsers.length == 2) {
-            this.showText('你正在观战中，请等待游戏开始');
-          }
           break;
         case GameState.PAUSE:
           this.showText('你正在观战中，游戏暂停，请等待游戏继续');
@@ -59,13 +57,15 @@ export default class SpectatorPlayer extends Player {
     super.resultsGameOver(msg);
     const winner = msg.winUserId ? this.getGameUserByUserId(msg.winUserId) as GameUser : null;
     const winnerName = winner?.user.value?.nickname || '';
-    this.showText(msg.winUserId == null ? '平局' : `${winnerName} 胜！`);
+    this.showText(msg.winUserId == null
+      ? '平局'
+      : `${this.getChessHostName(winner?.chessHost as ChessHost)} (${winnerName}) 胜！`);
   }
 
   protected resultsConfirmRequest(msg: GameEvents.ConfirmRequestMsg) {
     super.resultsConfirmRequest(msg);
-    const nickname = this.getGameUserByUserId(msg.uid)?.user.value?.nickname;
-    this.showText(`${nickname as string}请求${toReadableText(msg.reqType)}`, 1000);
+    const gameUser = this.getGameUserByUserId(msg.uid) as GameUser;
+    this.showText(`${this.getChessHostName(gameUser.chessHost)}请求${toReadableText(msg.reqType)}`, 1000);
   }
 
   private watchUser(targetUserId: number) {

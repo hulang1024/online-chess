@@ -52,9 +52,7 @@ export default abstract class UserPlayInput {
   }
 
   protected checkReject() {
-    if (this.gameState.value == GameState.PLAYING
-      && (!this.enabled
-        || this.localUser.chess.value != this.gameRule.activeChessHost.value)) {
+    if ((!this.enabled || this.localUser.chess.value != this.gameRule.activeChessHost.value)) {
       this.onReject();
     }
   }

@@ -29,6 +29,7 @@ import GameplayServer from 'src/online/play/GameplayServer';
 import { ConfirmRequestType, toReadableText } from 'src/online/play/confirm_request';
 import SpectatorClient from 'src/online/play/SpectatorClient';
 import APIGameUser from 'src/online/play/APIGameUser';
+import { GameType } from 'src/rulesets/GameType';
 import GameUser from '../../online/play/GameUser';
 import Timer from '../../rulesets/ui/timer/Timer';
 import CircleTimer from '../../rulesets/ui/timer/CircleTimer';
@@ -120,13 +121,20 @@ export default class Player extends GameplayClient {
       this.rulesetClient.userPlayInput = this.userPlayInput;
       this.userPlayInput.onReject = () => {
         if (this.isWatchingMode) {
-          this.showText('你正在观战中', 1000);
-          return;
+          if (this.gameState.value == GameState.PLAYING) {
+            this.showText('你正在观战中', 1000);
+          } else {
+            context.$q.notify({
+              message: '你正在观战中',
+              timeout: 1000,
+            });
+          }
+        } else if (this.gameState.value == GameState.PLAYING) {
+          this.showText('对方回合', 500);
+          const playerView = this.context.$refs.playerView as Vue;
+          // eslint-disable-next-line
+          (playerView.$refs.otherGameUserPanel as any).blink();
         }
-        this.showText('对方回合', 500);
-        const playerView = this.context.$refs.playerView as Vue;
-        // eslint-disable-next-line
-        (playerView.$refs.otherGameUserPanel as any).blink();
       };
       this.userPlayInput.inputDone.add(() => {
         this.localUser.stepTimer.pause();
@@ -516,10 +524,10 @@ export default class Player extends GameplayClient {
 
   protected resultsConfirmResponse(msg: GameplayMsgs.ConfirmResponseMsg) {
     const title = this.isWatchingMode
-      ? this.getGameUserByUserId(msg.uid)?.user.value?.nickname
+      ? this.getChessHostName(this.getGameUserByUserId(msg.uid)?.chessHost as ChessHost)
       : '对方';
     if (!msg.ok) {
-      this.showText(`${title as string}不同意${toReadableText(msg.reqType)}`, 1000);
+      this.showText(`${title}不同意${toReadableText(msg.reqType)}`, 1000);
     }
   }
 
@@ -621,6 +629,23 @@ export default class Player extends GameplayClient {
       default:
         break;
     }
+  }
+
+  protected getChessHostName(chess: ChessHost) {
+    return ({
+      [GameType.chinesechess]: {
+        [ChessHost.FIRST]: '红方',
+        [ChessHost.SECOND]: '黑方',
+      },
+      [GameType.chinesechessDark]: {
+        [ChessHost.FIRST]: '红方',
+        [ChessHost.SECOND]: '黑方',
+      },
+      [GameType.gobang]: {
+        [ChessHost.FIRST]: '黑方',
+        [ChessHost.SECOND]: '白方',
+      },
+    })[this.room.roomSettings.gameSettings.gameType][chess];
   }
 
   private onTurnActiveChessHost(activeChessHost: ChessHost, isGameResume = false) {
