@@ -33,7 +33,12 @@
         v-close-popup
         @click="onToggleViewClick"
       >
-        <q-item-section>切换</q-item-section>
+        <q-item-section>
+          <q-item-label>
+            <q-icon name="far fa-eye" />
+            切换
+          </q-item-label>
+        </q-item-section>
       </q-item>
     </template>
     <template #main-buttons>
