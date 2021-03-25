@@ -54,6 +54,7 @@
 import {
   defineComponent, getCurrentInstance, ref, watch,
 } from '@vue/composition-api';
+import { existsEmoji } from 'src/assets/emoji';
 import { api, channelManager } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
 import ChannelType from 'src/online/chat/ChannelType';
@@ -136,8 +137,15 @@ export default defineComponent({
         }
       });
 
-      channel.pendingMessageResolved.add(() => {
+      channel.pendingMessageResolved.add((echo: Message, final: Message) => {
         updateUnreadCounts();
+        if (channel.type == ChannelType.ROOM
+          && ctx.$q.screen.xs
+          && ctx.$router.currentRoute.name == 'play'
+          && (final.content.length <= 4 && existsEmoji(final.content))
+          && (new Date().getTime() - final.timestamp) < 5000) {
+          isOpen.value = false;
+        }
       });
     });
 
