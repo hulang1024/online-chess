@@ -177,7 +177,6 @@ export default class Player extends GameplayClient {
       channel.id = this.room.channelId;
       channel.type = ChannelType.ROOM;
       channel = this.channelManager.joinChannel(channel);
-      channel.lastReadId = initialGameStates ? null : channel.lastMessageId;
       // eslint-disable-next-line
       (playerView.$refs.chatPanel as any)?.loadChannel(channel);
       channel.newMessagesArrived.add((messages: Message[]) => {
