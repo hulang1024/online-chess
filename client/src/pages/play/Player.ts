@@ -610,6 +610,7 @@ export default class Player extends GameplayClient {
           }
           activeGameUser.gameTimer.resume();
           activeGameUser.stepTimer.resume();
+          this.playfield.showContent();
           this.showText('对局继续', 1000);
         }
         break;
@@ -716,7 +717,8 @@ export default class Player extends GameplayClient {
     }
     if (this.localUser.isRoomOwner.value) {
       if (this.gameState.value == GameState.PAUSE
-        && this.otherUser.status.value == UserStatus.AFK) {
+        && this.otherUser.status.value == UserStatus.AFK
+        && this.game.activeChessHost.value == this.otherUser.chessHost) {
         this.context.$q.notify('对方现在是离开状态，请等待对方回来');
         return;
       }
