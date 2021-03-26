@@ -213,7 +213,9 @@ export default defineComponent({
 
     const onCloseClick = (channel: Channel) => {
       channelManager.leaveChannel(channel.id);
-      channelManager.openChannel(1);
+      channel = channelManager.joinedChannels.value[
+        channelManager.joinedChannels.value.length - 1];
+      channelManager.openChannel(channel.id);
     };
 
     const toggle = () => {
