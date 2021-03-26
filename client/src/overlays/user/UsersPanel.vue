@@ -240,7 +240,7 @@ export default defineComponent({
       return true;
     };
 
-    socketService.reconnected.add(() => {
+    socketService.loggedIn.add(() => {
       queryUsers();
       userActivityClient.enter(2);
     });

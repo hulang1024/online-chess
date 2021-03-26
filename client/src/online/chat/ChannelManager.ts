@@ -350,7 +350,7 @@ export default class ChannelManager {
       }
     });
 
-    this.socketService.reconnected.add(() => {
+    this.socketService.loggedIn.add(() => {
       if (!this.api.isLoggedIn) {
         return;
       }

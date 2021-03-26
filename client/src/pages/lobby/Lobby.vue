@@ -198,12 +198,12 @@ export default defineComponent({
       $q.loading.hide();
     };
 
-    const onReconnected = () => {
+    const onWSLoggedIn = () => {
       queryRooms();
       userActivityClient.enter(1);
     };
 
-    socketService.reconnected.add(onReconnected);
+    socketService.loggedIn.add(onWSLoggedIn);
 
     const onLoggedIn = () => {
       if (!api.isLoggedIn) {
@@ -338,7 +338,7 @@ export default defineComponent({
     });
 
     onBeforeUnmount(() => {
-      socketService.reconnected.remove(onReconnected);
+      socketService.loggedIn.remove(onWSLoggedIn);
       api.state.changed.remove(onLoggedIn);
       roomManager.removeListeners();
       socketService.off('play.game_continue', onGameContinue);

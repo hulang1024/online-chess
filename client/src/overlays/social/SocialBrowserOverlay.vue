@@ -215,7 +215,7 @@ export default defineComponent({
       (context as any).showUserDetails(user);
     };
 
-    socketService.reconnected.add(() => {
+    socketService.loggedIn.add(() => {
       if (!isOpen.value) {
         return;
       }
