@@ -1,8 +1,6 @@
 package io.github.hulang1024.chess.play;
 
 public enum ConfirmRequestType {
-    /** 认输 */
-    WHITE_FLAG(1),
     /** 和棋 */
     DRAW(2),
     /** 悔棋 */

@@ -45,6 +45,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
         addMessageHandler(GameOverMsg.class, this::onGameOver);
         addMessageHandler(GameContinueMsg.class, this::onGameContinue);
         addMessageHandler(ReadyMsg.class, this::onReady);
+        addMessageHandler(WhiteFlagMsg.class, this::onWhiteFlag);
         addMessageHandler(ConfirmRequestMsg.class, this::onConfirmRequest);
         addMessageHandler(ConfirmResponseMsg.class, this::onConfirmResponse);
         addMessageHandler(ChatStatusInGameMsg.class, this::onChatStatusInGameMsg);
@@ -97,6 +98,25 @@ public class GameplayMessageListener extends AbstractMessageListener {
         resumeGame(roomManager.getJoinedRoom(msg.getUser()));
     }
 
+    private void onWhiteFlag(WhiteFlagMsg msg) {
+        User user = msg.getUser();
+        Room room = roomManager.getJoinedRoom(user);
+        if (room == null) {
+            return;
+        }
+        GameState gameState = room.getGame().getState();
+        if (!(gameState == GameState.PLAYING || gameState == GameState.PAUSE)) {
+            return;
+        }
+
+        User otherUser = room.getOtherUser(user).getUser();
+        if (otherUser == null) {
+            return;
+        }
+        channelManager.broadcast(room.getChannel(), new InfoMessage(user.getNickname() + " 认输"));
+        gameOver(room, otherUser.getId(), GameOverCause.WHITE_FLAG);
+    }
+
     private void onConfirmRequest(ConfirmRequestMsg confirmRequestMsg) {
         User user = confirmRequestMsg.getUser();
         Room room = roomManager.getJoinedRoom(user);
@@ -124,12 +144,8 @@ public class GameplayMessageListener extends AbstractMessageListener {
         result.setOk(confirmResponseMsg.isOk());
 
         if (confirmResponseMsg.isOk()) {
-            if (confirmResponseMsg.getReqType() == ConfirmRequestType.WHITE_FLAG.code()) {
-                User reqUser = room.getOtherUser(user).getUser();
-                channelManager.broadcast(room.getChannel(), new InfoMessage(reqUser.getNickname() + " 认输"));
-                gameOver(false, user.getId(), false, room);
-            } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.DRAW.code()) {
-                gameOver(false, null, false, room);
+            if (confirmResponseMsg.getReqType() == ConfirmRequestType.DRAW.code()) {
+                gameOver(room, null, GameOverCause.DRAW);
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.WITHDRAW.code()) {
                 withdraw(room);
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.PAUSE_GAME.code()) {
@@ -256,7 +272,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
             return;
         }
 
-        gameOver(msg.isNormal(), msg.getWinUserId(), msg.isTimeout(), room);
+        gameOver(room, msg.getWinUserId(), GameOverCause.from(msg.getCause()));
     }
 
     private void withdraw(Room room) {
@@ -264,7 +280,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
         roomManager.broadcast(room, new ChessWithdrawServerMsg());
     }
 
-    private void gameOver(boolean isNormal, Long winUserId, boolean isTimeout, Room room) {
+    private void gameOver(Room room, Long winUserId, GameOverCause cause) {
         room.setStatus(RoomStatus.BEGINNING);
         Game game = room.getGame();
         GameType gameType = game.getGameSettings().getGameType();
@@ -299,7 +315,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
                     .in("id", userIds));
         }
 
-        roomManager.broadcast(room, new GameOverServerMsg(winUserId, isNormal, isTimeout));
+        roomManager.broadcast(room, new GameOverServerMsg(winUserId, cause));
         userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
         room.getGameUsers().forEach(gameUser -> {
             gameUser.getUser().setPlayGameType(gameType.getCode());

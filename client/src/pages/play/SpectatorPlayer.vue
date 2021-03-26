@@ -4,7 +4,6 @@
     :room="room"
     :game-state="gameState"
     :game-status="gameStatus"
-    :is-playing="isPlaying"
     :view-user="viewUser"
     :other-user="otherUser"
     :spectator-count="spectatorCount"

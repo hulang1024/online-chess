@@ -20,12 +20,16 @@ export default class GameplayServer {
     this.socketService.send('play.resume_game');
   }
 
-  public gameOver(winUserId: number, normal: boolean, timeout?: boolean) {
-    this.socketService.send('play.game_over', { normal, timeout, winUserId });
+  public gameOver(winUserId: number, cause: number) {
+    this.socketService.send('play.game_over', { winUserId, cause });
   }
 
   public gameContinue(isOk: boolean) {
     this.socketService.send('play.game_continue', { ok: isOk });
+  }
+
+  public whiteFlag() {
+    this.socketService.send('play.white_flag');
   }
 
   public confirmResponse(reqType: ConfirmRequestType, isOk: boolean) {

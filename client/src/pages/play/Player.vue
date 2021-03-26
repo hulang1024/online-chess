@@ -4,7 +4,7 @@
     :room="room"
     :game-state="gameState"
     :game-status="gameStatus"
-    :is-playing="isPlaying"
+    :confirm-request-loadings="confirmRequestLoadings"
     :can-withdraw="canWithdraw"
     :withdraw-enabled="withdrawEnabled"
     :view-user="viewUser"

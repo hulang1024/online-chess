@@ -1,6 +1,7 @@
 import { onMounted } from "@vue/composition-api";
 import * as GameEvents from 'src/online/play/gameplay_server_messages';
 import GameState from "src/online/play/GameState";
+import GameOverCause from "src/online/play/GameOverCause";
 import { toReadableText } from 'src/online/play/confirm_request';
 import SpectateResponse from "src/online/spectator/APISpectateResponse";
 import SpectatorLeaveRequest from "src/online/spectator/SpectatorLeaveRequest";
@@ -55,11 +56,28 @@ export default class SpectatorPlayer extends Player {
 
   protected resultsGameOver(msg: GameEvents.GameOverMsg) {
     super.resultsGameOver(msg);
-    const winner = msg.winUserId ? this.getGameUserByUserId(msg.winUserId) as GameUser : null;
-    const winnerName = winner?.user.value?.nickname || '';
-    this.showText(msg.winUserId == null
-      ? '平局'
-      : `${this.getChessHostName(winner?.chessHost as ChessHost)} (${winnerName}) 胜！`);
+
+    let text = '';
+    if (msg.winUserId == null) {
+      text = '平局';
+    } else {
+      const winner = msg.winUserId ? this.getGameUserByUserId(msg.winUserId) as GameUser : null;
+      if (msg.cause != GameOverCause.NORMAL) {
+        let event = '';
+        if (msg.cause == GameOverCause.TIMEOUT) {
+          event = '超时';
+        } else if (msg.cause == GameOverCause.WHITE_FLAG) {
+          event = '认输';
+        }
+        if (event) {
+          const loser = ChessHost.reverse(winner?.chessHost as ChessHost);
+          text += `${this.getChessHostName(loser)}${event}，`;
+        }
+      }
+      const winnerName = winner?.user.value?.nickname || '';
+      text += `${this.getChessHostName(winner?.chessHost as ChessHost)} (${winnerName}) 胜！`;
+    }
+    this.showText(text);
   }
 
   protected resultsConfirmRequest(msg: GameEvents.ConfirmRequestMsg) {

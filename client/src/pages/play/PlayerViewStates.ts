@@ -4,6 +4,7 @@ import {
 import { channelManager, socketService } from "src/boot/main";
 import Channel from "src/online/chat/Channel";
 import ChannelType from "src/online/chat/ChannelType";
+import { ConfirmRequestType } from "src/online/play/confirm_request";
 import { ChatStatusInGameMsg } from "src/online/play/gameplay_server_messages";
 import GameState from "src/online/play/GameState";
 import ChessHost from "src/rulesets/chess_host";
@@ -82,9 +83,16 @@ export function usePlayerStates(player: Player) {
       : { color: '#8bc34a', text: '等待玩家加入' };
   });
 
-  const isPlaying = computed(() => gameState.value == GameState.PLAYING);
-
   const activeChessHost: Ref<ChessHost | null> = createBoundRef(player.game.activeChessHost);
+
+  const confirmRequestLoadings = reactive(
+    Object.keys(player.confirmRequestLoadings).reduce((o, key) => {
+      o[key] = createBoundRef(
+        player.confirmRequestLoadings[key as unknown as ConfirmRequestType],
+      );
+      return o;
+    }, {} as { [k: string]: Ref<boolean> }),
+  );
 
   watchEffect(() => {
     // activeChessHost.value可能为空
@@ -151,8 +159,8 @@ export function usePlayerStates(player: Player) {
     gameState,
     gameStatus,
     reverse,
-    isPlaying,
     activeChessHost,
+    confirmRequestLoadings,
     canWithdraw,
     withdrawEnabled,
 

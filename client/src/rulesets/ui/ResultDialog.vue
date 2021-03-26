@@ -38,6 +38,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
+import GameOverCause from 'src/online/play/GameOverCause';
 
 export default defineComponent({
   props: {
@@ -53,12 +54,12 @@ export default defineComponent({
 
     let actionCallback: (action: string | null) => void;
 
-    const open = ({ result, isTimeout, action }:
-      {result: number, isTimeout: boolean, action: (action: string | null) => void}) => {
+    const open = ({ result, cause, action }:
+      {result: number, cause: GameOverCause, action: (action: string | null) => void}) => {
       const resultMap: { [t: number]: { text: string, class: string }} = {
         0: { text: '平局', class: 'draw' },
-        1: { text: isTimeout ? '超时胜利' : '胜利', class: 'win' },
-        2: { text: isTimeout ? '超时失败' : '失败', class: 'lose' },
+        1: { text: cause == GameOverCause.TIMEOUT ? '超时胜利' : '胜利', class: 'win' },
+        2: { text: cause == GameOverCause.TIMEOUT ? '超时失败' : '失败', class: 'lose' },
       };
       resultClass.value = resultMap[result].class;
       displayText.value = resultMap[result].text;

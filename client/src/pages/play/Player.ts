@@ -4,6 +4,7 @@ import ChannelType from 'src/online/chat/ChannelType';
 import ChannelManager from 'src/online/chat/ChannelManager';
 import desktopNotify from 'src/components/notify';
 import GameState from 'src/online/play/GameState';
+import GameOverCause from 'src/online/play/GameOverCause';
 import PartRoomRequest from 'src/online/room/PartRoomRequest';
 import SpectateRoomRequest from 'src/online/spectator/SpectateRoomRequest';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
@@ -62,6 +63,13 @@ export default class Player extends GameplayClient {
   public isWatchingMode = false;
 
   public reverse = new BindableBool();
+
+  public confirmRequestLoadings = {
+    [ConfirmRequestType.DRAW]: new BindableBool(),
+    [ConfirmRequestType.WITHDRAW]: new BindableBool(),
+    [ConfirmRequestType.PAUSE_GAME]: new BindableBool(),
+    [ConfirmRequestType.RESUME_GAME]: new BindableBool(),
+  }
 
   private resultDialog: any;
 
@@ -150,7 +158,7 @@ export default class Player extends GameplayClient {
         }
         const winner = this.localUser.chessHost == winChessHost ? this.localUser : this.otherUser;
         setTimeout(() => {
-          this.gameplayServer.gameOver(winner.id as number, true);
+          this.gameplayServer.gameOver(winner.id as number, GameOverCause.NORMAL);
         }, 0);
       };
 
@@ -207,12 +215,18 @@ export default class Player extends GameplayClient {
         }
       });
 
-      if (this.gameState.value == GameState.PAUSE) {
-        this.showText('对局暂停中，等待对手回来继续');
-      }
-
       if (initialGameStates) {
         this.game.start(this.localUser.chessHost, initialGameStates);
+
+        if (!this.isWatchingMode) {
+          if (this.gameState.value == GameState.PAUSE) {
+            this.showText('对局暂停中，等待对手回来继续');
+          }
+
+          if (this.gameState.value == GameState.END) {
+            this.showText('对局已结束');
+          }
+        }
       }
 
       this.gameState.addAndRunOnce(this.onGameStateChanged, this);
@@ -293,7 +307,7 @@ export default class Player extends GameplayClient {
       }
       this.userPlayInput.disable();
       // 如果步时/读秒时间用完
-      this.gameplayServer.gameOver(this.otherUser.id as number, false, true);
+      this.gameplayServer.gameOver(this.otherUser.id as number, GameOverCause.TIMEOUT);
     });
     this.localUser.stepTimer.setSoundEnabled(true);
 
@@ -426,14 +440,15 @@ export default class Player extends GameplayClient {
 
   protected gamePause() {
     this.gameState.value = GameState.PAUSE;
+    this.confirmRequestLoadings[ConfirmRequestType.PAUSE_GAME].value = false;
     if (!this.isWatchingMode) {
       this.playfield.hideContent();
     }
-    this.showText('对局暂停');
   }
 
   protected gameResume() {
     this.gameState.value = GameState.PLAYING;
+    this.confirmRequestLoadings[ConfirmRequestType.RESUME_GAME].value = false;
     if (!this.isWatchingMode) {
       this.playfield.showContent();
     }
@@ -449,7 +464,7 @@ export default class Player extends GameplayClient {
     this.game.activeChessHost.value = null;
 
     const loser = this.localUser.id == gameOverMsg.winUserId ? this.otherUser : this.localUser;
-    if (gameOverMsg.timeout) {
+    if (gameOverMsg.cause == GameOverCause.TIMEOUT) {
       loser.stepTimer.setCurrent(0);
     }
 
@@ -466,7 +481,7 @@ export default class Player extends GameplayClient {
       // eslint-disable-next-line
       this.resultDialog.open({
         result,
-        isTimeout: gameOverMsg.timeout,
+        cause: gameOverMsg.cause,
         action: (option: string) => {
           switch (option) {
             case 'again':
@@ -486,7 +501,7 @@ export default class Player extends GameplayClient {
         },
       });
     };
-    if (this.game.ended || !gameOverMsg.normal) {
+    if (this.game.ended || gameOverMsg.cause != GameOverCause.NORMAL) {
       onGameEnd();
       this.game.ended = true;
     } else {
@@ -531,6 +546,7 @@ export default class Player extends GameplayClient {
     if (!msg.ok) {
       this.showText(`${title}不同意${toReadableText(msg.reqType)}`, 1000);
     }
+    this.confirmRequestLoadings[msg.reqType as ConfirmRequestType].value = false;
   }
 
   protected resultsGameContinue() {
@@ -620,7 +636,6 @@ export default class Player extends GameplayClient {
       case GameState.READY:
       case GameState.PAUSE:
       case GameState.END: {
-        // 当对局暂停或结束，暂停计时器
         [
           this.localUser.gameTimer, this.localUser.stepTimer,
           this.otherUser.gameTimer, this.otherUser.stepTimer,
@@ -632,6 +647,9 @@ export default class Player extends GameplayClient {
       default:
         break;
     }
+    Object.keys(this.confirmRequestLoadings).forEach((key) => {
+      this.confirmRequestLoadings[key as unknown as ConfirmRequestType].value = false;
+    });
   }
 
   protected getChessHostName(chess: ChessHost) {
@@ -698,16 +716,32 @@ export default class Player extends GameplayClient {
   }
 
   public onWhiteFlagClick() {
-    this.gameplayServer.confirmRequest(ConfirmRequestType.WHITE_FLAG);
-    this.showText('已发送认输请求，等待对方回应', 1000);
+    this.context.$q.dialog({
+      title: '确认',
+      message: '你真的要认输吗',
+      persistent: true,
+      ok: {
+        label: '确定',
+        color: 'negative',
+      },
+      cancel: {
+        label: '取消',
+        color: 'white',
+        textColor: 'black',
+      },
+    }).onOk(() => {
+      this.gameplayServer.whiteFlag();
+    });
   }
 
   public onChessDrawClick() {
+    this.confirmRequestLoadings[ConfirmRequestType.DRAW].value = true;
     this.gameplayServer.confirmRequest(ConfirmRequestType.DRAW);
     this.showText('已发送和棋请求，等待对方回应', 1000);
   }
 
   public onWithdrawClick() {
+    this.confirmRequestLoadings[ConfirmRequestType.WITHDRAW].value = true;
     this.gameplayServer.confirmRequest(ConfirmRequestType.WITHDRAW);
     this.showText('已发送悔棋请求，等待对方回应', 1000);
   }
@@ -731,12 +765,12 @@ export default class Player extends GameplayClient {
         this.gameplayServer.resumeGame();
       }
     } else {
-      this.gameplayServer.confirmRequest(
-        this.gameState.value == GameState.PLAYING
-          ? ConfirmRequestType.PAUSE_GAME
-          : ConfirmRequestType.RESUME_GAME,
-      );
+      const reqType = this.gameState.value == GameState.PLAYING
+        ? ConfirmRequestType.PAUSE_GAME
+        : ConfirmRequestType.RESUME_GAME;
+      this.gameplayServer.confirmRequest(reqType);
       this.showText('已发送请求，等待对方回应', 1000);
+      this.confirmRequestLoadings[reqType].value = true;
     }
   }
 

@@ -35,10 +35,10 @@
         <text-overlay
           ref="textOverlay"
           class="absolute-center"
-          style="z-index: 11;"
+          style="z-index: 12;"
         />
         <text-overlay
-          v-if="gameState == 1 && gameStatus.text"
+          v-if="[1, 3].includes(gameState) && gameStatus.text"
           visible
           :text="gameStatus.text"
           class="absolute-center"
@@ -54,7 +54,7 @@
           ref="resultDialog"
           :show-again="!viewUser.isRoomOwner"
           class="absolute-center"
-          style="z-index: 11;"
+          style="z-index: 13;"
         />
       </playfield>
       <div class="fixed-bottom-left">
@@ -88,7 +88,7 @@
                   <q-item
                     clickable
                     v-close-popup
-                    :disable="!(isPlaying && withdrawEnabled)"
+                    :disable="confirmRequestLoadings[3] || !(isPlaying && withdrawEnabled)"
                     @click="onWithdrawClick"
                   >
                     <q-item-section>
@@ -100,7 +100,7 @@
                 <q-item
                   clickable
                   v-close-popup
-                  :disable="!isPlaying"
+                  :disable="confirmRequestLoadings[2] || !canChessDraw"
                   @click="onChessDrawClick"
                 >
                   <q-item-section>
@@ -111,7 +111,7 @@
                 <q-item
                   clickable
                   v-close-popup
-                  :disable="!isPlaying"
+                  :disable="!canWhiteFlag"
                   @click="onWhiteFlagClick"
                 >
                   <q-item-section>
@@ -122,13 +122,14 @@
                 <q-item
                   v-close-popup
                   clickable
-                  :disable="![2, 3].includes(gameState)"
+                  :disable="confirmRequestLoadings[isPlaying ? 4 : 5]
+                    || ![2, 3].includes(gameState)"
                   @click="onPauseOrResumeGameClick"
                 >
                   <q-item-section>
                     <q-item-label>
                       <q-icon name="far fa-clock" />
-                      {{ viewUser.isRoomOwner ? '' : '请求' }}{{ gameState != 3 ? '暂停对局' : '继续对局' }}
+                      {{ viewUser.isRoomOwner ? '' : '请求' }}{{ isPlaying ? '暂停对局' : '继续对局' }}
                     </q-item-label>
                   </q-item-section>
                 </q-item>
@@ -177,10 +178,10 @@
         <text-overlay
           ref="textOverlay"
           class="absolute-center"
-          style="z-index: 11;"
+          style="z-index: 12;"
         />
         <text-overlay
-          v-if="gameState == 1 && gameStatus.text"
+          v-if="[1, 3].includes(gameState) && gameStatus.text"
           visible
           :text="gameStatus.text"
           class="absolute-center"
@@ -196,7 +197,7 @@
           ref="resultDialog"
           :show-again="!viewUser.isRoomOwner"
           class="absolute-center"
-          style="z-index: 12;"
+          style="z-index: 13;"
         />
         <div class="absolute-bottom-right">
           <div class="column justify-evenly q-gutter-y-sm">
@@ -207,20 +208,22 @@
                 color="warning"
                 size="12px"
                 :disable="!(isPlaying && withdrawEnabled)"
+                :loading="confirmRequestLoadings[3]"
                 @click="onWithdrawClick"
               />
               <u-button
                 label="求和"
                 color="warning"
                 size="12px"
-                :disable="!isPlaying"
+                :disable="!canChessDraw"
+                :loading="confirmRequestLoadings[2]"
                 @click="onChessDrawClick"
               />
               <u-button
                 label="认输"
                 color="warning"
                 size="12px"
-                :disable="!isPlaying"
+                :disable="!canWhiteFlag"
                 @click="onWhiteFlagClick"
               />
             </template>
@@ -287,11 +290,12 @@
               color="white"
               text-color="black"
               :disable="![2, 3].includes(gameState)"
+              :loading="confirmRequestLoadings[isPlaying ? 4 : 5]"
               @click="onPauseOrResumeGameClick"
             >
               <span>
                 <q-icon name="access_time" />
-                {{ gameState != 3 ? '暂停游戏' : '继续游戏' }}
+                {{ viewUser.isRoomOwner ? '' : '请求' }}{{ isPlaying ? '暂停游戏' : '继续游戏' }}
               </span>
             </q-btn>
           </template>
@@ -312,6 +316,7 @@
 
 <script lang="ts">
 import {
+  computed,
   defineComponent, getCurrentInstance, PropType,
 } from '@vue/composition-api';
 import GameState from 'src/online/play/GameState';
@@ -320,7 +325,6 @@ import Playfield from 'src/pages/play/Playfield.vue';
 import ResultDialog from 'src/rulesets/ui/ResultDialog.vue';
 import TextOverlay from 'src/rulesets/ui/TextOverlay.vue';
 import Gamepad from 'src/rulesets/ui/Gamepad.vue';
-import GameUser from 'src/online/play/GameUser';
 import { GameType } from 'src/rulesets/GameType';
 import VsIcon from 'src/rulesets/ui/VsIcon.vue';
 import GameUserPanel from './GameUserPanel.vue';
@@ -355,18 +359,20 @@ export default defineComponent({
       required: true,
     },
 
-    isPlaying: Boolean,
+    confirmRequestLoadings: {
+      type: Object as PropType<any>,
+    },
 
     canWithdraw: Boolean,
 
     withdrawEnabled: Boolean,
 
     viewUser: {
-      type: Object as PropType<GameUser>,
+      type: Object as PropType<any>,
       required: true,
     },
     otherUser: {
-      type: Object as PropType<GameUser>,
+      type: Object as PropType<any>,
       required: true,
     },
 
@@ -410,6 +416,13 @@ export default defineComponent({
       },
     };
 
+    const isPlaying = computed(() => props.gameState == GameState.PLAYING);
+    const canWhiteFlag = computed(() => (
+      [GameState.PLAYING, GameState.PAUSE].includes(props.gameState)));
+    const canChessDraw = computed(() => (
+      // eslint-disable-next-line
+      props.otherUser.online && [GameState.PLAYING, GameState.PAUSE].includes(props.gameState)));
+
     const onChatClick = () => {
       emit('chat')
     };
@@ -436,6 +449,9 @@ export default defineComponent({
       isXSScreen,
       gameType,
       GAME_TYPE_MAP,
+      isPlaying,
+      canChessDraw,
+      canWhiteFlag,
 
       onChatClick,
       onWithdrawClick,

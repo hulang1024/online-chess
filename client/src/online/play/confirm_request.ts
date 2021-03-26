@@ -1,6 +1,4 @@
 export enum ConfirmRequestType {
-  /** 认输 */
-  WHITE_FLAG = 1,
   /** 和棋 */
   DRAW = 2,
   /** 悔棋 */
@@ -13,7 +11,6 @@ export enum ConfirmRequestType {
 
 export function toReadableText(type: ConfirmRequestType) {
   return {
-    [ConfirmRequestType.WHITE_FLAG]: '认输',
     [ConfirmRequestType.DRAW]: '和棋',
     [ConfirmRequestType.WITHDRAW]: '悔棋',
     [ConfirmRequestType.PAUSE_GAME]: '暂停对局',

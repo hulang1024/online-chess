@@ -45,8 +45,10 @@ export default class ChessMoveAnimation {
         chess.flipToFront();
       }
       setTimeout(() => {
-        if (events.dropStart && !emited.dropStart) {
-          events.dropStart();
+        if (!emited.dropStart) {
+          if (events.dropStart) {
+            events.dropStart();
+          }
           emited.dropStart = true;
           chess.el.classList.remove('overlay');
           if (enableAudio) {
@@ -60,8 +62,10 @@ export default class ChessMoveAnimation {
           }
         }, 50);
       }, flip ? flipDuration : 0);
-      if (events.moveEnd && !emited.moveEnd) {
-        events.moveEnd();
+      if (!emited.moveEnd) {
+        if (events.moveEnd) {
+          events.moveEnd();
+        }
         emited.moveEnd = true;
       }
     };

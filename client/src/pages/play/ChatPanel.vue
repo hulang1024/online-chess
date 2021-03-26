@@ -13,17 +13,21 @@
       }"
       :style="{height: `${channelHeight}px`}"
     />
-    <chat-input-box :channel="channel" />
+    <chat-input-box
+      ref="chatInput"
+      :channel="channel"
+    />
   </q-card>
 </template>
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, onMounted, ref,
+  defineComponent, getCurrentInstance, onMounted, provide, ref,
 } from '@vue/composition-api'
 import Channel from 'src/online/chat/Channel';
 import ChatInputBox from 'src/overlays/chat/ChatInputBox.vue';
 import DrawableChannel from 'src/overlays/chat/DrawableChannel.vue';
+import User from 'src/user/User';
 
 export default defineComponent({
   components: { DrawableChannel, ChatInputBox },
@@ -34,6 +38,11 @@ export default defineComponent({
 
     onMounted(() => {
       channelHeight.value = context.$el.scrollHeight - 56;
+    });
+
+    provide('chatAtUser', (user: User) => {
+      // eslint-disable-next-line
+      (context.$refs as any).chatInput.atUser(user);
     });
 
     const loadChannel = (ch: Channel) => {
