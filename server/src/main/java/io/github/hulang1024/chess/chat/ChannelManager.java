@@ -138,6 +138,9 @@ public class ChannelManager {
         ChannelCreateRet result = new ChannelCreateRet();
 
         User targetUser = userManager.getLoggedInUser(targetUserId);
+        if (targetUser == null && targetUserId > 0) {
+            targetUser = userManager.getDatabaseUser(targetUserId);
+        }
         result.setTargetUser(targetUser);
 
         if (targetUser == null || targetUser.equals(UserUtils.get())) {
