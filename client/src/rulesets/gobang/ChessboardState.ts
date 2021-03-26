@@ -8,7 +8,12 @@ export default class ChessboardState {
 
   constructor(size: number) {
     this.size = size;
-    this.clear();
+    for (let row = 0; row < this.size; row++) {
+      this.array.push(new Array(this.size));
+      for (let col = 0; col < this.size; col++) {
+        this.array[row][col] = null;
+      }
+    }
   }
 
   public isValid(pos: ChessPos) {
@@ -29,7 +34,6 @@ export default class ChessboardState {
 
   public clear() {
     for (let row = 0; row < this.size; row++) {
-      this.array.push(new Array(this.size));
       for (let col = 0; col < this.size; col++) {
         this.array[row][col] = null;
       }
