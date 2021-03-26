@@ -48,6 +48,9 @@ import { channelManager } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
 import EmojiPanel from './EmojiPanel.vue';
 
+// 全局唯一
+const messageText = ref('');
+
 export default defineComponent({
   components: { EmojiPanel },
   props: {
@@ -61,7 +64,6 @@ export default defineComponent({
     // eslint-disable-next-line
     const notify = context.$q.notify;
 
-    const messageText = ref('');
     const enabled = ref(true);
 
     const onSend = () => {
