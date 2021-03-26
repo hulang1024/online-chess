@@ -22,6 +22,10 @@ export default class SocketService {
 
   public readonly reconnected = new Signal();
 
+  private loggedInCount = 0;
+
+  public readonly reLoggedIn = new Signal();
+
   public readonly loggedIn = new Signal();
 
   public channelManager: ChannelManager;
@@ -180,7 +184,10 @@ export default class SocketService {
     }
 
     this.isWSLoggedIn = true;
-    this.loggedIn.dispatch();
+    this.loggedIn.dispatch(++this.loggedInCount);
+    if (this.loggedInCount > 1) {
+      this.reLoggedIn.dispatch(this.loggedInCount);
+    }
   }
 
   private onConnected() {

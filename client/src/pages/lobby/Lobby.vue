@@ -198,26 +198,12 @@ export default defineComponent({
       $q.loading.hide();
     };
 
-    const onWSLoggedIn = () => {
+    const onLoggedIn = () => {
       queryRooms();
       userActivityClient.enter(1);
     };
 
-    socketService.loggedIn.add(onWSLoggedIn);
-
-    const onLoggedIn = () => {
-      if (!api.isLoggedIn) {
-        return;
-      }
-      if (ctx.$refs.usersPanel) {
-        // eslint-disable-next-line
-        (ctx.$refs.usersPanel as any).queryUsers();
-      }
-      userActivityClient.enter(1);
-
-      requestNotificationPermission();
-    };
-    api.state.changed.add(onLoggedIn);
+    socketService.reLoggedIn.add(onLoggedIn);
 
     const onGameContinue = () => {
       const onAction = (isOk: boolean) => {
@@ -330,7 +316,7 @@ export default defineComponent({
 
     onMounted(() => {
       onLoggedIn();
-      queryRooms();
+      requestNotificationPermission();
 
       // eslint-disable-next-line
       (ctx.$vnode.context?.$refs.toolbar as any).excludeToggle('chat', true);
@@ -338,8 +324,7 @@ export default defineComponent({
     });
 
     onBeforeUnmount(() => {
-      socketService.loggedIn.remove(onWSLoggedIn);
-      api.state.changed.remove(onLoggedIn);
+      socketService.reLoggedIn.remove(onLoggedIn);
       roomManager.removeListeners();
       socketService.off('play.game_continue', onGameContinue);
       socketService.off('play.game_states', onGameStates);

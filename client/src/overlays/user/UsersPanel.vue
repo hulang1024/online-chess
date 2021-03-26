@@ -89,7 +89,7 @@
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, onBeforeMount, onMounted, ref, watch,
+  defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, ref, watch,
 } from '@vue/composition-api';
 import GetUsersRequest from 'src/online/user/GetUsersRequest';
 import SearchUserInfo from 'src/online/user/SearchUserInfo';
@@ -170,11 +170,18 @@ export default defineComponent({
       api.queue(req);
     };
 
-    onMounted(() => {
+    const onLoggedIn = () => {
+      queryUsers();
       userActivityClient.enter(2);
+    };
+    socketService.reLoggedIn.add(onLoggedIn);
+
+    onMounted(() => {
+      onLoggedIn();
     });
 
-    onBeforeMount(() => {
+    onBeforeUnmount(() => {
+      socketService.reLoggedIn.remove(onLoggedIn);
       userActivityClient.exit(2);
     });
 
@@ -239,11 +246,6 @@ export default defineComponent({
       }
       return true;
     };
-
-    socketService.loggedIn.add(() => {
-      queryUsers();
-      userActivityClient.enter(2);
-    });
 
     return {
       columns,
