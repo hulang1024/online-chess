@@ -13,7 +13,6 @@
       <div
         class="nickname"
         :class="{'has-background': hasBackground}"
-        @click="onNicknameClick"
         :style="{
           color: hasBackground ? ($q.dark.isActive ? '#111' : '#fff') : nicknameColor,
         }"
@@ -24,25 +23,53 @@
           :style="{
             background: hasBackground ? backgroundColor : ''
           }"
-        >{{ nickname }}</span>
+        >
+          <span>{{ nickname }}</span>
+          <user-menu
+            v-if="hasMenu"
+            :user="sender"
+            :has-at="canAt"
+            @at-click="onAtClick"
+          />
+        </span>
         <span v-if="!hasBackground">:</span>
       </div>
     </div>
     <div class="content">
       <span :style="{color: contentColor}">{{ content }}</span>
+      <q-menu
+        touch-position
+        context-menu
+      >
+        <q-list>
+          <q-item
+            v-if="canRecall"
+            key="recall"
+            v-close-popup
+            clickable
+            @click="onRecallClick"
+          >
+            <q-item-section>撤回</q-item-section>
+          </q-item>
+        </q-list>
+      </q-menu>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, PropType, ref,
+  computed, defineComponent, getCurrentInstance, PropType, ref,
 } from "@vue/composition-api";
+import { api, channelManager } from "src/boot/main";
 import ErrorMessage from "src/online/chat/ErrorMessage";
 import Message from "src/online/chat/Message";
 import { USERNAME_COLORS } from 'src/user/components/colors';
+import { isSystemUser } from "src/user/User";
+import UserMenu from "../user/UserMenu.vue";
 
 export default defineComponent({
+  components: { UserMenu },
   props: {
     message: {
       type: Object as PropType<Message>,
@@ -57,7 +84,7 @@ export default defineComponent({
       default: false,
     },
   },
-  inject: ['showUserDetails'],
+  inject: ['showUserDetails', 'chatAtUser'],
   setup(props) {
     const context = getCurrentInstance() as Vue;
     const message = props.message as Message;
@@ -78,12 +105,20 @@ export default defineComponent({
       contentColor.value = 'pink';
     }
 
-    const onNicknameClick = () => {
-      if (sender.id == 0) {
-        return;
-      }
+    const hasMenu = computed(() => !isSystemUser(sender));
+
+    const canAt = computed(() => !isSystemUser(sender) && sender.id != api.localUser.id);
+
+    const canRecall = computed(() => sender.id != 0
+      && (api.localUser.isAdmin || sender.id == api.localUser.id));
+
+    const onAtClick = () => {
       // eslint-disable-next-line
-      (context as any).showUserDetails(sender);
+      (context as any).chatAtUser(sender);
+    };
+
+    const onRecallClick = () => {
+      channelManager.postCommand(`/recall ${message.id}`);
     };
 
     return {
@@ -93,9 +128,14 @@ export default defineComponent({
       hasBackground: sender.isAdmin,
       backgroundColor: sender.isAdmin ? '#512da8' : '',
       content: message.content,
+      sender,
       contentColor,
       pending: message.id == null,
-      onNicknameClick,
+      hasMenu,
+      canAt,
+      canRecall,
+      onAtClick,
+      onRecallClick,
     };
   },
 });
@@ -152,5 +192,9 @@ export default defineComponent({
 
 .row .nickname__text:hover {
   opacity: 0.6;
+}
+
+.row .content {
+  flex-grow: 1;
 }
 </style>

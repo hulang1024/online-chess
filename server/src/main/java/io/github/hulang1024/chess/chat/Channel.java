@@ -7,6 +7,7 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Data
@@ -50,6 +51,10 @@ public class Channel {
             return false;
         }
         return messages.removeIf(m -> m.getId() == messageId);
+    }
+
+    public Optional<Message> getMessageById(long messageId) {
+        return messages.stream().filter(m -> m.getId() == messageId).findFirst();
     }
 
     public void removeMessages(Collection<Message> messages) {

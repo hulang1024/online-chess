@@ -70,6 +70,9 @@ export default class Channel {
       return;
     }
     this.messages = this.messages.filter((msg) => msg != message);
+    if (messageId == this.lastMessageId) {
+      this.lastMessageId = this.messages[this.messages.length - 1]?.id;
+    }
     this.messageRemoved.dispatch(message);
   }
 

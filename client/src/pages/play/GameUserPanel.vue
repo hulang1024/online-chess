@@ -46,10 +46,15 @@
           <span>{{ emoji }}</span>
         </div>
         <div
-          v-show="user && (status == UserStatus.AFK || !online)"
+          v-show="user && (status == UserStatus.AFK || !online || typing)"
           :class="['user-status', `absolute-bottom-${reverse ? 'right' : 'left'}`]"
         >
-          <span>({{ online ? '离开' : '离线' }})</span>
+          <span v-if="!online">离线</span>
+          <span v-else-if="status == UserStatus.AFK">离开</span>
+          <span
+            v-else-if="typing"
+            class="typing"
+          >输入消息中</span>
         </div>
       </div>
       <div
@@ -137,6 +142,7 @@ export default defineComponent({
     status: Number as PropType<UserStatus>,
     chess: Number as PropType<ChessHost | undefined>,
     active: Boolean,
+    typing: Boolean,
     showReadyStatus: Boolean,
     reverse: Boolean,
     gameType: Number as PropType<GameType>,
@@ -234,8 +240,8 @@ export default defineComponent({
     animation-name: animation-user-avatar-frame-active-dark
 
   .user-status
-    padding: 2px 6px
-    background: rgba(0, 0, 0, 0.4)
+    padding: 2px 0px
+    background: rgba(0, 0, 0, 0.5)
     width: 100%
     border-radius: inherit
     border-top-left-radius: 0px
@@ -244,6 +250,9 @@ export default defineComponent({
     color: #fff
     text-align: center
     pointer-events: none
+
+    .typing
+      font-size: 11px
 
   .info-overlay
     width: 100%

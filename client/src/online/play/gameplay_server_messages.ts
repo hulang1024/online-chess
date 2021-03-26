@@ -37,3 +37,8 @@ export interface GameContinueResponseMsg extends ServerMsg {
 export interface GameStatesMsg extends ServerMsg {
   states: ResponseGameStates
 }
+
+export interface ChatStatusInGameMsg extends ServerMsg {
+  uid: number;
+  typing: boolean;
+}

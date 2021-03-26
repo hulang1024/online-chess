@@ -45,8 +45,6 @@ export default class ChannelManager {
     this.currentChannel.value = this.getChannel(channelId);
   }
 
-  private readonly closeTipMessage = new InfoMessage('使用命令/close关闭当前频道');
-
   public openPrivateChannel(user: User) {
     if (user.id == this.api.localUser.id) {
       return;
@@ -57,11 +55,6 @@ export default class ChannelManager {
         && c.users.length == 1
         && c.users[0].id == user.id)[0]
       || this.joinChannel(new Channel(user), false);
-
-    if (this.currentChannel.value.messages
-      .filter((m) => m.id == this.closeTipMessage.id).length == 0) {
-      this.currentChannel.value.addNewMessages(this.closeTipMessage);
-    }
   }
 
   public joinChannel(channel: Channel, fetchInitalMessages = true): Channel {
@@ -78,6 +71,9 @@ export default class ChannelManager {
           request.success = (resChannel: APICreatedChannel) => {
             if (resChannel.channelId) {
               channel.id = resChannel.channelId;
+              if (resChannel.targetUser) {
+                channel.users[0] = resChannel.targetUser;
+              }
             }
             if (resChannel.recentMessages) {
               this.handleChannelMessages(resChannel.recentMessages.map((m) => Message.from(m)));
@@ -233,11 +229,6 @@ export default class ChannelManager {
         target.addNewMessages(new InfoMessage(helpText));
         break;
       }
-      case 'close':
-        if (target.type == ChannelType.PM) {
-          this.onHideChannel(target);
-        }
-        break;
       default:
         this.postMessage(text, false, channel);
     }
@@ -299,14 +290,16 @@ export default class ChannelManager {
 
   private initSocketListeners() {
     this.socketService.on('chat.message', (msg: ChatServerMsgs.ChatMessageMsg) => {
-      const channel = this.getChannel(msg.channelId);
-      channel.addNewMessages(Message.from(msg));
-      if (channel.type == ChannelType.PM && document.hidden) {
+      const { message } = msg;
+      const channel = this.getChannel(message.channelId);
+      channel.addNewMessages(Message.from(message));
+      if (channel.type == ChannelType.PM) {
         // eslint-disable-next-line
-        desktopNotify(`${msg.sender.nickname} 给您发送了一条私信: ${msg.content}`);
+        desktopNotify(`${message.sender.nickname} 给您发送了一条私信: ${message.content}`);
       }
-      if (msg.sender.id == this.api.localUser.id) {
-        this.markChannelAsRead(this.getChannel(msg.channelId, false, false));
+
+      if (message.sender.id == this.api.localUser.id) {
+        this.markChannelAsRead(this.getChannel(message.channelId, false, false));
       }
     });
 
@@ -317,6 +310,8 @@ export default class ChannelManager {
 
       if (channel.type == ChannelType.PM) {
         channel.name = msg.sender.nickname;
+        channel.users[0] = api.localUser;
+        channel.users[1] = msg.sender;
         this.joinChannel(channel, false);
         this.openPrivateChannel(msg.sender);
       } else if (channel.type == ChannelType.ROOM) {
@@ -372,6 +367,9 @@ export default class ChannelManager {
   }
 
   private fetchInitalMessages(channel: Channel) {
+    if (!channel.id) {
+      return;
+    }
     if (channel.messagesLoaded) return;
     const req = new GetMessagesRequest(channel);
     channel.loading.value = true;

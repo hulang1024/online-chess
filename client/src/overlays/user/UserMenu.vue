@@ -1,7 +1,7 @@
 <template>
   <q-menu
     v-if="isLoggedIn"
-    content-class="bg-primary text-white z-top"
+    content-class="z-top"
     touch-position
     v-bind="$attrs"
   >
@@ -25,6 +25,17 @@
           <q-item-section>聊天</q-item-section>
         </q-item>
         <q-separator />
+        <template v-if="hasAt">
+          <q-item
+            key="at"
+            v-close-popup
+            clickable
+            @click="onAtClick()"
+          >
+            <q-item-section><q-icon name="fas fa-at" /></q-item-section>
+          </q-item>
+          <q-separator />
+        </template>
         <q-item
           key="spectate"
           v-close-popup
@@ -33,23 +44,25 @@
         >
           <q-item-section>观战</q-item-section>
         </q-item>
-        <q-separator />
-        <q-item
-          key="invite-play"
-          v-close-popup
-          clickable
-          @click="onInviteClick(1)"
-        >
-          <q-item-section>邀请加入游戏</q-item-section>
-        </q-item>
-        <q-item
-          key="invite-spectate"
-          v-close-popup
-          clickable
-          @click="onInviteClick(2)"
-        >
-          <q-item-section>邀请观战游戏</q-item-section>
-        </q-item>
+        <template v-if="isPlayingOrSpectating">
+          <q-separator />
+          <q-item
+            key="invite-play"
+            v-close-popup
+            clickable
+            @click="onInviteClick(1)"
+          >
+            <q-item-section>邀请加入游戏</q-item-section>
+          </q-item>
+          <q-item
+            key="invite-spectate"
+            v-close-popup
+            clickable
+            @click="onInviteClick(2)"
+          >
+            <q-item-section>邀请观战游戏</q-item-section>
+          </q-item>
+        </template>
         <template v-if="user.isFriend">
           <q-separator />
           <q-item
@@ -68,6 +81,7 @@
 
 <script lang="ts">
 import {
+  computed,
   defineComponent, getCurrentInstance, PropType, ref,
 } from "@vue/composition-api";
 import DeleteFriendRequest from 'src/online/friend/DeleteFriendRequest';
@@ -81,9 +95,10 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     user: Object as PropType<SearchUserInfo>,
+    hasAt: Boolean,
   },
   inject: ['showUserDetails', 'excludeToggle'],
-  setup(props) {
+  setup(props, { emit }) {
     const context = getCurrentInstance() as Vue;
     const { $router, $q } = context;
     const user = props.user as SearchUserInfo;
@@ -92,6 +107,9 @@ export default defineComponent({
     api.state.changed.add(() => {
       isLoggedIn.value = api.isLoggedIn;
     });
+
+    const isPlayingOrSpectating = computed(() => (
+      ['play', 'spectate'].includes(context.$router.currentRoute.name as string)));
 
     const onUserDetailsClick = () => {
       // eslint-disable-next-line
@@ -102,6 +120,10 @@ export default defineComponent({
       // eslint-disable-next-line
       (context as any).excludeToggle('chat', true);
       channelManager.openPrivateChannel(user);
+    };
+
+    const onAtClick = () => {
+      emit('at-click');
     };
 
     const onSpectateClick = () => {
@@ -171,9 +193,10 @@ export default defineComponent({
     return {
       isLoggedIn,
       isMe: () => user.id == api.localUser.id,
-
+      isPlayingOrSpectating,
       onUserDetailsClick,
       onChatClick,
+      onAtClick,
       onSpectateClick,
       onInviteClick,
       onDeleteFriendClick,

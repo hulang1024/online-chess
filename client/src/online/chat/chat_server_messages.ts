@@ -4,17 +4,14 @@ import User from "src/user/User";
 import ServerMsg from "../ws/ServerMsg";
 
 export interface ChatMessageMsg extends ServerMsg {
-  id: number;
-
-  channelId: number;
-
-  timestamp: number;
-
-  sender: User;
-
-  content: string;
-
-  isAction: boolean;
+  message: {
+    id: number;
+    channelId: number;
+    timestamp: number;
+    sender: User;
+    content: string;
+    isAction: boolean;
+  }
 }
 
 export interface ChatPresenceMsg extends ServerMsg {

@@ -1,9 +1,10 @@
 import {
   computed, reactive, ref, Ref, watchEffect, watch, getCurrentInstance, onBeforeUnmount,
 } from "@vue/composition-api";
-import { channelManager } from "src/boot/main";
+import { channelManager, socketService } from "src/boot/main";
 import Channel from "src/online/chat/Channel";
 import ChannelType from "src/online/chat/ChannelType";
+import { ChatStatusInGameMsg } from "src/online/play/gameplay_server_messages";
 import GameState from "src/online/play/GameState";
 import ChessHost from "src/rulesets/chess_host";
 import { createBoundRef } from "src/utils/vue/vue_ref_utils";
@@ -27,6 +28,7 @@ export function usePlayerStates(player: Player) {
     chess: createBoundRef(user.chess),
     isRoomOwner: createBoundRef(user.isRoomOwner),
     active: false,
+    typing: false,
     reverse: false,
   });
 
@@ -120,9 +122,18 @@ export function usePlayerStates(player: Player) {
 
   const chatOverlay = ((context.$vnode.context as Vue).$refs.chatOverlay as Vue);
   chatOverlay.$on('active', updateUnreadMessageCount);
+  socketService.on('play.chat_status', (msg: ChatStatusInGameMsg) => {
+    if (msg.uid == viewUser.user?.id) {
+      viewUser.typing = msg.typing;
+    }
+    if (msg.uid == otherUser.user?.id) {
+      otherUser.typing = msg.typing;
+    }
+  });
 
   onBeforeUnmount(() => {
     chatOverlay.$off('active', updateUnreadMessageCount);
+    socketService.off('play.chat_status');
   });
 
   const onChatClick = () => {

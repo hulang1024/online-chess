@@ -1,5 +1,6 @@
 package io.github.hulang1024.chess.chat;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import io.github.hulang1024.chess.user.User;
 import lombok.Data;
 
@@ -7,6 +8,7 @@ import lombok.Data;
 public class Message {
     private long id;
     private long channelId;
+    @JSONField(serialize = false)
     private User sender;
     private long timestamp;
     private String content;
@@ -33,5 +35,24 @@ public class Message {
         }
 
         return this.timestamp == other.timestamp;
+    }
+
+    @JSONField(name = "sender")
+    public Sender getAPISender() {
+        return new Sender(sender);
+    }
+
+    @Data
+    public static class Sender {
+        private long id;
+        @JSONField(name = "isAdmin")
+        private boolean isAdmin;
+        private String nickname;
+
+        public Sender(User user) {
+            this.id = user.getId();
+            this.isAdmin = user.isAdmin();
+            this.nickname = user.getNickname();
+        }
     }
 }

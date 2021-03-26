@@ -211,7 +211,6 @@ public class RoomManager {
 
         ChatUpdatesServerMsg chatUpdatesServerMsg = new ChatUpdatesServerMsg();
         chatUpdatesServerMsg.setChannel(room.getChannel());
-        chatUpdatesServerMsg.setRecentMessages(room.getChannel().getMessages());
         wsMessageService.send(chatUpdatesServerMsg, user);
 
         channelManager.broadcast(room.getChannel(), new InfoMessage(user.getNickname() + " 加入房间"));

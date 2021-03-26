@@ -10,6 +10,8 @@
       :disable="!enabled"
       class="message-input"
       @keydown.enter="onSend"
+      @focus="onFocus"
+      @blur="onBlur"
     >
       <template v-slot:before>
         <q-btn
@@ -21,6 +23,8 @@
           <q-popup-proxy
             ref="emojiPanelProxy"
             :offset="[0, 10]"
+            @show="onFocus"
+            @blur="onBlur"
           >
             <emoji-panel @emoji-select="onEmojiSelect" />
           </q-popup-proxy>
@@ -28,10 +32,11 @@
       </template>
       <template v-slot:after>
         <q-btn
-          icon="keyboard_return"
+          color="primary"
           unelevated
-          padding="7px"
+          padding="7px 12px"
           label="发送"
+          :disable="sendDisable"
           class="send"
           @click="onSend"
         />
@@ -42,10 +47,11 @@
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, PropType, ref,
+  defineComponent, getCurrentInstance, onUnmounted, PropType, ref, watch,
 } from '@vue/composition-api';
-import { channelManager } from 'src/boot/main';
+import { channelManager, socketService } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
+import User from 'src/user/User';
 import EmojiPanel from './EmojiPanel.vue';
 
 // 全局唯一
@@ -63,8 +69,21 @@ export default defineComponent({
     const context = getCurrentInstance() as Vue;
     // eslint-disable-next-line
     const notify = context.$q.notify;
-
+    const sendDisable = ref(true);
     const enabled = ref(true);
+
+    watch(messageText, (text) => {
+      sendDisable.value = text.length == 0;
+    });
+
+    const focus = () => {
+      // eslint-disable-next-line
+      (context.$refs.messageInput as any).focus();
+    };
+
+    const atUser = (user: User) => {
+      messageText.value += `@${user.nickname}`;
+    };
 
     const onSend = () => {
       const text = messageText.value.trim();
@@ -102,10 +121,38 @@ export default defineComponent({
       enabled.value = value;
     });
 
+    let nowTyping = false;
+    const sendTyping = (typing: boolean) => {
+      if (nowTyping == typing) {
+        return;
+      }
+      nowTyping = typing;
+      socketService.send('play.chat_status', { typing });
+    };
+    const isPlaying = () => context.$router.currentRoute.name as string == 'play';
+    const onFocus = () => {
+      if (isPlaying()) {
+        sendTyping(true);
+      }
+    };
+
+    const onBlur = () => {
+      if (isPlaying()) {
+        sendTyping(false);
+      }
+    };
+
+    onUnmounted(onBlur);
+
     return {
       messageText,
       enabled,
+      sendDisable,
+      focus,
+      atUser,
       onSend,
+      onFocus,
+      onBlur,
       onEmojiSelect,
     };
   },
@@ -117,8 +164,7 @@ export default defineComponent({
 }
 
 .send {
-  background-color: #575757;
-  color: #fff;
+  transition: all 0.1s ease-out;
 }
 
 .send >>> .q-icon.on-left {

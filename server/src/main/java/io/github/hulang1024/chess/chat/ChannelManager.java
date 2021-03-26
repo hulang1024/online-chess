@@ -138,6 +138,8 @@ public class ChannelManager {
         ChannelCreateRet result = new ChannelCreateRet();
 
         User targetUser = userManager.getLoggedInUser(targetUserId);
+        result.setTargetUser(targetUser);
+
         if (targetUser == null || targetUser.equals(UserUtils.get())) {
             result.setChannelId(0L);
             return result;
@@ -266,12 +268,7 @@ public class ChannelManager {
 
         channel.addNewMessage(message);
 
-        ChatMessageServerMsg msgMsg = new ChatMessageServerMsg();
-        msgMsg.setId(message.getId());
-        msgMsg.setChannelId(message.getChannelId());
-        msgMsg.setSender(message.getSender());
-        msgMsg.setContent(message.getContent());
-        msgMsg.setTimestamp(message.getTimestamp());
+        ChatMessageServerMsg msgMsg = new ChatMessageServerMsg(message);
 
         User exclude = excludes.length == 1 ? excludes[0] : null;
         channel.getUsers().forEach(user -> {
@@ -285,13 +282,7 @@ public class ChannelManager {
     }
 
     public void sendSystemMessageToUser(SystemMessage message, User user) {
-        ChatMessageServerMsg msgMsg = new ChatMessageServerMsg();
-        msgMsg.setId(message.getId());
-        msgMsg.setChannelId(message.getChannelId());
-        msgMsg.setSender(message.getSender());
-        msgMsg.setContent(message.getContent());
-        msgMsg.setTimestamp(message.getTimestamp());
-        wsMessageService.send(msgMsg, user);
+        wsMessageService.send(new ChatMessageServerMsg(message), user);
     }
 
     public void removeChannel(Channel channel) {

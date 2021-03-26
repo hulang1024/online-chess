@@ -103,7 +103,6 @@ public class SpectatorManager {
 
         ChatUpdatesServerMsg chatUpdatesServerMsg = new ChatUpdatesServerMsg();
         chatUpdatesServerMsg.setChannel(room.getChannel());
-        chatUpdatesServerMsg.setRecentMessages(room.getChannel().getMessages());
         wsMessageService.send(chatUpdatesServerMsg, spectator);
 
         spectatorRoomMap.put(spectator.getId(), room);

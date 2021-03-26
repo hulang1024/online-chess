@@ -47,6 +47,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
         addMessageHandler(ReadyMsg.class, this::onReady);
         addMessageHandler(ConfirmRequestMsg.class, this::onConfirmRequest);
         addMessageHandler(ConfirmResponseMsg.class, this::onConfirmResponse);
+        addMessageHandler(ChatStatusInGameMsg.class, this::onChatStatusInGameMsg);
     }
 
     private void onReady(ReadyMsg readyMsg) {
@@ -308,5 +309,11 @@ public class GameplayMessageListener extends AbstractMessageListener {
             new InfoMessage(winUser == null
                 ? "平局"
                 : winUser.getNickname() + " 胜"));
+    }
+
+    private void onChatStatusInGameMsg(ChatStatusInGameMsg msg) {
+        User user = msg.getUser();
+        Room room = roomManager.getJoinedRoom(user);
+        roomManager.broadcast(room, new ChatStatusInGameServerMsg(user.getId(), msg.isTyping()), user);
     }
 }

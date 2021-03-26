@@ -53,7 +53,7 @@
       class="table"
     >
       <template v-slot:body="props">
-        <q-tr @click.native="onUserDetailsClick(props.row)">
+        <q-tr>
           <q-td
             key="device"
             style="width: 14px"
@@ -80,10 +80,7 @@
           >
             {{ USER_STATUS_MAP[props.row.status].text }}
           </q-td>
-          <user-menu
-            context-menu
-            :user="props.row"
-          />
+          <user-menu :user="props.row" />
         </q-tr>
       </template>
     </q-table>
@@ -108,7 +105,6 @@ import UserOnlineCountPanel from './UserOnlineCountPanel.vue';
 
 export default defineComponent({
   components: { UserGridPanel, UserMenu, UserOnlineCountPanel },
-  inject: ['showUserDetails'],
   setup() {
     const context = getCurrentInstance() as Vue;
 
@@ -244,11 +240,6 @@ export default defineComponent({
       return true;
     };
 
-    const onUserDetailsClick = (user: SearchUserInfo) => {
-      // eslint-disable-next-line
-      (context as any).showUserDetails(user);
-    };
-
     socketService.reconnected.add(() => {
       queryUsers();
       userActivityClient.enter(2);
@@ -266,7 +257,6 @@ export default defineComponent({
 
       isShowInTab,
       users,
-      onUserDetailsClick,
 
       queryUsers,
     };

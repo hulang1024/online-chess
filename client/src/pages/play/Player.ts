@@ -321,8 +321,10 @@ export default class Player extends GameplayClient {
     gameplayClient.connect();
     gameplayClient.userJoined = () => {
       GameAudio.play('room/user_join');
-      // eslint-disable-next-line
-      desktopNotify('有玩家加入房间');
+      if (!this.isWatchingMode) {
+        // eslint-disable-next-line
+        desktopNotify('有玩家加入房间');
+      }
     };
     gameplayClient.userLeft = this.onUserLeft;
 

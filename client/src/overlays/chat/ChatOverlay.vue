@@ -22,9 +22,22 @@
           v-for="(channel, index) in channels"
           :key="channel.name"
           :name="getChannelTabName(channel)"
-          :label="channel.name"
           no-caps
+          :class="$q.screen.xs && 'mobile'"
         >
+          <user-avatar
+            v-if="channel.type == 3"
+            :user="channel.users[0]"
+            size="24px"
+          />
+          <span class="q-pl-xs">{{ channel.name }}</span>
+          <q-icon
+            v-if="channel.id != 1 && channel.type != 2"
+            name="close"
+            class="close-tab-btn q-pl-sm"
+            :class="$q.screen.xs && 'mobile'"
+            @click.stop="onCloseClick(channel)"
+          />
           <q-badge
             v-show="channelUnreadCounts[index] > 0"
             color="red"
@@ -45,14 +58,15 @@
           <drawable-channel :channel="channel" />
         </q-tab-panel>
       </q-tab-panels>
-      <chat-input-box />
+      <chat-input-box ref="chatInput" />
     </q-card>
   </q-dialog>
 </template>
 
 <script lang="ts">
+import device from "current-device";
 import {
-  defineComponent, getCurrentInstance, ref, watch,
+  defineComponent, getCurrentInstance, provide, ref, watch,
 } from '@vue/composition-api';
 import { existsEmoji } from 'src/assets/emoji';
 import { api, channelManager } from 'src/boot/main';
@@ -60,12 +74,14 @@ import Channel from 'src/online/chat/Channel';
 import ChannelType from 'src/online/chat/ChannelType';
 import InfoMessage from 'src/online/chat/InfoMessage';
 import Message from 'src/online/chat/Message';
+import desktopNotify from "src/components/notify";
+import UserAvatar from "src/user/components/UserAvatar.vue";
 import User, { isSystemUser } from 'src/user/User';
 import ChatInputBox from './ChatInputBox.vue';
 import DrawableChannel from './DrawableChannel.vue';
 
 export default defineComponent({
-  components: { DrawableChannel, ChatInputBox },
+  components: { DrawableChannel, ChatInputBox, UserAvatar },
   setup(props, { emit }) {
     const ctx = getCurrentInstance() as Vue;
     const isOpen = ref(false);
@@ -100,8 +116,22 @@ export default defineComponent({
 
       if (isOpen.value) {
         updateUnreadCounts();
+        // eslint-disable-next-line
+        if (!device.mobile()) {
+          ctx.$nextTick(() => {
+            // eslint-disable-next-line
+            (ctx.$refs as any).chatInput.focus();
+          });
+        }
       }
     });
+
+    provide('chatAtUser', (user: User) => {
+      // eslint-disable-next-line
+      (ctx.$refs as any).chatInput.atUser(user);
+    });
+
+    const atReg = new RegExp('@(.+)');
 
     channelManager.joinedChannels.added.add((channel: Channel) => {
       channels.value.push(channel);
@@ -111,9 +141,20 @@ export default defineComponent({
         }
 
         const last = messages[messages.length - 1];
+
         // 系统用户发送的消息
         if (isSystemUser(last.sender)) {
           return;
+        }
+
+        const matched = atReg.exec(last.content);
+        if ((matched && matched.length > 1)
+          && matched[1].startsWith(api.localUser.nickname)
+          && (new Date().getTime() - last.timestamp) < 5000) {
+          const notifyText = `用户[${last.sender.nickname}]在频道[${channel.name}]@了你`;
+          // eslint-disable-next-line
+          desktopNotify(notifyText);
+          ctx.$q.notify(notifyText);
         }
 
         // 解决当弹出窗口之后，当棋盘已有选中棋子点击棋盘误触移动的问题
@@ -147,6 +188,13 @@ export default defineComponent({
           isOpen.value = false;
         }
       });
+
+      if (channel.type == ChannelType.PM) {
+        ctx.$nextTick(() => {
+          // eslint-disable-next-line
+          (ctx.$refs as any).chatInput.focus();
+        });
+      }
     });
 
     channelManager.joinedChannels.removed.add((channel: Channel) => {
@@ -159,14 +207,14 @@ export default defineComponent({
       });
     });
 
-    channelManager.onHideChannel = (channel: Channel) => {
-      channels.value = channels.value.filter((ch: Channel) => ch.id != channel.id);
-      channelManager.openChannel(1);
-    };
-
     channelManager.initializeChannels();
     channelManager.openChannel(1);
     channelManager.addInfoMessage(1, new InfoMessage('欢迎'));
+
+    const onCloseClick = (channel: Channel) => {
+      channelManager.leaveChannel(channel.id);
+      channelManager.openChannel(1);
+    };
 
     const toggle = () => {
       if (!isOpen.value) {
@@ -188,6 +236,7 @@ export default defineComponent({
     return {
       isOpen,
       toggle,
+      onCloseClick,
       show,
       hide,
       channelUnreadCounts,
@@ -220,6 +269,20 @@ export default defineComponent({
 }
 </style>
 
+<style lang="sass" scoped>
+
+.close-tab-btn:not(.mobile)
+  opacity: 0
+  &:hover
+    color: $pink
+.q-tab
+  min-width: 120px
+  &.mobile
+    min-width: 98px
+  &:hover
+    .close-tab-btn
+      opacity: 1
+</style>
 <style scoped>
 .chat-input-box >>> .message-input {
   float: right;
