@@ -20,6 +20,10 @@ export default class ChineseChessDrawableChessboard
 
   public readonly chessMoved: Signal = new Signal();
 
+  public hanNumberInBottom = true;
+
+  private screen: any;
+
   private canvas: HTMLCanvasElement;
 
   private readonly padding = 4;
@@ -39,10 +43,13 @@ export default class ChineseChessDrawableChessboard
       }
     }
 
-    this.load(stage, screen);
+    // eslint-disable-next-line
+    this.screen = screen;
+
+    this.load(stage);
   }
 
-  private load(stage: {width: number, height: number}, screen: any) {
+  private load(stage: {width: number, height: number}) {
     const el = document.createElement('div');
     this._el = el;
     el.className = 'chessboard chinesechess-chessboard';
@@ -53,7 +60,7 @@ export default class ChineseChessDrawableChessboard
       const isDark = configManager.get(ConfigItem.theme) == 'dark';
       this.el.classList[isDark ? 'add' : 'remove']('dark');
       // eslint-disable-next-line
-      this.el.classList.add(`${screen.name}-screen`);
+      this.el.classList.add(`${this.screen.name}-screen`);
     };
     drawBackground();
     configManager.changed.add((key: string) => {
@@ -70,10 +77,16 @@ export default class ChineseChessDrawableChessboard
     this.canvas = canvas;
     el.appendChild(canvas);
 
-    this.resizeAndDraw(stage, screen);
+    this.resizeAndDraw(stage, this.screen);
+  }
+
+  public redraw() {
+    this.draw(this.canvas, this.screen);
   }
 
   public resizeAndDraw(stage: {width: number, height: number}, screen: any) {
+    // eslint-disable-next-line
+    this.screen = screen;
     this.calcBounds(stage, screen);
 
     const el = this._el;
@@ -290,6 +303,37 @@ export default class ChineseChessDrawableChessboard
       grid.cellSize * 8 + padding * 2,
       grid.cellSize * 9 + padding * 2,
     );
+
+    // 画编号
+    {
+      const hanNos = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+      const araNos = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+      context.fillStyle = '#996b48';
+      const fontSize = Math.min(14, grid.x / 2);
+      context.font = `${fontSize}px Arial, Helvetica, sans-serif`;
+      context.textBaseline = 'middle';
+      context.textAlign = 'center';
+      for (let c = 0; c < 9; c++) {
+        const x = grid.x + c * grid.cellSize;
+        context.fillText(
+          (this.hanNumberInBottom ? araNos : hanNos)[c],
+          x, grid.y / 2 - padding / 2,
+        );
+        context.fillText(
+          (this.hanNumberInBottom ? hanNos : araNos)[8 - c],
+          x, canvasBounds.height - grid.y / 2 + padding - context.lineWidth / 2,
+        );
+      }
+    }
+
+    {
+      context.fillStyle = '#b8957a';
+      const fontSize = grid.cellSize - this.bounds.chessGap * 2.5;
+      context.font = `${fontSize}px "Courier New", Courier, monospace`;
+      const y = canvasBounds.height / 2 + context.lineWidth;
+      context.fillText('楚 河', grid.x + grid.cellSize * 2, y);
+      context.fillText('汉 界', canvasBounds.width - grid.x - grid.cellSize * 2, y);
+    }
   }
 
   private calcBounds(stage: {width: number, height: number}, screen: any) {
@@ -316,8 +360,8 @@ export default class ChineseChessDrawableChessboard
     const chessSize = cellSize - chessGap;
     // 最侧边的棋子需要占据半个位置
     const gridMargin = cellSize / 2;
-    const canvasWidth = Math.floor(cellSize * 8 + gridMargin * 2);
-    const canvasHeight = Math.floor(cellSize * 9 + gridMargin * 2);
+    const canvasWidth = Math.floor(cellSize * 9);
+    const canvasHeight = Math.floor(cellSize * 10);
 
     this._bounds = {
       canvas: {

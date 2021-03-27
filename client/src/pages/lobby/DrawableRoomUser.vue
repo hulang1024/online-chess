@@ -6,7 +6,7 @@
     >{{ user.nickname }}</span>
     <user-avatar
       :user="user"
-      size="32px"
+      size="30px"
       rounded
       class="shadow-1"
       :class="`q-m${reverse ? 'r' : 'l'}-xs`"
@@ -15,7 +15,7 @@
         v-if="[1, 3].includes(gameType)"
         :chess="chess"
         :class="`absolute-bottom-${reverse ? 'left' : 'right'}`"
-        :style="{[reverse ? 'left' : 'right']: '-16px'}"
+        :style="{[reverse ? 'left' : 'right']: '-18px'}"
       />
       <pure-chess-icon
         v-else

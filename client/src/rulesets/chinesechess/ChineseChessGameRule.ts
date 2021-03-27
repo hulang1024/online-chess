@@ -63,6 +63,8 @@ export default class ChineseChessGameRule extends GameRule implements Game {
   public start(viewChessHost: ChessHost, gameStates0?: ResponseGameStates) {
     super.start(viewChessHost, gameStates0);
     this.viewChessHost = viewChessHost;
+    this.chessboard.hanNumberInBottom = this.viewChessHost == ChessHost.FIRST;
+    this.chessboard.redraw();
     this.withdrawEnabled.value = false;
 
     if (!this.fromPosTargetDrawer) {
@@ -243,6 +245,9 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       // eslint-disable-next-line
       this.chessStatusDisplay.update(this.viewChessHost);
     }
+
+    this.chessboard.hanNumberInBottom = this.viewChessHost == ChessHost.FIRST;
+    this.chessboard.redraw();
   }
 
   /** 悔棋 */

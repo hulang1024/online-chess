@@ -9,9 +9,15 @@
     class="room"
     @click="onClick"
   >
-    <q-card-section class="row justify-between items-center q-py-xs">
-      <div class="text-body1">
-        {{ name }} <span class="text-caption">({{ gameTypeName }})</span>
+    <q-card-section class="header row justify-between items-center">
+      <div class="text-body1 row items-center q-gutter-x-xs">
+        {{ name }}
+        <chinese-chess-icon
+          v-if="gameType == 1 || gameType == 3"
+          :isDarkRule="gameType == 3"
+        />
+        <gobang-icon v-else-if="gameType == 2" />
+        <span class="game-type-name text-body1">({{ gameTypeName }})</span>
       </div>
       <div class="text-caption">
         <span>{{ statusStates.text }}</span>
@@ -51,13 +57,21 @@ import SpectateRoomRequest from 'src/online/spectator/SpectateRoomRequest';
 import { api } from 'src/boot/main';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import { GameType } from 'src/rulesets/GameType';
+import GobangIcon from 'src/rulesets/gobang/ui/GobangIcon.vue';
+import ChineseChessIcon from 'src/rulesets/chinesechess/ui/ChineseChessIcon.vue';
 import VsIcon from 'src/rulesets/ui/VsIcon.vue';
 import DrawableRoomUser from './DrawableRoomUser.vue';
 import Room from '../../online/room/Room';
 import RoomUserPlace from './RoomUserPlace.vue';
 
 export default defineComponent({
-  components: { DrawableRoomUser, RoomUserPlace, VsIcon },
+  components: {
+    DrawableRoomUser,
+    RoomUserPlace,
+    VsIcon,
+    GobangIcon,
+    ChineseChessIcon,
+  },
   props: {
     room: {
       type: (Object as unknown) as PropType<Room>,
@@ -236,4 +250,14 @@ export default defineComponent({
     opacity: 0.8
   &:active
     box-shadow: none
+
+  .header
+    padding-top: 4px
+    padding-bottom: 6px
+    padding-left: 8px
+    padding-right: 4px
+
+    .game-type-name
+      font-size: 14px
+      color: #333
 </style>

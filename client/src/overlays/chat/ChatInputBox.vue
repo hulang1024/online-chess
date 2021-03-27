@@ -47,7 +47,8 @@
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, onUnmounted, PropType, ref, watch,
+  computed,
+  defineComponent, getCurrentInstance, onUnmounted, PropType, ref,
 } from '@vue/composition-api';
 import { channelManager, socketService } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
@@ -69,12 +70,9 @@ export default defineComponent({
     const context = getCurrentInstance() as Vue;
     // eslint-disable-next-line
     const notify = context.$q.notify;
-    const sendDisable = ref(true);
     const enabled = ref(true);
 
-    watch(messageText, (text) => {
-      sendDisable.value = text.length == 0;
-    });
+    const sendDisable = computed(() => messageText.value.length == 0);
 
     const focus = () => {
       // eslint-disable-next-line
