@@ -1,0 +1,13 @@
+.chinesechess-chess-theme-agate {
+  --background: radial-gradient(#6e1904, #571c18);
+  --broadside-shadow-y: 0px;
+  --broadside-color: rgba(0, 0, 0, 0);
+
+  --first-color: #fafafa;
+  --second-color: #4eb091;
+
+  .chess__circle {
+    border-width: 0px !important;
+    text-shadow: -0.5px -0.5px 0.5px rgba(0, 0, 0, 0.8);
+  }
+}

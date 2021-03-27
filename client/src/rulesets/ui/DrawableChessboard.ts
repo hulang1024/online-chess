@@ -19,4 +19,6 @@ export default abstract class DrawableChessboard {
   public abstract clear(): void;
 
   public abstract resizeAndDraw(stage: {width: number, height: number}, screen: any): void;
+
+  public abstract destroy(): void;
 }

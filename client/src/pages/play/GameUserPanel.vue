@@ -75,7 +75,11 @@
           <chess-king-icon
             v-if="[1, 3].includes(gameType)"
             :chess="chess"
-            :class="['chess', reverse ? 'absolute-right center' : 'absolute-left center']"
+            :class="[
+              'chess',
+              reverse ? 'absolute-right center' : 'absolute-left center',
+              chessThemeClass,
+            ]"
           />
           <pure-chess-icon
             v-else
@@ -101,7 +105,7 @@
         <chess-king-icon
           v-if="[1, 3].includes(gameType)"
           :chess="chess"
-          :class="['chess', {active}]"
+          :class="['chess', {active}, chessThemeClass]"
         />
         <pure-chess-icon
           v-else
@@ -115,12 +119,14 @@
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, PropType, ref,
+  defineComponent, getCurrentInstance, onBeforeUnmount, PropType, ref,
 } from "@vue/composition-api";
-import UserAvatar from "src/user/components/UserAvatar.vue";
 import User from "src/user/User";
+import { configManager } from "src/boot/main";
+import { ConfigItem } from "src/config/ConfigManager";
 import UserStatus from "src/user/UserStatus";
 import ChessHost from "src/rulesets/chess_host";
+import UserAvatar from "src/user/components/UserAvatar.vue";
 import ChessKingIcon from "src/rulesets/chinesechess/ui/ChessKingIcon.vue";
 import PureChessIcon from "src/rulesets/gobang/ui/PureChessIcon.vue";
 import { GameType } from "src/rulesets/GameType";
@@ -184,11 +190,27 @@ export default defineComponent({
       }, 1500);
     };
 
+    const chessThemeClass = ref('');
+    if ([1, 3].includes(props.gameType as number)) {
+      const onConfigChanged = () => {
+        const theme = configManager.get(ConfigItem.chinesechessChessTheme) as string;
+        chessThemeClass.value = `chinesechess-chess-theme-${theme}`;
+      };
+      onConfigChanged();
+      configManager.changed.add(onConfigChanged);
+
+      onBeforeUnmount(() => {
+        configManager.changed.remove(onConfigChanged);
+      });
+    }
+
     return {
       UserStatus,
 
       blink,
       blinkState,
+
+      chessThemeClass,
 
       showEmoji,
       emojiShow,

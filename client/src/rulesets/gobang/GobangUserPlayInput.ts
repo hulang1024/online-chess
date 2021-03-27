@@ -47,6 +47,21 @@ export default class GobangUserPlayInput extends UserPlayInput {
     this.chessboard.clicked.add(this.checkReject.bind(this));
     this.chessboard.onChessPosClick = this.onChessPosClick.bind(this);
 
+    let useInputMode = configManager.get(ConfigItem.gobangInputMethod) as InputMethod;
+    if (!useInputMode) {
+      // eslint-disable-next-line
+      if (device.mobile()) {
+        if (this.chessboard.sizes.cellSize < 24) {
+          useInputMode = InputMethod.GAMEPAD;
+        } else {
+          useInputMode = InputMethod.CONFIRM;
+        }
+      } else {
+        useInputMode = InputMethod.NORMAL;
+      }
+    }
+    this.method = useInputMode;
+
     if (isWatchingMode) {
       return;
     }
@@ -79,21 +94,6 @@ export default class GobangUserPlayInput extends UserPlayInput {
         this.gameplayServer.pushChessTargetPos(null, this.localUser.chess.value);
       }
     });
-
-    let useInputMode = configManager.get(ConfigItem.gobangInputMethod) as InputMethod;
-    if (!useInputMode) {
-      // eslint-disable-next-line
-      if (device.mobile()) {
-        if (this.chessboard.sizes.cellSize < 40) {
-          useInputMode = InputMethod.GAMEPAD;
-        } else {
-          useInputMode = InputMethod.CONFIRM;
-        }
-      } else {
-        useInputMode = InputMethod.NORMAL;
-      }
-    }
-    this.method = useInputMode;
 
     this.gameRule.activeChessHost.addAndRunOnce((activeChessHost) => {
       if (activeChessHost == this.localUser.chess.value) {

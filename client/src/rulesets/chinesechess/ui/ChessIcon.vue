@@ -1,6 +1,6 @@
 <template>
   <div :class="['chess-icon', colorClass]">
-    <div class="circle">{{ text }}</div>
+    <div class="chess__circle">{{ text }}</div>
   </div>
 </template>
 
@@ -35,12 +35,12 @@ export default defineComponent({
   font-weight: bold;
   border-radius: 100%;
   user-select: none;
-  background: #f8e2bf;
+  background: var(--background, #f8e2bf);
   box-shadow:
-    0px 2px 0px 0px #e5be80,
+    0px var(--broadside-shadow-y, 2px) 0px 0px var(--broadside-color, #e5be80),
     0px 2px 3px 1px rgb(0, 0, 0, 0.3);
 
-  .circle {
+  .chess__circle {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -52,11 +52,13 @@ export default defineComponent({
   }
 
   &.red {
-    color: $red;
+    color: var(--first-color, $red);
+    border-color: var(--first-color, $red);
   }
 
   &.black {
-    color: $black;
+    color: var(--second-color, $black);
+    border-color: var(--second-color, $black);
   }
 }
 </style>

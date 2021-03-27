@@ -14,13 +14,13 @@ $black: #443322;
     transition: transform 0.05s, box-shadow 0.05s ease-in;
   
     &.red {
-      color: $red;
-      border-color: $red;
+      color: var(--first-color, $red);
+      border-color: var(--first-color ,$red);
     }
     
     &.black {
-      color: $black;
-      border-color: $black;
+      color: var(--second-color, $black);
+      border-color: var(--second-color, $black);
     }
 
     &.selected,
@@ -29,7 +29,7 @@ $black: #443322;
       transform: scale(1.1);
       > .side {
         box-shadow:
-          0px 2px 0px 0px #e5be80,
+          0px var(--broadside-shadow-y, 2px) 0px 0px var(--broadside-color),
           4px 10px 2px 2px rgb(0, 0, 0, 0.3);
       }
     }
@@ -76,14 +76,13 @@ $black: #443322;
       width: 100%;
       height: 100%;
       font-weight: bold;
-      text-shadow: 0px 0px 0px rgb(0, 0, 0, 0.8);
+      text-shadow: 0px 0px 0.5px rgba(0, 0, 0, 0.2);
       border-radius: 100%;
       text-align: center;
-      background-color: #f8e2bf;
+      background: var(--background);
       box-shadow:
-        0px 2px 0px 0px #e5be80,
+        0px var(--broadside-shadow-y, 2px) 0px 0px var(--broadside-color),
         2px 5px 2px 2px rgba(0, 0, 0, 0.3);
-      
       backface-visibility: hidden; 
       transform-style: preserve-3d;
       transition: transform 0.1s, box-shadow 0.05s ease-out;
@@ -93,7 +92,6 @@ $black: #443322;
       transform: rotateX(0deg);
     }
     > .back {
-      background-color: #f8e2bf;
       transform: rotateX(-180deg);
     }
 
@@ -114,6 +112,7 @@ $black: #443322;
       height: calc(100% - 4px);
       border-radius: 100%;
       border: 1px solid;
+      box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
       pointer-events: none;
     }
     

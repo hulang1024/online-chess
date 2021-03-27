@@ -68,8 +68,8 @@ export default class Playfield {
     TweenAnimationUpdater.start();
 
     onBeforeUnmount(() => {
+      this.chessboard.destroy();
       TweenAnimationUpdater.stop();
-
       window.removeEventListener('resize', onReisze);
     });
   }

@@ -88,7 +88,7 @@ export default defineComponent({
     const activeTab = ref('display');
 
     const configState = reactive({
-      darkEnabled: configManager.get(ConfigItem.theme) == 'dark',
+      darkEnabled: configManager.get(ConfigItem.darkMode) as boolean,
       fullscreen: false,
       desktopNotifyEnabled: configManager.get(ConfigItem.desktopNotifyEnabled),
       audioGameplayEnabled: configManager.get(ConfigItem.audioGameplayEnabled) as boolean,
@@ -101,7 +101,7 @@ export default defineComponent({
 
     watch(configState, () => {
       ctx.$q.dark.set(configState.darkEnabled);
-      configManager.set(ConfigItem.theme, configState.darkEnabled ? 'dark' : 'default');
+      configManager.set(ConfigItem.darkMode, configState.darkEnabled);
       configManager.set(ConfigItem.audioGameplayEnabled, configState.audioGameplayEnabled);
       configManager.set(ConfigItem.audioVolume, configState.audioVolume / 100);
       configManager.save();

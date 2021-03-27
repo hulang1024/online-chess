@@ -4,9 +4,13 @@ import ChessHost from 'src/rulesets/chess_host';
 import { chessClassToText } from 'src/rulesets/chinesechess/rule/chess_map';
 import Game from 'src/rulesets/chinesechess/rule/Game';
 import Signal from 'src/utils/signals/Signal';
-import './chess.scss';
 import { configManager } from 'src/boot/main';
 import { ConfigItem } from 'src/config/ConfigManager';
+import './chess.scss';
+import './themes/chess/default.scss';
+import './themes/chess/black-purple.scss';
+import './themes/chess/agate.scss';
+import './themes/chess/glass.scss';
 
 export default class DrawableChess implements Chess {
   private _el: HTMLDivElement;
@@ -104,14 +108,8 @@ export default class DrawableChess implements Chess {
     };
 
     this.supportDraggable = configManager.get(ConfigItem.chinesechessChessDraggable) as boolean;
-    configManager.changed.add((key: string, value: boolean) => {
-      if (key == ConfigItem.chinesechessChessDraggable) {
-        this.supportDraggable = value;
-        if (this.selectable) {
-          this.el.draggable = value;
-        }
-      }
-    });
+    this.resetTheme();
+    configManager.changed.add(this.onConfigChanged, this);
   }
 
   public resizeAndDraw(radius: number) {
@@ -209,5 +207,32 @@ export default class DrawableChess implements Chess {
 
   public is(chessClass: unknown) {
     return this.chess.is(chessClass);
+  }
+
+  public destroy() {
+    configManager.changed.remove(this.onConfigChanged, this);
+  }
+
+  private onConfigChanged(key: string, value: unknown) {
+    if (key == ConfigItem.chinesechessChessDraggable) {
+      this.supportDraggable = value as boolean;
+      if (this.selectable) {
+        this.el.draggable = value as boolean;
+      }
+    }
+    if (key == ConfigItem.chinesechessChessTheme) {
+      this.resetTheme();
+    }
+  }
+
+  private resetTheme() {
+    const { el } = this;
+    const theme = configManager.get(ConfigItem.chinesechessChessTheme) as string;
+    el.classList.forEach((cls) => {
+      if (cls.startsWith('chinesechess-chess-theme-')) {
+        el.classList.remove(cls);
+      }
+    });
+    el.classList.add(`chinesechess-chess-theme-${theme}`);
   }
 }

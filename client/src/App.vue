@@ -66,7 +66,7 @@ export default defineComponent({
       Notify.create(`已下线：${nickname}`);
     });
 
-    context.$q.dark.set(configManager.get(ConfigItem.theme) == 'dark');
+    context.$q.dark.set(configManager.get(ConfigItem.darkMode) as boolean);
 
     onMounted(() => {
       // eslint-disable-next-line

@@ -146,6 +146,15 @@
               </q-item>
               <q-separator />
               <slot name="xs-screen-main-buttons" />
+              <q-item
+                clickable
+                v-close-popup
+                @click="onSettingsClick"
+              >
+                <q-item-section>
+                  <label><q-icon name="fas fa-cog" /> 设置</label>
+                </q-item-section>
+              </q-item>
             </q-list>
           </q-menu>
         </q-btn>
@@ -284,6 +293,13 @@
           spread
           class="q-mt-sm"
         >
+          <q-btn
+            icon="settings"
+            color="white"
+            text-color="black"
+            style="flex: 40px"
+            @click="onSettingsClick"
+          />
           <slot name="main-buttons" />
           <template v-if="enableGameRuleButtons">
             <q-btn
@@ -445,6 +461,10 @@ export default defineComponent({
       emit('help');
     };
 
+    const onSettingsClick = () => {
+      emit('settings');
+    };
+
     return {
       isXSScreen,
       gameType,
@@ -460,6 +480,7 @@ export default defineComponent({
       onHelpClick,
       onPauseOrResumeGameClick,
       onQuitClick,
+      onSettingsClick,
     };
   },
 });

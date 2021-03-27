@@ -13,6 +13,7 @@
     @quit="onQuitClick"
     @chat="onChatClick"
     @help="onHelpClick"
+    @settings="onSettingsClick"
   >
     <template #main-overlay>
       <main-buttons-overlay visible>

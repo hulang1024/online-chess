@@ -19,6 +19,7 @@
     @chess-draw="onChessDrawClick"
     @help="onHelpClick"
     @pause-or-resume="onPauseOrResumeGameClick"
+    @settings="onSettingsClick"
   >
     <template #main-overlay>
       <ready-overlay
@@ -31,28 +32,6 @@
         @ready-start="onReadyStartClick"
         @quit="onQuitClick"
         @to-spectate="onToSpectateClick"
-      />
-    </template>
-    <template
-      #xs-screen-main-buttons
-    >
-      <q-item
-        clickable
-        v-close-popup
-        @click="onSettingsClick"
-      >
-        <q-item-section>
-          <label><q-icon name="fas fa-cog" /> 设置</label>
-        </q-item-section>
-      </q-item>
-    </template>
-    <template #main-buttons>
-      <q-btn
-        icon="settings"
-        color="white"
-        text-color="black"
-        style="flex: 40px"
-        @click="onSettingsClick"
       />
     </template>
   </player-view>
@@ -92,7 +71,6 @@ export default defineComponent({
       onChessDrawClick: player.onChessDrawClick.bind(player),
       onWhiteFlagClick: player.onWhiteFlagClick.bind(player),
       onPauseOrResumeGameClick: player.onPauseOrResumeGameClick.bind(player),
-      onSettingsClick: player.onSettingsClick.bind(player),
     };
   },
 });

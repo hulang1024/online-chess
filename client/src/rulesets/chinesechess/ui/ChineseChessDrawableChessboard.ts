@@ -7,6 +7,9 @@ import Signal from "src/utils/signals/Signal";
 import DrawableChessboard from "src/rulesets/ui/DrawableChessboard";
 import DrawableChess from "./DrawableChess";
 import './chessboard.scss';
+import './themes/chessboard/default.scss';
+import './themes/chessboard/brown.scss';
+import './themes/chessboard/black.scss';
 
 export default class ChineseChessDrawableChessboard
   extends DrawableChessboard implements Chessboard {
@@ -56,18 +59,11 @@ export default class ChineseChessDrawableChessboard
     el.style.position = 'relative';
     el.style.padding = `${this.padding}px`;
 
-    const drawBackground = () => {
-      const isDark = configManager.get(ConfigItem.theme) == 'dark';
-      this.el.classList[isDark ? 'add' : 'remove']('dark');
-      // eslint-disable-next-line
-      this.el.classList.add(`${this.screen.name}-screen`);
-    };
-    drawBackground();
-    configManager.changed.add((key: string) => {
-      if (key == ConfigItem.theme) {
-        drawBackground();
-      }
-    });
+    // eslint-disable-next-line
+    el.classList.add(`${this.screen.name}-screen`);
+
+    this.resetTheme();
+    configManager.changed.add(this.onConfigChanged, this);
 
     el.onclick = this.onClick.bind(this);
 
@@ -102,6 +98,30 @@ export default class ChineseChessDrawableChessboard
       chess.x = x;
       chess.y = y;
     });
+  }
+
+  public destroy() {
+    this.getChessList().forEach((chess: DrawableChess) => {
+      chess.destroy();
+    });
+    configManager.changed.remove(this.onConfigChanged, this);
+  }
+
+  private onConfigChanged(key: string) {
+    if (key == ConfigItem.chinesechessChessboardTheme) {
+      this.resetTheme();
+    }
+  }
+
+  private resetTheme() {
+    const { el } = this;
+    const theme = configManager.get(ConfigItem.chinesechessChessboardTheme) as string;
+    el.classList.forEach((cls) => {
+      if (cls.startsWith('chinesechess-chessboard-theme-')) {
+        el.classList.remove(cls);
+      }
+    });
+    el.classList.add(`chinesechess-chessboard-theme-${theme}`);
   }
 
   private setupDragable() {
@@ -206,8 +226,12 @@ export default class ChineseChessDrawableChessboard
       lineWidth?: number,
     ) => {
       context.beginPath();
+      context.shadowOffsetX = -0.5;
+      context.shadowOffsetY = -0.5;
+      context.shadowBlur = 0.5;
+      context.shadowColor = 'rgba(0, 0, 0, 0.5)';
       // eslint-disable-next-line
-      context.lineWidth = lineWidth || (screen.xs ? 1 : 1.5);
+      context.lineWidth = lineWidth || 1;
       context.moveTo(grid.x + x1, grid.y + y1);
       context.lineTo(grid.x + x2, grid.y + y2);
       context.closePath();
@@ -260,9 +284,9 @@ export default class ChineseChessDrawableChessboard
        */
       const drawCross = (cx: number, cy: number, indexs: number[] = [0, 1, 2, 3]) => {
         // eslint-disable-next-line
-        const m = screen.xs ? 3 : 4; // 距离中心点
+        const m = Math.min(grid.cellSize / 8, screen.xs ? 3 : 4); // 距离中心点
         // eslint-disable-next-line
-        const l = screen.xs ? 6 : 8; // 十字长度
+        const l = Math.min(grid.cellSize / 4, screen.xs ? 6 : 8); // 十字长度
         const dt = [[-1, -1], [+1, -1], [+1, +1], [-1, +1]];
         indexs.forEach((i) => {
           const [xf, yf] = dt[i];
@@ -296,7 +320,7 @@ export default class ChineseChessDrawableChessboard
     // eslint-disable-next-line
     const padding = screen.xs ? 4 : 6;
     // eslint-disable-next-line
-    context.lineWidth = screen.xs ? 2 : 3;
+    context.lineWidth = screen.xs ? 2.5 : 3;
     context.strokeRect(
       grid.x - padding,
       grid.y - padding,
@@ -313,6 +337,9 @@ export default class ChineseChessDrawableChessboard
       context.font = `${fontSize}px Arial, Helvetica, sans-serif`;
       context.textBaseline = 'middle';
       context.textAlign = 'center';
+      context.shadowOffsetX = 0;
+      context.shadowOffsetY = 0;
+      context.shadowBlur = 0;
       for (let c = 0; c < 9; c++) {
         const x = grid.x + c * grid.cellSize;
         context.fillText(
@@ -328,9 +355,13 @@ export default class ChineseChessDrawableChessboard
 
     {
       context.fillStyle = '#b8957a';
-      const fontSize = grid.cellSize - this.bounds.chessGap * 2.5;
-      context.font = `${fontSize}px "Courier New", Courier, monospace`;
+      const fontSize = grid.cellSize / 2;
       const y = canvasBounds.height / 2 + context.lineWidth;
+      context.font = `${fontSize}px "Courier New", Courier, monospace`;
+      context.shadowOffsetX = -1;
+      context.shadowOffsetY = -1;
+      context.shadowBlur = 1;
+      context.shadowColor = 'rgba(0, 0, 0, 0.5)';
       context.fillText('楚 河', grid.x + grid.cellSize * 2, y);
       context.fillText('汉 界', canvasBounds.width - grid.x - grid.cellSize * 2, y);
     }

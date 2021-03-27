@@ -173,5 +173,6 @@ export function usePlayerStates(player: Player) {
     onInviteClick,
     onQuitClick: player.onQuitClick.bind(player),
     onHelpClick: player.onHelpClick.bind(player),
+    onSettingsClick: player.onSettingsClick.bind(player),
   };
 }

@@ -5,13 +5,15 @@ export enum ConfigItem {
   password = 'password',
   token = 'token',
   loginAuto = 'login_auto',
-  theme = 'theme',
+  darkMode = 'dark_mode',
   audioVolume = 'audio_volume',
   audioGameplayEnabled = 'audio_gameplay_enabled',
   desktopNotifyEnabled = 'desktop_notify_enabled',
 
   // todo: 待组织
   gobangInputMethod = 'gobang.input_method',
+  chinesechessChessboardTheme = 'chinesechess_chessboard_theme',
+  chinesechessChessTheme = 'chinesechess_chess_theme',
   chinesechessChessStatus = 'chinesechess.chess_status',
   chinesechessGoDisplay = 'chinesechess.go_display',
   chinesechessChessDraggable = 'chinesechess.chess_draggable',
@@ -36,9 +38,13 @@ export default class ConfigManager {
     // todo: 消除硬编码
     [
       'username', 'password', 'token', 'login_auto',
-      'theme', 'audio_volume', 'desktop_notify_enabled',
+      'dark_mode', 'theme', 'audio_volume', 'desktop_notify_enabled',
       'audio_gameplay_enabled', 'gobang.input_method',
-      'chinesechess.chess_status', 'chinesechess.go_display', 'chinesechess.chess_draggable',
+      'chinesechess_chessboard_theme',
+      'chinesechess_chess_theme',
+      'chinesechess.chess_status',
+      'chinesechess.go_display',
+      'chinesechess.chess_draggable',
     ].forEach((key) => {
       let val = localStorage.getItem(key);
       if (val == null) {
@@ -62,8 +68,11 @@ export default class ConfigManager {
   }
 
   public set(key: string, value: unknown) {
+    const oldVal = this.store[key];
     this.store[key] = value;
-    this.changed.dispatch(key, value);
+    if (value != oldVal) {
+      this.changed.dispatch(key, value);
+    }
   }
 
   public get(key: string) {
@@ -81,6 +90,8 @@ export default class ConfigManager {
     this.set(ConfigItem.chinesechessChessStatus, true);
     this.set(ConfigItem.chinesechessGoDisplay, true);
     this.set(ConfigItem.chinesechessChessDraggable, false);
-    this.set(ConfigItem.theme, 'default');
+    this.set(ConfigItem.chinesechessChessboardTheme, 'default');
+    this.set(ConfigItem.chinesechessChessTheme, 'default');
+    this.set(ConfigItem.darkMode, false);
   }
 }

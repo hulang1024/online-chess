@@ -1,5 +1,3 @@
-import { configManager } from "src/boot/main";
-import { ConfigItem } from "src/config/ConfigManager";
 import RulesetPlayer from "../RulesetPlayer";
 import ChineseChessGameRule from "./ChineseChessGameRule";
 import ChineseChessUserPlayInput from "./ChineseChessUserPlayInput";
@@ -10,13 +8,7 @@ export default class ChineseChessPlayer extends RulesetPlayer {
   public openSettings() {
     this.context.$q.dialog({
       component: Settings,
-    }).onOk(({ chessStatus, goDisplay, chessDraggable }:
-        { chessStatus: boolean, goDisplay: boolean, chessDraggable: boolean }) => {
-      configManager.set(ConfigItem.chinesechessChessStatus, chessStatus);
-      configManager.set(ConfigItem.chinesechessGoDisplay, goDisplay);
-      configManager.set(ConfigItem.chinesechessChessDraggable, chessDraggable);
-      configManager.save();
-
+    }).onOk(({ chessStatus, goDisplay }: { chessStatus: boolean, goDisplay: boolean }) => {
       if (chessStatus) {
         // eslint-disable-next-line
         (this.game as ChineseChessGameRule).chessStatusDisplay.update(this.game.viewChessHost);
@@ -25,12 +17,14 @@ export default class ChineseChessPlayer extends RulesetPlayer {
       }
 
       const userPlayInput = this.userPlayInput as ChineseChessUserPlayInput;
-      if (goDisplay) {
-        if (userPlayInput.lastSelected) {
-          userPlayInput.goDisplay.update(userPlayInput.lastSelected);
+      if (userPlayInput.goDisplay) {
+        if (goDisplay) {
+          if (userPlayInput.lastSelected) {
+            userPlayInput.goDisplay.update(userPlayInput.lastSelected);
+          }
+        } else {
+          userPlayInput.goDisplay.clear();
         }
-      } else {
-        userPlayInput.goDisplay.clear();
       }
     });
   }

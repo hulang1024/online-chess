@@ -107,6 +107,9 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
     });
   }
 
+  // eslint-disable-next-line
+  public destroy() {}
+
   private draw() {
     const { canvas } = this;
     const context = canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -133,6 +136,11 @@ export default class GobangDrawableChessboard extends DrawableChessboard {
     canvas.width = canvasSize * pixelRatio;
     canvas.height = canvasSize * pixelRatio;
     context.scale(pixelRatio, pixelRatio);
+
+    context.shadowOffsetX = 0.5;
+    context.shadowOffsetY = 0.5;
+    context.shadowBlur = 0.5;
+    context.shadowColor = 'rgba(255, 255, 255, 0.4)';
 
     // 画网格
     context.lineWidth = 1;
