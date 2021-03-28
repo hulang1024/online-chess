@@ -333,7 +333,14 @@ export default class Player extends GameplayClient {
   private initListeners() {
     const { gameplayClient } = this;
     gameplayClient.connect();
-    gameplayClient.userJoined = () => {
+    gameplayClient.userJoined = (joinUser: GameUser) => {
+      const { gameTimer, stepTimer } = joinUser;
+      const { gameSettings } = this.room.roomSettings;
+      gameTimer.setTotalSeconds(gameSettings.timer.gameDuration);
+      stepTimer.setTotalSeconds(gameSettings.timer.stepDuration);
+      stepTimer.ready();
+      gameTimer.ready();
+
       GameAudio.play('room/user_join');
       if (!this.isWatchingMode) {
         // eslint-disable-next-line
@@ -584,14 +591,8 @@ export default class Player extends GameplayClient {
     this.gameState.value = GameState.READY;
 
     const { gameTimer, stepTimer } = leftUser;
-    const { gameSettings } = this.room.roomSettings;
-
     gameTimer.stop();
     stepTimer.stop();
-    gameTimer.setTotalSeconds(gameSettings.timer.gameDuration);
-    stepTimer.setTotalSeconds(gameSettings.timer.stepDuration);
-    stepTimer.ready();
-    gameTimer.ready();
 
     this.game.activeChessHost.value = null;
 

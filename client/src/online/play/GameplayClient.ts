@@ -20,7 +20,7 @@ export default abstract class GameplayClient extends GameplayServer {
 
   public otherUserStatusChanged: (status: UserStatus, gameUser: GameUser) => void;
 
-  public userJoined: () => void;
+  public userJoined: (joinUser: GameUser) => void;
 
   public userLeft: (leftUser: GameUser) => void;
 
@@ -98,7 +98,7 @@ export default abstract class GameplayClient extends GameplayServer {
     gameUser.status.value = UserStatus.ONLINE;
     gameUser.ready.value = false;
 
-    this.userJoined();
+    this.userJoined(gameUser);
   }
 
   private handleUserLeft(msg: RoomUserLeftMsg) {
