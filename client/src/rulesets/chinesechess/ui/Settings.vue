@@ -133,7 +133,7 @@ export default defineComponent({
           };
           if (chessboard == null) {
             chessboard = new ChineseChessDrawableChessboard(stage, context.$q.screen);
-            createIntialLayoutChessList(ChessHost.FIRST, ChessHost.SECOND).forEach((chess) => {
+            createIntialLayoutChessList(ChessHost.SECOND, ChessHost.FIRST).forEach((chess) => {
               if (chessboard) {
                 chessboard.addChess(new DrawableChess(chess, chessboard.bounds.chessRadius));
               }

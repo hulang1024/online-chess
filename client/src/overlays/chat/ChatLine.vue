@@ -155,6 +155,10 @@ export default defineComponent({
   font-size: 1em;
 }
 
+.row.small > .time {
+  font-size: 0.74em !important;
+}
+
 @media (max-width: $breakpoint-xs-max) {
   .row > div {
     font-size: 1em;
@@ -166,8 +170,9 @@ export default defineComponent({
 
 .row > .time {
   width: 54px;
-  font-size: 0.9em !important;
+  font-size: 0.78em !important;
   user-select: none;
+  font-family: Monaco, "Lucida Console", monospace;
 }
 
 .row > .nickname_col {

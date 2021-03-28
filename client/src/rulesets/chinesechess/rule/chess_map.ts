@@ -39,8 +39,8 @@ export function chessClassToText(chess: Chess) {
   if (chess instanceof ChessG) text = ['士', '士'];
   if (chess instanceof ChessK) text = ['帅', '将'];
   if (chess instanceof ChessM) text = ['相', '象'];
-  if (chess instanceof ChessN) text = ['马', '马'];
-  if (chess instanceof ChessR) text = ['车', '车'];
+  if (chess instanceof ChessN) text = ['马', '馬'];
+  if (chess instanceof ChessR) text = ['车', '車'];
   if (chess instanceof ChessS) text = ['兵', '卒'];
   return text[chess.getHost() - 1];
 }

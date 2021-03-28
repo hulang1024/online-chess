@@ -7,6 +7,7 @@
     color: white;
     border-radius: 4px;
     text-align: center;
+    font-family: 'founder-xin-kaiti';
     transform: translate(-50%, -50%) scale(0.5);
     opacity: 0;
     background: rgba(0,0,0,0.5);
@@ -27,30 +28,34 @@
     text-shadow: 0px 1px 1px black, 0px 0px 20px #ffc107;
 
     > .title {
-      font-size: 4rem;
-      line-height: 4rem;
+      font-size: 5rem;
+      line-height: 5rem;
       font-weight: bolder;
+      filter: drop-shadow(0px 0px 20px #ffc107);
     }
+    
+    > .sub {
+      font-family: 'Courier New', Courier, monospace;
+      > .chess-name {
+        text-shadow: 0px 0px 1px white;
+        font-weight: bold;
 
-    > div > .chess-name {
-      text-shadow: 0px 0px 1px white;
-      font-weight: bold;
-
-      &.red {
-        color: $red;
-      }
-  
-      &.black {
-        color: $black;
+        &.red {
+          color: $red;
+        }
+    
+        &.black {
+          color: $black;
+        }
       }
     }
   }
 
   .checkmate-judgement {
-    text-shadow: 1px 1px 1px white, 0px 0px 20px white;
+    text-shadow: -1px -1px 1px black, 0px 0px 8px white;
 
     &.show {
-      font-size: 4em;
+      font-size: 5em;
       font-weight: bolder;
     }
     

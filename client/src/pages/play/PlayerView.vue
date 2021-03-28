@@ -260,7 +260,7 @@
         >
           <span class="text-subtitle1">
             <span>{{ GAME_TYPE_MAP[gameType].text }} 房#</span>
-            <span>{{ room.id }}</span>
+            <span class="number">{{ room.id }}</span>
           </span>
           <span
             class="q-ml-sm"

@@ -31,8 +31,6 @@ export default defineComponent({
   align-items: center;
   width: 22px;
   height: 22px;
-  font-size: 12px;
-  font-weight: bold;
   border-radius: 100%;
   user-select: none;
   background: var(--background, #f8e2bf);
@@ -49,6 +47,8 @@ export default defineComponent({
     border-radius: 100%;
     border: 1px solid;
     pointer-events: none;
+    font-family: 'founder-simli';
+    font-size: small;
   }
 
   &.red {

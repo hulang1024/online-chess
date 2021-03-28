@@ -116,8 +116,6 @@ public class RoomManager {
         createdRoom.setId(nextRoomId());
         if (StringUtils.isNotBlank(createRoomParam.getName())) {
             createdRoom.setName(createRoomParam.getName());
-        } else {
-            createdRoom.setName(createdRoom.getId().toString());
         }
 
         createdRoom.setRoomSettings(createRoomParam.getRoomSettings());

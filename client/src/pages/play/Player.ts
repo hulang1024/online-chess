@@ -612,6 +612,19 @@ export default class Player extends GameplayClient {
   }
 
   private onGameStateChanged(gameState: GameState, prevGameState: GameState) {
+    const doAllTimer = (method: string) => {
+      [
+        this.localUser.gameTimer, this.localUser.stepTimer,
+        this.otherUser.gameTimer, this.otherUser.stepTimer,
+      ].filter(Boolean).forEach((timer) => {
+        if (method == 'pause') {
+          timer.pause();
+        } else if (method == 'stop') {
+          timer.stop();
+        }
+      });
+    };
+
     switch (gameState) {
       case GameState.PLAYING: {
         if (prevGameState == GameState.PAUSE) {
@@ -633,17 +646,13 @@ export default class Player extends GameplayClient {
         }
         break;
       }
-      case GameState.READY:
       case GameState.PAUSE:
-      case GameState.END: {
-        [
-          this.localUser.gameTimer, this.localUser.stepTimer,
-          this.otherUser.gameTimer, this.otherUser.stepTimer,
-        ].filter(Boolean).forEach((timer) => {
-          timer.pause();
-        });
+        doAllTimer('pause');
         break;
-      }
+      case GameState.READY:
+      case GameState.END:
+        doAllTimer('stop');
+        break;
       default:
         break;
     }

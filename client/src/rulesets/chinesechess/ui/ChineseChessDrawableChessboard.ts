@@ -292,10 +292,8 @@ export default class ChineseChessDrawableChessboard
           const [xf, yf] = dt[i];
           const x = cx + m * xf;
           const y = cy + m * yf;
-          // eslint-disable-next-line
-          const lineWidth = screen.xs ? 1 : 1.5;
-          drawLine(x, y, x + l * xf, y, undefined, lineWidth);
-          drawLine(x, y, x, y + l * yf, undefined, lineWidth);
+          drawLine(x, y, x + l * xf, y);
+          drawLine(x, y, x, y + l * yf);
         });
       };
       const drawCrossAt = (row: number, col: number, indexs?: number[]) => {
@@ -334,37 +332,42 @@ export default class ChineseChessDrawableChessboard
       const araNos = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
       context.fillStyle = '#996b48';
       const fontSize = Math.min(14, grid.x / 2);
-      context.font = `${fontSize}px Arial, Helvetica, sans-serif`;
       context.textBaseline = 'middle';
       context.textAlign = 'center';
       context.shadowOffsetX = 0;
       context.shadowOffsetY = 0;
       context.shadowBlur = 0;
+
+      const fillNoText = (n: number, isHan: boolean, x: number, y: number) => {
+        context.font = `${fontSize}px founder-kaiti`;
+        context.fillText((isHan ? hanNos : araNos)[n - 1], x, y);
+      };
+
       for (let c = 0; c < 9; c++) {
         const x = grid.x + c * grid.cellSize;
-        context.fillText(
-          (this.hanNumberInBottom ? araNos : hanNos)[c],
-          x, grid.y / 2 - padding / 2,
-        );
-        context.fillText(
-          (this.hanNumberInBottom ? hanNos : araNos)[8 - c],
-          x, canvasBounds.height - grid.y / 2 + padding - context.lineWidth / 2,
-        );
+        fillNoText(c + 1, !this.hanNumberInBottom,
+          x, grid.y / 2 - padding / 2);
+        fillNoText(c + 1, this.hanNumberInBottom,
+          x, canvasBounds.height - grid.y / 2 + padding - context.lineWidth / 2);
       }
     }
 
-    {
+    const font = new FontFace('founder-xin-kaiti', 'url(/fonts/FZXKJW.ttf)');
+    // eslint-disable-next-line
+    font.load().then(() => {
+      // eslint-disable-next-line
+      document.fonts.add(font);
       context.fillStyle = '#b8957a';
-      const fontSize = grid.cellSize / 2;
+      const fontSize = grid.cellSize / 1.8;
       const y = canvasBounds.height / 2 + context.lineWidth;
-      context.font = `${fontSize}px "Courier New", Courier, monospace`;
+      context.font = `${fontSize}px 'founder-xin-kaiti'`;
       context.shadowOffsetX = -1;
       context.shadowOffsetY = -1;
       context.shadowBlur = 1;
       context.shadowColor = 'rgba(0, 0, 0, 0.5)';
       context.fillText('楚 河', grid.x + grid.cellSize * 2, y);
       context.fillText('汉 界', canvasBounds.width - grid.x - grid.cellSize * 2, y);
-    }
+    });
   }
 
   private calcBounds(stage: {width: number, height: number}, screen: any) {

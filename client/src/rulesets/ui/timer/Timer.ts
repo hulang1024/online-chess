@@ -14,7 +14,11 @@ export default class Timer {
   // 计时当前秒数
   public readonly seconds = ref<number>(0);
 
-  private timerState: TimerState | null = null;
+  private _state = ref<TimerState | null>(null);
+
+  public get state() {
+    return this._state;
+  }
 
   private timer: NodeJS.Timeout;
 
@@ -44,7 +48,7 @@ export default class Timer {
 
   /** 准备开始，显示总计时，并重置启动次数 */
   public ready(current?: number) {
-    this.timerState = null;
+    this._state.value = null;
     this.starts = 0;
     this.seconds.value = current || this.totalSeconds.value;
     this.emit('ready', this.seconds.value);
@@ -83,17 +87,18 @@ export default class Timer {
 
   /** 暂停计时 */
   public pause() {
-    if (this.timerState === TimerState.PAUSED) {
+    if (this._state.value === TimerState.PAUSED) {
       return;
     }
-    this.timerState = TimerState.PAUSED;
+    this._state.value = TimerState.PAUSED;
     clearInterval(this.timer);
     this.emit('paused');
   }
 
   /** 暂停后恢复计时 */
   public resume() {
-    if (this.timerState === TimerState.END || this.timerState === TimerState.TICKING) {
+    if (this._state.value === TimerState.END
+      || this._state.value === TimerState.TICKING) {
       return;
     }
     this.tick();
@@ -102,17 +107,17 @@ export default class Timer {
 
   public stop() {
     clearInterval(this.timer);
-    this.timerState = null;
+    this._state.value = null;
     this.emit('stoped');
   }
 
   private tick() {
     clearInterval(this.timer);
-    this.timerState = TimerState.TICKING;
+    this._state.value = TimerState.TICKING;
     this.timer = setInterval(() => {
       if (this.seconds.value - 1 <= 0) {
         this.seconds.value = 0;
-        this.timerState = TimerState.END;
+        this._state.value = TimerState.END;
         clearInterval(this.timer);
         this.emit('ended');
         return;

@@ -1,5 +1,7 @@
 <template>
-  <div :class="['timer', `text-${color}`]">
+  <div
+    :class="['timer', {ticking: state == 0 || state == 2}, color]"
+  >
     <span class="time">{{ displayMinutes }}</span>
     <span>:</span>
     <span class="time">{{ displaySeconds }}</span>
@@ -23,10 +25,10 @@ export default defineComponent({
     const displaySeconds = computed(() => (totalSeconds.value === null ? '--' : padZero(seconds.value % 60)));
     const color = computed(() => {
       const sec = seconds.value;
-      if (!sec) return '';// 包括了0和null
+      if (!sec) return 'red';// 包括了0和null
       if (sec < totalSeconds.value / 4) return 'red';
       if (sec < totalSeconds.value / 2) return 'orange';
-      return '';
+      return 'green';
     });
 
     return {
@@ -34,6 +36,7 @@ export default defineComponent({
       displaySeconds,
       color,
 
+      state: timer.state,
       ready: timer.ready.bind(timer),
       start: timer.start.bind(timer),
       restart: timer.restart.bind(timer),
@@ -51,7 +54,41 @@ export default defineComponent({
 </script>
 
 <style lang="sass" scoped>
+$drop-shadow: drop-shadow(1px 2px 4px rgba(0, 0, 0, 0.6))
+$text-shadow: 0 0 6px
+
 .timer
   display: inline-block
   user-select: none
+  padding: 0px 4px
+  background: rgba(0, 0, 0, 0.6)
+  text-align: right
+  font-family: digital
+  border-radius: 4px
+  transition: filter 0.1s, text-shadow 0.1s ease-out
+
+  &.green
+    color: #76ff03
+
+  &.orange
+    color: #ffbb33
+
+  &.red
+    color: #ff3333
+
+  &.ticking
+    filter: $drop-shadow brightness(1)
+
+    &.green
+      text-shadow: $text-shadow #76ff03
+
+    &.orange
+      text-shadow: $text-shadow #ffbb33
+
+    &.red
+      text-shadow: $text-shadow #ff3333
+
+  &:not(.ticking)
+    filter: $drop-shadow brightness(0.75)
+    text-shadow: $text-shadow rgba(0, 0, 0, 0)
 </style>

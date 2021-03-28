@@ -272,4 +272,5 @@ export default defineComponent({
       width: 50px
       font-weight: bold
       text-align: right
+      font-family: Monaco,"Lucida Console",monospace
 </style>

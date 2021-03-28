@@ -60,13 +60,13 @@
       <div
         v-show="user"
         class="column time-panel"
-        :class="[`q-m${reverse ? 'r' : 'l'}-sm`]"
+        :class="[$q.screen.xs && `q-m${reverse ? 'r' : 'l'}-sm`]"
       >
-        <div class="item">
+        <div :class="['row item', {reverse: reverse && !$q.screen.xs}]">
           <span class="label">步时</span>
           <timer ref="stepTimer" />
         </div>
-        <div class="item">
+        <div :class="['row item', {reverse: reverse && !$q.screen.xs}]">
           <span class="label">局时</span>
           <timer ref="gameTimer" />
         </div>
@@ -293,6 +293,7 @@ export default defineComponent({
   flex-wrap: nowrap
   justify-content: space-evenly
   min-width: 86px
+  flex-grow: 1
 
   .item
     display: flex
@@ -303,14 +304,20 @@ export default defineComponent({
 
     .label
       word-break: keep-all
-      &::after
-        content: ':'
 
-    .time
-      font-weight: 500
+    &.reverse
+      .label::before
+        content: ':'
+    &:not(.reverse)
+      .label::after
+        content: ':'
+    .timer
+      .time
+        font-weight: 500
 
 .chess
   transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28)
+  z-index: 2
 
   &.active
     transform: scale(1.3)
@@ -344,10 +351,11 @@ export default defineComponent({
 
   .time-panel
     min-width: 140px
-    padding: 2px 4px
-    background: rgba(0, 0, 0, 0.2)
-    box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1)
+    padding: 4px
+    background: rgba(0, 0, 0, 0.1)
     border-radius: 4px
+    .item
+      padding: 1px 0px
 
 .center
   &.absolute-right,

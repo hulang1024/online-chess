@@ -21,6 +21,7 @@ export default class DrawableEatJudgement {
     el.appendChild(title);
 
     const sub = document.createElement('div');
+    sub.classList.add('sub');
     this.sub = sub;
     el.appendChild(sub);
     this.el = el;

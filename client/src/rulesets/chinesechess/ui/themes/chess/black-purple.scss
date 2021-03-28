@@ -1,12 +1,12 @@
 .chinesechess-chess-theme-black-purple {
-  --background: radial-gradient(#3b2b2b, #2f2323);
-  --broadside-color: #231009;
+  --background: radial-gradient(circle, #3b2b2b, #2f2323);
+  --broadside-color: #2f2323;
 
   --first-color: #dd1100;
-  --second-color: #4eb091;
+  --second-color: #00e8ea;
 
   .chess__circle {
-    border-width: 2px !important;
+    border-width: 0px !important;
     border-color: #222 !important;
     text-shadow: -0.5px -0.5px 0.5px rgba(0, 0, 0, 0.8);
   }

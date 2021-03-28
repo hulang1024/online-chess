@@ -12,10 +12,12 @@
 
     &.black {
       background-color: #1a1a1a;
+      background: radial-gradient(circle, #333, #000);
     }
 
     &.white {
       background-color:#fff;
+      background: radial-gradient(circle, #fff, #f1f1f1);
     }
 
     &.appear {

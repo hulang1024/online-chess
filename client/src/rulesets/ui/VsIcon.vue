@@ -18,6 +18,7 @@ export default defineComponent({
   color: #ffe033
   font-weight: bold
   text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.6)
+  user-select: none
 
   &.animated
     animation: animation-vs-icon-light 1s linear infinite

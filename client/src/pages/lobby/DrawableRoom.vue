@@ -11,7 +11,7 @@
   >
     <q-card-section class="header row justify-between items-center">
       <div class="text-body1 row items-center q-gutter-x-xs">
-        {{ name }}
+        <span :class="{number: !name}">{{ name || id }}</span>
         <chinese-chess-icon
           v-if="gameType == 1 || gameType == 3"
           :isDarkRule="gameType == 3"

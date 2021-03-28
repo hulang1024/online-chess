@@ -241,6 +241,7 @@ export default defineComponent({
           padding-right: 4px;
           width: 10px;
           font-weight: bold;
+          font-family: Monaco,"Lucida Console",monospace
         }
 
         .avatar {
@@ -258,6 +259,8 @@ export default defineComponent({
 
         .count {
           width: 40px;
+          text-align: right;
+          font-family: Monaco,"Lucida Console",monospace;
         }
 
         .win-rate {
