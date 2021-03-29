@@ -33,12 +33,12 @@ export default defineComponent({
   height: 22px;
   border-radius: 100%;
   user-select: none;
-  background: var(--background, #f8e2bf);
-  box-shadow:
-    0px var(--broadside-shadow-y, 2px) 0px 0px var(--broadside-color, #e5be80),
-    0px 2px 3px 1px rgb(0, 0, 0, 0.3);
+  box-shadow: 0px 2px 3px 1px rgb(0, 0, 0, 0.32);
+  background: var(--broadside-color, #f4d19a);
 
   .chess__circle {
+    position: relative;
+    top: -1px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -46,6 +46,7 @@ export default defineComponent({
     height: calc(100% - 4px);
     border-radius: 100%;
     border: 1px solid;
+    background: var(--background, #f8e2bf);
     pointer-events: none;
     font-family: 'founder-simli';
     font-size: small;

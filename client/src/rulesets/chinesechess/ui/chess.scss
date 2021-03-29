@@ -1,5 +1,6 @@
 $red: #dd1100;
 $black: #443322;
+$side-shadow-color: rgb(0, 0, 0, 0.32);
 
 .chinesechess-chessboard {
   .chess {
@@ -28,9 +29,7 @@ $black: #443322;
       z-index: 3;
       transform: scale(1.1);
       > .side {
-        box-shadow:
-          0px var(--broadside-shadow-y, 2px) 0px 0px var(--broadside-color),
-          4px 10px 2px 2px rgb(0, 0, 0, 0.3);
+        box-shadow: 4px 10px 2px 2px var(--side-shadow-color, $side-shadow-color);
       }
     }
 
@@ -47,15 +46,14 @@ $black: #443322;
         0px 0px 10px 1px white,
         inset 0px 0px 4px 1px white;
       border-radius: 100%;
-      transform: translateY(1.5px);
     }
 
     &.selectable > .side:hover:before,
     &.selected > .side:before {
       position: absolute;
       content: ' ';
-      width: calc(100% + 6px);
-      height: calc(100% + 6px);
+      width: calc(100% + 5px);
+      height: calc(100% + 5px);
       border: 2px solid #fff;
       border-radius: 4px;
     }
@@ -67,8 +65,7 @@ $black: #443322;
       animation: animation-chinesechess-chess-selected-focus 1s linear infinite;
     }
 
-    > .front,
-    > .back {
+    > .side {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -77,13 +74,30 @@ $black: #443322;
       height: 100%;
       border-radius: 100%;
       text-align: center;
-      background: var(--background);
-      box-shadow:
-        0px var(--broadside-shadow-y, 2px) 0px 0px var(--broadside-color),
-        2px 5px 2px 2px rgba(0, 0, 0, 0.3);
+      background: var(--broadside-color);
+      box-shadow: 2px 5px 2px 2px var(--side-shadow-color, $side-shadow-color);
       backface-visibility: hidden; 
       transform-style: preserve-3d;
       transition: transform 0.1s, box-shadow 0.05s ease-out;
+
+      .chess__circle {
+        position: relative;
+        top: -2px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: calc(100% - 8px);
+        height: calc(100% - 8px);
+        border-radius: 100%;
+        border: 1px solid;
+        box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
+        pointer-events: none;
+        text-shadow: 0px 0px 0.5px rgba(0, 0, 0, 0.2);
+        background: var(--background);
+        font-size: larger;
+        font-weight: 400;
+        font-family: 'founder-simli';
+      }  
     }
 
     > .front {
@@ -91,6 +105,10 @@ $black: #443322;
     }
     > .back {
       transform: rotateX(-180deg);
+
+      .chess__circle {
+        background: var(--back-background, var(--background));
+      }
     }
 
     &.is-back {
@@ -102,19 +120,15 @@ $black: #443322;
       }
     }
 
-    .chess__circle {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: calc(100% - 4px);
-      height: calc(100% - 4px);
-      border-radius: 100%;
-      border: 1px solid;
-      box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
-      pointer-events: none;
-      text-shadow: 0px 0px 0.5px rgba(0, 0, 0, 0.2);
-      font-size: larger;
-      font-family: 'founder-simli';
+    &.smaller {
+      > .front,
+      > .back {
+        box-shadow: 1px 3px 2px 2px rgb(0, 0, 0, 0.32);
+
+        .chess__circle {
+          font-size: smaller;
+        }
+      }
     }
     
   }

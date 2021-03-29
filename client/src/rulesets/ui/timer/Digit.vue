@@ -18,5 +18,5 @@ export default defineComponent({
 .digit
   display: inline-block
   width: 9px
-  text-align: center
+  text-align: right
 </style>

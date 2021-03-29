@@ -79,10 +79,9 @@ $text-shadow: 0 0 6px
   user-select: none
   padding: 0px 6px
   background: rgba(0, 0, 0, 0.7)
-  text-align: right
   font-family: digital
   border-radius: 4px
-  transition: filter 0.1s, text-shadow 0.1s ease-out
+  transition: color 0.1s, filter 0.1s, text-shadow 0.1s ease-out
 
   &.green
     color: #76ff03
@@ -111,5 +110,5 @@ $text-shadow: 0 0 6px
 
   .separator
     display: inline-block
-    padding: 0px 2px
+    padding: 0px 1px
 </style>

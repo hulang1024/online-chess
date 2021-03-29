@@ -7,9 +7,8 @@ import Signal from "src/utils/signals/Signal";
 import DrawableChessboard from "src/rulesets/ui/DrawableChessboard";
 import DrawableChess from "./DrawableChess";
 import './chessboard.scss';
-import './themes/chessboard/default.scss';
-import './themes/chessboard/brown.scss';
-import './themes/chessboard/black.scss';
+import './themes/chessboard/index.scss';
+import chessboardThemes from './themes/chessboard/index';
 
 export default class ChineseChessDrawableChessboard
   extends DrawableChessboard implements Chessboard {
@@ -124,6 +123,9 @@ export default class ChineseChessDrawableChessboard
       }
     });
     el.classList.add(`chinesechess-chessboard-theme-${theme}`);
+    if (this.canvas) {
+      this.draw(this.canvas, this.screen);
+    }
   }
 
   private setupDragable() {
@@ -220,6 +222,8 @@ export default class ChineseChessDrawableChessboard
     canvas.height = canvasBounds.height * pixelRatio;
     context.scale(pixelRatio, pixelRatio);
 
+    const theme = configManager.get(ConfigItem.chinesechessChessboardTheme) as string;
+    const lineColor = chessboardThemes[theme].lineColor || '#b2805b';
     /// 画棋盘网格线
     const drawLine = (
       x1: number, y1: number,
@@ -237,7 +241,7 @@ export default class ChineseChessDrawableChessboard
       context.moveTo(grid.x + x1, grid.y + y1);
       context.lineTo(grid.x + x2, grid.y + y2);
       context.closePath();
-      context.strokeStyle = color || '#b2805b';
+      context.strokeStyle = color || lineColor;
       context.stroke();
     };
 
@@ -336,9 +340,10 @@ export default class ChineseChessDrawableChessboard
       const fontSize = Math.min(14, grid.x / 2);
       context.textBaseline = 'middle';
       context.textAlign = 'center';
-      context.shadowOffsetX = 0;
-      context.shadowOffsetY = 0;
+      context.shadowOffsetX = -0.5;
+      context.shadowOffsetY = -0.5;
       context.shadowBlur = 0;
+      context.shadowColor = 'rgba(0, 0, 0, 0.3)';
 
       const fillNoText = (n: number, isHan: boolean, x: number, y: number) => {
         context.font = `${fontSize}px founder-kaiti`;
@@ -358,16 +363,16 @@ export default class ChineseChessDrawableChessboard
     this.font.load().then(() => {
       // eslint-disable-next-line
       document.fonts.add(this.font);
-      context.fillStyle = '#b8957a';
-      const fontSize = grid.cellSize / 1.8;
+      context.fillStyle = chessboardThemes[theme].centerTextColor || '#b8957a';
+      const fontSize = grid.cellSize / 1.4;
       const y = canvasBounds.height / 2 + context.lineWidth;
       context.font = `bold ${fontSize}px 'founder-xin-kaiti'`;
       context.shadowOffsetX = -1;
       context.shadowOffsetY = -1;
-      context.shadowBlur = 1;
-      context.shadowColor = 'rgba(0, 0, 0, 0.5)';
-      context.fillText('楚 河', grid.x + grid.cellSize * 2, y);
-      context.fillText('汉 界', canvasBounds.width - grid.x - grid.cellSize * 2, y);
+      context.shadowBlur = 0;
+      context.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      context.fillText('楚 河', grid.x + grid.cellSize * 1.8, y);
+      context.fillText('汉 界', canvasBounds.width - grid.x - grid.cellSize * 1.8, y);
     });
   }
 
@@ -391,7 +396,7 @@ export default class ChineseChessDrawableChessboard
 
     // 棋子宽度稍小于交叉点距离
     // eslint-disable-next-line
-    const chessGap = screen.xs ? 6 : 12;
+    const chessGap = screen.xs ? 4 : 10;
     const chessSize = cellSize - chessGap;
     // 最侧边的棋子需要占据半个位置
     const gridMargin = cellSize / 2;

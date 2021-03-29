@@ -52,7 +52,7 @@ export default defineComponent({
   box-sizing: content-box
 
   .q-scrollarea
-    width: 280px !important
+    width: 283px !important
     height: 320px
     padding: 8px
 

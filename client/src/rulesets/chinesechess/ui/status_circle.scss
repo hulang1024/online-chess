@@ -6,10 +6,9 @@
     opacity: 0;
     transition: opacity 0.1s ease-out;
     animation-play-state: paused;
-    z-index: 2;
+    z-index: 3;
     box-sizing: border-box;
     pointer-events: none;
-    transform: translateY(1px);
 
     &.show {
       opacity: 1;

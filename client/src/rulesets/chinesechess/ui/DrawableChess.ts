@@ -7,10 +7,7 @@ import Signal from 'src/utils/signals/Signal';
 import { configManager } from 'src/boot/main';
 import { ConfigItem } from 'src/config/ConfigManager';
 import './chess.scss';
-import './themes/chess/default.scss';
-import './themes/chess/black-purple.scss';
-import './themes/chess/agate.scss';
-import './themes/chess/glass.scss';
+import './themes/chess/index.scss';
 
 export default class DrawableChess implements Chess {
   private _el: HTMLDivElement;
@@ -117,6 +114,7 @@ export default class DrawableChess implements Chess {
     el.style.width = `${radius * 2}px`;
     el.style.height = `${radius * 2}px`;
     el.style.fontSize = `${radius + 4}px`;
+    el.classList[radius <= 16 ? 'add' : 'remove']('smaller');
     this.radius = radius;
   }
 
@@ -127,8 +125,7 @@ export default class DrawableChess implements Chess {
   public get x() { return this._el.offsetLeft + this.radius; }
 
   public set y(val: number) {
-    const shadowOffset = 2;
-    this._el.style.top = `${val - this.radius - shadowOffset}px`;
+    this._el.style.top = `${val - this.radius}px`;
   }
 
   public get y() { return this._el.offsetTop + this.radius; }

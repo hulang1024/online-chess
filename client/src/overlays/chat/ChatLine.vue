@@ -36,23 +36,33 @@
       </div>
     </div>
     <div class="content">
-      <span :style="{color: contentColor}">{{ content }}</span>
       <q-menu
         touch-position
-        context-menu
+        :context-menu="isDesktop"
       >
         <q-list>
           <q-item
-            v-if="canRecall"
-            key="recall"
+            key="copy"
             v-close-popup
             clickable
-            @click="onRecallClick"
+            @click="onCopyClick"
           >
-            <q-item-section>撤回</q-item-section>
+            <q-item-section>复制</q-item-section>
           </q-item>
+          <template v-if="canRecall">
+            <q-separator />
+            <q-item
+              key="recall"
+              v-close-popup
+              clickable
+              @click="onRecallClick"
+            >
+              <q-item-section>撤回</q-item-section>
+            </q-item>
+          </template>
         </q-list>
       </q-menu>
+      <span :style="{color: contentColor}">{{ content }}</span>
     </div>
   </div>
 </template>
@@ -61,6 +71,8 @@
 import {
   computed, defineComponent, getCurrentInstance, PropType, ref,
 } from "@vue/composition-api";
+import device from "current-device";
+import { copyToClipboard } from 'quasar';
 import { api, channelManager } from "src/boot/main";
 import ErrorMessage from "src/online/chat/ErrorMessage";
 import Message from "src/online/chat/Message";
@@ -117,6 +129,12 @@ export default defineComponent({
       (context as any).chatAtUser(sender);
     };
 
+    const onCopyClick = () => {
+      copyToClipboard(message.content).catch(() => {
+        context.$q.notify({ message: '复制失败', timeout: 500 });
+      });
+    };
+
     const onRecallClick = () => {
       channelManager.postCommand(`/recall ${message.id}`);
     };
@@ -132,9 +150,12 @@ export default defineComponent({
       contentColor,
       pending: message.id == null,
       hasMenu,
+      // eslint-disable-next-line
+      isDesktop: device.desktop(),
       canAt,
       canRecall,
       onAtClick,
+      onCopyClick,
       onRecallClick,
     };
   },

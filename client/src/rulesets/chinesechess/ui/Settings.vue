@@ -16,7 +16,7 @@
           dense
           inline-label
           narrow-indicator
-          class="bg-grey-4 text-black"
+          class="text-brown"
         >
           <q-tab
             name="chess_board"
@@ -36,26 +36,33 @@
             key="chess_board"
             name="chess_board"
           >
-            <div class="row items-center">
-              <label class="q-mr-sm">棋盘</label>
-              <q-btn-toggle
-                v-model="chessboardTheme"
-                :options="chessboardThemeOptions"
-                toggle-color="primary"
-              />
-            </div>
-            <div class="row items-center q-mt-sm">
-              <label class="q-mr-sm">棋子</label>
-              <q-btn-toggle
-                v-model="chessTheme"
-                :options="chessThemeOptions"
-                toggle-color="primary"
-              />
-            </div>
+            <q-btn-toggle
+              v-model="chessboardSubTab"
+              :options="[
+                {label: '棋盘', value: 'chessboard'},
+                {label: '棋子', value: 'chess'},
+              ]"
+              toggle-color="brown"
+            />
             <div
               ref="chessboardPanel"
               class="chessboard-panel row justify-center"
             />
+            <div class="p-pt-lg">
+              <q-btn-toggle
+                v-if="chessboardSubTab == 'chessboard'"
+                v-model="chessboardTheme"
+                :options="chessboardThemeOptions"
+                toggle-color="brown"
+              />
+              <q-btn-toggle
+                v-if="chessboardSubTab == 'chess'"
+                v-model="chessTheme"
+                dense
+                :options="chessThemeOptions"
+                toggle-color="brown"
+              />
+            </div>
           </q-tab-panel>
           <q-tab-panel
             key="functions"
@@ -99,23 +106,24 @@ import ChessHost from "src/rulesets/chess_host";
 import ChineseChessDrawableChessboard from "./ChineseChessDrawableChessboard";
 import { createIntialLayoutChessList } from "../rule/chess_map";
 import DrawableChess from "./DrawableChess";
+import chessboardThemes from './themes/chessboard/index';
+import chessThemes from './themes/chess/index';
 
 let chessboard: ChineseChessDrawableChessboard | null = null;
 
 export default defineComponent({
   setup() {
     const context = getCurrentInstance() as Vue;
-    const chessboardThemeOptions = [
-      { label: '默认', value: 'default' },
-      { label: '棕色', value: 'brown' },
-      { label: '黑色', value: 'black' },
-    ];
-    const chessThemeOptions = [
-      { label: '默认', value: 'default' },
-      { label: '黑紫', value: 'black-purple' },
-      { label: '玛瑙', value: 'agate' },
-      { label: '玻璃', value: 'glass' },
-    ];
+    const chessboardThemeOptions: { label: string, value: string }[] = [];
+    Object.keys(chessboardThemes).forEach((theme) => {
+      chessboardThemeOptions.push({ label: chessboardThemes[theme].name, value: theme });
+    });
+
+    const chessThemeOptions: { label: string, value: string }[] = [];
+    Object.keys(chessThemes).forEach((theme) => {
+      chessThemeOptions.push({ label: chessThemes[theme].name, value: theme });
+    });
+
     const values = reactive({
       chessboardTheme: configManager.get(ConfigItem.chinesechessChessboardTheme),
       chessTheme: configManager.get(ConfigItem.chinesechessChessTheme),
@@ -125,6 +133,7 @@ export default defineComponent({
     });
 
     const activeTab = ref('chess_board');
+    const chessboardSubTab = ref('chessboard');
 
     watch(values, () => {
       configManager.set(ConfigItem.chinesechessChessboardTheme, values.chessboardTheme);
@@ -146,6 +155,7 @@ export default defineComponent({
       chessboardThemeOptions,
       chessThemeOptions,
       activeTab,
+      chessboardSubTab,
       ...toRefs(values),
       show() {
         // eslint-disable-next-line
@@ -185,11 +195,19 @@ export default defineComponent({
 
 <style lang="sass" scoped>
 .q-tab-panel
-  padding: 16px 8px
+  display: flex
+  flex-direction: column
+  align-items: center
+  padding: 16px 4px
   height: 480px
 
 .chessboard-panel
   width: 100%
-  height: 360px
-  padding: 16px 0px
+  height: 320px
+  margin: 16px 0px
+</style>
+<style scoped>
+>>> .q-btn--dense .q-btn__wrapper {
+  padding: 6px 8px;
+}
 </style>

@@ -15,7 +15,7 @@
         dense
         inline-label
         :breakpoint="0"
-        indicator-color="primary"
+        indicator-color="transparent"
         class="col"
       >
         <q-tab
@@ -23,7 +23,7 @@
           :key="channel.name"
           :name="getChannelTabName(channel)"
           no-caps
-          :class="$q.screen.xs && 'mobile'"
+          :class="[$q.screen.xs && 'mobile']"
         >
           <user-avatar
             v-if="channel.type == 3"
@@ -42,6 +42,7 @@
             v-show="channelUnreadCounts[index] > 0"
             color="red"
             floating
+            align="top"
           >{{ channelUnreadCounts[index] }}</q-badge>
         </q-tab>
       </q-tabs>
@@ -254,36 +255,85 @@ export default defineComponent({
 <style lang="scss" scoped>
 .chat-overlay {
   & .q-card {
+    display: flex;
+    flex-direction: column;
     height: 284px;
-    background-color: #fff;
+    background: transparent;
 
-    & .q-tab-panels {
+    .q-tabs {
+      background-color: rgba(0, 0, 0, 0.4);
+
+      .q-tab {
+        justify-content: flex-start;
+        min-width: 140px;
+        padding-left: 4px;
+        padding-right: 8px;
+        color: #f6f6f6;
+        background: $grey-14;
+        transition: all 0.1s ease-out;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+        border-bottom: 1px solid black;
+        transform: skew(-4deg);
+        border-radius: 2px;
+
+        &.mobile {
+          min-width: 98px;
+        }
+
+        .close-tab-btn {
+          position: absolute;
+          right: 0px;
+          opacity: 0;
+
+          &:hover {
+            color: $pink;
+          }
+        }
+
+        &.q-tab--active {
+          color: #000;
+          background: #fff;
+          font-weight: bold;
+
+          .close-tab-btn {
+            opacity: 1;
+          }
+        }
+      }
+    }
+
+    .q-tab-panels {
       height: 200px;
-      background: transparent;
+      background: #fff;
       .q-tab-panel {
         padding: 4px 4px;
       }
     }
   }
+
+  .chat-input-box {
+    flex-grow: 1;
+    background: #fff;
+  }
+
   & .q-card.q-dark {
-    background-color: #191919;
+    .q-tab-panels,
+    .chat-input-box {
+      background: #191919;
+    }
+
+    .q-tabs {
+      .q-tab {
+        background: $grey-10;
+
+        &.q-tab--active {
+          color: #fff;
+          background: #191919;
+        }
+      }
+    }
   }
 }
-</style>
-
-<style lang="sass" scoped>
-
-.close-tab-btn:not(.mobile)
-  opacity: 0
-  &:hover
-    color: $pink
-.q-tab
-  min-width: 120px
-  &.mobile
-    min-width: 98px
-  &:hover
-    .close-tab-btn
-      opacity: 1
 </style>
 <style scoped>
 .chat-input-box >>> .message-input {
@@ -298,5 +348,16 @@ export default defineComponent({
   float: left;
   margin-left: 8px;
   width: calc(100% - 16px);
+}
+
+.q-tabs >>> .q-tabs__content {
+  padding-left: 3px;
+}
+
+.q-tab >>> .q-tab__content {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  transform: skew(4deg);
 }
 </style>
