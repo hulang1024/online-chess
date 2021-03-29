@@ -1,63 +1,89 @@
 <template>
-  <q-dialog ref="dialog">
+  <q-dialog ref="dialog" :maximized="$q.screen.xs" >
     <q-card class="q-dialog-plugin">
       <q-card-section>
         <div class="text-h6">设置</div>
         <q-btn
           v-if="$q.screen.xs"
           icon="close"
-          class="text-grey-6 absolute-top-right"
-          flat round dense v-close-popup
+          class="text-grey-8 absolute-top-right q-pr-sm q-mt-md"
+          flat round v-close-popup
         />
       </q-card-section>
       <q-card-section>
-        <div class="row items-center">
-          <label class="q-mr-sm">棋盘</label>
-          <q-option-group
-            v-model="chessboardTheme"
-            inline
-            dense
-            :options="chessboardThemeOptions"
-            color="primary"
+        <q-tabs
+          v-model="activeTab"
+          dense
+          inline-label
+          narrow-indicator
+          class="bg-grey-4 text-black"
+        >
+          <q-tab
+            name="chess_board"
+            label="棋盘棋子"
           />
-        </div>
-        <div class="row items-center">
-          <label class="q-mr-sm">棋子</label>
-          <q-option-group
-            v-model="chessTheme"
-            inline
-            dense
-            :options="chessThemeOptions"
-            color="primary"
+          <q-tab
+            name="functions"
+            label="功能"
           />
-        </div>
-        <div
-          ref="chessboardPanel"
-          class="row justify-center q-my-sm full-width"
-          style="height: 320px"
-        />
-
-        <div>
-          <label>棋子状态提示</label>
-          <q-toggle
-            v-model="chessStatus"
-            color="orange"
-          />
-        </div>
-        <div>
-          <label>可走位置提示</label>
-          <q-toggle
-            v-model="goDisplay"
-            color="orange"
-          />
-        </div>
-        <div v-if="!$q.screen.xs">
-          <label>棋子可拖拽移动</label>
-          <q-toggle
-            v-model="chessDraggable"
-            color="orange"
-          />
-        </div>
+        </q-tabs>
+        <q-tab-panels
+          v-model="activeTab"
+          animated
+          keep-alive
+        >
+          <q-tab-panel
+            key="chess_board"
+            name="chess_board"
+          >
+            <div class="row items-center">
+              <label class="q-mr-sm">棋盘</label>
+              <q-btn-toggle
+                v-model="chessboardTheme"
+                :options="chessboardThemeOptions"
+                toggle-color="primary"
+              />
+            </div>
+            <div class="row items-center q-mt-sm">
+              <label class="q-mr-sm">棋子</label>
+              <q-btn-toggle
+                v-model="chessTheme"
+                :options="chessThemeOptions"
+                toggle-color="primary"
+              />
+            </div>
+            <div
+              ref="chessboardPanel"
+              class="chessboard-panel row justify-center"
+            />
+          </q-tab-panel>
+          <q-tab-panel
+            key="functions"
+            name="functions"
+          >
+            <div>
+              <label>棋子状态提示</label>
+              <q-toggle
+                v-model="chessStatus"
+                color="orange"
+              />
+            </div>
+            <div>
+              <label>可走位置提示</label>
+              <q-toggle
+                v-model="goDisplay"
+                color="orange"
+              />
+            </div>
+            <div v-if="!$q.screen.xs">
+              <label>棋子可拖拽移动</label>
+              <q-toggle
+                v-model="chessDraggable"
+                color="orange"
+              />
+            </div>
+          </q-tab-panel>
+        </q-tab-panels>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -67,7 +93,7 @@
 import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
 import {
-  defineComponent, getCurrentInstance, reactive, watch, toRefs, onBeforeUnmount,
+  defineComponent, getCurrentInstance, reactive, watch, ref, toRefs, onBeforeUnmount,
 } from "@vue/composition-api";
 import ChessHost from "src/rulesets/chess_host";
 import ChineseChessDrawableChessboard from "./ChineseChessDrawableChessboard";
@@ -98,6 +124,8 @@ export default defineComponent({
       chessDraggable: configManager.get(ConfigItem.chinesechessChessDraggable),
     });
 
+    const activeTab = ref('chess_board');
+
     watch(values, () => {
       configManager.set(ConfigItem.chinesechessChessboardTheme, values.chessboardTheme);
       configManager.set(ConfigItem.chinesechessChessTheme, values.chessTheme);
@@ -117,6 +145,7 @@ export default defineComponent({
     return {
       chessboardThemeOptions,
       chessThemeOptions,
+      activeTab,
       ...toRefs(values),
       show() {
         // eslint-disable-next-line
@@ -153,3 +182,14 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="sass" scoped>
+.q-tab-panel
+  padding: 16px 8px
+  height: 480px
+
+.chessboard-panel
+  width: 100%
+  height: 360px
+  padding: 16px 0px
+</style>

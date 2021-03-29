@@ -156,7 +156,7 @@ export default defineComponent({
 }
 
 .row.small > .time {
-  font-size: 0.74em !important;
+  font-size: 0.72em !important;
 }
 
 @media (max-width: $breakpoint-xs-max) {

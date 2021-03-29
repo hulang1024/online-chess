@@ -64,7 +64,7 @@
           text-color="primary"
           round
           push
-          size="16px"
+          size="18px"
         >
           <q-menu
             transition-show="jump-up"
@@ -72,7 +72,7 @@
             :offset="[0, 8]"
             auto-close
           >
-            <q-list style="min-width: 110px">
+            <q-list>
               <q-item
                 clickable
                 v-close-popup
@@ -104,7 +104,7 @@
                   @click="onChessDrawClick"
                 >
                   <q-item-section>
-                    <q-item-label><q-icon name="far fa-handshake" /> 求和</q-item-label>
+                    <q-item-label><q-icon name="far fa-handshake" />求和</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-separator />
@@ -115,7 +115,7 @@
                   @click="onWhiteFlagClick"
                 >
                   <q-item-section>
-                    <q-item-label><q-icon name="far fa-frown" /> 认输</q-item-label>
+                    <q-item-label><q-icon name="far fa-frown" />认输</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-separator />
@@ -129,7 +129,7 @@
                   <q-item-section>
                     <q-item-label>
                       <q-icon name="far fa-clock" />
-                      {{ viewUser.isRoomOwner ? '' : '请求' }}{{ isPlaying ? '暂停对局' : '继续对局' }}
+                      <span>{{ pauseOrResumeText }}</span>
                     </q-item-label>
                   </q-item-section>
                 </q-item>
@@ -141,7 +141,7 @@
                 @click="onHelpClick"
               >
                 <q-item-section>
-                  <label><q-icon name="far fa-question-circle" /> 帮助</label>
+                  <label><q-icon name="far fa-question-circle" />帮助</label>
                 </q-item-section>
               </q-item>
               <q-separator />
@@ -164,6 +164,7 @@
           text-color="primary"
           round
           push
+          size="16px"
           @click.stop="onChatClick"
           class="q-ml-md"
         >
@@ -311,7 +312,7 @@
             >
               <span>
                 <q-icon name="access_time" />
-                {{ viewUser.isRoomOwner ? '' : '请求' }}{{ isPlaying ? '暂停游戏' : '继续游戏' }}
+                <span class="q-ml-xs">{{ pauseOrResumeText }}</span>
               </span>
             </q-btn>
           </template>
@@ -342,6 +343,7 @@ import ResultDialog from 'src/rulesets/ui/ResultDialog.vue';
 import TextOverlay from 'src/rulesets/ui/TextOverlay.vue';
 import Gamepad from 'src/rulesets/ui/Gamepad.vue';
 import { GameType } from 'src/rulesets/GameType';
+import GameUser from 'src/online/play/GameUser';
 import VsIcon from 'src/rulesets/ui/VsIcon.vue';
 import GameUserPanel from './GameUserPanel.vue';
 import SpectatorCountDisplay from './SpectatorCountDisplay.vue';
@@ -439,6 +441,8 @@ export default defineComponent({
       // eslint-disable-next-line
       props.otherUser.online && [GameState.PLAYING, GameState.PAUSE].includes(props.gameState)));
 
+    const pauseOrResumeText = computed(() => (
+      `${(props.viewUser as GameUser).isRoomOwner ? '' : '请求'}${isPlaying ? '暂停' : '继续'}游戏`));
     const onChatClick = () => {
       emit('chat')
     };
@@ -470,6 +474,7 @@ export default defineComponent({
       gameType,
       GAME_TYPE_MAP,
       isPlaying,
+      pauseOrResumeText,
       canChessDraw,
       canWhiteFlag,
 
@@ -505,8 +510,8 @@ export default defineComponent({
 
 .controls
   padding: 8px
-  width: 366px
-  min-width: 366px
+  width: 390px
+  min-width: 390px
   display: flex
   flex-direction: column
   min-height: inherit
@@ -515,7 +520,7 @@ export default defineComponent({
     justify-content: space-between
     .game-user-panel
       padding: 8px
-      padding-left: 8px
+      padding-bottom: 12px
       width: calc(50% - 4px)
       border-radius: 4px
 
@@ -535,7 +540,21 @@ export default defineComponent({
   padding: 0px;
 }
 
+.q-list {
+  min-width: 160px;
+}
+
 .q-list >>> .q-item {
   font-size: 16px;
+}
+
+.q-list >>> label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.q-list >>> .q-icon {
+  font-size: 22px;
+  margin-right: 6px;
 }
 </style>

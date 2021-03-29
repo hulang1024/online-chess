@@ -33,6 +33,8 @@ export default class ChineseChessDrawableChessboard
 
   private chessArray: Array<Array<DrawableChess | null>>;
 
+  private font = new FontFace('founder-xin-kaiti', 'url(/fonts/FZXKJW.ttf)');
+
   constructor(stage: {width: number, height: number}, screen: any) {
     super();
     // eslint-disable-next-line
@@ -352,15 +354,14 @@ export default class ChineseChessDrawableChessboard
       }
     }
 
-    const font = new FontFace('founder-xin-kaiti', 'url(/fonts/FZXKJW.ttf)');
     // eslint-disable-next-line
-    font.load().then(() => {
+    this.font.load().then(() => {
       // eslint-disable-next-line
-      document.fonts.add(font);
+      document.fonts.add(this.font);
       context.fillStyle = '#b8957a';
       const fontSize = grid.cellSize / 1.8;
       const y = canvasBounds.height / 2 + context.lineWidth;
-      context.font = `${fontSize}px 'founder-xin-kaiti'`;
+      context.font = `bold ${fontSize}px 'founder-xin-kaiti'`;
       context.shadowOffsetX = -1;
       context.shadowOffsetY = -1;
       context.shadowBlur = 1;

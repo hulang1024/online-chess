@@ -11,13 +11,13 @@
 }
 
 @font-face {
-  font-family: 'digital';
-  src: url('/fonts/Digital-Dismay-1.otf');
-  src: url('/fonts/Digital-Dismay-1.otf') format('truetype');
-}
-
-@font-face {
   font-family: 'founder-simli';
   src: url('/fonts/WenDingCSLiShu-1.ttf');
   src: url('/fonts/WenDingCSLiShu-1.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'digital';
+  src: url('/fonts/wwDigital.ttf');
+  src: url('/fonts/wwDigital.ttf') format('truetype');
 }

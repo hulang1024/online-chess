@@ -4,7 +4,7 @@
     :class="[$q.screen.xs && 'xs-screen', {active}]"
   >
     <div
-      class="row justify-between avatar-time-row"
+      class="row justify-between avatar-time-row no-wra"
       :class="{reverse}"
     >
       <div
@@ -62,13 +62,13 @@
         class="column time-panel"
         :class="[$q.screen.xs && `q-m${reverse ? 'r' : 'l'}-sm`]"
       >
-        <div :class="['row item', {reverse: reverse && !$q.screen.xs}]">
+        <div :class="['row item', {[$q.screen.xs ? 'reversed' : 'reverse']: reverse}]">
           <span class="label">步时</span>
           <timer ref="stepTimer" />
         </div>
-        <div :class="['row item', {reverse: reverse && !$q.screen.xs}]">
+        <div :class="['row item', {[$q.screen.xs ? 'reversed' : 'reverse']: reverse}]">
           <span class="label">局时</span>
-          <timer ref="gameTimer" />
+          <timer ref="gameTimer" lazy />
         </div>
         <template v-if="$q.screen.xs">
           <!-- todo: 消除硬编码 -->
@@ -299,8 +299,10 @@ export default defineComponent({
     display: flex
     flex-wrap: nowrap
     justify-content: space-evenly
+    align-items: center
     user-select: none
     font-size: 14px
+    padding: 2px 0px
 
     .label
       word-break: keep-all
@@ -317,10 +319,9 @@ export default defineComponent({
 
 .chess
   transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28)
-  z-index: 2
 
   &.active
-    transform: scale(1.3)
+    transform: scale(1.25)
 
 .emoji-background
   width: 100%
@@ -354,8 +355,13 @@ export default defineComponent({
     padding: 4px
     background: rgba(0, 0, 0, 0.1)
     border-radius: 4px
+
     .item
-      padding: 1px 0px
+
+      &:not(.reversed)
+        padding-left: 16px
+      &.reversed
+        padding-right: 16px
 
 .center
   &.absolute-right,

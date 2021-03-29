@@ -66,6 +66,7 @@ export default defineComponent({
   position: relative;
   flex-grow: 1;
   padding: 4px;
+  height: 100%;
 }
 
 .room {

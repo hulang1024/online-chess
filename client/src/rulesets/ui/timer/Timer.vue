@@ -2,21 +2,37 @@
   <div
     :class="['timer', {ticking: state == 0 || state == 2}, color]"
   >
-    <span class="time">{{ displayMinutes }}</span>
-    <span>:</span>
-    <span class="time">{{ displaySeconds }}</span>
+    <digit
+      v-for="c in displayMinutes.split('')"
+      :key="c"
+      :digit="+c"
+    />
+    <span class="separator">:</span>
+    <digit
+      v-for="c in displaySeconds.split('')"
+      :key="c"
+      :digit="+c"
+    />
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent } from "@vue/composition-api";
+import Digit from "./Digit.vue";
 import Timer from "./Timer";
 
 function padZero(n: number) {
-  return n < 10 ? `0${n}` : n;
+  return n < 10 ? `0${n}` : n.toString();
 }
 
 export default defineComponent({
+  components: { Digit },
+  props: {
+    lazy: {
+      type: Boolean,
+      default: false,
+    },
+  },
   setup(props, { emit }) {
     const timer = new Timer(emit);
     const { totalSeconds, seconds } = timer;
@@ -27,7 +43,7 @@ export default defineComponent({
       const sec = seconds.value;
       if (!sec) return 'red';// 包括了0和null
       if (sec < totalSeconds.value / 4) return 'red';
-      if (sec < totalSeconds.value / 2) return 'orange';
+      if (!props.lazy && sec < totalSeconds.value / 2) return 'orange';
       return 'green';
     });
 
@@ -54,14 +70,15 @@ export default defineComponent({
 </script>
 
 <style lang="sass" scoped>
-$drop-shadow: drop-shadow(1px 2px 4px rgba(0, 0, 0, 0.6))
+$drop-shadow: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.6))
 $text-shadow: 0 0 6px
 
 .timer
-  display: inline-block
+  display: inline-flex
+  flex-wrap: nowrap
   user-select: none
-  padding: 0px 4px
-  background: rgba(0, 0, 0, 0.6)
+  padding: 0px 6px
+  background: rgba(0, 0, 0, 0.7)
   text-align: right
   font-family: digital
   border-radius: 4px
@@ -89,6 +106,10 @@ $text-shadow: 0 0 6px
       text-shadow: $text-shadow #ff3333
 
   &:not(.ticking)
-    filter: $drop-shadow brightness(0.75)
+    filter: $drop-shadow brightness(0.8)
     text-shadow: $text-shadow rgba(0, 0, 0, 0)
+
+  .separator
+    display: inline-block
+    padding: 0px 2px
 </style>
