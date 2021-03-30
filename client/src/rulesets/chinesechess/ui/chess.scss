@@ -1,6 +1,6 @@
 $red: #dd1100;
 $black: #443322;
-$side-shadow-color: rgb(0, 0, 0, 0.32);
+$side-shadow-color: rgb(0, 0, 0, 0.28);
 
 .chinesechess-chessboard {
   .chess {
@@ -27,7 +27,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.32);
     &.selected,
     &.overlay {
       z-index: 3;
-      transform: scale(1.1);
+      transform: scale(1.16);
       > .side {
         box-shadow: 4px 10px 2px 2px var(--side-shadow-color, $side-shadow-color);
       }
@@ -82,22 +82,30 @@ $side-shadow-color: rgb(0, 0, 0, 0.32);
 
       .chess__circle {
         position: relative;
-        top: -2px;
         display: flex;
         justify-content: center;
         align-items: center;
-        width: calc(100% - 8px);
-        height: calc(100% - 8px);
         border-radius: 100%;
         border: 1px solid;
-        box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
+        box-sizing: content-box;
         pointer-events: none;
-        text-shadow: 0px 0px 0.5px rgba(0, 0, 0, 0.2);
+        text-shadow: -0.5px -0.5px 0px rgba(0, 0, 0, 0.5);
         background: var(--background);
         font-size: larger;
         font-weight: 400;
         font-family: 'founder-simli';
       }  
+    }
+
+    &.smaller {
+      > .front,
+      > .back {
+        box-shadow: 1px 3px 2px 2px rgb(0, 0, 0, 0.32);
+
+        .chess__circle {
+          font-size: smaller;
+        }
+      }
     }
 
     > .front {
@@ -117,17 +125,6 @@ $side-shadow-color: rgb(0, 0, 0, 0.32);
       }
       > .back {
         transform: rotateX(0deg);
-      }
-    }
-
-    &.smaller {
-      > .front,
-      > .back {
-        box-shadow: 1px 3px 2px 2px rgb(0, 0, 0, 0.32);
-
-        .chess__circle {
-          font-size: smaller;
-        }
       }
     }
     
