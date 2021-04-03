@@ -12,6 +12,8 @@ public class UserLoginClientMsg extends ClientMessage {
     private Session session;
     private String token;
     private long userId;
+    private Integer device;
+    private String deviceOS;
 
     @Override
     public User getUser() {

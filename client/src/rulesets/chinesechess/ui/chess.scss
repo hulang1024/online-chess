@@ -1,6 +1,6 @@
 $red: #dd1100;
 $black: #443322;
-$side-shadow-color: rgb(0, 0, 0, 0.28);
+$side-shadow-color: rgb(0, 0, 0, 0.26);
 
 .chinesechess-chessboard {
   .chess {
@@ -12,7 +12,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.28);
     opacity: 1;
     z-index: 2;
     cursor: default;
-    transition: transform 0.05s, box-shadow 0.05s ease-in;
+    transition: transform 0.05s, box-shadow 0.05s ease-out;
   
     &.red {
       color: var(--first-color, $red);
@@ -29,7 +29,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.28);
       z-index: 3;
       transform: scale(1.16);
       > .side {
-        box-shadow: 4px 10px 2px 2px var(--side-shadow-color, $side-shadow-color);
+        box-shadow: 6px 16px 2px -4px var(--side-shadow-color, $side-shadow-color);
       }
     }
 
@@ -89,7 +89,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.28);
         border: 1px solid;
         box-sizing: content-box;
         pointer-events: none;
-        text-shadow: -0.5px -0.5px 0px rgba(0, 0, 0, 0.5);
+        text-shadow: -0.5px -0.5px 0px rgba(0, 0, 0, 0.3);
         background: var(--background);
         font-size: larger;
         font-weight: 400;

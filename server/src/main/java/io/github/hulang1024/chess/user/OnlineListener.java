@@ -64,7 +64,9 @@ public class OnlineListener {
 
     private void countOnline(User user, boolean isOnline) {
         UserDeviceInfo userDeviceInfo = userManager.getUserDeviceInfo(user);
-        if (userDeviceInfo == null || userDeviceInfo == UserDeviceInfo.NULL) {
+        if (userDeviceInfo == null
+            || userDeviceInfo == UserDeviceInfo.NULL
+            || userDeviceInfo.getDevice() == null) {
             return;
         }
         int inc = isOnline ? +1 : -1;

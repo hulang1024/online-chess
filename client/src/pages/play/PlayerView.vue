@@ -441,10 +441,13 @@ export default defineComponent({
       // eslint-disable-next-line
       props.otherUser.online && [GameState.PLAYING, GameState.PAUSE].includes(props.gameState)));
 
-    const pauseOrResumeText = computed(() => (
-      `${(props.viewUser as GameUser).isRoomOwner ? '' : '请求'}${isPlaying ? '暂停' : '继续'}游戏`));
+    const pauseOrResumeText = computed(() => {
+      let text = (props.viewUser as GameUser).isRoomOwner ? '' : '请求';
+      text += `${props.gameState == GameState.PLAYING ? '暂停' : '继续'}游戏`;
+      return text;
+    });
     const onChatClick = () => {
-      emit('chat')
+      emit('chat');
     };
     const onWithdrawClick = () => {
       emit('withdraw');

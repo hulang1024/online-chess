@@ -37,6 +37,7 @@
     </div>
     <div class="content">
       <q-menu
+        v-if="hasMenu"
         touch-position
         :context-menu="isDesktop"
       >
@@ -190,7 +191,7 @@ export default defineComponent({
 }
 
 .row > .time {
-  width: 54px;
+  width: 60px;
   font-size: 0.78em !important;
   user-select: none;
   font-family: Monaco, "Lucida Console", monospace;

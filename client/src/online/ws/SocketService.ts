@@ -1,4 +1,5 @@
 import { Notify } from "quasar";
+import device from "current-device";
 import { api, configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
 import GuestUser from "src/user/GuestUser";
@@ -111,6 +112,10 @@ export default class SocketService {
     this.queue((send) => {
       send('user.login', {
         token: this.api.accessToken?.accessToken,
+        // eslint-disable-next-line
+        'device': device.mobile() ? 2 : 1,
+        // eslint-disable-next-line
+        'deviceOS': device.os,
       });
     });
   }

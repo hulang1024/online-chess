@@ -40,6 +40,7 @@
           </q-item-label>
         </q-item-section>
       </q-item>
+      <q-separator />
     </template>
     <template #main-buttons>
       <q-btn

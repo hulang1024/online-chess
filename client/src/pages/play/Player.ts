@@ -15,6 +15,7 @@ import BindableBool from 'src/utils/bindables/BindableBool';
 import { onBeforeUnmount, onMounted } from '@vue/composition-api';
 import { api, channelManager, userActivityClient } from 'src/boot/main';
 import Message from 'src/online/chat/Message';
+import InfoMessage from 'src/online/chat/InfoMessage';
 import { existsEmoji } from 'src/assets/emoji';
 import UserStatus from 'src/user/UserStatus';
 import ChessHost from 'src/rulesets/chess_host';
@@ -193,6 +194,9 @@ export default class Player extends GameplayClient {
       channel.id = this.room.channelId;
       channel.type = ChannelType.ROOM;
       channel = this.channelManager.joinChannel(channel);
+      if (this.room.gameUsers.length == 1) {
+        channel.messages.unshift(new InfoMessage('如无对手，可到QQ群:89536775寻找哦。'));
+      }
       // eslint-disable-next-line
       (playerView.$refs.chatPanel as any)?.loadChannel(channel);
       channel.newMessagesArrived.add((messages: Message[]) => {

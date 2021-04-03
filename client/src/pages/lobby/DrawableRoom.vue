@@ -49,6 +49,7 @@
 </template>
 
 <script lang="ts">
+import device from "current-device";
 import {
   defineComponent, PropType, getCurrentInstance, watch, reactive, toRefs, computed,
 } from '@vue/composition-api';
@@ -218,7 +219,11 @@ export default defineComponent({
             color: 'orange',
           },
         }).onOk((passowrd: string) => {
-          joinOrSpectateRoom(passowrd);
+          setTimeout(() => {
+            joinOrSpectateRoom(passowrd);
+            // fix:安卓手机软键盘占用空间
+            // eslint-disable-next-line
+          }, device.android() ? 500 : 0);
         });
       } else {
         joinOrSpectateRoom();

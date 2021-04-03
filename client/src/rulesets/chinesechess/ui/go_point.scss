@@ -6,6 +6,15 @@
     background: rgba(255, 255, 255, 0.1);
     z-index: 1;
     box-sizing: border-box;
-    pointer-events: none;
+    transition: all 0.1s ease-out;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    &:active {
+      pointer-events: none;
+    }
   }
 }

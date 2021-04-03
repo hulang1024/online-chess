@@ -58,6 +58,11 @@ public class UserMessageListener extends AbstractMessageListener {
             }
         }
 
+        UserDeviceInfo userDeviceInfo = new UserDeviceInfo();
+        userDeviceInfo.setDevice(loginMsg.getDevice());
+        userDeviceInfo.setDeviceOS(loginMsg.getDeviceOS());
+        userManager.bindLoginDevice(user, userDeviceInfo);
+
         // 绑定新session
         boolean isOk = userSessionManager.setBinding(user, loginMsg.getSession());
         if (!isOk) {

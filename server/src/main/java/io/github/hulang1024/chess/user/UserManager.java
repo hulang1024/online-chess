@@ -269,12 +269,11 @@ public class UserManager {
             return result;
         }
 
-        UserDeviceInfo userDeviceInfo = new UserDeviceInfo();
-        userDeviceInfo.setDevice(param.getDevice());
-        userDeviceInfo.setDeviceOS(param.getDeviceOS());
-        loggedInUserDeviceInfoMap.put(user.getId(), userDeviceInfo);
-
         return result;
+    }
+
+    public void bindLoginDevice(User user, UserDeviceInfo userDeviceInfo) {
+        loggedInUserDeviceInfoMap.put(user.getId(), userDeviceInfo);
     }
 
     /**

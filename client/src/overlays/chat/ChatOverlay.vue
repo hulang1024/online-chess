@@ -210,7 +210,7 @@ export default defineComponent({
 
     channelManager.initializeChannels();
     channelManager.openChannel(1);
-    channelManager.addInfoMessage(1, new InfoMessage('欢迎'));
+    channelManager.addInfoMessage(1, new InfoMessage('🎉欢迎。棋友QQ群:89536775'));
 
     const onCloseClick = (channel: Channel) => {
       channelManager.leaveChannel(channel.id);
