@@ -14,7 +14,7 @@
           align="justify"
           :class="[
             'row',
-            $q.dark.isActive && 'text-white',
+            $q.dark.isActive ? 'text-white' : 'text-dark',
             $q.dark.isActive ? 'bg-grey-6' : 'bg-grey-4'
           ]"
         >
@@ -44,7 +44,7 @@
           class="q-mt-xs"
           :class="[
             'row',
-            $q.dark.isActive && 'text-white',
+            $q.dark.isActive ? 'text-white' : 'text-dark',
             $q.dark.isActive ? 'bg-grey-6' : 'bg-grey-4'
           ]"
         >
@@ -436,4 +436,9 @@ export default defineComponent({
   .q-btn
     padding: 2px
     font-weight: bolder
+</style>
+<style scoped>
+.filter-container >>> .q-tab__label {
+  font-weight: bold;
+}
 </style>

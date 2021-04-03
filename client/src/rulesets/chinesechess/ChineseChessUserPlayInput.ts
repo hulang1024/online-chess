@@ -10,9 +10,12 @@ import UserPlayInput from "../UserPlayInput";
 import ChineseChessGameRule from "./ChineseChessGameRule";
 import GameRule from "../GameRule";
 import GoDisplay from "./GoDisplay";
+import ChessHost from "../chess_host";
 
 export default class ChineseChessUserPlayInput extends UserPlayInput {
   private chessboard: DrawableChessboard;
+
+  protected gameRule: ChineseChessGameRule;
 
   public goDisplay: GoDisplay;
 
@@ -28,7 +31,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
   ) {
     super(gameRule, gameState, localUser, isWatchingMode);
 
-    this.chessboard = (gameRule as ChineseChessGameRule).getChessboard();
+    this.chessboard = this.gameRule.chessboard;
     this.chessboard.clicked.add(this.checkReject.bind(this));
 
     this.chessboard.chessPickupOrDrop.add(({ chess, isPickup }
@@ -46,7 +49,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
       return;
     }
 
-    this.goDisplay = new GoDisplay(this.gameRule as ChineseChessGameRule);
+    this.goDisplay = new GoDisplay(this.gameRule);
 
     gameState.changed.add((newGameState: GameState) => {
       switch (newGameState) {
@@ -75,14 +78,14 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
 
   public enable() {
     super.enable();
-    this.chessboard.getChessList().forEach((chess) => {
+    this.chessboard.getChesses().forEach((chess) => {
       chess.selectable = this.localUser.chess.value == chess.getHost();
     });
   }
 
   public disable() {
     super.disable();
-    this.chessboard.getChessList().forEach((chess) => {
+    this.chessboard.getChesses().forEach((chess) => {
       chess.selectable = false;
     });
   }
@@ -101,7 +104,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
         const fromPos = this.lastSelected.getPos();
         const toPos = event.pos;
         const chess = this.chessboard.chessAt(fromPos);
-        if ((this.gameRule as ChineseChessGameRule).canGoTo(chess, toPos)) {
+        if (this.canGoTo(chess, toPos)) {
           this.onUserMoveChess(fromPos, toPos);
           this.goDisplay.clear();
         }
@@ -130,7 +133,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
       this.lastSelected.selected = false;
       this.gameplayServer.pickChess(event.chess.getPos(), false);
       this.lastSelected = null;
-      this.chessboard.getChessList().forEach((chess) => {
+      this.chessboard.getChesses().forEach((chess) => {
         if (chess.getHost() != this.localUser.chess.value) {
           chess.selectable = false;
         }
@@ -144,7 +147,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
       const fromPos = this.lastSelected.getPos();
       const toPos = event.pos;
       const chess = this.chessboard.chessAt(fromPos);
-      if ((this.gameRule as ChineseChessGameRule).canGoTo(chess, toPos)) {
+      if (this.canGoTo(chess, toPos)) {
         this.onUserMoveChess(fromPos, toPos);
         this.goDisplay.clear();
       }
@@ -173,9 +176,9 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
     if (this.lastSelected) {
       this.lastSelected.selected = false;
     }
-    if ((this.gameRule as ChineseChessGameRule).canGoTo(chess, toPos)) {
-      const isMove = this.chessboard.isEmpty(toPos.row, toPos.col);
-      if (!isMove && this.chessboard.chessAt(toPos)?.getHost() == chess.getHost()) {
+    if (this.canGoTo(chess, toPos)) {
+      const isMove = this.gameRule.chessboardState.isEmpty(toPos.row, toPos.col);
+      if (!isMove && this.gameRule.chessboardState.chessAt(toPos)?.getHost() == chess.getHost()) {
         return;
       }
       this.onUserMoveChess(chess.getPos(), toPos, true);
@@ -188,7 +191,30 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
     action.fromPos = fromPos;
     action.toPos = toPos;
     action.chessHost = this.localUser.chess.value;
-    (this.gameRule as ChineseChessGameRule).onChessAction(action, instant);
+    this.gameRule.onChessAction(action, instant);
     this.gameplayServer.moveChess(fromPos, toPos);
+  }
+
+  private canGoTo(chess: DrawableChess | null, destPos: ChessPos) {
+    const might = this.gameRule.canGoTo(chess, destPos);
+    if (might && chess) {
+      const alreadyCheckmate = this.gameRule.checkmateJudgement.judge(
+        chess.getHost(), this.gameRule.chessboardState,
+      );
+      const nextChessboardState = this.gameRule.chessboardState.clone();
+      nextChessboardState.setChess(chess.getPos(), null);
+      const newChess = chess.chess.clone();
+      newChess.setPos(destPos);
+      nextChessboardState.setChess(destPos, newChess);
+      if (this.gameRule.checkmateJudgement.judge(chess.getHost(), nextChessboardState)) {
+        if (alreadyCheckmate) {
+          this.gameRule.showCheckmate(ChessHost.reverse(chess.getHost()));
+        } else {
+          this.player.showText('不能送将', 1000);
+        }
+        return false;
+      }
+    }
+    return might;
   }
 }

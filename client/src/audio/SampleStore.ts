@@ -34,11 +34,15 @@ export default class SampleStore {
       'room/user_join', 'room/user_left', 'room/unready', 'room/ready',
       'new_invitation',
       'gameplay/started.mp3',
-      'gameplay/chess_move', 'gameplay/chess_down1.mp3',
+      'games/gobang/chess_down1.mp3',
     ];
     for (let count = 1; count <= 10; count++) {
       names.push(`gameplay/count/zh/${count}.mp3`);
     }
+
+    ['chess_move', 'eat', 'checkmate'].forEach((name) => {
+      names.push(`games/chinesechess/default/${name}.wav`);
+    });
 
     names.forEach((name) => {
       this.get(name);

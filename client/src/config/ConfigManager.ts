@@ -7,13 +7,14 @@ export enum ConfigItem {
   loginAuto = 'login_auto',
   darkMode = 'dark_mode',
   audioVolume = 'audio_volume',
-  audioGameplayEnabled = 'audio_gameplay_enabled',
+  audioEnabled = 'audio_enabled',
   desktopNotifyEnabled = 'desktop_notify_enabled',
 
   // todo: 待组织
   gobangInputMethod = 'gobang.input_method',
-  chinesechessChessboardTheme = 'chinesechess_chessboard_theme',
-  chinesechessChessTheme = 'chinesechess_chess_theme',
+  chinesechessGameplayAudioEnabled = 'chinesechess.gameplay_audio_enabled',
+  chinesechessChessboardTheme = 'chinesechess.chessboard_theme',
+  chinesechessChessTheme = 'chinesechess.chess_theme',
   chinesechessChessStatus = 'chinesechess.chess_status',
   chinesechessGoDisplay = 'chinesechess.go_display',
   chinesechessChessDraggable = 'chinesechess.chess_draggable',
@@ -39,9 +40,10 @@ export default class ConfigManager {
     [
       'username', 'password', 'token', 'login_auto',
       'dark_mode', 'theme', 'audio_volume', 'desktop_notify_enabled',
-      'audio_gameplay_enabled', 'gobang.input_method',
-      'chinesechess_chessboard_theme',
-      'chinesechess_chess_theme',
+      'audio_enabled', 'gobang.input_method',
+      'chinesechess.gameplay_audio_enabled',
+      'chinesechess.chessboard_theme',
+      'chinesechess.chess_theme',
       'chinesechess.chess_status',
       'chinesechess.go_display',
       'chinesechess.chess_draggable',
@@ -85,8 +87,9 @@ export default class ConfigManager {
     this.set(ConfigItem.token, '');
     this.set(ConfigItem.loginAuto, true);
     this.set(ConfigItem.audioVolume, 0.2);
-    this.set(ConfigItem.audioGameplayEnabled, true);
+    this.set(ConfigItem.audioEnabled, true);
     this.set(ConfigItem.desktopNotifyEnabled, false);
+    this.set(ConfigItem.chinesechessGameplayAudioEnabled, true);
     this.set(ConfigItem.chinesechessChessStatus, true);
     this.set(ConfigItem.chinesechessGoDisplay, true);
     this.set(ConfigItem.chinesechessChessDraggable, false);

@@ -2,12 +2,13 @@ import ChessPos from "./ChessPos";
 import Game from "./Game";
 import AbstractChess from "./AbstractChess";
 import { isInKingHome, isStraightLineMove, sign } from "./move_rules";
+import ChessboardState from "./ChessboardState";
 
 /**
  * 将
  */
 export default class ChessK extends AbstractChess {
-  canGoTo(destPos: ChessPos, game: Game): boolean {
+  canGoTo(destPos: ChessPos, chessboardState: ChessboardState, game: Game): boolean {
     const rowOffset = destPos.row - this.pos.row;
     const colOffset = destPos.col - this.pos.col;
 
@@ -17,7 +18,7 @@ export default class ChessK extends AbstractChess {
       if (colOffset != 0) {
         return false;
       }
-      const targetChess = game.getChessboard().chessAt(destPos);
+      const targetChess = chessboardState.chessAt(destPos);
       if (targetChess == null || !targetChess.is(ChessK)) {
         return false;
       }
@@ -25,7 +26,7 @@ export default class ChessK extends AbstractChess {
       // 吃碰面的对方将军，中间不能有棋
       const k = sign(rowOffset);
       for (let row = this.pos.row + k; row != destPos.row; row += k) {
-        if (!game.getChessboard().isEmpty(row, this.pos.col)) {
+        if (!chessboardState.isEmpty(row, this.pos.col)) {
           return false;
         }
       }
@@ -34,5 +35,11 @@ export default class ChessK extends AbstractChess {
 
     // 可以在九宫内走单步，不限制方向（不包括斜着走）
     return isStraightLineMove(rowOffset, colOffset, 1) && isInKingHome(this, destPos, game);
+  }
+
+  clone(): ChessK {
+    const clone = new ChessK(this.pos, this.host);
+    clone.front = this.front;
+    return clone;
   }
 }

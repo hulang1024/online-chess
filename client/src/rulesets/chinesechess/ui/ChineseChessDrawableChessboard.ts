@@ -1,7 +1,5 @@
 import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
-import Chess from "src/rulesets/chinesechess/rule/Chess";
-import Chessboard from "src/rulesets/chinesechess/rule/chessboard";
 import ChessPos from "src/rulesets/chinesechess/rule/ChessPos";
 import Signal from "src/utils/signals/Signal";
 import DrawableChessboard from "src/rulesets/ui/DrawableChessboard";
@@ -9,9 +7,9 @@ import DrawableChess from "./DrawableChess";
 import './chessboard.scss';
 import './themes/chessboard/index.scss';
 import chessboardThemes from './themes/chessboard/index';
+import ChessboardState from "../rule/ChessboardState";
 
-export default class ChineseChessDrawableChessboard
-  extends DrawableChessboard implements Chessboard {
+export default class ChineseChessDrawableChessboard extends DrawableChessboard {
   private _bounds: ChessboardBounds;
 
   public get bounds() { return this._bounds; }
@@ -22,6 +20,8 @@ export default class ChineseChessDrawableChessboard
 
   public readonly chessMoved: Signal = new Signal();
 
+  public chessboardState = new ChessboardState();
+
   public hanNumberInBottom = true;
 
   private screen: any;
@@ -30,22 +30,12 @@ export default class ChineseChessDrawableChessboard
 
   private readonly padding = 4;
 
-  private chessArray: Array<Array<DrawableChess | null>>;
+  private chesses: DrawableChess[] = [];
 
   private font = new FontFace('founder-xin-kaiti', 'url(/fonts/FZXKJW.ttf)');
 
   constructor(stage: {width: number, height: number}, screen: any) {
     super();
-    // eslint-disable-next-line
-    this.chessArray = new Array(10);
-    for (let row = 0; row < 10; row++) {
-      // eslint-disable-next-line
-      this.chessArray[row] = new Array(9);
-      for (let col = 0; col < 9; col++) {
-        // eslint-disable-next-line
-        this.chessArray[row][col] = null;
-      }
-    }
 
     // eslint-disable-next-line
     this.screen = screen;
@@ -93,7 +83,7 @@ export default class ChineseChessDrawableChessboard
 
     this.draw(this.canvas, screen);
 
-    this.getChessList().forEach((chess: DrawableChess) => {
+    this.chesses.forEach((chess: DrawableChess) => {
       chess.resizeAndDraw(this.bounds.chessRadius);
       const { x, y } = this.calcChessDisplayPos(chess.getPos());
       chess.x = x;
@@ -102,7 +92,7 @@ export default class ChineseChessDrawableChessboard
   }
 
   public destroy() {
-    this.getChessList().forEach((chess: DrawableChess) => {
+    this.chesses.forEach((chess: DrawableChess) => {
       chess.destroy();
     });
     configManager.changed.remove(this.onConfigChanged, this);
@@ -141,7 +131,7 @@ export default class ChineseChessDrawableChessboard
       const fromPos = new ChessPos(+data[0], +data[1]);
       let toPos: ChessPos;
       if ((event.target as HTMLElement).classList.contains('chess')) {
-        const target = this.getChessList().find((chess: DrawableChess) => chess.el == event.target);
+        const target = this.chesses.find((chess: DrawableChess) => chess.el == event.target);
         toPos = target?.getPos() as ChessPos;
       } else {
         toPos = this.chessPosFromInputEvent(event);
@@ -418,36 +408,13 @@ export default class ChineseChessDrawableChessboard
     };
   }
 
-  public isEmpty(row: number, col: number): boolean {
-    return this.chessArray[row][col] == null;
-  }
-
-  public chessAt(pos: ChessPos): DrawableChess | null {
-    return this.chessArray[pos.row][pos.col];
-  }
-
-  public getChessArray(): Array<Array<Chess | null>> {
-    return this.chessArray;
-  }
-
-  public getChessList(): Array<DrawableChess> {
-    const ret: Array<DrawableChess> = [];
-    for (let row = 0; row < 10; row++) {
-      for (let col = 0; col < 9; col++) {
-        if (!this.isEmpty(row, col)) {
-          ret.push(this.chessArray[row][col] as DrawableChess);
-        }
-      }
-    }
-    return ret;
-  }
-
   public removeChess(chess: DrawableChess) {
-    return this._el.removeChild(chess.el);
+    this._el.removeChild(chess.el);
+    this.chesses = this.chesses.filter((c) => c != chess);
   }
 
   public addChess(chess: DrawableChess) {
-    this.chessArray[chess.getPos().row][chess.getPos().col] = chess;
+    this.chessboardState.setChess(chess.getPos(), chess.chess);
     const { x, y } = this.calcChessDisplayPos(chess.getPos());
     chess.x = x;
     chess.y = y;
@@ -465,19 +432,24 @@ export default class ChineseChessDrawableChessboard
     chess.drop.add(() => {
       this.chessPickupOrDrop.dispatch({ chess, isPickup: false });
     });
+    this.chesses.push(chess);
     this._el.appendChild(chess.el);
   }
 
   public clear() {
-    for (let row = 0; row < 10; row++) {
-      for (let col = 0; col < 9; col++) {
-        const chess = this.chessAt(new ChessPos(row, col));
-        if (chess) {
-          this.chessArray[row][col] = null;
-          this.removeChess(chess);
-        }
-      }
-    }
+    this.chessboardState.clear();
+    this.chesses.forEach((chess) => {
+      this.el.removeChild(chess.el);
+    });
+    this.chesses = [];
+  }
+
+  public chessAt(pos: ChessPos): DrawableChess | null {
+    return this.chesses.find((chess) => pos.equals(chess?.getPos())) || null;
+  }
+
+  public getChesses() {
+    return this.chesses;
   }
 
   public calcChessDisplayPos(pos: ChessPos) {

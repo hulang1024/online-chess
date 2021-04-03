@@ -1,13 +1,13 @@
 import ChessPos from "./ChessPos";
-import Game from "./Game";
 import AbstractChess from "./AbstractChess";
 import { MAX_DISTANCE, isStraightLineMove, sign } from "./move_rules";
+import ChessboardState from "./ChessboardState";
 
 /**
  * 车
  */
 export default class ChessR extends AbstractChess {
-  canGoTo(destPos: ChessPos, game: Game): boolean {
+  canGoTo(destPos: ChessPos, chessboardState: ChessboardState): boolean {
     const rowOffset = destPos.row - this.pos.row;
     const colOffset = destPos.col - this.pos.col;
 
@@ -20,19 +20,25 @@ export default class ChessR extends AbstractChess {
     if (Math.abs(rowOffset) > 0) {
       const k = sign(rowOffset);
       for (let row = this.pos.row + k; row != destPos.row; row += k) {
-        if (!game.getChessboard().isEmpty(row, this.pos.col)) {
+        if (!chessboardState.isEmpty(row, this.pos.col)) {
           return false;
         }
       }
     } else {
       const k = sign(colOffset);
       for (let col = this.pos.col + k; col != destPos.col; col += k) {
-        if (!game.getChessboard().isEmpty(this.pos.row, col)) {
+        if (!chessboardState.isEmpty(this.pos.row, col)) {
           return false;
         }
       }
     }
 
     return true;
+  }
+
+  clone(): ChessR {
+    const clone = new ChessR(this.pos, this.host);
+    clone.front = this.front;
+    return clone;
   }
 }

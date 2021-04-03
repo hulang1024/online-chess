@@ -8,6 +8,7 @@ import { configManager } from 'src/boot/main';
 import { ConfigItem } from 'src/config/ConfigManager';
 import './chess.scss';
 import './themes/chess/index.scss';
+import ChessboardState from '../rule/ChessboardState';
 
 export default class DrawableChess implements Chess {
   private _el: HTMLDivElement;
@@ -164,8 +165,8 @@ export default class DrawableChess implements Chess {
     this._el.classList[lit ? 'add' : 'remove']('lit');
   }
 
-  public canGoTo(destPos: ChessPos, game: Game) {
-    return this.chess.canGoTo(destPos, game);
+  public canGoTo(destPos: ChessPos, chessboardState: ChessboardState, game: Game) {
+    return this.chess.canGoTo(destPos, chessboardState, game);
   }
 
   public setPos(pos: ChessPos) {
@@ -207,6 +208,11 @@ export default class DrawableChess implements Chess {
 
   public isFront() {
     return this.chess.isFront();
+  }
+
+  // eslint-disable-next-line
+  public clone(): Chess {
+    throw Error('不支持调用');
   }
 
   public is(chessClass: unknown) {

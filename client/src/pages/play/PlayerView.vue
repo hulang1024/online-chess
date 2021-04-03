@@ -238,10 +238,18 @@
               />
             </template>
             <u-button
-              label="帮助"
+              icon="far fa-question-circle"
               color="warning"
               size="12px"
+              title="帮助"
               @click="onHelpClick"
+            />
+            <u-button
+              icon="settings"
+              color="warning"
+              size="12px"
+              title="设置"
+              @click="onSettingsClick"
             />
           </div>
         </div>
@@ -294,13 +302,6 @@
           spread
           class="q-mt-sm"
         >
-          <q-btn
-            icon="settings"
-            color="white"
-            text-color="black"
-            style="flex: 40px"
-            @click="onSettingsClick"
-          />
           <slot name="main-buttons" />
           <template v-if="enableGameRuleButtons">
             <q-btn

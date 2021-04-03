@@ -44,9 +44,9 @@
         />
       </div>
       <div class="section-row toggle-row">
-        <label>开启游戏内声音</label>
+        <label>开启声音</label>
         <q-toggle
-          v-model="configState.audioGameplayEnabled"
+          v-model="configState.audioEnabled"
         />
       </div>
       <div class="section-row">
@@ -91,7 +91,7 @@ export default defineComponent({
       darkEnabled: configManager.get(ConfigItem.darkMode) as boolean,
       fullscreen: false,
       desktopNotifyEnabled: configManager.get(ConfigItem.desktopNotifyEnabled),
-      audioGameplayEnabled: configManager.get(ConfigItem.audioGameplayEnabled) as boolean,
+      audioEnabled: configManager.get(ConfigItem.audioEnabled) as boolean,
       audioVolume: configManager.get(ConfigItem.audioVolume) as number * 100,
     });
 
@@ -102,7 +102,7 @@ export default defineComponent({
     watch(configState, () => {
       ctx.$q.dark.set(configState.darkEnabled);
       configManager.set(ConfigItem.darkMode, configState.darkEnabled);
-      configManager.set(ConfigItem.audioGameplayEnabled, configState.audioGameplayEnabled);
+      configManager.set(ConfigItem.audioEnabled, configState.audioEnabled);
       configManager.set(ConfigItem.audioVolume, configState.audioVolume / 100);
       configManager.save();
       audioManager.volume.value = configState.audioVolume / 100;

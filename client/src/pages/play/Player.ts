@@ -125,7 +125,7 @@ export default class Player extends GameplayClient {
         this.localUser,
         this.isWatchingMode,
       );
-
+      this.userPlayInput.player = this;
       this.rulesetPlayer.userPlayInput = this.userPlayInput;
       this.rulesetClient.userPlayInput = this.userPlayInput;
       this.userPlayInput.onReject = () => {
@@ -872,7 +872,7 @@ export default class Player extends GameplayClient {
     this.rulesetPlayer.openHelp();
   }
 
-  protected showText(text: string, duration?: number) {
+  public showText(text: string, duration?: number) {
     // eslint-disable-next-line
     this.textOverlay.show(text, duration);
   }

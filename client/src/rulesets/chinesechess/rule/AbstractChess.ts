@@ -2,6 +2,7 @@ import Chess from "./Chess";
 import ChessPos from "./ChessPos";
 import ChessHost from "../../chess_host";
 import Game from "./Game";
+import ChessboardState from "./ChessboardState";
 
 /**
  * 抽象的棋子
@@ -21,7 +22,7 @@ export default abstract class AbstractChess implements Chess {
     this.host = host;
   }
 
-  abstract canGoTo(destPos: ChessPos, game: Game): boolean;
+  abstract canGoTo(destPos: ChessPos, chessboardState: ChessboardState, game: Game): boolean;
 
   setPos(pos: ChessPos) {
     this.pos = pos;
@@ -46,6 +47,8 @@ export default abstract class AbstractChess implements Chess {
   isFront() {
     return this.front;
   }
+
+  abstract clone(): Chess;
 
   is(chessClass: any) {
     return this instanceof chessClass;

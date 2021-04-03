@@ -2,7 +2,6 @@ import ChessHost from "../chess_host";
 import ChineseChessGameRule from "./ChineseChessGameRule";
 import Chess from "./rule/Chess";
 import ChessK from "./rule/ChessK";
-import Game from "./rule/Game";
 import { ChessStatus } from './ui/StatusCircle';
 import StatusCirclePool from "./ui/StatusCirclePool";
 
@@ -11,10 +10,10 @@ export default class ChessStatusDisplay {
 
   private statusCirclePool: StatusCirclePool;
 
-  constructor(game: Game) {
-    this.game = game as ChineseChessGameRule;
+  constructor(game: ChineseChessGameRule) {
+    this.game = game;
 
-    this.statusCirclePool = new StatusCirclePool(this.game.getChessboard());
+    this.statusCirclePool = new StatusCirclePool(this.game.chessboard);
   }
 
   public async update(host: ChessHost) {
@@ -41,7 +40,7 @@ export default class ChessStatusDisplay {
 
   private findChessStatusMap(host: ChessHost): Map<Chess, ChessStatus> {
     const found = new Map<Chess, ChessStatus>();
-    const chesses = this.game.getChessboard().getChessList();
+    const chesses = this.game.chessboardState.getChesses();
 
     const isProtectee = (target: Chess) => {
       for (let i = 0; i < chesses.length; i++) {

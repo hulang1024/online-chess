@@ -1,10 +1,13 @@
 import GameState from "src/online/play/GameState";
 import GameUser from "src/online/play/GameUser";
+import Player from "src/pages/play/Player";
 import Bindable from "src/utils/bindables/Bindable";
 import Signal from "src/utils/signals/Signal";
 import GameRule from "./GameRule";
 
 export default abstract class UserPlayInput {
+  public player: Player;
+
   public inputDone = new Signal();
 
   public onReject: () => void;

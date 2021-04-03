@@ -25,7 +25,7 @@ export default class ChineseChessClient extends RulesetClient {
 
     const selectableStates: boolean[] = [];
 
-    chessboard.getChessList().forEach((chess: DrawableChess) => {
+    chessboard.getChesses().forEach((chess: DrawableChess) => {
       if (chess.getHost() == msg.chessHost) {
         selectableStates.push(chess.selectable);
         chess.selectable = true;
@@ -36,7 +36,7 @@ export default class ChineseChessClient extends RulesetClient {
     const pos = ChessPos.make(msg.pos).convertViewPos(msg.chessHost, this.game.viewChessHost);
     (chessboard.chessAt(pos) as DrawableChess).selected = msg.pickup;
 
-    chessboard.getChessList().forEach((chess: DrawableChess, index) => {
+    chessboard.getChesses().forEach((chess: DrawableChess, index) => {
       if (chess.getHost() == msg.chessHost) {
         chess.selectable = selectableStates[index];
       }

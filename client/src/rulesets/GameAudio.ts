@@ -3,8 +3,7 @@ import { ConfigItem } from "src/config/ConfigManager";
 
 export default class GameAudio {
   public static play(name: string) {
-    if (name.startsWith('gameplay')
-      && !configManager.get(ConfigItem.audioGameplayEnabled)) {
+    if (!configManager.get(ConfigItem.audioEnabled)) {
       return;
     }
     const audio = audioManager.samples.get(name);

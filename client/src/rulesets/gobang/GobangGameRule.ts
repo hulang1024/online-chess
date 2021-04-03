@@ -65,6 +65,7 @@ export default class GobangGameRule extends GameRule {
 
     if (gameStates) {
       this.historyRecorder.fromResponse(gameStates.actionStack);
+      this.withdrawEnabled.value = !this.historyRecorder.isEmpty();
       const lastAction = this.historyRecorder.get(-1);
       if (lastAction) {
         const drawableChess = this.chessboard.chessAt(lastAction.pos);
@@ -90,7 +91,7 @@ export default class GobangGameRule extends GameRule {
     drawableChess.marked = true;
     drawableChess.draw(this.chessboard.sizes);
 
-    GameAudio.play('gameplay/chess_down1');
+    GameAudio.play('games/gobang/chess_down1');
 
     this.chessboardState.setChess(action.pos, action.chess);
 

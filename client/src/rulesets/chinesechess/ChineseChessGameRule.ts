@@ -20,25 +20,25 @@ import Playfield from '../../pages/play/Playfield';
 import ChineseChessResponseGameStates, { ResponseGameStateChess } from './online/gameplay_server_messages';
 import ChineseChessDrawableChessboard from './ui/ChineseChessDrawableChessboard';
 import ChessStatusDisplay from './ChessStatusDisplay';
+import GameAudio from '../GameAudio';
+import ChessboardState from './rule/ChessboardState';
 
 export default class ChineseChessGameRule extends GameRule implements Game {
   public chessboard: ChineseChessDrawableChessboard;
 
+  public chessboardState: ChessboardState;
+
+  public checkmateJudgement: CheckmateJudgement;
+
   public chessStatusDisplay: ChessStatusDisplay;
 
   private historyRecorder = new HistoryRecorder();
-
-  private checkmateJudgement: CheckmateJudgement;
 
   private fromPosTargetDrawer: ChessTargetDrawer;
 
   private drawableEatJudgement = new DrawableEatJudgement();
 
   private drawableCheckmateJudgement = new DrawableCheckmateJudgement();
-
-  public getChessboard() {
-    return this.chessboard;
-  }
 
   public isHostAtChessboardTop(chessHost: ChessHost) {
     // 视角棋方总是在底部
@@ -47,6 +47,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
 
   public setPlayfield(playfield: Playfield) {
     this.chessboard = playfield.chessboard as ChineseChessDrawableChessboard;
+    this.chessboardState = this.chessboard.chessboardState;
     this.chessStatusDisplay = new ChessStatusDisplay(this);
     playfield.resized.add(() => {
       if (this.fromPosTargetDrawer?.getSavePos()) {
@@ -105,6 +106,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
 
     if (gameStates) {
       this.historyRecorder.fromResponse(gameStates.actionStack, this.viewChessHost);
+      this.withdrawEnabled.value = !this.historyRecorder.isEmpty();
       const lastAction = this.historyRecorder.get(-1);
       if (lastAction) {
         const { chessHost, fromPos, toPos } = lastAction;
@@ -133,7 +135,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     const { chessboard } = this;
     const { chessHost, fromPos, toPos } = action;
 
-    chessboard.getChessList().forEach((chess: DrawableChess) => {
+    chessboard.getChesses().forEach((chess: DrawableChess) => {
       if (chess.lit) {
         chess.setLit(false);
       }
@@ -149,7 +151,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     if (eatenChess) {
       // 吃目标棋子
       action.eatenChess = eatenChess;
-      this.chessboard.getChessArray()[eatenChess.getPos().row][eatenChess.getPos().col] = null;
+      this.chessboardState.removeChess(eatenChess.getPos());
     }
 
     this.historyRecorder.push(action);
@@ -161,14 +163,22 @@ export default class ChineseChessGameRule extends GameRule implements Game {
 
     const convertedToPos = toPos.convertViewPos(chessHost, this.viewChessHost);
     // 设置棋盘状态
-    this.chessboard.getChessArray()[chess.getPos().row][chess.getPos().col] = null;
-    this.chessboard.getChessArray()[convertedToPos.row][convertedToPos.col] = chess;
+    this.chessboardState.setChess(chess.getPos(), null);
+    this.chessboardState.setChess(convertedToPos, chess.chess);
+    chess.setPos(convertedToPos);
 
+    const isCheckmate = this.checkmateJudgement.judge(
+      ChessHost.reverse(action.chessHost), this.chessboardState,
+    );
     const judge = () => {
-      chess.setPos(convertedToPos);
+      if (!isCheckmate && eatenChess) {
+        if (configManager.get(ConfigItem.chinesechessGameplayAudioEnabled)) {
+          GameAudio.play('games/chinesechess/default/eat');
+        }
+      }
 
-      if (this.checkmateJudgement.judge(ChessHost.reverse(action.chessHost))) {
-        this.drawableCheckmateJudgement.show(action.chessHost);
+      if (isCheckmate) {
+        this.showCheckmate(action.chessHost);
       } else if (eatenChess) {
         // 判断胜负
         if (eatenChess != null && eatenChess.is(ChessK)) {
@@ -207,6 +217,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
         },
       },
       instant,
+      !eatenChess && !isCheckmate,
     ).start();
 
     this.turnActiveChessHost();
@@ -224,7 +235,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     }
     // 保存下棋子引用
     const chesses: DrawableChess[] = [];
-    this.chessboard.getChessList().forEach((chess) => {
+    this.chessboard.getChesses().forEach((chess) => {
       chesses.push(chess);
     });
     // 清空棋盘
@@ -250,6 +261,13 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     this.chessboard.redraw();
   }
 
+  public showCheckmate(actionChessHost: ChessHost) {
+    this.drawableCheckmateJudgement.show(actionChessHost);
+    if (configManager.get(ConfigItem.chinesechessGameplayAudioEnabled)) {
+      GameAudio.play('games/chinesechess/default/checkmate');
+    }
+  }
+
   /** 悔棋 */
   public withdraw() {
     const lastAction = this.historyRecorder.pop();
@@ -257,7 +275,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       return;
     }
 
-    this.chessboard.getChessList().forEach((chess: DrawableChess) => {
+    this.chessboard.getChesses().forEach((chess: DrawableChess) => {
       if (chess.selected) {
         chess.selected = false;
       }
@@ -279,8 +297,8 @@ export default class ChineseChessGameRule extends GameRule implements Game {
         dropEnd: () => {
           // 恢复之前的状态
           chess.setPos(fromPos);
-          this.chessboard.getChessArray()[fromPos.row][fromPos.col] = chess;
-          this.chessboard.getChessArray()[toPos.row][toPos.col] = null;
+          this.chessboardState.setChess(fromPos, chess.chess);
+          this.chessboardState.setChess(toPos, null);
 
           // 如果吃了子，把被吃的子加回来
           if (lastAction.eatenChess) {
@@ -322,7 +340,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     this.withdrawEnabled.value = !this.historyRecorder.isEmpty();
   }
 
-  public canGoTo(chess: DrawableChess | null, destPos: ChessPos) {
-    return chess?.canGoTo(destPos, this);
+  public canGoTo(chess: Chess | null, destPos: ChessPos) {
+    return chess?.canGoTo(destPos, this.chessboardState, this);
   }
 }

@@ -1,4 +1,6 @@
 import TWEEN from "tween.ts";
+import { configManager } from "src/boot/main";
+import { ConfigItem } from "src/config/ConfigManager";
 import DrawableChess from "./DrawableChess";
 import GameAudio from "../../GameAudio";
 import ChessPos from "../rule/ChessPos";
@@ -52,7 +54,9 @@ export default class ChessMoveAnimation {
           emited.dropStart = true;
           chess.el.classList.remove('overlay');
           if (enableAudio) {
-            GameAudio.play('gameplay/chess_move');
+            if (configManager.get(ConfigItem.chinesechessGameplayAudioEnabled)) {
+              GameAudio.play('games/chinesechess/default/chess_move');
+            }
           }
         }
         setTimeout(() => {

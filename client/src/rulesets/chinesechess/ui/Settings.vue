@@ -68,26 +68,35 @@
             key="functions"
             name="functions"
           >
-            <div>
-              <label>棋子状态提示</label>
-              <q-toggle
-                v-model="chessStatus"
-                color="orange"
-              />
-            </div>
-            <div>
-              <label>可走位置提示</label>
-              <q-toggle
-                v-model="goDisplay"
-                color="orange"
-              />
-            </div>
-            <div v-if="!$q.screen.xs">
-              <label>棋子可拖拽移动</label>
-              <q-toggle
-                v-model="chessDraggable"
-                color="orange"
-              />
+            <div class="rows">
+              <div class="row">
+                <label>声音</label>
+                <q-toggle
+                  v-model="gameplayAudioEnabled"
+                  color="orange"
+                />
+              </div>
+              <div class="row">
+                <label>棋子状态提示</label>
+                <q-toggle
+                  v-model="chessStatus"
+                  color="orange"
+                />
+              </div>
+              <div class="row">
+                <label>可走位置提示</label>
+                <q-toggle
+                  v-model="goDisplay"
+                  color="orange"
+                />
+              </div>
+              <div v-if="!$q.screen.xs" class="row">
+                <label>棋子可拖拽移动</label>
+                <q-toggle
+                  v-model="chessDraggable"
+                  color="orange"
+                />
+              </div>
             </div>
           </q-tab-panel>
         </q-tab-panels>
@@ -125,6 +134,7 @@ export default defineComponent({
     });
 
     const values = reactive({
+      gameplayAudioEnabled: configManager.get(ConfigItem.chinesechessGameplayAudioEnabled),
       chessboardTheme: configManager.get(ConfigItem.chinesechessChessboardTheme),
       chessTheme: configManager.get(ConfigItem.chinesechessChessTheme),
       chessStatus: configManager.get(ConfigItem.chinesechessChessStatus),
@@ -136,6 +146,7 @@ export default defineComponent({
     const chessboardSubTab = ref('chessboard');
 
     watch(values, () => {
+      configManager.set(ConfigItem.chinesechessGameplayAudioEnabled, values.gameplayAudioEnabled);
       configManager.set(ConfigItem.chinesechessChessboardTheme, values.chessboardTheme);
       configManager.set(ConfigItem.chinesechessChessTheme, values.chessTheme);
       configManager.set(ConfigItem.chinesechessChessStatus, values.chessStatus);
@@ -205,6 +216,13 @@ export default defineComponent({
   width: 100%
   height: 320px
   margin: 16px 0px
+
+.rows
+  width: 100%
+  > .row
+    width: 100%
+    justify-content: space-between
+    align-items: center
 </style>
 <style scoped>
 >>> .q-btn--dense .q-btn__wrapper {

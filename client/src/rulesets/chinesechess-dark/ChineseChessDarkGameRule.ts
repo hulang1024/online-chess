@@ -4,12 +4,10 @@ import Chess from '../chinesechess/rule/Chess';
 import ChessG from '../chinesechess/rule/ChessG';
 import ChessM from '../chinesechess/rule/ChessM';
 import ChessPos from '../chinesechess/rule/ChessPos';
-import DrawableChess from '../chinesechess/ui/DrawableChess';
 import { queryMoveRuleByOriginPos } from './rules';
 
 export default class ChineseChessDarkGameRule extends ChineseChessGameRule {
-  public canGoTo(drawableChess: DrawableChess | null, destPos: ChessPos) {
-    const chess = drawableChess?.chess;
+  public canGoTo(chess: Chess | null, destPos: ChessPos) {
     let moveRule: Chess;
     if (chess?.isFront()) {
       moveRule = chess;
@@ -23,6 +21,6 @@ export default class ChineseChessDarkGameRule extends ChineseChessGameRule {
       moveRule = queryMoveRuleByOriginPos(isViewChessHost, chess?.getPos() as ChessPos);
       moveRule.setHost(chess?.getHost() as ChessHost);
     }
-    return moveRule?.canGoTo(destPos, this);
+    return moveRule?.canGoTo(destPos, this.chessboardState, this);
   }
 }

@@ -2,12 +2,13 @@ import ChessPos from "./ChessPos";
 import Game from "./Game";
 import AbstractChess from "./AbstractChess";
 import { isInBoundary } from "./move_rules";
+import ChessboardState from "./ChessboardState";
 
 /**
  * 兵
  */
 export default class ChessS extends AbstractChess {
-  canGoTo(destPos: ChessPos, game: Game): boolean {
+  canGoTo(destPos: ChessPos, chessboardState: ChessboardState, game: Game): boolean {
     const rowOffset = destPos.row - this.pos.row;
     const colOffset = destPos.col - this.pos.col;
 
@@ -22,5 +23,11 @@ export default class ChessS extends AbstractChess {
     }
     // 过河之后既可以向前单步，也可以左或右移单步
     return isForward || (Math.abs(rowOffset) == 0 && Math.abs(colOffset) == 1);
+  }
+
+  clone(): ChessS {
+    const clone = new ChessS(this.pos, this.host);
+    clone.front = this.front;
+    return clone;
   }
 }

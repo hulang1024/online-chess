@@ -2,7 +2,6 @@ import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
 import ChineseChessGameRule from "./ChineseChessGameRule";
 import ChessPos from "./rule/ChessPos";
-import Game from "./rule/Game";
 import DrawableChess from "./ui/DrawableChess";
 import GoPoint from "./ui/GoPoint";
 
@@ -11,8 +10,8 @@ export default class GoDisplay {
 
   private goPoints: GoPoint[] = [];
 
-  constructor(game: Game) {
-    this.game = game as ChineseChessGameRule;
+  constructor(game: ChineseChessGameRule) {
+    this.game = game;
   }
 
   public update(chess: DrawableChess) {
@@ -20,7 +19,7 @@ export default class GoDisplay {
       return;
     }
     this.clear();
-    const chessboard = this.game.getChessboard();
+    const { chessboard } = this.game;
     this.findGoPoss(chess).forEach((pos) => {
       const goPoint = new GoPoint(pos, chessboard);
       chessboard.el.appendChild(goPoint.el);
@@ -38,7 +37,7 @@ export default class GoDisplay {
 
   private findGoPoss(chess: DrawableChess): ChessPos[] {
     const found = [];
-    const chessboard = this.game.getChessboard();
+    const chessboard = this.game.chessboardState;
     for (let row = 0; row < 10; row++) {
       for (let col = 0; col < 9; col++) {
         const dest = new ChessPos(row, col);

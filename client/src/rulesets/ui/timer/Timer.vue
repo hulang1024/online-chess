@@ -3,14 +3,14 @@
     :class="['timer', {ticking: state == 0 || state == 2}, color]"
   >
     <digit
-      v-for="c in displayMinutes.split('')"
-      :key="c"
+      v-for="(c, i) in displayMinutes.split('')"
+      :key="i"
       :digit="+c"
     />
     <span class="separator">:</span>
     <digit
-      v-for="c in displaySeconds.split('')"
-      :key="c"
+      v-for="(c, i) in displaySeconds.split('')"
+      :key="i + 6"
       :digit="+c"
     />
   </div>
