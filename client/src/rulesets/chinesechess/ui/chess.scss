@@ -1,5 +1,5 @@
-$red: #dd1100;
-$black: #443322;
+$red: #d61200;
+$black: #3d2e1f;
 $side-shadow-color: rgb(0, 0, 0, 0.26);
 
 .chinesechess-chessboard {
@@ -94,7 +94,6 @@ $side-shadow-color: rgb(0, 0, 0, 0.26);
         border: 1px solid;
         box-sizing: content-box;
         pointer-events: none;
-        text-shadow: -0.5px -0.5px 0px rgba(0, 0, 0, 0.3);
         background: var(--background);
         font-size: larger;
         font-weight: 400;

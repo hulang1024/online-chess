@@ -4,4 +4,8 @@
   --back-background: #24222b;
   --first-color: #973721;
   --second-color: #68842e;
+
+  .chess__circle {
+    text-shadow: -0.5px -0.5px 0px rgba(0, 0, 0, 0.4);
+  }
 }
