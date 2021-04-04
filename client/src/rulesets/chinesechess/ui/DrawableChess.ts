@@ -116,13 +116,16 @@ export default class DrawableChess implements Chess {
     el.style.height = `${radius * 2}px`;
     el.style.fontSize = `${radius + 4}px`;
     el.classList[radius <= 16 ? 'add' : 'remove']('smaller');
-    for (let i = 0; i < el.children.length; i++) {
-      const circle = el.children[i].firstChild as HTMLDivElement;
-      const bordersideWidth = radius / 2 + 2;
-      circle.style.top = `-${bordersideWidth / 2 - 3}px`;
-      circle.style.width = `calc(100% - ${bordersideWidth}px)`;
-      circle.style.height = `calc(100% - ${bordersideWidth}px)`;
-    }
+    const frontCircle = el.children[0].firstChild as HTMLDivElement;
+    const frontBordersideWidth = radius / 2 + 2.5;
+    frontCircle.style.top = `-${frontBordersideWidth / 2 - 3}px`;
+    frontCircle.style.width = `calc(100% - ${frontBordersideWidth}px)`;
+    frontCircle.style.height = `calc(100% - ${frontBordersideWidth}px)`;
+    const backCircle = el.children[1].firstChild as HTMLDivElement;
+    const backBordersideWidth = radius / 2 - 1;
+    backCircle.style.top = `-${1.5}px`;
+    backCircle.style.width = `calc(100% - ${backBordersideWidth}px)`;
+    backCircle.style.height = `calc(100% - ${backBordersideWidth}px)`;
     this.radius = radius;
   }
 

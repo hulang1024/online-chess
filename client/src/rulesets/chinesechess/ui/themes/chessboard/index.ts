@@ -3,6 +3,7 @@ import ChessboardThemeSet from "./ChessboardThemeSet";
 export default {
   default: {
     name: '默认',
+    lineColor: '#af7f5a',
     centerTextColor: '#bc9476',
   },
   ebony: {
@@ -12,6 +13,7 @@ export default {
   },
   black: {
     name: '黑色',
+    lineColor: '#b2805b',
     centerTextColor: '#9a6d2e',
   },
   brown: {

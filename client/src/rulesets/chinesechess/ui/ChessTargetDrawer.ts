@@ -1,5 +1,6 @@
 import DrawableChessboard from "./ChineseChessDrawableChessboard";
 import ChessPos from "../rule/ChessPos";
+import './chess_target.scss';
 
 export default class ChessTargetDrawer {
   private chessboard: DrawableChessboard;
@@ -39,17 +40,21 @@ export default class ChessTargetDrawer {
   }
 
   private makeTarget(pos: ChessPos): HTMLElement {
-    const size = (this.chessboard.bounds.chessRadius * 2) / 2.8;
+    const size = (this.chessboard.bounds.chessRadius * 2) / 2.2;
     const { x, y } = this.chessboard.calcChessDisplayPos(pos);
     const el = document.createElement('div');
     el.className = 'chess-target';
-    el.style.position = 'absolute';
     const radius = size / 2;
     el.style.left = `${x - radius}px`;
     el.style.top = `${y - radius}px`;
     el.style.width = `${size}px`;
     el.style.height = `${size}px`;
     el.setAttribute('chess-pos', `${pos.row},${pos.col}`);
+
+    const center = document.createElement('div');
+    center.style.width = `${Math.round(size / 2.1)}px`;
+    center.style.height = `${Math.round(size / 2.1)}px`;
+    el.appendChild(center);
     return el;
   }
 }

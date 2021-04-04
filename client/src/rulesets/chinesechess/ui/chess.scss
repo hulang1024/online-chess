@@ -39,15 +39,12 @@ $side-shadow-color: rgb(0, 0, 0, 0.26);
 
     &.lit {
       > .side {
-        box-shadow: 2px 4px 2px 1px var(--side-shadow-color, $side-shadow-color);
         &:before {
           position: absolute;
           content: ' ';
-          width: calc(100% + 10px);
-          height: calc(100% + 10px);
-          box-shadow:
-            0px 1px 11px 2px white,
-            inset 0px 1px 4px 1px white;
+          width: calc(100% + 8px);
+          height: calc(100% + 8px);
+          box-shadow: inset 0px 0px 2px 1px rgba(255, 255, 255, 0.6), 0px 0px 4px 2px #fff;
           border-radius: 100%;
         }
       }
@@ -81,6 +78,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.26);
       text-align: center;
       background: var(--broadside-color);
       box-shadow: 2px 5px 2px 2px var(--side-shadow-color, $side-shadow-color);
+      filter: drop-shadow(0px 1px 0px rgba(0, 0, 0, 0.05));
       backface-visibility: hidden; 
       transform-style: preserve-3d;
       transition: transform 0.1s, box-shadow 0.05s ease-out;
@@ -132,13 +130,6 @@ $side-shadow-color: rgb(0, 0, 0, 0.26);
       }
     }
     
-  }
-
-  .chess-target {
-    background-color: rgb(255, 255, 255, 0.7);
-    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.15);
-    border-radius: 100%;
-    z-index: 1;
   }
 }
 

@@ -213,21 +213,21 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
     context.scale(pixelRatio, pixelRatio);
 
     const theme = configManager.get(ConfigItem.chinesechessChessboardTheme) as string;
-    const lineColor = chessboardThemes[theme].lineColor || '#b2805b';
+    const { lineColor } = chessboardThemes[theme];
     /// 画棋盘网格线
     const drawLine = (
       x1: number, y1: number,
       x2: number, y2: number,
       color?: string,
-      lineWidth?: number,
+      lineWidth = 1,
     ) => {
       context.beginPath();
       context.shadowOffsetX = -0.5;
       context.shadowOffsetY = -0.5;
       context.shadowBlur = 0.5;
-      context.shadowColor = 'rgba(0, 0, 0, 0.5)';
+      context.shadowColor = 'rgba(0, 0, 0, 0.4)';
       // eslint-disable-next-line
-      context.lineWidth = lineWidth || 1;
+      context.lineWidth = lineWidth;
       context.moveTo(grid.x + x1, grid.y + y1);
       context.lineTo(grid.x + x2, grid.y + y2);
       context.closePath();
