@@ -7,7 +7,7 @@ import ChessPos from '../chinesechess/rule/ChessPos';
 import { queryMoveRuleByOriginPos } from './rules';
 
 export default class ChineseChessDarkGameRule extends ChineseChessGameRule {
-  public canGoTo(chess: Chess | null, destPos: ChessPos) {
+  public canGoTo(chess: Chess | null, destPos: ChessPos): boolean {
     let moveRule: Chess;
     if (chess?.isFront()) {
       moveRule = chess;

@@ -37,15 +37,20 @@ $side-shadow-color: rgb(0, 0, 0, 0.26);
       transition: all 0.2s ease;
     }
 
-    &.lit > .side:before {
-      position: absolute;
-      content: ' ';
-      width: calc(100% + 9px);
-      height: calc(100% + 9px);
-      box-shadow:
-        0px 0px 10px 1px white,
-        inset 0px 0px 4px 1px white;
-      border-radius: 100%;
+    &.lit {
+      > .side {
+        box-shadow: 2px 4px 2px 1px var(--side-shadow-color, $side-shadow-color);
+        &:before {
+          position: absolute;
+          content: ' ';
+          width: calc(100% + 10px);
+          height: calc(100% + 10px);
+          box-shadow:
+            0px 1px 11px 2px white,
+            inset 0px 1px 4px 1px white;
+          border-radius: 100%;
+        }
+      }
     }
 
     &.selectable > .side:hover:before,

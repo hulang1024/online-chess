@@ -40,7 +40,7 @@ export default class SampleStore {
       names.push(`gameplay/count/zh/${count}.mp3`);
     }
 
-    ['chess_move', 'eat', 'checkmate'].forEach((name) => {
+    ['chess_move', 'eat', 'checkmate', 'checkmate_die'].forEach((name) => {
       names.push(`games/chinesechess/default/${name}.wav`);
     });
 

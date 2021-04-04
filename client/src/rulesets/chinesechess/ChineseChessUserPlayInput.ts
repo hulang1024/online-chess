@@ -208,7 +208,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
       nextChessboardState.setChess(destPos, newChess);
       if (this.gameRule.checkmateJudgement.judge(chess.getHost(), nextChessboardState)) {
         if (alreadyCheckmate) {
-          this.gameRule.showCheckmate(ChessHost.reverse(chess.getHost()));
+          this.gameRule.drawableCheckmateJudgement.show(ChessHost.reverse(chess.getHost()));
         } else {
           this.player.showText('不能送将', 1000);
         }

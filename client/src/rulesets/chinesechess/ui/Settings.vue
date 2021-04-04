@@ -220,6 +220,7 @@ export default defineComponent({
 .rows
   width: 100%
   > .row
+    padding: 8px 0px
     width: 100%
     justify-content: space-between
     align-items: center

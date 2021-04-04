@@ -286,6 +286,7 @@ export default defineComponent({
     background: rgba(0,0,0,0.3)
     border-radius: inherit
     transition: all 0.2s ease
+    pointer-events: none
 
 .time-panel
   position: relative

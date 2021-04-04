@@ -7,7 +7,7 @@
     <q-card v-show="isOpen">
       <q-card-section class="row items-center">
         <span
-          class="result-text q-ml-sm text-h3 full-width text-center"
+          class="result-text q-ml-sm text-h1 full-width text-center"
           :class="resultClass"
         >{{ displayText }}</span>
       </q-card-section>
@@ -93,7 +93,8 @@ export default defineComponent({
 $text-shadow-base: 1px 2px 4px rgba(0, 0, 0, 0.2)
 
 .result-text
-  font-weight: bolder
+  font-family: "founder-xin-kaiti","founder-longyin"
+  user-select: none
 
   &.draw
     color: #ff9800

@@ -30,7 +30,7 @@
             :user="channel.users[0]"
             size="24px"
           />
-          <span class="q-pl-xs">{{ channel.name }}</span>
+          <span class="nickname q-pl-xs">{{ channel.name }}</span>
           <q-icon
             v-if="channel.id != 1 && channel.type != 2"
             name="close"
@@ -280,9 +280,12 @@ export default defineComponent({
           min-width: 98px;
         }
 
+        .nickname {
+          flex-grow: 1;
+          text-align: left;
+        }
+
         .close-tab-btn {
-          position: absolute;
-          right: 0px;
           opacity: 0;
 
           &:hover {

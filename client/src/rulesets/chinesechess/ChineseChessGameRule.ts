@@ -32,13 +32,13 @@ export default class ChineseChessGameRule extends GameRule implements Game {
 
   public chessStatusDisplay: ChessStatusDisplay;
 
+  public drawableCheckmateJudgement = new DrawableCheckmateJudgement();
+
   private historyRecorder = new HistoryRecorder();
 
   private fromPosTargetDrawer: ChessTargetDrawer;
 
   private drawableEatJudgement = new DrawableEatJudgement();
-
-  private drawableCheckmateJudgement = new DrawableCheckmateJudgement();
 
   public isHostAtChessboardTop(chessHost: ChessHost) {
     // 视角棋方总是在底部
@@ -167,9 +167,8 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     this.chessboardState.setChess(convertedToPos, chess.chess);
     chess.setPos(convertedToPos);
 
-    const isCheckmate = this.checkmateJudgement.judge(
-      ChessHost.reverse(action.chessHost), this.chessboardState,
-    );
+    const otherChessHost = ChessHost.reverse(action.chessHost);
+    const isCheckmate = this.checkmateJudgement.judge(otherChessHost, this.chessboardState);
     const judge = () => {
       if (!isCheckmate && eatenChess) {
         if (configManager.get(ConfigItem.chinesechessGameplayAudioEnabled)) {
@@ -177,19 +176,25 @@ export default class ChineseChessGameRule extends GameRule implements Game {
         }
       }
 
+      let isDie = false;
       if (isCheckmate) {
-        this.showCheckmate(action.chessHost);
+        isDie = this.checkmateJudgement.judgeDie(otherChessHost, this.chessboardState);
+        this.drawableCheckmateJudgement.show(otherChessHost, isDie);
       } else if (eatenChess) {
         // 判断胜负
         if (eatenChess != null && eatenChess.is(ChessK)) {
-          this.onGameOver(chess.getHost());
-          setTimeout(() => {
-            this.chessStatusDisplay.clear();
-            this.gameEnd();
-          }, 500);
-          return;
+          isDie = true;
+        } else {
+          this.drawableEatJudgement.show(eatenChess.chess);
         }
-        this.drawableEatJudgement.show(eatenChess.chess);
+      }
+      if (isDie) {
+        this.onGameOver(chess.getHost());
+        setTimeout(() => {
+          this.chessStatusDisplay.clear();
+          this.gameEnd();
+        }, 800);
+        return;
       }
 
       if (configManager.get(ConfigItem.chinesechessChessStatus)) {
@@ -259,13 +264,6 @@ export default class ChineseChessGameRule extends GameRule implements Game {
 
     this.chessboard.hanNumberInBottom = this.viewChessHost == ChessHost.FIRST;
     this.chessboard.redraw();
-  }
-
-  public showCheckmate(actionChessHost: ChessHost) {
-    this.drawableCheckmateJudgement.show(actionChessHost);
-    if (configManager.get(ConfigItem.chinesechessGameplayAudioEnabled)) {
-      GameAudio.play('games/chinesechess/default/checkmate');
-    }
   }
 
   /** 悔棋 */
@@ -340,7 +338,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     this.withdrawEnabled.value = !this.historyRecorder.isEmpty();
   }
 
-  public canGoTo(chess: Chess | null, destPos: ChessPos) {
-    return chess?.canGoTo(destPos, this.chessboardState, this);
+  public canGoTo(chess: Chess | null, destPos: ChessPos): boolean {
+    return chess?.canGoTo(destPos, this.chessboardState, this) as boolean;
   }
 }

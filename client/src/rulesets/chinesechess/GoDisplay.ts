@@ -1,7 +1,7 @@
 import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
 import ChineseChessGameRule from "./ChineseChessGameRule";
-import ChessPos from "./rule/ChessPos";
+import { findChessGoPoss } from "./rule/move_rules";
 import DrawableChess from "./ui/DrawableChess";
 import GoPoint from "./ui/GoPoint";
 
@@ -20,7 +20,7 @@ export default class GoDisplay {
     }
     this.clear();
     const { chessboard } = this.game;
-    this.findGoPoss(chess).forEach((pos) => {
+    findChessGoPoss(chess, this.game, this.game.chessboardState).forEach((pos) => {
       const goPoint = new GoPoint(pos, chessboard);
       chessboard.el.appendChild(goPoint.el);
       this.goPoints.push(goPoint);
@@ -33,22 +33,5 @@ export default class GoDisplay {
         goPoint.el.parentElement.removeChild(goPoint.el);
       }
     });
-  }
-
-  private findGoPoss(chess: DrawableChess): ChessPos[] {
-    const found = [];
-    const chessboard = this.game.chessboardState;
-    for (let row = 0; row < 10; row++) {
-      for (let col = 0; col < 9; col++) {
-        const dest = new ChessPos(row, col);
-        if (!dest.equals(chess.getPos())
-          && this.game.canGoTo(chess, dest)
-          && (chessboard.isEmpty(row, col)
-            || chessboard.chessAt(dest)?.getHost() != chess.getHost())) {
-          found.push(dest);
-        }
-      }
-    }
-    return found;
   }
 }
