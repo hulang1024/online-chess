@@ -108,11 +108,11 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
     const { el } = this;
     const theme = configManager.get(ConfigItem.chinesechessChessboardTheme) as string;
     el.classList.forEach((cls) => {
-      if (cls.startsWith('chinesechess-chessboard-theme-')) {
+      if (cls.startsWith('theme-')) {
         el.classList.remove(cls);
       }
     });
-    el.classList.add(`chinesechess-chessboard-theme-${theme}`);
+    el.classList.add(`theme-${theme}`);
     if (this.canvas) {
       this.draw(this.canvas, this.screen);
     }

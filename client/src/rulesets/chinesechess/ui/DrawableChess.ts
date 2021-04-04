@@ -48,7 +48,7 @@ export default class DrawableChess implements Chess {
     const el = document.createElement('div');
     this._el = el;
     const colorClass = this.chess.getHost() == ChessHost.FIRST ? 'red' : 'black';
-    el.classList.add('chess', colorClass);
+    el.classList.add('chinesechess-chess', colorClass);
     el.style.lineHeight = `${this.radius * 2}px`;
 
     const front = document.createElement('div');
@@ -242,10 +242,10 @@ export default class DrawableChess implements Chess {
     const { el } = this;
     const theme = configManager.get(ConfigItem.chinesechessChessTheme) as string;
     el.classList.forEach((cls) => {
-      if (cls.startsWith('chinesechess-chess-theme-')) {
+      if (cls.startsWith('theme-')) {
         el.classList.remove(cls);
       }
     });
-    el.classList.add(`chinesechess-chess-theme-${theme}`);
+    el.classList.add(`theme-${theme}`);
   }
 }

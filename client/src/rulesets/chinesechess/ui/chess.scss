@@ -2,135 +2,132 @@ $red: #d61200;
 $black: #3d2e1f;
 $side-shadow-color: rgb(0, 0, 0, 0.26);
 
-.chinesechess-chessboard {
-  .chess {
+.chinesechess-chess {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  opacity: 1;
+  z-index: 2;
+  cursor: default;
+  transition: transform 0.05s, box-shadow 0.05s ease-out;
+
+  &.red {
+    color: var(--first-color, $red);
+    border-color: var(--first-color ,$red);
+  }
+  
+  &.black {
+    color: var(--second-color, $black);
+    border-color: var(--second-color, $black);
+  }
+
+  &.selected,
+  &.overlay {
+    z-index: 3;
+    transform: scale(1.16);
+    > .side {
+      box-shadow: 6px 16px 2px -4px var(--side-shadow-color, $side-shadow-color);
+    }
+  }
+
+  &.side:before {
+    transition: all 0.2s ease;
+  }
+
+  &.lit {
+    > .side {
+      &:before {
+        position: absolute;
+        content: ' ';
+        width: calc(100% + 8px);
+        height: calc(100% + 8px);
+        box-shadow: inset 0px 0px 2px 1px rgba(255, 255, 255, 0.6), 0px 0px 4px 2px #fff;
+        border-radius: 100%;
+      }
+    }
+  }
+
+  &.selectable > .side:hover:before,
+  &.selected > .side:before {
     position: absolute;
+    content: ' ';
+    width: calc(100% + 5px);
+    height: calc(100% + 5px);
+    border: 2px solid #fff;
+    border-radius: 4px;
+  }
+
+  &.selected > .side:before {
+    box-shadow:
+      0px 0px 10px 1px rgba(255, 255, 255, 0.6),
+      inset 0px 0px 4px 1px rgb(255, 255, 255, 0.4);
+    animation: animation-chinesechess-chess-selected-focus 1s linear infinite;
+  }
+
+  > .side {
     display: flex;
     justify-content: center;
     align-items: center;
-    user-select: none;
-    opacity: 1;
-    z-index: 2;
-    cursor: default;
-    transition: transform 0.05s, box-shadow 0.05s ease-out;
-  
-    &.red {
-      color: var(--first-color, $red);
-      border-color: var(--first-color ,$red);
-    }
-    
-    &.black {
-      color: var(--second-color, $black);
-      border-color: var(--second-color, $black);
-    }
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 100%;
+    text-align: center;
+    background: var(--broadside-color);
+    box-shadow: 2px 5px 2px 2px var(--side-shadow-color, $side-shadow-color);
+    filter: drop-shadow(0px 1px 0px rgba(0, 0, 0, 0.05));
+    backface-visibility: hidden; 
+    transform-style: preserve-3d;
+    transition: transform 0.1s, box-shadow 0.05s ease-out;
 
-    &.selected,
-    &.overlay {
-      z-index: 3;
-      transform: scale(1.16);
-      > .side {
-        box-shadow: 6px 16px 2px -4px var(--side-shadow-color, $side-shadow-color);
-      }
-    }
-
-    &.side:before {
-      transition: all 0.2s ease;
-    }
-
-    &.lit {
-      > .side {
-        &:before {
-          position: absolute;
-          content: ' ';
-          width: calc(100% + 8px);
-          height: calc(100% + 8px);
-          box-shadow: inset 0px 0px 2px 1px rgba(255, 255, 255, 0.6), 0px 0px 4px 2px #fff;
-          border-radius: 100%;
-        }
-      }
-    }
-
-    &.selectable > .side:hover:before,
-    &.selected > .side:before {
-      position: absolute;
-      content: ' ';
-      width: calc(100% + 5px);
-      height: calc(100% + 5px);
-      border: 2px solid #fff;
-      border-radius: 4px;
-    }
-
-    &.selected > .side:before {
-      box-shadow:
-        0px 0px 10px 1px rgba(255, 255, 255, 0.6),
-        inset 0px 0px 4px 1px rgb(255, 255, 255, 0.4);
-      animation: animation-chinesechess-chess-selected-focus 1s linear infinite;
-    }
-
-    > .side {
+    .chess__circle {
+      position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
-      position: absolute;
-      width: 100%;
-      height: 100%;
       border-radius: 100%;
-      text-align: center;
-      background: var(--broadside-color);
-      box-shadow: 2px 5px 2px 2px var(--side-shadow-color, $side-shadow-color);
-      filter: drop-shadow(0px 1px 0px rgba(0, 0, 0, 0.05));
-      backface-visibility: hidden; 
-      transform-style: preserve-3d;
-      transition: transform 0.1s, box-shadow 0.05s ease-out;
+      border: 1px solid;
+      box-sizing: content-box;
+      pointer-events: none;
+      background: var(--background);
+      font-size: larger;
+      font-weight: 400;
+      font-family: 'founder-simli';
+    }  
+  }
+
+  &.smaller {
+    > .front,
+    > .back {
+      box-shadow: 1px 3px 2px 2px rgb(0, 0, 0, 0.32);
 
       .chess__circle {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: 100%;
-        border: 1px solid;
-        box-sizing: content-box;
-        pointer-events: none;
-        background: var(--background);
-        font-size: larger;
-        font-weight: 400;
-        font-family: 'founder-simli';
-      }  
-    }
-
-    &.smaller {
-      > .front,
-      > .back {
-        box-shadow: 1px 3px 2px 2px rgb(0, 0, 0, 0.32);
-
-        .chess__circle {
-          font-size: smaller;
-        }
+        font-size: smaller;
       }
     }
+  }
 
+  > .front {
+    transform: rotateX(0deg);
+  }
+  > .back {
+    transform: rotateX(-180deg);
+
+    .chess__circle {
+      background: var(--back-background, var(--background));
+    }
+  }
+
+  &.is-back {
     > .front {
-      transform: rotateX(0deg);
+      transform: rotateX(180deg);
     }
     > .back {
-      transform: rotateX(-180deg);
-
-      .chess__circle {
-        background: var(--back-background, var(--background));
-      }
+      transform: rotateX(0deg);
     }
-
-    &.is-back {
-      > .front {
-        transform: rotateX(180deg);
-      }
-      > .back {
-        transform: rotateX(0deg);
-      }
-    }
-    
-  }
+  }  
 }
 
 @keyframes animation-chinesechess-chess-selected-focus {
