@@ -58,7 +58,7 @@ export default defineComponent({
       {result: number, cause: GameOverCause, action: (action: string | null) => void}) => {
       const resultMap: { [t: number]: { text: string, class: string }} = {
         0: { text: '平局', class: 'draw' },
-        1: { text: cause == GameOverCause.TIMEOUT ? '超时胜利' : '胜利', class: 'win' },
+        1: { text: '胜利', class: 'win' },
         2: { text: cause == GameOverCause.TIMEOUT ? '超时失败' : '失败', class: 'lose' },
       };
       resultClass.value = resultMap[result].class;

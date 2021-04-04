@@ -44,7 +44,7 @@ export default class ChessTargetDrawer {
     const el = document.createElement('div');
     el.className = 'chess-target';
     el.style.position = 'absolute';
-    const radius = Math.floor(size / 2);
+    const radius = Math.floor(size / 2) - 1;
     el.style.left = `${x - radius}px`;
     el.style.top = `${y - radius}px`;
     el.style.width = `${size}px`;

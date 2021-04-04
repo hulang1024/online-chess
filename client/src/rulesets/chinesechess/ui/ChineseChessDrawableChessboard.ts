@@ -454,8 +454,9 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
 
   public calcChessDisplayPos(pos: ChessPos) {
     const { grid } = this.bounds;
-    const x = grid.x + this.padding + pos.col * grid.cellSize;
-    const y = grid.y + this.padding + pos.row * grid.cellSize;
+    const paddingOffset = Math.round(this.padding / 2);
+    const x = grid.x + paddingOffset + pos.col * grid.cellSize;
+    const y = grid.y + paddingOffset + pos.row * grid.cellSize;
     return { x, y };
   }
 }
