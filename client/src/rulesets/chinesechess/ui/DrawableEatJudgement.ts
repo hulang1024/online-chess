@@ -1,6 +1,4 @@
 import Chess from "src/rulesets/chinesechess/rule/Chess";
-import ChessHost from "src/rulesets/chess_host";
-import { chessClassToText } from "src/rulesets/chinesechess/rule/chess_map";
 import './judgement.scss';
 
 const TRANSITION_DURATION = 100;
@@ -8,22 +6,12 @@ const TRANSITION_DURATION = 100;
 export default class DrawableEatJudgement {
   public el: HTMLDivElement;
 
-  private sub: HTMLDivElement;
-
   private timer: NodeJS.Timeout | null;
 
   constructor() {
     const el = document.createElement('div');
     el.className = 'judgement eat-judgement absolute-center';
-    const title = document.createElement('div');
-    title.className = 'title';
-    title.innerText = '吃';
-    el.appendChild(title);
-
-    const sub = document.createElement('div');
-    sub.classList.add('sub');
-    this.sub = sub;
-    el.appendChild(sub);
+    el.innerText = '吃';
     this.el = el;
   }
 
@@ -36,9 +24,6 @@ export default class DrawableEatJudgement {
       return;
     }
 
-    const colorClass = eatenChess?.getHost() == ChessHost.FIRST ? 'red' : 'black';
-    this.sub.innerHTML = `（<span class="chess-name ${colorClass}">`
-      + `${chessClassToText(eatenChess)}</span>被吃）`;
     this.el.classList.add('show');
     this.timer = setTimeout(() => {
       this.el.classList.remove('show');

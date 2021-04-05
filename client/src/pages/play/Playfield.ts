@@ -12,7 +12,7 @@ export default class Playfield {
 
   public chessboard: DrawableChessboard;
 
-  private context: Vue;
+  public context: Vue;
 
   public get el(): HTMLDivElement {
     return ((this.context.$refs.playerView as Vue).$refs.playfield as Vue).$el as HTMLDivElement;
@@ -25,7 +25,7 @@ export default class Playfield {
     let onReisze: () => void;
     onMounted(() => {
       const pageEl = context.$el as HTMLElement;
-      const recalcChessboardSize = () => {
+      const recalcPlayfieldSize = () => {
         let width = pageEl?.offsetWidth || 0;
         if (!isXSScreen) {
           width -= 56 * 2 + 24;
@@ -46,7 +46,7 @@ export default class Playfield {
       };
 
       // eslint-disable-next-line
-      this.chessboard = ruleset.createChessboard(recalcChessboardSize(), context.$q.screen);
+      this.chessboard = ruleset.createChessboard(recalcPlayfieldSize(), context.$q.screen);
 
       // eslint-disable-next-line
       this.el.insertBefore(this.chessboard.el, this.el.firstChild);
@@ -59,7 +59,7 @@ export default class Playfield {
           return;
         }
         setTimeout(() => {
-          this.resize(recalcChessboardSize(), context.$q.screen);
+          this.resize(recalcPlayfieldSize(), context.$q.screen);
           this.resized.dispatch();
         }, 0);
       });

@@ -461,7 +461,7 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
   }
 }
 
-interface ChessboardBounds {
+export interface ChessboardBounds {
   canvas: {
     width: number,
     height: number,

@@ -28,7 +28,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.26);
     z-index: 3;
     transform: scale(1.16);
     > .side {
-      box-shadow: 6px 16px 2px -4px var(--side-shadow-color, $side-shadow-color);
+      box-shadow: 8px 16px 2px -4px var(--side-shadow-color, $side-shadow-color);
     }
   }
 
@@ -76,7 +76,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.26);
     border-radius: 100%;
     text-align: center;
     background: var(--broadside-color);
-    box-shadow: 2px 5px 2px 2px var(--side-shadow-color, $side-shadow-color);
+    box-shadow: 4px 7px 2px 0px var(--side-shadow-color, $side-shadow-color);
     filter: drop-shadow(0px 1px 0px rgba(0, 0, 0, 0.05));
     backface-visibility: hidden; 
     transform-style: preserve-3d;

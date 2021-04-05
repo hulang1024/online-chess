@@ -3,6 +3,7 @@ import ChessHost from "../../chess_host";
 import ChessboardState from "./ChessboardState";
 import Game from "./Game";
 import { findChessGoPoss } from "./move_rules";
+import Chess from "./Chess";
 
 function getKingChess(host: ChessHost, chessboardState: ChessboardState): ChessK | null {
   let chessK: ChessK | null = null;
@@ -27,13 +28,14 @@ export default class CheckmateJudgement {
    * 检查指定棋方此刻是否被将军
    * @param chessHost
    */
-  judge(checkHost: ChessHost, chessboardState: ChessboardState): boolean {
+  judge(checkHost: ChessHost, chessboardState: ChessboardState, actionChess?: Chess): boolean {
     const checkK = getKingChess(checkHost, chessboardState) as ChessK;
 
     return chessboardState.getChesses()
       .filter((chess) => chess.getHost() != checkHost)
       .find((chess) => (
-        chess.isFront() && chess.canGoTo(checkK.getPos(), chessboardState, this.game)
+        (actionChess == chess || chess.isFront())
+          && chess.canGoTo(checkK.getPos(), chessboardState, this.game)
       )) != null;
   }
 

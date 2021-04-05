@@ -1,0 +1,59 @@
+.outside-chess-panel {
+  position: relative;
+  display: flex;
+  pointer-events: none;
+
+  &.row {
+    width: 100%;
+  }
+
+  &.other {
+    align-self: flex-start;
+    &.row {
+      flex-direction: row-reverse;
+    }
+  }
+
+  &.local {
+    align-self: flex-end;
+    &.column {
+      flex-direction: column-reverse;
+    }
+  }
+
+  > .chess-place:first-child {
+    margin: 0px !important;
+  }
+
+  > .chess-place {
+    display: flex;
+    justify-content: center;
+    position: relative;
+
+    > .chinesechess-chess {
+      position: relative;
+      transform: scale(0.5);
+      z-index: 0;
+    }
+
+    > .counter {
+      display: none;
+      position: absolute;
+      right: 8px;
+      top: 8px;
+      z-index: 1;
+      width: 14px;
+      height: 14px;
+      line-height: 14px;
+      background: radial-gradient(circle, #ff3333, #b81414);
+      border-radius: 100%;
+      color: #fff;
+      text-align: center;
+      font-size: 12px;
+
+      &.show {
+        display: block;
+      }
+    }
+  }
+}

@@ -156,9 +156,13 @@ export default defineComponent({
       return colorMap[roomStatusActiveTab.value];
     });
 
-    const resize = (isChatActive: boolean) => {
+    const getPageHeight = (isChatActive: boolean) => {
       const pageEl = ctx.$el as HTMLElement;
-      const height = (pageEl?.parentElement?.offsetHeight || 0) - (52 + (isChatActive ? 284 : 0));
+      return (pageEl?.parentElement?.offsetHeight || 0) - (52 + (isChatActive ? 284 : 0));
+    };
+
+    const resize = (isChatActive: boolean) => {
+      const height = getPageHeight(isChatActive);
       // eslint-disable-next-line
       (ctx.$refs.roomsPanel as any).$el.style.height = `${height - 124}px`;
       if (ctx.$refs.usersPanel) {
@@ -168,10 +172,25 @@ export default defineComponent({
     };
     onMounted(resize);
 
+    let pageHeightTimer: NodeJS.Timeout | null = null;
     const onChatOverlayActive = (isActive: boolean) => {
-      setTimeout(() => {
-        resize(isActive);
-      }, 0);
+      resize(isActive);
+      let lastHight = getPageHeight(isActive);
+      let changedTime = new Date().getTime();
+      clearInterval(pageHeightTimer as NodeJS.Timeout);
+      pageHeightTimer = setInterval(() => {
+        const newHeight = getPageHeight(isActive);
+        if (newHeight == lastHight) {
+          // 如果高度保持不变超过一定时间
+          if ((new Date().getTime() - changedTime) > 5000) {
+            clearInterval(pageHeightTimer as NodeJS.Timeout);
+          }
+        } else {
+          resize(isActive);
+          lastHight = newHeight;
+          changedTime = new Date().getTime();
+        }
+      }, 100);
     };
     // eslint-disable-next-line
     ((ctx.$vnode.context as Vue).$refs.chatOverlay as Vue).$on('active', onChatOverlayActive);
@@ -324,6 +343,7 @@ export default defineComponent({
     });
 
     onBeforeUnmount(() => {
+      clearInterval(pageHeightTimer as NodeJS.Timeout);
       socketService.reLoggedIn.remove(onLoggedIn);
       roomManager.removeListeners();
       socketService.off('play.game_continue', onGameContinue);

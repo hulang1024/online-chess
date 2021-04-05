@@ -76,7 +76,7 @@
             v-if="[1, 3].includes(gameType)"
             :chess="chess"
             :class="[
-              'chess',
+              'chinesechess-chess chess',
               reverse ? 'absolute-right center' : 'absolute-left center',
               chessThemeClass,
             ]"
@@ -105,7 +105,7 @@
         <chess-king-icon
           v-if="[1, 3].includes(gameType)"
           :chess="chess"
-          :class="['chess', {active}, chessThemeClass]"
+          :class="['chinesechess-chess chess', {active}, chessThemeClass]"
         />
         <pure-chess-icon
           v-else
@@ -194,7 +194,7 @@ export default defineComponent({
     if ([1, 3].includes(props.gameType as number)) {
       const onConfigChanged = () => {
         const theme = configManager.get(ConfigItem.chinesechessChessTheme) as string;
-        chessThemeClass.value = `chinesechess-chess-theme-${theme}`;
+        chessThemeClass.value = `theme-${theme}`;
       };
       onConfigChanged();
       configManager.changed.add(onConfigChanged);
@@ -229,6 +229,9 @@ export default defineComponent({
 
   &.active
     box-shadow: 1px 1px 4px 4px rgb(0, 0, 0, 0.1)
+
+  .chess.chinesechess-chess
+    position: relative
 
 .nickname
   flex-grow: 1

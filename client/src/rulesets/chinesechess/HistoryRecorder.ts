@@ -29,6 +29,10 @@ export default class ReplayRecorder {
     return this.actions[index];
   }
 
+  public length() {
+    return this.actions.length;
+  }
+
   public fromResponse(actions: ResponseGameStateChessAction[], viewChessHost: ChessHost) {
     if (!(actions && actions.length)) {
       return;

@@ -64,7 +64,7 @@
           text-color="primary"
           round
           push
-          size="18px"
+          size="16px"
         >
           <q-menu
             transition-show="jump-up"

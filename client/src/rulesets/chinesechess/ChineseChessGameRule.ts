@@ -22,6 +22,7 @@ import ChineseChessDrawableChessboard from './ui/ChineseChessDrawableChessboard'
 import ChessStatusDisplay from './ChessStatusDisplay';
 import GameAudio from '../GameAudio';
 import ChessboardState from './rule/ChessboardState';
+import OutsideChessPanel, { OutsideChessPanelType } from './ui/OutsideChessPanel';
 
 export default class ChineseChessGameRule extends GameRule implements Game {
   public chessboard: ChineseChessDrawableChessboard;
@@ -39,6 +40,12 @@ export default class ChineseChessGameRule extends GameRule implements Game {
   private fromPosTargetDrawer: ChessTargetDrawer;
 
   private drawableEatJudgement = new DrawableEatJudgement();
+
+  protected enableOutsideChessPanel = false;
+
+  private localOutsideChessPanel: OutsideChessPanel;
+
+  private otherOutsideChessPanel: OutsideChessPanel;
 
   public isHostAtChessboardTop(chessHost: ChessHost) {
     // 视角棋方总是在底部
@@ -59,6 +66,18 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     });
     playfield.el.appendChild(this.drawableEatJudgement.el);
     playfield.el.appendChild(this.drawableCheckmateJudgement.el);
+
+    if (this.enableOutsideChessPanel) {
+      const { screen } = playfield.context.$q;
+      this.localOutsideChessPanel = new OutsideChessPanel(
+        OutsideChessPanelType.local, this.chessboard.bounds, screen,
+      );
+      playfield.el.appendChild(this.localOutsideChessPanel.el);
+      this.otherOutsideChessPanel = new OutsideChessPanel(
+        OutsideChessPanelType.other, this.chessboard.bounds, screen,
+      );
+      playfield.el.insertBefore(this.otherOutsideChessPanel.el, this.chessboard.el);
+    }
   }
 
   public start(viewChessHost: ChessHost, gameStates0?: ResponseGameStates) {
@@ -70,6 +89,10 @@ export default class ChineseChessGameRule extends GameRule implements Game {
 
     if (!this.fromPosTargetDrawer) {
       this.fromPosTargetDrawer = new ChessTargetDrawer(this.chessboard);
+    }
+    if (this.enableOutsideChessPanel) {
+      this.localOutsideChessPanel.reset();
+      this.otherOutsideChessPanel.reset();
     }
     this.chessStatusDisplay.clear();
     this.fromPosTargetDrawer.clear();
@@ -116,6 +139,9 @@ export default class ChineseChessGameRule extends GameRule implements Game {
           chess.setLit(true);
         }
       }
+      if (this.enableOutsideChessPanel) {
+        this.initOutsideChessPanel();
+      }
     }
 
     this.activeChessHost.value = (gameStates && gameStates.activeChessHost) || ChessHost.FIRST;
@@ -129,6 +155,30 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     createIntialLayoutChessList(chessHost1, chessHost2).forEach((chess) => {
       this.chessboard.addChess(new DrawableChess(chess, this.chessboard.bounds.chessRadius));
     });
+  }
+
+  private initOutsideChessPanel() {
+    // const chessboardState = this.chessboardState.clone();
+    const stack: Chess[] = [];
+    for (let top = this.historyRecorder.length() - 1; top >= 0; top--) {
+      const action = this.historyRecorder.get(top);
+      if (action.eatenChess) {
+        stack.push(action.eatenChess);
+      }
+    }
+
+    while (true) {
+      const chess = stack.pop();
+      if (chess) {
+        if (chess.getHost() == this.viewChessHost) {
+          this.otherOutsideChessPanel.addChess(chess);
+        } else {
+          this.localOutsideChessPanel.addChess(chess);
+        }
+      } else {
+        break;
+      }
+    }
   }
 
   public onChessAction(action: ChessAction, instant = false) {
@@ -168,7 +218,9 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     chess.setPos(convertedToPos);
 
     const otherChessHost = ChessHost.reverse(action.chessHost);
-    const isCheckmate = this.checkmateJudgement.judge(otherChessHost, this.chessboardState);
+    const isCheckmate = this.checkmateJudgement.judge(
+      otherChessHost, this.chessboardState, chess.chess,
+    );
     const judge = () => {
       if (!isCheckmate && eatenChess) {
         if (configManager.get(ConfigItem.chinesechessGameplayAudioEnabled)) {
@@ -214,6 +266,13 @@ export default class ChineseChessGameRule extends GameRule implements Game {
         dropStart: () => {
           if (eatenChess) {
             this.chessboard.removeChess(eatenChess);
+            if (this.enableOutsideChessPanel) {
+              if (eatenChess.getHost() == this.viewChessHost) {
+                this.otherOutsideChessPanel.addChess(eatenChess.chess);
+              } else {
+                this.localOutsideChessPanel.addChess(eatenChess.chess);
+              }
+            }
           }
         },
         dropEnd: () => {
@@ -238,6 +297,10 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     if (this.viewChessHost == null) {
       return;
     }
+
+    this.chessboard.hanNumberInBottom = this.viewChessHost == ChessHost.FIRST;
+    this.chessboard.redraw();
+
     // 保存下棋子引用
     const chesses: DrawableChess[] = [];
     this.chessboard.getChesses().forEach((chess) => {
@@ -262,8 +325,14 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       this.chessStatusDisplay.update(this.viewChessHost);
     }
 
-    this.chessboard.hanNumberInBottom = this.viewChessHost == ChessHost.FIRST;
-    this.chessboard.redraw();
+    if (this.enableOutsideChessPanel) {
+      const otherChessPlaces = this.otherOutsideChessPanel.chessPlaces;
+      const localChessPlaces = this.localOutsideChessPanel.chessPlaces;
+      this.otherOutsideChessPanel.reset();
+      this.localOutsideChessPanel.reset();
+      this.otherOutsideChessPanel.reloadChessPlaces(localChessPlaces);
+      this.localOutsideChessPanel.reloadChessPlaces(otherChessPlaces);
+    }
   }
 
   /** 悔棋 */
@@ -310,6 +379,13 @@ export default class ChineseChessGameRule extends GameRule implements Game {
               );
             }
             this.chessboard.addChess(drawableChess);
+            if (this.enableOutsideChessPanel) {
+              if (drawableChess.getHost() == this.viewChessHost) {
+                this.otherOutsideChessPanel.removeChess(drawableChess.chess);
+              } else {
+                this.localOutsideChessPanel.removeChess(drawableChess.chess);
+              }
+            }
           }
 
           // 画上手的棋子走位标记

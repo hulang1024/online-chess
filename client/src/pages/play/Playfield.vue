@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="playfield column items-center relative-position"
-  >
+  <div class="playfield row items-center justify-center relative-position">
     <slot />
   </div>
 </template>
