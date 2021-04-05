@@ -70,7 +70,14 @@
           >
             <div class="rows">
               <div class="row">
-                <label>声音</label>
+                <label>背景音乐</label>
+                <q-toggle
+                  v-model="bgmEnabled"
+                  color="orange"
+                />
+              </div>
+              <div class="row">
+                <label>下棋声音</label>
                 <q-toggle
                   v-model="gameplayAudioEnabled"
                   color="orange"
@@ -134,6 +141,7 @@ export default defineComponent({
     });
 
     const values = reactive({
+      bgmEnabled: configManager.get(ConfigItem.bgmEnabled),
       gameplayAudioEnabled: configManager.get(ConfigItem.chinesechessGameplayAudioEnabled),
       chessboardTheme: configManager.get(ConfigItem.chinesechessChessboardTheme),
       chessTheme: configManager.get(ConfigItem.chinesechessChessTheme),
@@ -146,6 +154,7 @@ export default defineComponent({
     const chessboardSubTab = ref('chessboard');
 
     watch(values, () => {
+      configManager.set(ConfigItem.bgmEnabled, values.bgmEnabled);
       configManager.set(ConfigItem.chinesechessGameplayAudioEnabled, values.gameplayAudioEnabled);
       configManager.set(ConfigItem.chinesechessChessboardTheme, values.chessboardTheme);
       configManager.set(ConfigItem.chinesechessChessTheme, values.chessTheme);

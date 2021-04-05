@@ -10,6 +10,7 @@ export enum ConfigItem {
   audioEnabled = 'audio_enabled',
   desktopNotifyEnabled = 'desktop_notify_enabled',
 
+  bgmEnabled = 'audio_bgm_enabled',
   // todo: 待组织
   gobangInputMethod = 'gobang.input_method',
   chinesechessGameplayAudioEnabled = 'chinesechess.gameplay_audio_enabled',
@@ -40,6 +41,7 @@ export default class ConfigManager {
     [
       'username', 'password', 'token', 'login_auto',
       'dark_mode', 'theme', 'audio_volume', 'desktop_notify_enabled',
+      'audio_bgm_enabled',
       'audio_enabled', 'gobang.input_method',
       'chinesechess.gameplay_audio_enabled',
       'chinesechess.chessboard_theme',
@@ -88,6 +90,7 @@ export default class ConfigManager {
     this.set(ConfigItem.loginAuto, true);
     this.set(ConfigItem.audioVolume, 0.2);
     this.set(ConfigItem.audioEnabled, true);
+    this.set(ConfigItem.bgmEnabled, false);
     this.set(ConfigItem.desktopNotifyEnabled, false);
     this.set(ConfigItem.chinesechessGameplayAudioEnabled, true);
     this.set(ConfigItem.chinesechessChessStatus, true);

@@ -1,6 +1,7 @@
 import SocketService from 'src/online/ws/SocketService';
 import ChannelManager from 'src/online/chat/ChannelManager';
 import AudioManager from 'src/audio/AudioManager';
+import BGMPlayer from 'src/audio/BGMPlayer';
 import UserManager from 'src/online/user/UserManager';
 import UserActivityClient from 'src/online/UserActivityClient';
 import ConfigManager, { ConfigItem } from '../config/ConfigManager';
@@ -17,3 +18,5 @@ socketService.channelManager = channelManager;
 
 export const audioManager = new AudioManager();
 audioManager.volume.value = configManager.get(ConfigItem.audioVolume) as number;
+
+export const bgmPlayer = new BGMPlayer();

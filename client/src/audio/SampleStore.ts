@@ -1,6 +1,8 @@
 export default class SampleStore {
   private readonly sampleCache: { [name: string]: HTMLAudioElement } = {};
 
+  private volume = 0;
+
   constructor() {
     setTimeout(() => {
       this.loadAll();
@@ -16,6 +18,7 @@ export default class SampleStore {
 
     audio = new Audio();
     audio.src = `/audio/${name}${name.lastIndexOf('.') > -1 ? '' : '.wav'}`;
+    audio.volume = this.volume;
     audio.load();
 
     this.sampleCache[key] = audio;
@@ -24,6 +27,7 @@ export default class SampleStore {
   }
 
   public adjustVolumne(volume: number) {
+    this.volume = volume;
     Object.keys(this.sampleCache).forEach((name) => {
       this.sampleCache[name].volume = volume;
     });
