@@ -90,7 +90,7 @@ export default defineComponent({
   box-shadow: 0px 3px 6px 4px rgba(0, 0, 0, 0.2)
   border-radius: 6px
 
-$text-shadow-base: 1px 2px 4px rgba(0, 0, 0, 0.2)
+$text-shadow-base: 3px 3px 3px rgba(0, 0, 0, 0.2)
 
 .result-text
   font-family: "founder-xin-kaiti","founder-longyin"

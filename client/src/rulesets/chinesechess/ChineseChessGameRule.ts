@@ -231,7 +231,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       let isDie = false;
       if (isCheckmate) {
         isDie = this.checkmateJudgement.judgeDie(otherChessHost, this.chessboardState);
-        this.drawableCheckmateJudgement.show(otherChessHost, isDie);
+        this.drawableCheckmateJudgement.show(action.chessHost, isDie);
       } else if (eatenChess) {
         // 判断胜负
         if (eatenChess != null && eatenChess.is(ChessK)) {
@@ -245,7 +245,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
         setTimeout(() => {
           this.chessStatusDisplay.clear();
           this.gameEnd();
-        }, 800);
+        }, 1500);
         return;
       }
 

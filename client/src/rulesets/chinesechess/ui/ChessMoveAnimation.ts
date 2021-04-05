@@ -26,7 +26,7 @@ export default class ChessMoveAnimation {
     const stepDuration = 50;
     const steps = calcSteps(chess.getPos(), toPos);
     // 总移动动画时长
-    const duration = instant ? 0 : Math.max(200, stepDuration * steps);
+    const duration = instant ? 0 : Math.max(150, stepDuration * steps);
     // 翻转动画时长
     const flipDuration = 150;
     // todo: 模块化揭棋代码

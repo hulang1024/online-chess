@@ -26,7 +26,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.26);
   &.selected,
   &.overlay {
     z-index: 3;
-    transform: scale(1.16);
+    transform: scale(1.2);
     > .side {
       box-shadow: 8px 16px 2px -4px var(--side-shadow-color, $side-shadow-color);
     }

@@ -58,7 +58,7 @@ export default class OutsideChessPanel {
         drawableChess.drawFront();
       }
       drawableChess.flipToFront();
-    }, 200);
+    }, 300);
   }
 
   public removeChess(chess: Chess) {

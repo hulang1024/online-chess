@@ -117,7 +117,7 @@ export default class DrawableChess implements Chess {
     el.style.fontSize = `${radius + 4}px`;
     el.classList[radius <= 16 ? 'add' : 'remove']('smaller');
     const frontCircle = el.children[0].firstChild as HTMLDivElement;
-    const frontBordersideWidth = radius / 2 + 2.5;
+    const frontBordersideWidth = radius / 2 + 3;
     frontCircle.style.top = `-${frontBordersideWidth / 2 - 3}px`;
     frontCircle.style.width = `calc(100% - ${frontBordersideWidth}px)`;
     frontCircle.style.height = `calc(100% - ${frontBordersideWidth}px)`;
