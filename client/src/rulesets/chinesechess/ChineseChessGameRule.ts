@@ -22,7 +22,7 @@ import ChineseChessDrawableChessboard from './ui/ChineseChessDrawableChessboard'
 import ChessStatusDisplay from './ChessStatusDisplay';
 import GameAudio from '../GameAudio';
 import ChessboardState from './rule/ChessboardState';
-import OutsideChessPanel, { OutsideChessPanelType } from './ui/OutsideChessPanel';
+import OutsideChessPanel, { OutsideChessPanelType } from './OutsideChessPanel';
 
 export default class ChineseChessGameRule extends GameRule implements Game {
   public chessboard: ChineseChessDrawableChessboard;
@@ -416,5 +416,9 @@ export default class ChineseChessGameRule extends GameRule implements Game {
 
   public canGoTo(chess: Chess | null, destPos: ChessPos): boolean {
     return chess?.canGoTo(destPos, this.chessboardState, this) as boolean;
+  }
+
+  public destory() {
+    this.drawableCheckmateJudgement.destory();
   }
 }

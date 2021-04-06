@@ -27,6 +27,9 @@ export default abstract class GameRule {
 
   public abstract reverseChessLayoutView(): void;
 
+  // eslint-disable-next-line
+  public destory() {}
+
   protected gameEnd() {
     if (this.onGameEnd) {
       this.onGameEnd();

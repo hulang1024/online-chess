@@ -408,6 +408,7 @@ export default class Player extends GameplayClient {
     this.exit();
     this.spectatorClient.exit();
     this.rulesetClient.exit();
+    this.game.destory();
     this.channelManager.leaveChannel(this.room.channelId);
     playPageSignals.reload.removeAll();
     playPageSignals.exited.dispatch();

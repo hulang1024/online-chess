@@ -7,12 +7,19 @@ import './judgement.scss';
 export default class DrawableCheckmateJudgement {
   public el: HTMLDivElement;
 
+  public filterEl: HTMLDivElement;
+
   private timer: NodeJS.Timeout;
 
   constructor() {
     const el = document.createElement('div');
     el.className = `judgement checkmate-judgement absolute-center`;
     this.el = el;
+
+    const filterEl = document.createElement('div');
+    filterEl.classList.add('die-filter');
+    document.body.appendChild(filterEl);
+    this.filterEl = filterEl;
   }
 
   public show(actionChessHost: ChessHost, isDie = false) {
@@ -20,13 +27,9 @@ export default class DrawableCheckmateJudgement {
 
     if (isDie) {
       this.el.classList.add('die');
-
-      const filterEl = document.createElement('div');
-      filterEl.classList.add('die-filter');
-      const root = document.body;
-      root.appendChild(filterEl);
+      this.toggleDieFilter(true);
       setTimeout(() => {
-        root.removeChild(filterEl);
+        this.toggleDieFilter(false);
       }, 2000);
     }
     this.el.classList.add('show');
@@ -39,5 +42,13 @@ export default class DrawableCheckmateJudgement {
         GameAudio.play(`games/chinesechess/default/checkmate${isDie ? '_die' : ''}`);
       }
     }, 0);
+  }
+
+  public destory() {
+    (this.filterEl.parentElement as HTMLElement).removeChild(this.filterEl);
+  }
+
+  private toggleDieFilter(isShow: boolean) {
+    this.filterEl.classList[isShow ? 'add' : 'remove']('show');
   }
 }

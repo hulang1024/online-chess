@@ -1,4 +1,4 @@
-import DrawableChess from "./DrawableChess";
+import DrawableChess from "./ui/DrawableChess";
 
 export default class OutsideChessPlace {
   public readonly el = document.createElement('div');

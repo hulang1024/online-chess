@@ -1,9 +1,9 @@
-import Chess from '../rule/Chess';
-import DrawableChess from './DrawableChess';
-import { ChessboardBounds } from './ChineseChessDrawableChessboard';
+import Chess from './rule/Chess';
+import DrawableChess from './ui/DrawableChess';
+import { ChessboardBounds } from './ui/ChineseChessDrawableChessboard';
 import OutsideChessPlace from './OutsideChessPlace';
-import './outside_chess_panel.scss';
-import { chessClassToKey } from '../rule/chess_map';
+import './ui/outside_chess_panel.scss';
+import { chessClassToKey } from './rule/chess_map';
 
 export enum OutsideChessPanelType {
   local,
