@@ -13,11 +13,13 @@ import GameUser from "../../online/play/GameUser";
 import * as playPageSignals from './signals';
 
 export default class SpectatorPlayer extends Player {
+  private targetUserId: number | null;
+
   constructor(context: Vue, spectateResponse: SpectateResponse) {
     const { room } = spectateResponse;
     super(context, room, true, spectateResponse.states);
-
-    this.watchUser(spectateResponse.targetUserId);
+    this.targetUserId = spectateResponse.targetUserId;
+    this.watchUser(this.targetUserId);
 
     onMounted(() => {
       switch (room.gameStatus) {
@@ -52,6 +54,21 @@ export default class SpectatorPlayer extends Player {
       // eslint-disable-next-line
       this.textOverlay.hide();
     }
+  }
+
+  protected gameStartBefore() {
+    if (this.targetUserId) {
+      // 跟随观战用户的棋方
+      this.game.viewChessHost = this.getGameUserByUserId(this.targetUserId)?.chessHost as ChessHost;
+    } else {
+      this.reverse.toggle();
+    }
+  }
+
+  public onToggleViewClick() {
+    super.onToggleViewClick();
+    // 如果点击了切换，将不再跟随固定用户
+    this.targetUserId = null;
   }
 
   protected resultsGameOver(msg: GameEvents.GameOverMsg) {
@@ -92,7 +109,7 @@ export default class SpectatorPlayer extends Player {
     let watchingUser: User = this.api.localUser;
 
     if (targetUserId != null) {
-      // 如果是观战用户
+      // 如果是观战固定用户
       watchingUser = room.gameUsers.find((u) => u.user?.id == targetUserId)?.user as User;
     } else if (room.gameUsers.length == 2) {
       watchingUser = room.gameUsers[+(Math.random() > 0.5)].user as User;
@@ -100,7 +117,11 @@ export default class SpectatorPlayer extends Player {
       watchingUser = room.gameUsers[0].user as User;
     }
 
+    // todo: 此localUser是继承自Player中指客户端本方游戏参与者用户，需要覆盖为非当前观众用户。
+    // 此处具体设置为哪个参与者用户并无影响，观众端随便可切换视图以及目前其它功能正常工作，
+    // localUser的值可能在构造器初始化之后就并不会再变化
     this.localUser.user.value = watchingUser;
+    this.game.viewChessHost = this.getGameUserByUserId(watchingUser.id)?.chessHost as ChessHost;
   }
 
   public onQuitClick() {

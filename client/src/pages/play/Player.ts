@@ -181,7 +181,7 @@ export default class Player extends GameplayClient {
 
       this.initTimers();
       this.loadState(initialGameStates);
-      if (this.localUser.status.value == UserStatus.IN_LOBBY) {
+      if (!this.isWatchingMode && this.localUser.status.value == UserStatus.IN_LOBBY) {
         userActivityClient.enter(3);
       }
 
@@ -422,6 +422,9 @@ export default class Player extends GameplayClient {
     }
   }
 
+  // eslint-disable-next-line
+  protected gameStartBefore() { }
+
   protected gameStart(msg: GameplayMsgs.GameStartedMsg) {
     const firstGameUser = this.getGameUserByUserId(msg.firstChessUid) as GameUser;
     const secondGameUser = this.getGameUserByUserId(msg.secondChessUid) as GameUser;
@@ -445,7 +448,12 @@ export default class Player extends GameplayClient {
     // eslint-disable-next-line
     desktopNotify('对局开始了');
 
-    this.game.start(this.localUser.chessHost, msg.initialStates);
+    this.gameStartBefore();
+
+    this.game.start(
+      this.isWatchingMode ? this.game.viewChessHost : this.localUser.chessHost,
+      msg.initialStates,
+    );
     // 因为activeChessHost一般一直是先手，值相同将不能触发，这里手动触发一次
     this.onTurnActiveChessHost(ChessHost.FIRST);
   }
