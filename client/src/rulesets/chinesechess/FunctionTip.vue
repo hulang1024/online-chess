@@ -27,7 +27,7 @@ p {
 }
 ul {
   margin-top: -4px;
-  padding: 0px 16px;
+  padding: 0px 12px;
   list-style-type: none;
 }
 
@@ -35,8 +35,8 @@ ul {
   .status-circle {
     display: inline-block;
     margin-right: 4px;
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border-radius: 100%;
     border: 2px solid;
     &.danger {
@@ -53,8 +53,8 @@ ul {
   .go-point {
     display: inline-block;
     margin-right: 4px;
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border-radius: 4px;
     border: 2px solid rgba(255, 255, 255, 0.4);
     background: rgba(255, 255, 255, 0.4);

@@ -6,7 +6,7 @@
         <q-btn
           v-if="$q.screen.xs"
           icon="close"
-          class="text-grey-8 absolute-top-right q-pr-sm q-mt-md"
+          class="text-grey-8 absolute-top-right q-pr-sm q-mt-sm"
           flat round v-close-popup
         />
       </q-card-section>
