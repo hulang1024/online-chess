@@ -1,5 +1,6 @@
 import ChessHost from "../chess_host";
 import ChineseChessGameRule from "./ChineseChessGameRule";
+import { isProtectee } from "./rule/alg";
 import Chess from "./rule/Chess";
 import ChessK from "./rule/ChessK";
 import { ChessStatus } from './ui/StatusCircle';
@@ -42,25 +43,22 @@ export default class ChessStatusDisplay {
     const found = new Map<Chess, ChessStatus>();
     const chesses = this.game.chessboardState.getChesses();
 
-    const isProtectee = (target: Chess) => {
-      for (let i = 0; i < chesses.length; i++) {
-        const chess = chesses[i];
-        if (chess != target && chess.getHost() == target.getHost()
-          && this.game.canGoTo(chess, target.getPos())) {
-          return true;
-        }
-      }
-      return false;
-    };
-
     const canEat = (targetHost: ChessHost, asStatus: ChessStatus) => {
       chesses.forEach((target) => {
-        if (target.getHost() == targetHost
-          && (target.is(ChessK) || !isProtectee(target))) {
+        if (target.getHost() == targetHost) {
           chesses.forEach((chess) => {
-            if (chess.getHost() != targetHost
-              && this.game.canGoTo(chess, target.getPos())) {
+            if (chess.getHost() == targetHost || !this.game.canGoTo(chess, target.getPos())) {
+              return;
+            }
+            if (target.is(ChessK)) {
               found.set(target, asStatus);
+            } else {
+              const testChessboardState = this.game.chessboardState.clone();
+              testChessboardState.setChess(chess.getPos(), null);
+              testChessboardState.setChess(target.getPos(), chess);
+              if (!isProtectee(target, this.game, testChessboardState)) {
+                found.set(target, asStatus);
+              }
             }
           });
         }

@@ -2,7 +2,6 @@ import Chess from "./Chess";
 import ChessHost from "../../chess_host";
 import ChessPos from "./ChessPos";
 import Game from "./Game";
-import ChessboardState from "./ChessboardState";
 
 export const MAX_DISTANCE = 10;
 
@@ -42,29 +41,6 @@ export function isInKingHome(chess: Chess, destPos: ChessPos, game: Game) {
     && (game.isHostAtChessboardTop(chess.getHost())
       ? (destPos.row >= 0 && destPos.row <= 2)
       : (destPos.row >= 7 && destPos.row <= 9));
-}
-
-/**
- * 查询棋子的所有可走位置
- * @param chess 指定棋子
- * @return 位置数组
- */
-export function findChessGoPoss(
-  chess: Chess, game: Game, chessboardState: ChessboardState,
-): ChessPos[] {
-  const found = [];
-  for (let row = 0; row < 10; row++) {
-    for (let col = 0; col < 9; col++) {
-      const dest = new ChessPos(row, col);
-      if (!dest.equals(chess.getPos())
-        && game.canGoTo(chess, dest)
-        && (chessboardState.isEmpty(row, col)
-          || chessboardState.chessAt(dest)?.getHost() != chess.getHost())) {
-        found.push(dest);
-      }
-    }
-  }
-  return found;
 }
 
 export function sign(n: number) {

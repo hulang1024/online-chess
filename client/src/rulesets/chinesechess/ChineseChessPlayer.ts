@@ -2,6 +2,7 @@ import RulesetPlayer from "../RulesetPlayer";
 import ChineseChessGameRule from "./ChineseChessGameRule";
 import ChineseChessUserPlayInput from "./ChineseChessUserPlayInput";
 import Settings from './ui/Settings.vue';
+import Help from './Help.vue';
 
 export default class ChineseChessPlayer extends RulesetPlayer {
   // eslint-disable-next-line
@@ -29,8 +30,9 @@ export default class ChineseChessPlayer extends RulesetPlayer {
     });
   }
 
-  // eslint-disable-next-line
   public openHelp() {
-    window.open('https://baike.baidu.com/item/%E4%B8%AD%E5%9B%BD%E8%B1%A1%E6%A3%8B/278314');
+    this.context.$q.dialog({
+      component: Help,
+    });
   }
 }

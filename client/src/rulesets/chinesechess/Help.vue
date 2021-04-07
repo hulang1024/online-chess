@@ -2,16 +2,11 @@
   <q-dialog ref="dialog">
     <q-card class="q-dialog-plugin">
       <q-card-section>
-        <div class="text-h5">揭棋</div>
+        <div class="text-h5">象棋</div>
       </q-card-section>
       <q-card-section>
         <p class="text-h6">规则</p>
-        <p>1、反转背面看不见字体的棋子叫“暗子”。揭开后显示字体的棋子叫“明子”。</p>
-        <p>2、红、黑双方各棋子反转背面随机地摆放好在自己一边的棋盘上，帅、将明摆放于原点。</p>
-        <p>3、对弈时，双方轮流走子，先走方首先揭开自己的任何一个棋子，按其所在位置照中国象棋（明棋）规则走出一步。如在其攻击范围内也可以吃掉对方的棋子。</p>
-        <p>4、揭开后的象、士均可以过河攻杀。</p>
-        <p>5、其它规则与经典象棋相同。</p>
-
+        <p><a target="_blank" href="https://baike.baidu.com/item/%E4%B8%AD%E5%9B%BD%E8%B1%A1%E6%A3%8B/278314">百度百科</a></p>
         <function-tip />
       </q-card-section>
     </q-card>
@@ -19,7 +14,7 @@
 </template>
 <script lang="ts">
 import { defineComponent, getCurrentInstance } from "@vue/composition-api";
-import FunctionTip from "../chinesechess/FunctionTip.vue";
+import FunctionTip from "./FunctionTip.vue";
 
 export default defineComponent({
   components: { FunctionTip },

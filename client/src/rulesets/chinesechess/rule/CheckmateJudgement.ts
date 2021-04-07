@@ -2,8 +2,8 @@ import ChessK from "./ChessK";
 import ChessHost from "../../chess_host";
 import ChessboardState from "./ChessboardState";
 import Game from "./Game";
-import { findChessGoPoss } from "./move_rules";
 import Chess from "./Chess";
+import { findChessGoPoss } from "./alg";
 
 function getKingChess(host: ChessHost, chessboardState: ChessboardState): ChessK | null {
   let chessK: ChessK | null = null;

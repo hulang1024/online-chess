@@ -1,6 +1,7 @@
 import ChessHost from '../chess_host';
 import ChineseChessGameRule from '../chinesechess/ChineseChessGameRule';
 import Chess from '../chinesechess/rule/Chess';
+import ChessboardState from '../chinesechess/rule/ChessboardState';
 import ChessG from '../chinesechess/rule/ChessG';
 import ChessM from '../chinesechess/rule/ChessM';
 import ChessPos from '../chinesechess/rule/ChessPos';
@@ -12,7 +13,8 @@ export default class ChineseChessDarkGameRule extends ChineseChessGameRule {
     this.enableOutsideChessPanel = true;
   }
 
-  public canGoTo(chess: Chess | null, destPos: ChessPos): boolean {
+  public canGoTo(chess: Chess | null, destPos: ChessPos,
+    chessboardState?: ChessboardState): boolean {
     let moveRule: Chess;
     if (chess?.isFront()) {
       moveRule = chess;
@@ -26,6 +28,6 @@ export default class ChineseChessDarkGameRule extends ChineseChessGameRule {
       moveRule = queryMoveRuleByOriginPos(isViewChessHost, chess?.getPos() as ChessPos);
       moveRule.setHost(chess?.getHost() as ChessHost);
     }
-    return moveRule?.canGoTo(destPos, this.chessboardState, this);
+    return moveRule?.canGoTo(destPos, chessboardState || this.chessboardState, this);
   }
 }

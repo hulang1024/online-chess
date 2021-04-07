@@ -1,5 +1,6 @@
 import ChessHost from "../../chess_host";
 import Chess from "./Chess";
+import ChessboardState from "./ChessboardState";
 import ChessPos from "./ChessPos";
 
 export default abstract class Game {
@@ -10,5 +11,5 @@ export default abstract class Game {
    */
   isHostAtChessboardTop: (host: ChessHost) => boolean;
 
-  canGoTo: (chess: Chess | null, destPos: ChessPos) => boolean;
+  canGoTo: (chess: Chess | null, destPos: ChessPos, chessboardState?: ChessboardState) => boolean;
 }

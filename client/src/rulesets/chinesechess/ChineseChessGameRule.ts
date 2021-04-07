@@ -415,8 +415,9 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     this.withdrawEnabled.value = !this.historyRecorder.isEmpty();
   }
 
-  public canGoTo(chess: Chess | null, destPos: ChessPos): boolean {
-    return chess?.canGoTo(destPos, this.chessboardState, this) as boolean;
+  public canGoTo(chess: Chess | null, destPos: ChessPos,
+    chessboardState?: ChessboardState): boolean {
+    return chess?.canGoTo(destPos, chessboardState || this.chessboardState, this) as boolean;
   }
 
   public destory() {

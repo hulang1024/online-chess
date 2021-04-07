@@ -1,7 +1,8 @@
 import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
 import ChineseChessGameRule from "./ChineseChessGameRule";
-import { findChessGoPoss } from "./rule/move_rules";
+import { findChessGoPoss, isProtecteePos } from "./rule/alg";
+import ChessPos from "./rule/ChessPos";
 import DrawableChess from "./ui/DrawableChess";
 import GoPoint from "./ui/GoPoint";
 
@@ -14,14 +15,30 @@ export default class GoDisplay {
     this.game = game;
   }
 
-  public update(chess: DrawableChess) {
+  public update(originChess: DrawableChess) {
     if (!configManager.get(ConfigItem.chinesechessGoDisplay)) {
       return;
     }
     this.clear();
-    const { chessboard } = this.game;
-    findChessGoPoss(chess, this.game, this.game.chessboardState).forEach((pos) => {
-      const goPoint = new GoPoint(pos, chessboard);
+    const { chessboard, chessboardState } = this.game;
+    const otherChesses = chessboardState.getChesses()
+      .filter((c) => c.getHost() != originChess.getHost());
+    const isDangerPos = (testPos: ChessPos) => {
+      for (let i = 0; i < otherChesses.length; i++) {
+        const otherChess = otherChesses[i];
+        const testChessboardState = chessboardState.clone();
+        testChessboardState.setChess(originChess.getPos(), null);
+        testChessboardState.setChess(testPos, originChess);
+        if (this.game.canGoTo(otherChess, testPos, testChessboardState)
+          && !isProtecteePos(testPos, originChess.getHost(), originChess,
+            this.game, testChessboardState)) {
+          return true;
+        }
+      }
+      return false;
+    };
+    findChessGoPoss(originChess, this.game, chessboardState).forEach((pos) => {
+      const goPoint = new GoPoint(pos, isDangerPos(pos), chessboard);
       chessboard.el.appendChild(goPoint.el);
       this.goPoints.push(goPoint);
     });
