@@ -1,22 +1,22 @@
 <template>
   <div>
     <p class="text-h6">棋子状态提示</p>
-    <p>棋子状态提示只做两层简单的判断：</p>
+    <p>不判断棋子价值，只做简单的判断提示：</p>
     <ul class="chess-status-tip">
       <li>
-        <div class="status-circle danger"></div>
-        表示<b>本方</b>危险棋子，存在有可以吃掉它的<b>对方</b>棋子，且吃掉后<b>本方</b>无棋子去兑子。
+        <div class="status-circle danger" />
+        表示<b>可能会被吃掉的</b>本方棋子，吃掉后本方无棋子去兑子。
       </li>
       <li>
-        <div class="status-circle eatable"></div>
-        表示<b>对方</b>危险棋子，存在有可以吃掉它的<b>本方</b>棋子，且吃掉后<b>对方</b>无棋子去兑子。
+        <div class="status-circle eatable" />
+        表示<b>可以安全吃掉的</b>对方棋子，吃掉后对方无棋子来兑子。
       </li>
     </ul>
     <p class="text-h6">可走位置提示</p>
     <p>提示哪些位置走法规则上允许，并且如果走到该位置：</p>
     <ul class="go-point-tip">
-      <li><div class="go-point allow"></div>不存在可以安全吃掉该位置棋子的对方棋子。</li>
-      <li><div class="go-point danger"></div>表示是危险的，与上面一种情况相反。</li>
+      <li><div class="go-point allow" />表示是<b>安全的</b>：无对方棋子可以吃掉该位置棋子。</li>
+      <li><div class="go-point danger" />表示是<b>危险的</b>：有对方棋子可以吃掉该位置棋子。</li>
     </ul>
   </div>
 </template>

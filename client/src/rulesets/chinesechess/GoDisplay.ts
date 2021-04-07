@@ -1,7 +1,7 @@
 import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
 import ChineseChessGameRule from "./ChineseChessGameRule";
-import { findChessGoPoss, isProtecteePos } from "./rule/alg";
+import { findChessGoPoss } from "./rule/alg";
 import ChessPos from "./rule/ChessPos";
 import DrawableChess from "./ui/DrawableChess";
 import GoPoint from "./ui/GoPoint";
@@ -29,9 +29,7 @@ export default class GoDisplay {
         const testChessboardState = chessboardState.clone();
         testChessboardState.setChess(originChess.getPos(), null);
         testChessboardState.setChess(testPos, originChess);
-        if (this.game.canGoTo(otherChess, testPos, testChessboardState)
-          && !isProtecteePos(testPos, originChess.getHost(), originChess,
-            this.game, testChessboardState)) {
+        if (this.game.canGoTo(otherChess, testPos, testChessboardState)) {
           return true;
         }
       }
