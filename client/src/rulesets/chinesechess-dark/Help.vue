@@ -3,6 +3,12 @@
     <q-card class="q-dialog-plugin">
       <q-card-section>
         <div class="text-h5">揭棋</div>
+        <q-btn
+          v-if="$q.screen.xs"
+          icon="close"
+          class="text-grey-8 absolute-top-right q-pr-sm q-mt-md"
+          flat round v-close-popup
+        />
       </q-card-section>
       <q-card-section>
         <p class="text-h6">规则</p>

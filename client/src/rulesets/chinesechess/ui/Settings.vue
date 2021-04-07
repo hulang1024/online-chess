@@ -2,7 +2,7 @@
   <q-dialog ref="dialog" :maximized="$q.screen.xs" >
     <q-card class="q-dialog-plugin">
       <q-card-section>
-        <div class="text-h6">设置</div>
+        <div class="text-h5">设置</div>
         <q-btn
           v-if="$q.screen.xs"
           icon="close"

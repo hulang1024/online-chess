@@ -38,7 +38,7 @@ ul {
     width: 20px;
     height: 20px;
     border-radius: 100%;
-    border: 1px solid;
+    border: 2px solid;
     &.danger {
       border-color: rgb(248, 0, 0, 1);
     }
@@ -60,11 +60,11 @@ ul {
     background: rgba(255, 255, 255, 0.4);
 
     &.allow {
-      background: rgba(0, 210, 0, 0.2);
+      background: rgba(0, 210, 0, 0.3);
     }
 
     &.danger {
-      background: rgba(255, 0, 0, 0.2);
+      background: rgba(255, 0, 0, 0.3);
     }
   }
 }
