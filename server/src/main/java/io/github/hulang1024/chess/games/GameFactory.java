@@ -3,6 +3,7 @@ package io.github.hulang1024.chess.games;
 import io.github.hulang1024.chess.games.chinesechess.ChineseChessGame;
 import io.github.hulang1024.chess.games.chinesechess.ChineseChessGameSettings;
 import io.github.hulang1024.chess.games.chinesechessdark.ChineseChessDarkGame;
+import io.github.hulang1024.chess.games.chinesechessdark.ChineseChessDarkGameSettings;
 import io.github.hulang1024.chess.games.gobang.GobangGame;
 import io.github.hulang1024.chess.games.gobang.GobangGameSettings;
 import io.github.hulang1024.chess.games.reversi.ReversiGame;
@@ -14,7 +15,7 @@ public final class GameFactory {
             case chinesechess:
                 return new ChineseChessGame((ChineseChessGameSettings) gameSettings);
             case chinesechessDark:
-                return new ChineseChessDarkGame((ChineseChessGameSettings) gameSettings);
+                return new ChineseChessDarkGame((ChineseChessDarkGameSettings) gameSettings);
             case gobang:
                 return new GobangGame((GobangGameSettings) gameSettings);
             case reversi:
@@ -31,7 +32,7 @@ public final class GameFactory {
                 gameSettings = new ChineseChessGameSettings();
                 break;
             case chinesechessDark:
-                gameSettings = new ChineseChessGameSettings();
+                gameSettings = new ChineseChessDarkGameSettings();
                 break;
             case gobang:
                 gameSettings = new GobangGameSettings();

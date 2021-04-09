@@ -1,3 +1,4 @@
+import ChineseChessDarkGameSettings from "src/rulesets/chinesechess-dark/ChineseChessDarkGameSettings";
 import GobangGameSettings from "src/rulesets/gobang/GobangGameSettings";
 import { APIRequest, HttpMethod } from "../api/api_request";
 import Room from "./Room";
@@ -18,6 +19,11 @@ export default class CreateRoomRequest extends APIRequest<Room> {
     this.addParam('secondsCountdown', gameSettings.timer.secondsCountdown);
     if (gameSettings instanceof GobangGameSettings) {
       this.addParam('chessboardSize', gameSettings.chessboardSize);
+    }
+    if (gameSettings instanceof ChineseChessDarkGameSettings) {
+      if (gameSettings.fullRandom) {
+        this.addParam('fullRandom', gameSettings.fullRandom);
+      }
     }
     this.addParam('password', room.password);
   }

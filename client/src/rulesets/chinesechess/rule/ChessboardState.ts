@@ -1,3 +1,4 @@
+import ChessHost from "src/rulesets/chess_host";
 import Chess from "./Chess";
 import ChessPos from "./ChessPos";
 
@@ -35,6 +36,15 @@ export default class ChessboardState {
     return clone;
   }
 
+  public chessMovedClone(chess: Chess, newPos: ChessPos) {
+    const clone = this.clone();
+    const cloneChess = chess.clone();
+    clone.setChess(chess.getPos(), null);
+    clone.setChess(newPos, cloneChess);
+    cloneChess.setPos(newPos);
+    return clone;
+  }
+
   public isEmpty(row: number, col: number): boolean {
     return this.chessArray[row][col] == null;
   }
@@ -51,15 +61,24 @@ export default class ChessboardState {
     return this.chessArray[pos.row][pos.col];
   }
 
-  public getChesses(): Array<Chess> {
-    const ret: Array<Chess> = [];
+  public getChesses(host?: ChessHost): Array<Chess> {
+    let chesses: Array<Chess> = [];
     for (let row = 0; row < 10; row++) {
       for (let col = 0; col < 9; col++) {
         if (!this.isEmpty(row, col)) {
-          ret.push(this.chessArray[row][col] as Chess);
+          chesses.push(this.chessArray[row][col] as Chess);
         }
       }
     }
-    return ret;
+
+    if (host) {
+      chesses = chesses.filter((c) => c.getHost() == host);
+    }
+
+    return chesses;
+  }
+
+  public getOtherChesses(host: ChessHost) {
+    return this.getChesses(ChessHost.reverse(host));
   }
 }

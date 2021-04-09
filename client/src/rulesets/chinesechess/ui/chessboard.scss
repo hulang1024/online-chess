@@ -6,6 +6,12 @@
   > canvas {
     border-radius: inherit;
   }
+
+  &.hide-chess-backside-color {
+    .chinesechess-chess > .back {
+      color: var(--first-color) !important;
+    }
+  }
 }
 
 .mobile .q-page.play:not(.dark) {

@@ -201,11 +201,7 @@ export default class ChineseChessUserPlayInput extends UserPlayInput {
       const alreadyCheckmate = this.gameRule.checkmateJudgement.judge(
         chess.getHost(), this.gameRule.chessboardState,
       );
-      const nextChessboardState = this.gameRule.chessboardState.clone();
-      nextChessboardState.setChess(chess.getPos(), null);
-      const newChess = chess.chess.clone();
-      newChess.setPos(destPos);
-      nextChessboardState.setChess(destPos, newChess);
+      const nextChessboardState = this.gameRule.chessboardState.chessMovedClone(chess, destPos);
       if (this.gameRule.checkmateJudgement.judge(chess.getHost(), nextChessboardState)) {
         if (alreadyCheckmate) {
           this.gameRule.drawableCheckmateJudgement.show(ChessHost.reverse(chess.getHost()));

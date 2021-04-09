@@ -28,11 +28,10 @@ export function findChessGoPoss(
 }
 
 export function isProtectee(target: Chess, game: Game, chessboardState: ChessboardState) {
-  const chesses = chessboardState.getChesses();
+  const chesses = chessboardState.getChesses(target.getHost());
   for (let i = 0; i < chesses.length; i++) {
     const chess = chesses[i];
-    if (chess.getHost() == target.getHost()
-      && !chess.getPos().equals(target.getPos())
+    if (!chess.getPos().equals(target.getPos())
       && game.canGoTo(chess, target.getPos(), chessboardState)) {
       return true;
     }
@@ -44,11 +43,10 @@ export function isProtecteePos(
   testPos: ChessPos, targetHost: ChessHost, originChess: Chess,
   game: Game, chessboardState: ChessboardState,
 ) {
-  const chesses = chessboardState.getChesses();
+  const chesses = chessboardState.getChesses(targetHost);
   for (let i = 0; i < chesses.length; i++) {
     const chess = chesses[i];
-    if (chess.getHost() == targetHost
-      && !chess.getPos().equals(originChess.getPos())
+    if (!chess.getPos().equals(originChess.getPos())
       && game.canGoTo(chess, testPos, chessboardState)) {
       return true;
     }

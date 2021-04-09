@@ -21,18 +21,20 @@ export default class GoDisplay {
     }
     this.clear();
     const { chessboard, chessboardState } = this.game;
-    const otherChesses = chessboardState.getChesses()
-      .filter((c) => c.getHost() != originChess.getHost());
+    const otherChesses = chessboardState.getOtherChesses(originChess.getHost());
+
     const isDangerPos = (testPos: ChessPos) => {
-      for (let i = 0; i < otherChesses.length; i++) {
-        const otherChess = otherChesses[i];
-        const testChessboardState = chessboardState.clone();
-        testChessboardState.setChess(originChess.getPos(), null);
-        testChessboardState.setChess(testPos, originChess);
-        if (this.game.canGoTo(otherChess, testPos, testChessboardState)) {
-          return true;
-        }
+      const testChessboardState = chessboardState.chessMovedClone(originChess, testPos);
+      if (otherChesses.find((chess) => (
+        this.game.canGoTo(chess, testPos, testChessboardState))) != null) {
+        return true;
       }
+
+      // 判断送将
+      if (this.game.checkmateJudgement.judge(originChess.getHost(), testChessboardState)) {
+        return true;
+      }
+
       return false;
     };
     findChessGoPoss(originChess, this.game, chessboardState).forEach((pos) => {

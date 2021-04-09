@@ -1,5 +1,3 @@
-$red: #d61200;
-$black: #3d2e1f;
 $side-shadow-color: rgb(0, 0, 0, 0.28);
 
 .chinesechess-chess {
@@ -14,13 +12,13 @@ $side-shadow-color: rgb(0, 0, 0, 0.28);
   transition: transform 0.05s, box-shadow 0.05s ease-out;
 
   &.red {
-    color: var(--first-color, $red);
-    border-color: var(--first-color ,$red);
+    color: var(--first-color);
+    border-color: var(--first-color);
   }
   
   &.black {
-    color: var(--second-color, $black);
-    border-color: var(--second-color, $black);
+    color: var(--second-color);
+    border-color: var(--second-color);
   }
 
   &.selected,

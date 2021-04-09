@@ -212,15 +212,11 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     chess.selectable = false;
 
     const convertedToPos = toPos.convertViewPos(chessHost, this.viewChessHost);
-    // 设置棋盘状态
-    this.chessboardState.setChess(chess.getPos(), null);
-    this.chessboardState.setChess(convertedToPos, chess.chess);
-    chess.setPos(convertedToPos);
 
     const otherChessHost = ChessHost.reverse(action.chessHost);
-    const isCheckmate = this.checkmateJudgement.judge(
-      otherChessHost, this.chessboardState, chess.chess,
-    );
+    const testChessboardState = this.chessboardState.chessMovedClone(chess, convertedToPos);
+    (testChessboardState.chessAt(convertedToPos) as Chess).setFront(true);
+    const isCheckmate = this.checkmateJudgement.judge(otherChessHost, testChessboardState);
     const judge = () => {
       if (!isCheckmate && eatenChess) {
         if (configManager.get(ConfigItem.chinesechessGameplayAudioEnabled)) {
@@ -261,6 +257,10 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       this.chessboard.calcChessDisplayPos(convertedToPos),
       {
         moveEnd: () => {
+          this.chessboardState.setChess(chess.getPos(), null);
+          this.chessboardState.setChess(convertedToPos, chess.chess);
+          chess.setPos(convertedToPos);
+
           judge();
         },
         dropStart: () => {

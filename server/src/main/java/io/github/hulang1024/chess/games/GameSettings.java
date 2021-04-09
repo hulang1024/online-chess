@@ -26,6 +26,8 @@ public class GameSettings {
         private int secondsCountdown;
     }
 
+    private boolean enableRanking = true;
+
     @JSONField(name = "gameType")
     public int getGameTypeCode() {
         return gameType.getCode();

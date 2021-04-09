@@ -23,7 +23,8 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@import './chess.scss';
+$first-color: #d61200;
+$second-color: #3d2e1f;
 
 .chess-icon {
   display: flex;
@@ -53,13 +54,13 @@ export default defineComponent({
   }
 
   &.red {
-    color: var(--first-color, $red);
-    border-color: var(--first-color, $red);
+    color: var(--first-color, $first-color);
+    border-color: var(--first-color, $first-color);
   }
 
   &.black {
-    color: var(--second-color, $black);
-    border-color: var(--second-color, $black);
+    color: var(--second-color, $second-color);
+    border-color: var(--second-color, $second-color);
   }
 }
 </style>

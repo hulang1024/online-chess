@@ -6,9 +6,7 @@ import io.github.hulang1024.chess.games.chinesechess.rule.Chess;
 import io.github.hulang1024.chess.games.chinesechess.rule.ChessEnum;
 import io.github.hulang1024.chess.games.chinesechess.rule.ChessboardState;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /* package */ class ChessboardStateRandomGenerator {
     private static final int[][] ORIGIN_POS_ARRAY = {
@@ -35,18 +33,68 @@ import java.util.List;
 
     public static void generate(ChessboardState chessboardState) {
         ChessHost[] hosts = {ChessHost.SECOND, ChessHost.FIRST};
+        // 将帅位置
         ChessPos[] kingPosArray = {new ChessPos(0, 4), new ChessPos(9, 4)};
+        // 两个棋方分别设置
         for (int h = 0; h < 2; h++) {
+            // 将全部棋子放进一个列表中，随机位置
             List<ChessEnum> chessTypes = Arrays.asList(chessTypeArray.clone());
-            Collections.shuffle(chessTypes);
+            for (int t = 0; t < chessTypeArray.length * 10; t++) {
+                Collections.shuffle(chessTypes);
+            }
+            // 遍历打乱过的棋子类型，依次加到棋盘中
             for (int index = 0; index < chessTypes.size(); index++) {
+                // 创建一个棋子表示
                 Chess chess = new Chess(hosts[h], chessTypes.get(index));
                 chess.isFront = false;
+                // 取一个棋子位置
                 int row = ORIGIN_POS_ARRAY[h][index * 2];
                 int col = ORIGIN_POS_ARRAY[h][index * 2 + 1];
+                // 加到棋盘中
                 chessboardState.setChess(new ChessPos(row, col), chess);
             }
+            // 将王加到棋盘
             chessboardState.setChess(kingPosArray[h], new Chess(hosts[h], ChessEnum.K));
+        }
+    }
+
+    /**
+     * 全盘打乱
+     * @param chessboardState
+     */
+    public static void generateFull(ChessboardState chessboardState) {
+        ChessHost[] hosts = {ChessHost.SECOND, ChessHost.FIRST};
+        // 创建所有的棋子表示，放进列表中
+        List<Chess> allChesses = new ArrayList<>();
+        for (int h = 0; h < 2; h++) {
+            for (int index = 0; index < chessTypeArray.length; index++) {
+                // 创建一个棋子表示
+                Chess chess = new Chess(hosts[h], chessTypeArray[index]);
+                chess.isFront = false;
+                allChesses.add(chess);
+            }
+            // 创建将军的棋子表示
+            allChesses.add(new Chess(hosts[h], ChessEnum.K));
+        }
+
+        // 随机列表元素位置
+        for (int t = 0; t < chessTypeArray.length * 2 * 10; t++) {
+            Collections.shuffle(allChesses);
+        }
+
+        Iterator<Chess> chessIterator = allChesses.iterator();
+        // 遍历打乱过的棋子类型，依次加到棋盘中
+        // 将帅位置
+        ChessPos[] kingPosArray = {new ChessPos(0, 4), new ChessPos(9, 4)};
+        for (int h = 0; h < 2; h++) {
+            for (int index = 0; index < chessTypeArray.length; index++) {
+                // 取一个棋子位置
+                int row = ORIGIN_POS_ARRAY[h][index * 2];
+                int col = ORIGIN_POS_ARRAY[h][index * 2 + 1];
+                // 加到棋盘中
+                chessboardState.setChess(new ChessPos(row, col), chessIterator.next());
+            }
+            chessboardState.setChess(kingPosArray[h], chessIterator.next());
         }
     }
 }

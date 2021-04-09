@@ -24,7 +24,11 @@ export default class OutsideChessPlace {
 
   public incCount(inc: number) {
     this._count += inc;
-    this.counterEl.classList[this.count > 1 ? 'add' : 'remove']('show');
     this.counterEl.innerText = this.count.toString();
+    this.counterEl.classList[this.count > 1 ? 'add' : 'remove']('show');
+    this.counterEl.classList.add('change');
+    this.counterEl.onanimationend = () => {
+      this.counterEl.classList.remove('change');
+    };
   }
 }

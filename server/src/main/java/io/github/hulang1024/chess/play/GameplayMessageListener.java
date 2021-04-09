@@ -294,13 +294,19 @@ public class GameplayMessageListener extends AbstractMessageListener {
                 .filter(user -> user.getUser().getId().equals(winUserId))
                 .findAny();
             winUser = winUserOpt.get().getUser();
-            User loseUser = room.getOtherUser(winUser).getUser();
-            userStatsService.updateUser(winUser, gameType, GameResult.WIN);
-            userStatsService.updateUser(loseUser, gameType, GameResult.LOSE);
+            // 保存分数
+            if (game.getGameSettings().isEnableRanking()) {
+                User loseUser = room.getOtherUser(winUser).getUser();
+                userStatsService.updateUser(winUser, gameType, GameResult.WIN);
+                userStatsService.updateUser(loseUser, gameType, GameResult.LOSE);
+            }
         } else {
-            room.getGameUsers().forEach(gameUser -> {
-                userStatsService.updateUser(gameUser.getUser(), gameType, GameResult.DRAW);
-            });
+            // 保存分数
+            if (game.getGameSettings().isEnableRanking()) {
+                room.getGameUsers().forEach(gameUser -> {
+                    userStatsService.updateUser(gameUser.getUser(), gameType, GameResult.DRAW);
+                });
+            }
         }
 
         Object[] userIds = room.getGameUsers().stream()

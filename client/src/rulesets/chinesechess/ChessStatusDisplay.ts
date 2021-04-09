@@ -41,27 +41,24 @@ export default class ChessStatusDisplay {
 
   private findChessStatusMap(host: ChessHost): Map<Chess, ChessStatus> {
     const found = new Map<Chess, ChessStatus>();
-    const chesses = this.game.chessboardState.getChesses();
-
+    const { chessboardState } = this.game;
     const canEat = (targetHost: ChessHost, asStatus: ChessStatus) => {
-      chesses.forEach((target) => {
-        if (target.getHost() == targetHost) {
-          chesses.forEach((chess) => {
-            if (chess.getHost() == targetHost || !this.game.canGoTo(chess, target.getPos())) {
-              return;
-            }
+      chessboardState.getChesses(targetHost).forEach((target) => {
+        chessboardState.getOtherChesses(targetHost).forEach((killer) => {
+          if (this.game.canGoTo(killer, target.getPos())) {
             if (target.is(ChessK)) {
               found.set(target, asStatus);
             } else {
-              const testChessboardState = this.game.chessboardState.clone();
-              testChessboardState.setChess(chess.getPos(), null);
-              testChessboardState.setChess(target.getPos(), chess);
+              const testChessboardState = chessboardState.chessMovedClone(killer, target.getPos());
               if (!isProtectee(target, this.game, testChessboardState)) {
-                found.set(target, asStatus);
+                // 吃掉对方本方不会送将
+                if (!this.game.checkmateJudgement.judge(killer.getHost(), testChessboardState)) {
+                  found.set(target, asStatus);
+                }
               }
             }
-          });
-        }
+          }
+        });
       });
     };
     canEat(ChessHost.reverse(host), ChessStatus.eatable);

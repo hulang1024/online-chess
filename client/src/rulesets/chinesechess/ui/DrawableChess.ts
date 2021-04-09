@@ -213,9 +213,8 @@ export default class DrawableChess implements Chess {
     return this.chess.isFront();
   }
 
-  // eslint-disable-next-line
   public clone(): Chess {
-    throw Error('不支持调用');
+    return this.chess.clone();
   }
 
   public is(chessClass: unknown) {

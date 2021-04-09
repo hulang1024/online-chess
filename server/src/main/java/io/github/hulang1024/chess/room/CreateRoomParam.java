@@ -3,6 +3,7 @@ package io.github.hulang1024.chess.room;
 import io.github.hulang1024.chess.games.GameFactory;
 import io.github.hulang1024.chess.games.GameSettings;
 import io.github.hulang1024.chess.games.GameType;
+import io.github.hulang1024.chess.games.chinesechessdark.ChineseChessDarkGameSettings;
 import io.github.hulang1024.chess.games.gobang.GobangGameSettings;
 import lombok.Data;
 
@@ -16,6 +17,8 @@ public class CreateRoomParam {
     private boolean canWithdraw;
 
     private Integer chessboardSize;
+
+    private Boolean fullRandom;
 
     /**
      * 局时（分钟）
@@ -47,6 +50,11 @@ public class CreateRoomParam {
         if (gameType == GameType.gobang.getCode()) {
             if (chessboardSize != null) {
                 ((GobangGameSettings)gameSettings).setChessboardSize(chessboardSize);
+            }
+        }
+        if (gameType == GameType.chinesechessDark.getCode()) {
+            if (fullRandom != null) {
+                ((ChineseChessDarkGameSettings)gameSettings).setFullRandom(fullRandom);
             }
         }
         return roomSettings;

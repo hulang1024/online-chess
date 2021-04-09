@@ -339,6 +339,7 @@ import {
 } from '@vue/composition-api';
 import GameState from 'src/online/play/GameState';
 import Room from 'src/online/room/Room';
+import ChineseChessDarkGameSettings from 'src/rulesets/chinesechess-dark/ChineseChessDarkGameSettings';
 import Playfield from 'src/pages/play/Playfield.vue';
 import ResultDialog from 'src/rulesets/ui/ResultDialog.vue';
 import TextOverlay from 'src/rulesets/ui/TextOverlay.vue';
@@ -419,7 +420,8 @@ export default defineComponent({
   setup(props, { emit }) {
     const context = getCurrentInstance() as Vue;
     const isXSScreen = context.$q.screen.xs;
-    const { gameType } = props.room.roomSettings.gameSettings;
+    const { gameSettings } = props.room.roomSettings;
+    const { gameType } = gameSettings;
 
     const GAME_TYPE_MAP: {
       [n: number]: {text: string}
@@ -428,7 +430,8 @@ export default defineComponent({
         text: '象棋',
       },
       [GameType.chinesechessDark]: {
-        text: '揭棋',
+        // todo: 消除硬编码
+        text: `揭棋${(gameSettings as ChineseChessDarkGameSettings).fullRandom ? '(天命模式)' : ''}`,
       },
       [GameType.gobang]: {
         text: '五子棋',

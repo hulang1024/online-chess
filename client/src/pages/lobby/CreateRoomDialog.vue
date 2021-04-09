@@ -80,7 +80,14 @@
             (val && val >= 9 && val <= 19 && val % 2 != 0)
             || '最小9x9，最大19x19' ]"
         />
-
+        <div v-if="gameType == 3" class="row no-wrap items-center">
+          <q-toggle
+            v-model="fullRandom"
+            label="天命模式"
+            class="q-ml-none"
+          />
+          <span class="q-ml-xs text-caption text-grey-7">不记录排名分</span>
+        </div>
         <div class="row no-wrap">
           <q-input
             ref="passwordInput"
@@ -146,6 +153,8 @@ export default defineComponent({
       ...new TimerSettings(),
       // for gobang
       chessboardSize: 15,
+      // for chinesechessdark 2
+      fullRandom: false,
       gameType: 0,
     };
 
@@ -197,6 +206,7 @@ export default defineComponent({
             break;
           case GameType.chinesechessDark:
             gameSettings = new ChineseChessDarkGameSettings();
+            (gameSettings as ChineseChessDarkGameSettings).fullRandom = form.fullRandom;
             break;
           case GameType.gobang:
             gameSettings = new GobangGameSettings(form.chessboardSize);

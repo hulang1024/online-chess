@@ -2,7 +2,6 @@ import ChessK from "./ChessK";
 import ChessHost from "../../chess_host";
 import ChessboardState from "./ChessboardState";
 import Game from "./Game";
-import Chess from "./Chess";
 import { findChessGoPoss } from "./alg";
 
 function getKingChess(host: ChessHost, chessboardState: ChessboardState): ChessK | null {
@@ -26,17 +25,16 @@ export default class CheckmateJudgement {
 
   /**
    * 检查指定棋方此刻是否被将军
-   * @param chessHost
+   * @param targetHost
    */
-  judge(checkHost: ChessHost, chessboardState: ChessboardState, actionChess?: Chess): boolean {
-    const checkK = getKingChess(checkHost, chessboardState) as ChessK;
-
-    return chessboardState.getChesses()
-      .filter((chess) => chess.getHost() != checkHost)
-      .find((chess) => (
-        (actionChess == chess || chess.isFront())
-          && chess.canGoTo(checkK.getPos(), chessboardState, this.game)
-      )) != null;
+  judge(targetHost: ChessHost, chessboardState: ChessboardState): boolean {
+    const checkK = getKingChess(targetHost, chessboardState) as ChessK;
+    if (checkK == null || !checkK.isFront()) {
+      return false;
+    }
+    return chessboardState.getOtherChesses(targetHost).find((killer) => (
+      this.game.canGoTo(killer, checkK.getPos(), chessboardState)
+    )) != null;
   }
 
   /**
@@ -45,18 +43,12 @@ export default class CheckmateJudgement {
    */
   judgeDie(checkHost: ChessHost, chessboardState: ChessboardState): boolean {
     // 被将军方是否不存在有走一步之后打破将军情况的走法
-    return chessboardState.getChesses()
-      .filter((chess) => chess.getHost() == checkHost)
-      .find((chess) => {
-        const foundPoss = findChessGoPoss(chess, this.game, chessboardState);
-        return foundPoss.find((destPos) => {
-          const nextChessboardState = chessboardState.clone();
-          nextChessboardState.setChess(chess.getPos(), null);
-          const newChess = chess.clone();
-          newChess.setPos(destPos);
-          nextChessboardState.setChess(destPos, newChess);
-          return !this.judge(checkHost, nextChessboardState);
-        }) != null;
-      }) == null;
+    return chessboardState.getChesses(checkHost).find((chess) => {
+      const foundPoss = findChessGoPoss(chess, this.game, chessboardState);
+      return foundPoss.find((destPos) => {
+        const nextChessboardState = chessboardState.chessMovedClone(chess, destPos);
+        return !this.judge(checkHost, nextChessboardState);
+      }) != null;
+    }) == null;
   }
 }
