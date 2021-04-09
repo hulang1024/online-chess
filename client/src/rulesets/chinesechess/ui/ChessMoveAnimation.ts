@@ -28,7 +28,7 @@ export default class ChessMoveAnimation {
     // 总移动动画时长
     const duration = instant ? 0 : Math.max(150, stepDuration * steps);
     // 翻转动画时长
-    const flipDuration = 150;
+    const flipDuration = 150 + 50;
     // todo: 模块化揭棋代码
     // 是否需要翻转棋子
     const flip = !chess.isFront();
