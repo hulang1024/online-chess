@@ -19,14 +19,14 @@ export default class GoDisplay {
     if (!configManager.get(ConfigItem.chinesechessGoDisplay)) {
       return;
     }
-    this.clear();
-    const { chessboard, chessboardState } = this.game;
-    const otherChesses = chessboardState.getOtherChesses(originChess.getHost());
 
+    this.clear();
+
+    const { chessboard, chessboardState } = this.game;
     const isDangerPos = (testPos: ChessPos) => {
       const testChessboardState = chessboardState.chessMovedClone(originChess, testPos);
-      if (otherChesses.find((chess) => (
-        this.game.canGoTo(chess, testPos, testChessboardState))) != null) {
+      if (testChessboardState.getOtherChesses(originChess.getHost()).find((killer) => (
+        this.game.canGoTo(killer, testPos, testChessboardState))) != null) {
         return true;
       }
 
