@@ -321,6 +321,7 @@ export default defineComponent({
 
 .chess
   transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28)
+  z-index: unset
 
   &.active
     transform: scale(1.25)
