@@ -36,18 +36,18 @@
         <text-overlay
           ref="textOverlay"
           class="absolute-center"
-          style="z-index: 12;"
+          style="z-index: 513;"
         />
         <text-overlay
           v-if="[1, 3].includes(gameState) && gameStatus.text"
           visible
           :text="gameStatus.text"
           class="absolute-center"
-          style="z-index: 11;"
+          style="z-index: 512;"
         />
         <div
           class="absolute-center full-width"
-          style="position: absolute; top: calc(50% + 108px); z-index: 11;"
+          style="position: absolute; top: calc(50% + 108px); z-index: 512;"
         >
           <slot name="main-overlay" />
         </div>
@@ -55,7 +55,7 @@
           ref="resultDialog"
           :show-again="!viewUser.isRoomOwner"
           class="absolute-center"
-          style="z-index: 13;"
+          style="z-index: 513;"
         />
       </playfield>
       <div class="fixed-bottom-left">
@@ -189,18 +189,18 @@
         <text-overlay
           ref="textOverlay"
           class="absolute-center"
-          style="z-index: 12;"
+          style="z-index: 513;"
         />
         <text-overlay
           v-if="[1, 3].includes(gameState) && gameStatus.text"
           visible
           :text="gameStatus.text"
           class="absolute-center"
-          style="z-index: 11;"
+          style="z-index: 512;"
         />
         <div
           class="absolute-center full-width"
-          style="position: absolute; top: calc(50% + 88px); z-index: 11;"
+          style="position: absolute; top: calc(50% + 88px); z-index: 512;"
         >
           <slot name="main-overlay" />
         </div>
@@ -208,7 +208,7 @@
           ref="resultDialog"
           :show-again="!viewUser.isRoomOwner"
           class="absolute-center"
-          style="z-index: 13;"
+          style="z-index: 513;"
         />
         <div class="absolute-bottom-right">
           <div class="column justify-evenly q-gutter-y-sm">

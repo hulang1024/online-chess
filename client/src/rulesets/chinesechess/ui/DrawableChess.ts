@@ -117,16 +117,19 @@ export default class DrawableChess implements Chess {
     el.style.fontSize = `${radius + 4}px`;
     el.classList[radius <= 16 ? 'add' : 'remove']('smaller');
     const frontCircle = el.children[0].firstChild as HTMLDivElement;
-    const frontBordersideWidth = radius / 2 + 3;
-    frontCircle.style.top = `-${frontBordersideWidth / 2 - 3}px`;
-    frontCircle.style.width = `calc(100% - ${frontBordersideWidth}px)`;
-    frontCircle.style.height = `calc(100% - ${frontBordersideWidth}px)`;
+    const bordersideWidth = Math.min(18, radius * 0.7);
+    frontCircle.style.top = `-${radius * 0.18}px`;
+    frontCircle.style.width = `calc(100% - ${bordersideWidth}px)`;
+    frontCircle.style.height = `calc(100% - ${bordersideWidth}px)`;
     const backCircle = el.children[1].firstChild as HTMLDivElement;
-    const backBordersideWidth = radius / 2 - 1;
-    backCircle.style.top = `-${1.5}px`;
+    const backBordersideWidth = Math.round(radius * 0.5);
+    backCircle.style.top = `-${Math.round(radius * 0.1)}px`;
     backCircle.style.width = `calc(100% - ${backBordersideWidth}px)`;
     backCircle.style.height = `calc(100% - ${backBordersideWidth}px)`;
     this.radius = radius;
+
+    el.style.setProperty('--side-shadow-offset', `${bordersideWidth * 0.55}px`);
+    el.style.setProperty('--side-shadow-offset-overlay', `${bordersideWidth}px`);
   }
 
   public set x(val: number) {

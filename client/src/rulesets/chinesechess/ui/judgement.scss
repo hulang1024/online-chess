@@ -16,10 +16,8 @@
     transition: opacity 0.1s, transform .2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
     pointer-events: none;
     user-select: none;
-    z-index: 0;
 
     &.show {
-      z-index: 10;
       opacity: 1;
       transform: translate(-50%, -50%) scale(1);
     }
@@ -46,7 +44,7 @@
     z-index: 10000;
     width: 100%;
     height: 100%;
-    animation: animation-die-filter-flash 0.4s ease-out 1 forwards;
+    animation: animation-die-filter-flash 0.5s ease-out 1 forwards;
   }
 }
 

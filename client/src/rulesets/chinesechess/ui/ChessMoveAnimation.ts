@@ -1,6 +1,7 @@
 import TWEEN from "tween.ts";
 import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
+import ChineseChessDrawableChessboard from "./ChineseChessDrawableChessboard";
 import DrawableChess from "./DrawableChess";
 import GameAudio from "../../GameAudio";
 import ChessPos from "../rule/ChessPos";
@@ -11,6 +12,7 @@ function calcSteps(from: ChessPos, to: ChessPos) {
 
 export default class ChessMoveAnimation {
   public static make(
+    chessboard: ChineseChessDrawableChessboard,
     chess: DrawableChess,
     toPos: ChessPos,
     to: { x: number, y: number },
@@ -33,7 +35,7 @@ export default class ChessMoveAnimation {
     const stepDuration = flip ? 40 : 50;
     const steps = calcSteps(chess.getPos(), toPos);
     // 总移动动画时长
-    const duration = instant ? 0 : Math.max(stepDuration * 3, stepDuration * steps);
+    const duration = instant ? 0 : Math.min(250, Math.max(stepDuration * 3, stepDuration * steps));
     // 翻转动画时长
     const flipDuration = 150 + 50;
 
@@ -53,6 +55,7 @@ export default class ChessMoveAnimation {
             events.dropStart();
           }
           emited.dropStart = true;
+          chessboard.resetChessesZIndex();
           chess.el.classList.remove('overlay');
           if (enableAudio) {
             if (configManager.get(ConfigItem.chinesechessGameplayAudioEnabled)) {

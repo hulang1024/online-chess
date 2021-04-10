@@ -34,6 +34,8 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
 
   private font = new FontFace('founder-xin-kaiti', 'url(/fonts/FZXKJW.ttf)');
 
+  private chessZIndex = 0;
+
   constructor(stage: {width: number, height: number}, screen: any) {
     super();
 
@@ -433,6 +435,7 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
       this.chessPickupOrDrop.dispatch({ chess, isPickup: false });
     });
     this.chesses.push(chess);
+    chess.el.style.zIndex = (this.chessZIndex++).toString();
     this._el.appendChild(chess.el);
   }
 
@@ -442,6 +445,16 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
       this.el.removeChild(chess.el);
     });
     this.chesses = [];
+    this.chessZIndex = 5;
+  }
+
+  public resetChessesZIndex() {
+    this.chessZIndex = 5;
+    this.chesses.sort(
+      (a, b) => (a.getPos().row * 9 + a.getPos().col) - (b.getPos().row * 9 + b.getPos().col),
+    ).forEach((chess: DrawableChess) => {
+      chess.el.style.zIndex = (this.chessZIndex++).toString();
+    });
   }
 
   public chessAt(pos: ChessPos): DrawableChess | null {

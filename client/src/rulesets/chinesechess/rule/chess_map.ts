@@ -64,6 +64,11 @@ export function createIntialLayoutChessList(chessHost1: ChessHost, chessHost2: C
     new ChessS(new ChessPos(3, 6), chessHost1),
     new ChessS(new ChessPos(3, 8), chessHost1),
 
+    new ChessS(new ChessPos(6, 0), chessHost2),
+    new ChessS(new ChessPos(6, 2), chessHost2),
+    new ChessS(new ChessPos(6, 4), chessHost2),
+    new ChessS(new ChessPos(6, 6), chessHost2),
+    new ChessS(new ChessPos(6, 8), chessHost2),
     new ChessR(new ChessPos(9, 0), chessHost2),
     new ChessN(new ChessPos(9, 1), chessHost2),
     new ChessM(new ChessPos(9, 2), chessHost2),
@@ -75,10 +80,5 @@ export function createIntialLayoutChessList(chessHost1: ChessHost, chessHost2: C
     new ChessR(new ChessPos(9, 8), chessHost2),
     new ChessC(new ChessPos(7, 1), chessHost2),
     new ChessC(new ChessPos(7, 7), chessHost2),
-    new ChessS(new ChessPos(6, 0), chessHost2),
-    new ChessS(new ChessPos(6, 2), chessHost2),
-    new ChessS(new ChessPos(6, 4), chessHost2),
-    new ChessS(new ChessPos(6, 6), chessHost2),
-    new ChessS(new ChessPos(6, 8), chessHost2),
   ];
 }

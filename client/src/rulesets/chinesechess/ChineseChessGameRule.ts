@@ -101,6 +101,10 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     if (gameStates && gameStates.chesses) {
       // 把棋子放到棋盘上
       this.chessboard.clear();
+      if (this.viewChessHost == ChessHost.SECOND) {
+        // 反转之后才能有正确的z-index，否则棋子阴影会覆盖到其它棋子上
+        gameStates.chesses = gameStates.chesses.reverse();
+      }
       gameStates.chesses.forEach((stateChess: ResponseGameStateChess) => {
         let pos = new ChessPos(stateChess.row, stateChess.col);
         // 服务器保存数据默认视角是红方，如果当前视图是黑方位置就要反转下
@@ -252,6 +256,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     };
 
     ChessMoveAnimation.make(
+      chessboard,
       chess,
       convertedToPos,
       this.chessboard.calcChessDisplayPos(convertedToPos),
@@ -306,7 +311,8 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     // 清空棋盘
     this.chessboard.clear();
     // 改变位置重新加上去
-    chesses.forEach((chess) => {
+    // 注意这里使用reverse，保证增加棋子有正确的z-index顺序
+    chesses.reverse().forEach((chess) => {
       chess.setPos(ChessPos.reverseView(chess.getPos()));
       this.chessboard.addChess(chess);
     });
@@ -358,6 +364,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     // 动画移到之前的开始位置
     chess.setLit(false);
     ChessMoveAnimation.make(
+      this.chessboard,
       chess,
       fromPos,
       this.chessboard.calcChessDisplayPos(fromPos),
