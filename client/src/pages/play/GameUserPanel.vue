@@ -369,6 +369,13 @@ export default defineComponent({
       .timer
         border-radius: 6px
 
+  .emoji
+    font-size: 27px
+    span
+      top: 0px
+    &.show
+      opacity: 1
+      font-size: 54px
 .center
   &.absolute-right,
   &.absolute-left
