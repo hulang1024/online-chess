@@ -24,6 +24,7 @@
           v-show="spectatorCount > 0"
           flat
           class="q-px-sm q-py-sm"
+          :style="{background: $q.dark.isActive ? 'transparent' : 'rgba(255,255,255,0.3)'}"
         >
           <spectator-count-display :count="spectatorCount" />
         </q-card>
@@ -46,7 +47,7 @@
         />
         <div
           class="absolute-center full-width"
-          style="position: absolute; top: calc(50% + 88px); z-index: 11;"
+          style="position: absolute; top: calc(50% + 108px); z-index: 11;"
         >
           <slot name="main-overlay" />
         </div>

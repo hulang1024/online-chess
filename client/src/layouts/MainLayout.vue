@@ -1,6 +1,7 @@
 <template>
   <q-layout view="hHh lpR lFf">
     <q-header
+      v-show="!headerHide"
       :style="{background: $q.dark.isActive ? '#252525' : '#4f4f4f'}"
     >
       <toolbar ref="toolbar" />
@@ -21,8 +22,9 @@
 
 <script lang="ts">
 import {
-  defineComponent, getCurrentInstance, provide, ref,
+  defineComponent, getCurrentInstance, provide, ref, watch,
 } from '@vue/composition-api';
+import device from "current-device";
 import User from 'src/user/User';
 import SocialBrowserOverlay from 'src/overlays/social/SocialBrowserOverlay.vue';
 import RankingOverlay from 'src/overlays/ranking/RankingOverlay.vue';
@@ -69,7 +71,16 @@ export default defineComponent({
       (<any>$refs.toolbar).excludeToggle(name, active);
     });
 
+    const headerHide = ref(false);
+
+    watch(() => ctx.$route, () => {
+      // eslint-disable-next-line
+      headerHide.value = device.mobile()
+        && ['play', 'spectate'].includes(ctx.$router.currentRoute.name as string);
+    });
+
     return {
+      headerHide,
       isViewAlive,
 
       onPageClick,

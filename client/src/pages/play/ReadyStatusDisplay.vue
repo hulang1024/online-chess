@@ -4,10 +4,6 @@
     :style="{color: isReady ? '#8bc34a' : 'orange'}"
   >
     <span>
-      <q-icon
-        v-show="isReady"
-        name="check_circle"
-      />
       <span>{{ isReady ? '已准备' : '未准备' }}</span>
     </span>
   </div>

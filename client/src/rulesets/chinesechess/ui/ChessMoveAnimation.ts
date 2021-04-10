@@ -22,19 +22,20 @@ export default class ChessMoveAnimation {
     instant = false,
     enableAudio = true,
   ) {
-    // 移动一个格子的动画时长
-    const stepDuration = 50;
-    const steps = calcSteps(chess.getPos(), toPos);
-    // 总移动动画时长
-    const duration = instant ? 0 : Math.max(150, stepDuration * steps);
-    // 翻转动画时长
-    const flipDuration = 150 + 50;
     // todo: 模块化揭棋代码
     // 是否需要翻转棋子
     const flip = !chess.isFront();
     if (flip) {
       chess.drawFront();
     }
+
+    // 移动一个格子的动画时长
+    const stepDuration = flip ? 40 : 50;
+    const steps = calcSteps(chess.getPos(), toPos);
+    // 总移动动画时长
+    const duration = instant ? 0 : Math.max(stepDuration * 3, stepDuration * steps);
+    // 翻转动画时长
+    const flipDuration = 150 + 50;
 
     const emited = {
       dropStart: false,

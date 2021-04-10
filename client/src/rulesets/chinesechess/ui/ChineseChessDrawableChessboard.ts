@@ -378,7 +378,7 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
 
     // 根据网格宽度计算交叉点之间的距离
     let cellSize;
-    if ((narrow / 9) * 10 > stage.height) {
+    if (Math.floor((narrow / 9) * 10) > stage.height) {
       cellSize = narrow / 10;
     } else {
       cellSize = narrow / 9;

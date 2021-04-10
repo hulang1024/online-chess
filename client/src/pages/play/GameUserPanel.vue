@@ -11,9 +11,7 @@
         class="user-avatar-frame"
         :class="[
           {active},
-          $q.screen.xs
-            ? 'light'
-            : $q.dark.isActive ? 'light' : 'dark'
+          $q.dark.isActive ? 'light' : 'dark'
         ]"
         :blink="blinkState"
       >
@@ -25,7 +23,7 @@
             'shadow-2': !!user
           }"
           rounded
-          size="60px"
+          :size="$q.screen.xs ? '54px' : '60px'"
           @click="onUserAvatarClick"
         >
           <ready-status-display
@@ -54,7 +52,7 @@
           <span
             v-else-if="typing"
             class="typing"
-          >输入消息中</span>
+          >正在输入<br>消息</span>
         </div>
       </div>
       <div
@@ -356,16 +354,19 @@ export default defineComponent({
 
   .time-panel
     min-width: 140px
-    padding: 4px
-    background: rgba(0, 0, 0, 0.1)
-    border-radius: 4px
+    padding: 3px
+    background: rgba(100, 100, 100, 0.15)
+    box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.2)
+    border-radius: 6px
 
     .item
-
+      padding: 1px 0px
       &:not(.reversed)
         padding-left: 16px
       &.reversed
         padding-right: 16px
+      .timer
+        border-radius: 6px
 
 .center
   &.absolute-right,
@@ -379,7 +380,7 @@ export default defineComponent({
     box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.5)
   }
   50% {
-    box-shadow: 0px 0px 4px 5px rgba(255, 241, 118, 1)
+    box-shadow: 0px 0px 5px 6px rgba(255, 241, 118, 1)
   }
   100% {
     box-shadow: 0px 0px 1px 1px rgba(255, 241, 118, 0.5)
@@ -391,7 +392,7 @@ export default defineComponent({
     box-shadow: 0px 0px 1px 1px rgba(251, 192, 45, 0.3)
   }
   50% {
-    box-shadow: 0px 0px 4px 5px rgba(251, 192, 45, 1)
+    box-shadow: 0px 0px 5px 6px rgba(251, 192, 45, 1)
   }
   100% {
     box-shadow: 0px 0px 1px 1px rgba(251, 192, 45, 0.3)
