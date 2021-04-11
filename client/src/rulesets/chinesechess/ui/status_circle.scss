@@ -1,9 +1,13 @@
 .chinesechess-chessboard {
   .status-circle {
     position: absolute;
+    left: 0px;
+    top: 0px;
+    display: none;
     border-radius: 100%;
     border: 2px solid;
     opacity: 0;
+    transform: var(--pos-transform);
     transition: opacity 0.1s ease-out;
     animation-play-state: paused;
     z-index: 3;
@@ -11,6 +15,7 @@
     pointer-events: none;
 
     &.show {
+      display: block;
       opacity: 1;
     }
 
@@ -41,13 +46,13 @@
 
   @keyframes animation-status-circle {
     0% {
-      transform: scale(1);
+      transform: var(--pos-transform) scale(1);
     }
     50% {
-      transform: scale(1.2);
+      transform: var(--pos-transform)scale(1.2);
     }
     100% {
-      transform: scale(1);
+      transform: var(--pos-transform) scale(1);
     }
   }
 }

@@ -49,7 +49,6 @@ export default class DrawableChess implements Chess {
     this._el = el;
     const colorClass = this.chess.getHost() == ChessHost.FIRST ? 'red' : 'black';
     el.classList.add('chinesechess-chess', colorClass);
-    el.style.lineHeight = `${this.radius * 2}px`;
 
     const front = document.createElement('div');
     front.classList.add('side', 'front');
@@ -112,9 +111,7 @@ export default class DrawableChess implements Chess {
 
   public resizeAndDraw(radius: number) {
     const el = this._el;
-    el.style.width = `${radius * 2}px`;
-    el.style.height = `${radius * 2}px`;
-    el.style.fontSize = `${radius + 4}px`;
+    el.style.setProperty('--chess-radius', radius.toString());
     el.classList[radius <= 16 ? 'add' : 'remove']('smaller');
     const frontCircle = el.children[0].firstChild as HTMLDivElement;
     const bordersideWidth = Math.min(18, radius * 0.7);
@@ -128,21 +125,15 @@ export default class DrawableChess implements Chess {
     backCircle.style.height = `calc(100% - ${backBordersideWidth}px)`;
     this.radius = radius;
 
-    el.style.setProperty('--side-shadow-offset', `${bordersideWidth * 0.55}px`);
-    el.style.setProperty('--side-shadow-offset-overlay', `${bordersideWidth}px`);
+    el.style.setProperty('--side-shadow-offset', `${Math.round(bordersideWidth * 0.52)}px`);
+    el.style.setProperty('--side-shadow-offset-overlay', `${Math.round(bordersideWidth)}px`);
   }
 
-  public set x(val: number) {
-    this._el.style.left = `${Math.round(val - this.radius)}px`;
+  public setDisplayPos(x: number, y: number) {
+    x = Math.round(x - this.radius);
+    y = Math.round(y - this.radius);
+    this._el.style.setProperty('--pos-transform', `translate(${x}px, ${y}px)`);
   }
-
-  public get x() { return this._el.offsetLeft + this.radius; }
-
-  public set y(val: number) {
-    this._el.style.top = `${Math.round(val - this.radius)}px`;
-  }
-
-  public get y() { return this._el.offsetTop + this.radius; }
 
   public set selectable(val: boolean) {
     this._selectable = val;
@@ -155,10 +146,9 @@ export default class DrawableChess implements Chess {
   public get selectable() { return this._selectable; }
 
   public set selected(value: boolean) {
-    if (!this.selectable) {
+    if (!this.selectable || value == this._selected) {
       return;
     }
-    if (this._selected == value) return;
     this._selected = value;
     this._el.classList[value ? 'add' : 'remove']('selected');
   }

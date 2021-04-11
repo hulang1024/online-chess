@@ -30,8 +30,8 @@ export default class StatusCircle {
   public draw(status: ChessStatus, pos: ChessPos) {
     const { el } = this;
     const { x, y } = this.chessboard.calcChessDisplayPos(pos);
-    el.style.left = `${Math.round(x - this.radius)}px`;
-    el.style.top = `${Math.round(y - this.radius)}px`;
+    el.style.setProperty('--pos-transform',
+      `translate(${Math.round(x - this.radius)}px, ${Math.round(y - this.radius)}px)`);
     this.el.classList.remove('danger', 'eatable');
     this.el.classList.add(status == ChessStatus.danger ? 'danger' : 'eatable');
   }

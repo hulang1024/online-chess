@@ -29,7 +29,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
 
   public chessboardState: ChessboardState;
 
-  public checkmateJudgement: CheckmateJudgement;
+  public checkmateJudgement = new CheckmateJudgement(this);
 
   public chessStatusDisplay: ChessStatusDisplay;
 
@@ -124,8 +124,6 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       this.chessboard.clear();
       this.initChessLayout();
     }
-
-    this.checkmateJudgement = new CheckmateJudgement(this);
 
     this.chessboard.show();
 
@@ -259,7 +257,6 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       chessboard,
       chess,
       convertedToPos,
-      this.chessboard.calcChessDisplayPos(convertedToPos),
       {
         moveEnd: () => {
           this.chessboardState.setChess(chess.getPos(), null);
@@ -287,7 +284,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       },
       instant,
       !eatenChess && !isCheckmate,
-    ).start();
+    );
 
     this.turnActiveChessHost();
 
@@ -367,7 +364,6 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       this.chessboard,
       chess,
       fromPos,
-      this.chessboard.calcChessDisplayPos(fromPos),
       {
         dropEnd: () => {
           // 恢复之前的状态
@@ -417,7 +413,7 @@ export default class ChineseChessGameRule extends GameRule implements Game {
       },
       false,
       false,
-    ).start();
+    );
 
     this.withdrawEnabled.value = !this.historyRecorder.isEmpty();
   }

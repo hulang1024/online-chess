@@ -1,7 +1,6 @@
 import device from "current-device";
 import { onBeforeUnmount, onMounted } from "@vue/composition-api";
 import Signal from "src/utils/signals/Signal";
-import TweenAnimationUpdater from "src/rulesets/ui/TweenAnimationUpdater";
 import Ruleset from "src/rulesets/Ruleset";
 import DrawableChessboard from "src/rulesets/ui/DrawableChessboard";
 
@@ -65,11 +64,8 @@ export default class Playfield {
       });
     });
 
-    TweenAnimationUpdater.start();
-
     onBeforeUnmount(() => {
       this.chessboard.destroy();
-      TweenAnimationUpdater.stop();
       window.removeEventListener('resize', onReisze);
     });
   }

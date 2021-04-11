@@ -2,14 +2,20 @@ $side-shadow-color: rgb(0, 0, 0, 0.28);
 
 .chinesechess-chess {
   position: absolute;
+  left: 0px;
+  top: 0px;
   display: flex;
   justify-content: center;
   align-items: center;
   user-select: none;
   opacity: 1;
   z-index: 5;
+  width: calc(var(--chess-radius) * 2px);
+  height: calc(var(--chess-radius) * 2px);
+  font-size: calc(var(--chess-radius) * 1px + 4px);
   cursor: default;
-  transition: transform 0.05s, box-shadow 0.05s ease-out;
+  transform: var(--pos-transform);
+  transition: transform var(--transform-duration, 0.05s) var(--transform-timing-function, ease-out);
 
   &.red {
     color: var(--first-color);
@@ -21,15 +27,19 @@ $side-shadow-color: rgb(0, 0, 0, 0.28);
     border-color: var(--second-color);
   }
 
+  &.selected {
+    transition: transform 0.05s ease-out;
+  }
+
   &.selected,
   &.overlay {
     z-index: 37 !important;
-    transform: scale(1.2);
+    transform: var(--pos-transform) scale(1.2) !important;
     > .side {
       box-shadow:
         var(--side-shadow-offset-overlay, 12px)
         var(--side-shadow-offset-overlay, 16px)
-        2px -5px var(--side-shadow-color, $side-shadow-color);
+        3px -5px var(--side-shadow-color, $side-shadow-color);
     }
   }
 
@@ -80,7 +90,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.28);
     box-shadow:
       var(--side-shadow-offset, 6px)
       var(--side-shadow-offset, 6px)
-      2px 0px var(--side-shadow-color, $side-shadow-color);
+      3px 0px var(--side-shadow-color, $side-shadow-color);
     filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.1));
     backface-visibility: hidden; 
     transform-style: preserve-3d;

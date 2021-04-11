@@ -37,18 +37,25 @@ export default class GoDisplay {
 
       return false;
     };
-    findChessGoPoss(originChess, this.game, chessboardState).forEach((pos) => {
-      const goPoint = new GoPoint(pos, isDangerPos(pos), chessboard);
-      chessboard.el.appendChild(goPoint.el);
-      this.goPoints.push(goPoint);
-    });
+
+    setTimeout(() => {
+      const goPoints = document.createDocumentFragment();
+      findChessGoPoss(originChess, this.game, chessboardState).forEach((pos) => {
+        const goPoint = new GoPoint(pos, isDangerPos(pos), chessboard);
+        goPoints.appendChild(goPoint.el);
+        this.goPoints.push(goPoint);
+      });
+      chessboard.el.appendChild(goPoints);
+    }, 0);
   }
 
   public clear() {
-    this.goPoints.forEach((goPoint) => {
-      if (goPoint.el.parentElement) {
-        goPoint.el.parentElement.removeChild(goPoint.el);
-      }
-    });
+    setTimeout(() => {
+      this.goPoints.forEach((goPoint) => {
+        if (goPoint.el.parentElement) {
+          goPoint.el.parentElement.removeChild(goPoint.el);
+        }
+      });
+    }, 0);
   }
 }

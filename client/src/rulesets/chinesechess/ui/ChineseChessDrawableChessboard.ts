@@ -88,8 +88,7 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
     this.chesses.forEach((chess: DrawableChess) => {
       chess.resizeAndDraw(this.bounds.chessRadius);
       const { x, y } = this.calcChessDisplayPos(chess.getPos());
-      chess.x = x;
-      chess.y = y;
+      chess.setDisplayPos(x, y);
     });
   }
 
@@ -418,8 +417,7 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
   public addChess(chess: DrawableChess) {
     this.chessboardState.setChess(chess.getPos(), chess.chess);
     const { x, y } = this.calcChessDisplayPos(chess.getPos());
-    chess.x = x;
-    chess.y = y;
+    chess.setDisplayPos(x, y);
 
     chess.clicked.removeAll();
     chess.pickup.removeAll();

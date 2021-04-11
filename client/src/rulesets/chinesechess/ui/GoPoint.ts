@@ -15,8 +15,7 @@ export default class GoPoint {
     el.style.width = `${size}px`;
     el.style.height = `${size}px`;
     const { x, y } = chessboard.calcChessDisplayPos(pos);
-    el.style.left = `${x - radius}px`;
-    el.style.top = `${y - radius}px`;
+    el.style.transform = `translate(${x - radius}px, ${y - radius}px)`;
     this.el = el;
   }
 }

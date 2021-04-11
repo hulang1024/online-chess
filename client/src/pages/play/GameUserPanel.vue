@@ -320,6 +320,7 @@ export default defineComponent({
         font-weight: 500
 
 .chess
+  left: unset
   transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28)
   z-index: unset
 

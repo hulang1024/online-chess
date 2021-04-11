@@ -1,4 +1,3 @@
-import TWEEN from "tween.ts";
 import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
 import ChineseChessDrawableChessboard from "./ChineseChessDrawableChessboard";
@@ -15,7 +14,6 @@ export default class ChessMoveAnimation {
     chessboard: ChineseChessDrawableChessboard,
     chess: DrawableChess,
     toPos: ChessPos,
-    to: { x: number, y: number },
     events: {
       moveEnd?: (() => void) | null,
       dropStart?: (() => void) | null,
@@ -32,10 +30,11 @@ export default class ChessMoveAnimation {
     }
 
     // 移动一个格子的动画时长
-    const stepDuration = flip ? 40 : 50;
+    const stepDuration = 40;
     const steps = calcSteps(chess.getPos(), toPos);
     // 总移动动画时长
-    const duration = instant ? 0 : Math.min(250, Math.max(stepDuration * 3, stepDuration * steps));
+    const duration = instant ? 0
+      : Math.min(stepDuration * 5, Math.max(stepDuration * 3, stepDuration * steps));
     // 翻转动画时长
     const flipDuration = 150 + 50;
 
@@ -80,12 +79,20 @@ export default class ChessMoveAnimation {
     // 额外的setTimeout代码，是解决浏览器后台会暂停动画，导致回调不能及时执行，累积状态错误
     setTimeout(() => {
       onComplete();
-    }, duration);
+    }, duration + 100);
 
     chess.el.classList.add('overlay');
-    return new TWEEN.Tween(chess)
-      .to(to, duration)
-      .easing(TWEEN.Easing.Cubic.Out)
-      .onComplete(onComplete);
+    chess.el.style.setProperty('--transform-timing-function', 'cubic-bezier(0.22, 0.61, 0.36, 1)');
+    chess.el.style.setProperty('--transform-duration', `${duration}ms`);
+    const { x, y } = chessboard.calcChessDisplayPos(toPos);
+    chess.setDisplayPos(x, y);
+    chess.el.ontransitionend = (event: TransitionEvent) => {
+      if (event.propertyName == 'transform') {
+        chess.el.style.removeProperty('--transform-timing-function');
+        chess.el.style.removeProperty('--transform-duration');
+        onComplete();
+        chess.el.ontransitionend = null;
+      }
+    };
   }
 }
