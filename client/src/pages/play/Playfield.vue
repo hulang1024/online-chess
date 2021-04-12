@@ -10,5 +10,6 @@ export default {};
 
 <style lang="sass" scoped>
 .playfield
+  width: 100%
   flex-grow: 1
 </style>

@@ -1,8 +1,13 @@
 .chinesechess-chessboard.theme-default {
-  background: #8b5338;
+  background: radial-gradient(closest-corner, #ebccad, #e3bd96, #e3bd96);
+  box-shadow:
+    0px var(--thickness, 4px) 0px 0px #a47546,
+    1px 0px 0px 0px #d08f4e,
+    -1px 0px 0px 0px #d08f4e,
+    0px -1px 0px 0px #d4995e,
+    0px var(--thickness, 4px) 10px 0px rgba(40, 40, 40, 0.4);
 
   > canvas {
-    background: radial-gradient(farthest-corner, #ebccad, #e3bd96, #e3bd96);
-    box-shadow: 0px 1px 1px 1px rgb(0, 0, 0, 0.1);
+    background: transparent;
   }
 }

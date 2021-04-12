@@ -1,4 +1,4 @@
-$side-shadow-color: rgb(0, 0, 0, 0.28);
+$side-shadow-color: rgb(0, 0, 0, 0.3);
 
 .chinesechess-chess {
   position: absolute;
@@ -12,7 +12,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.28);
   z-index: 5;
   width: calc(var(--chess-radius) * 2px);
   height: calc(var(--chess-radius) * 2px);
-  font-size: calc(var(--chess-radius) * 1px + 4px);
+  font-size: calc(var(--chess-radius) * 1px + 2px);
   cursor: default;
   transform: var(--pos-transform);
   transition: transform var(--transform-duration, 0.05s) var(--transform-timing-function, ease-out);
@@ -39,7 +39,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.28);
       box-shadow:
         var(--side-shadow-offset-overlay, 12px)
         var(--side-shadow-offset-overlay, 16px)
-        3px -5px var(--side-shadow-color, $side-shadow-color);
+        4px -5px var(--side-shadow-color, $side-shadow-color);
     }
   }
 
@@ -90,7 +90,7 @@ $side-shadow-color: rgb(0, 0, 0, 0.28);
     box-shadow:
       var(--side-shadow-offset, 6px)
       var(--side-shadow-offset, 6px)
-      3px 0px var(--side-shadow-color, $side-shadow-color);
+      4px 0px var(--side-shadow-color, $side-shadow-color);
     filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.1));
     backface-visibility: hidden; 
     transform-style: preserve-3d;

@@ -1,5 +1,5 @@
 <template>
-  <div :class="['room-user row items-center', reverse && 'reverse']">
+  <div :class="['room-user row items-center no-wrap', reverse && 'reverse']">
     <span
       class="nickname ellipsis"
       :class="reverse ? 'text-left' : 'text-right'"

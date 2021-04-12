@@ -28,7 +28,7 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
 
   private canvas: HTMLCanvasElement;
 
-  private readonly padding = 4;
+  private readonly padding = 0;
 
   private chesses: DrawableChess[] = [];
 
@@ -365,6 +365,9 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
       context.fillText('楚 河', grid.x + grid.cellSize * 1.8, y);
       context.fillText('汉 界', canvasBounds.width - grid.x - grid.cellSize * 1.8, y);
     });
+
+    // eslint-disable-next-line
+    this.el.style.setProperty('--thickness', `${canvasBounds.width <= 360 ? 4 : 6}px`);
   }
 
   private calcBounds(stage: {width: number, height: number}, screen: any) {
@@ -373,6 +376,11 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
     // 计算匹配屏幕的画布的宽度
     let narrow = Math.min(stage.width, stage.height);
     narrow -= this.padding * 2;
+    // eslint-disable-next-line
+    if (screen.xs) {
+      const margin = 8;
+      narrow -= margin;
+    }
     if (narrow < MIN_SIZE) {
       narrow = MIN_SIZE;
     }
@@ -387,7 +395,7 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
 
     // 棋子宽度稍小于交叉点距离
     // eslint-disable-next-line
-    const chessGap = screen.xs ? 4 : 10;
+    const chessGap = screen.xs ? 4 : 8;
     const chessSize = cellSize - chessGap;
     // 最侧边的棋子需要占据半个位置
     const gridMargin = cellSize / 2;
@@ -465,7 +473,7 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
 
   public calcChessDisplayPos(pos: ChessPos) {
     const { grid } = this.bounds;
-    const paddingOffset = this.padding / 2 + 1.5;
+    const paddingOffset = this.padding / 2 - 1.5;
     const x = grid.x + paddingOffset + pos.col * grid.cellSize;
     const y = grid.y + paddingOffset + pos.row * grid.cellSize;
     return { x, y };
