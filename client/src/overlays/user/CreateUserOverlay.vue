@@ -8,7 +8,7 @@
     >
       <q-form
         ref="form"
-        class="q-gutter-md"
+        class="q-gutter-xs"
       >
         <q-input
           v-model="username"
@@ -18,7 +18,6 @@
           lazy-rules
           :rules="[ val => val.length || '' ]"
         />
-
         <q-input
           v-model="password"
           type="password"
@@ -29,7 +28,7 @@
           :rules="[ val => val.length || '' ]"
         />
 
-        <div class="q-gutter-y-md">
+        <div class="q-pt-md q-gutter-y-lg">
           <u-button
             label="注册"
             color="positive"

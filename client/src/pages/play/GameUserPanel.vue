@@ -1,7 +1,7 @@
 <template>
   <div
     class="game-user-panel column no-wrap"
-    :class="[$q.screen.xs && 'xs-screen', {active}]"
+    :class="[$q.platform.is.mobile && 'xs-screen', {active}]"
   >
     <div
       class="row justify-between avatar-time-row no-wra"
@@ -23,7 +23,7 @@
             'shadow-2': !!user
           }"
           rounded
-          :size="$q.screen.xs ? '54px' : '60px'"
+          :size="$q.platform.is.mobile ? '54px' : '60px'"
           @click="onUserAvatarClick"
         >
           <ready-status-display
@@ -58,17 +58,17 @@
       <div
         v-show="user"
         class="column time-panel"
-        :class="[$q.screen.xs && `q-m${reverse ? 'r' : 'l'}-sm`]"
+        :class="[$q.platform.is.mobile && `q-m${reverse ? 'r' : 'l'}-sm`]"
       >
-        <div :class="['row item', {[$q.screen.xs ? 'reversed' : 'reverse']: reverse}]">
+        <div :class="['row item', {[$q.platform.is.mobile ? 'reversed' : 'reverse']: reverse}]">
           <span class="label">步时</span>
           <timer ref="stepTimer" />
         </div>
-        <div :class="['row item', {[$q.screen.xs ? 'reversed' : 'reverse']: reverse}]">
+        <div :class="['row item', {[$q.platform.is.mobile ? 'reversed' : 'reverse']: reverse}]">
           <span class="label">局时</span>
           <timer ref="gameTimer" lazy />
         </div>
-        <template v-if="$q.screen.xs">
+        <template v-if="$q.platform.is.mobile">
           <!-- todo: 消除硬编码 -->
           <chess-king-icon
             v-if="[1, 3].includes(gameType)"
@@ -92,13 +92,13 @@
       :class="{reverse}"
     >
       <div
-        v-if="!$q.screen.xs"
+        v-if="!$q.platform.is.mobile"
         class="nickname ellipsis"
         :style="{textAlign: reverse ? 'right' : 'left'}"
       >
         {{ user && user.nickname }}
       </div>
-      <template v-if="user && !$q.screen.xs">
+      <template v-if="user && !$q.platform.is.mobile">
         <!-- todo: 消除硬编码 -->
         <chess-king-icon
           v-if="[1, 3].includes(gameType)"

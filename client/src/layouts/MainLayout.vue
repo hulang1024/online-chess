@@ -24,7 +24,6 @@
 import {
   defineComponent, getCurrentInstance, provide, ref, watch,
 } from '@vue/composition-api';
-import device from "current-device";
 import User from 'src/user/User';
 import SocialBrowserOverlay from 'src/overlays/social/SocialBrowserOverlay.vue';
 import RankingOverlay from 'src/overlays/ranking/RankingOverlay.vue';
@@ -75,7 +74,7 @@ export default defineComponent({
 
     watch(() => ctx.$route, () => {
       // eslint-disable-next-line
-      headerHide.value = device.mobile()
+      headerHide.value = ctx.$q.platform.is.mobile
         && ['play', 'spectate'].includes(ctx.$router.currentRoute.name as string);
     });
 

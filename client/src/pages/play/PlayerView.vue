@@ -2,11 +2,11 @@
   <q-page
     :class="[
       'play',
-      isXSScreen ? 'xs-screen' : 'row items-center q-pl-sm',
+      $q.platform.is.mobile ? 'xs-screen' : 'row items-center',
       $q.dark.isActive && 'dark'
     ]"
   >
-    <template v-if="isXSScreen">
+    <template v-if="$q.platform.is.mobile">
       <game-user-panel
         ref="otherGameUserPanel"
         v-bind="otherUser"
@@ -335,8 +335,7 @@
 
 <script lang="ts">
 import {
-  computed,
-  defineComponent, getCurrentInstance, PropType,
+  computed, defineComponent, PropType,
 } from '@vue/composition-api';
 import GameState from 'src/online/play/GameState';
 import Room from 'src/online/room/Room';
@@ -419,8 +418,6 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
-    const context = getCurrentInstance() as Vue;
-    const isXSScreen = context.$q.screen.xs;
     const { gameSettings } = props.room.roomSettings;
     const { gameType } = gameSettings;
 
@@ -478,7 +475,6 @@ export default defineComponent({
     };
 
     return {
-      isXSScreen,
       gameType,
       GAME_TYPE_MAP,
       isPlaying,

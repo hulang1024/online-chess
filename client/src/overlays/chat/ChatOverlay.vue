@@ -23,7 +23,7 @@
           :key="channel.name"
           :name="getChannelTabName(channel)"
           no-caps
-          :class="[$q.screen.xs && 'mobile']"
+          :class="[$q.platform.is.mobile && 'mobile']"
         >
           <user-avatar
             v-if="channel.type == 3"
@@ -35,7 +35,7 @@
             v-if="channel.id != 1 && channel.type != 2"
             name="close"
             class="close-tab-btn q-pl-sm"
-            :class="$q.screen.xs && 'mobile'"
+            :class="$q.platform.is.mobile && 'mobile'"
             @click.stop="onCloseClick(channel)"
           />
           <q-badge
@@ -182,7 +182,8 @@ export default defineComponent({
       channel.pendingMessageResolved.add((echo: Message, final: Message) => {
         updateUnreadCounts();
         if (channel.type == ChannelType.ROOM
-          && ctx.$q.screen.xs
+          // eslint-disable-next-line
+          && ctx.$q.platform.is.mobile
           && ctx.$router.currentRoute.name == 'play'
           && (final.content.length <= 4 && existsEmoji(final.content))
           && (new Date().getTime() - final.timestamp) < 5000) {

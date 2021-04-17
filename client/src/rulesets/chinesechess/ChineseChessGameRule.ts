@@ -68,13 +68,12 @@ export default class ChineseChessGameRule extends GameRule implements Game {
     playfield.el.appendChild(this.drawableCheckmateJudgement.el);
 
     if (this.enableOutsideChessPanel) {
-      const { screen } = playfield.context.$q;
       this.localOutsideChessPanel = new OutsideChessPanel(
-        OutsideChessPanelType.local, this.chessboard.bounds, screen,
+        OutsideChessPanelType.local, this.chessboard.bounds, playfield,
       );
       playfield.el.appendChild(this.localOutsideChessPanel.el);
       this.otherOutsideChessPanel = new OutsideChessPanel(
-        OutsideChessPanelType.other, this.chessboard.bounds, screen,
+        OutsideChessPanelType.other, this.chessboard.bounds, playfield,
       );
       playfield.el.insertBefore(this.otherOutsideChessPanel.el, this.chessboard.el);
     }

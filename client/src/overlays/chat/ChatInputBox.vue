@@ -105,7 +105,8 @@ export default defineComponent({
 
     const onEmojiSelect = (emoji: string) => {
       messageText.value += emoji;
-      if (!context.$q.screen.xs) {
+      // eslint-disable-next-line
+      if (!context.$q.platform.is.mobile) {
         context.$nextTick(() => {
           // eslint-disable-next-line
           (context.$refs.messageInput as any).focus();

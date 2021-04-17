@@ -345,7 +345,7 @@ export default class ChineseChessDrawableChessboard extends DrawableChessboard {
         const x = grid.x + c * grid.cellSize;
         fillNoText(c + 1, !this.hanNumberInBottom,
           x, grid.y / 2 - padding / 2);
-        fillNoText(c + 1, this.hanNumberInBottom,
+        fillNoText(9 - c, this.hanNumberInBottom,
           x, canvasBounds.height - grid.y / 2 + padding - context.lineWidth / 2);
       }
     }

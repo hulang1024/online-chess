@@ -1,4 +1,3 @@
-import device from "current-device";
 import { onBeforeUnmount, onMounted } from "@vue/composition-api";
 import Signal from "src/utils/signals/Signal";
 import Ruleset from "src/rulesets/Ruleset";
@@ -19,20 +18,21 @@ export default class Playfield {
 
   constructor(context: Vue, ruleset: Ruleset) {
     this.context = context;
-    const isXSScreen = context.$q.screen.xs;
+    // eslint-disable-next-line
+    const isMobile = context.$q.platform.is.mobile;
 
     let onReisze: () => void;
     onMounted(() => {
       const pageEl = context.$el as HTMLElement;
       const recalcPlayfieldSize = () => {
         let width = pageEl?.offsetWidth || 0;
-        if (!isXSScreen) {
+        if (!isMobile) {
           width -= 56 * 2 + 24;
           // eslint-disable-next-line
           width -= ((context.$refs.playerView as Vue).$refs.controls as any).offsetWidth + 8;
         }
         let height = (pageEl?.parentElement?.offsetHeight || 0);
-        if (isXSScreen) {
+        if (isMobile) {
           const userCardHeight = 62;
           height -= userCardHeight * 2;
         } else {
@@ -53,7 +53,7 @@ export default class Playfield {
 
       window.addEventListener('resize', onReisze = () => {
         // eslint-disable-next-line
-        if (device.mobile()) {
+        if (isMobile) {
           // 可能包括是移动端键盘弹出导致的resize
           return;
         }

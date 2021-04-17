@@ -114,7 +114,7 @@ export default class DrawableChess implements Chess {
     el.style.setProperty('--chess-radius', radius.toString());
     el.classList[radius <= 16 ? 'add' : 'remove']('smaller');
     const frontCircle = el.children[0].firstChild as HTMLDivElement;
-    const bordersideWidth = Math.min(18, radius * 0.7);
+    const bordersideWidth = Math.min(17, radius * 0.7);
     frontCircle.style.top = `-${radius * 0.18}px`;
     frontCircle.style.width = `calc(100% - ${bordersideWidth}px)`;
     frontCircle.style.height = `calc(100% - ${bordersideWidth}px)`;
@@ -125,7 +125,7 @@ export default class DrawableChess implements Chess {
     backCircle.style.height = `calc(100% - ${backBordersideWidth}px)`;
     this.radius = radius;
 
-    el.style.setProperty('--side-shadow-offset', `${Math.round(bordersideWidth * 0.52)}px`);
+    el.style.setProperty('--side-shadow-offset', `${Math.round(bordersideWidth * 0.53)}px`);
     el.style.setProperty('--side-shadow-offset-overlay', `${Math.round(bordersideWidth)}px`);
   }
 

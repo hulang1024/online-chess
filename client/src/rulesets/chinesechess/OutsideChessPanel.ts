@@ -1,3 +1,4 @@
+import Playfield from 'src/pages/play/Playfield';
 import Chess from './rule/Chess';
 import DrawableChess from './ui/DrawableChess';
 import { ChessboardBounds } from './ui/ChineseChessDrawableChessboard';
@@ -23,9 +24,10 @@ export default class OutsideChessPanel {
 
   private radius: number;
 
-  constructor(type: OutsideChessPanelType, chessboardBounds: ChessboardBounds, screen: any) {
+  constructor(type: OutsideChessPanelType,
+    chessboardBounds: ChessboardBounds, playfield: Playfield) {
     // eslint-disable-next-line
-    this.flexDir = screen.xs ? 'row' : 'column';
+    this.flexDir = playfield.context.$q.platform.is.mobile ? 'row' : 'column';
     this.el.classList.add(
       'outside-chess-panel',
       type == OutsideChessPanelType.local ? 'local' : 'other',

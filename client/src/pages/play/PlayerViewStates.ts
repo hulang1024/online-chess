@@ -16,7 +16,8 @@ export function usePlayerStates(player: Player) {
   const context = getCurrentInstance() as Vue;
 
   // 有些元素随窗口尺寸变化无法实现，因此在初始时就确定屏幕大小
-  const isXSScreen = context.$q.screen.xs;
+  // eslint-disable-next-line
+  const isXSScreen = context.$q.platform.is.mobile as boolean;
 
   const gameState: Ref<GameState> = createBoundRef(player.gameState);
 

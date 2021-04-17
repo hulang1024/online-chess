@@ -9,7 +9,7 @@
     >
       <q-form
         ref="form"
-        class="q-gutter-md"
+        class="q-gutter-xs"
       >
         <q-input
           v-model="username"
@@ -34,7 +34,7 @@
           label="保持登录"
         />
 
-        <div class="q-gutter-y-md">
+        <div class="q-pt-md q-gutter-y-lg">
           <u-button
             label="登录"
             color="primary"
