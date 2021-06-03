@@ -63,6 +63,14 @@
           :max="100"
           label
         />
+
+        <div class="version absolute-bottom text-center q-py-sm">
+          <a
+            class="link"
+            target="_blank"
+            href="https://github.com/hulang1024/online-chess"
+          >Github Repository</a>
+        </div>
       </div>
     </div>
   </q-drawer>
@@ -188,4 +196,16 @@ export default defineComponent({
       align-items: center
     .q-slider
       width: calc(100% - 16px)
+
+  .version
+    font-family: TnT, Meiryo, sans-serif
+
+    .link
+      text-decoration: none
+      color: inherit
+      opacity: 0.7
+      font-style: italic
+
+      &:hover
+        opacity: 1
 </style>
