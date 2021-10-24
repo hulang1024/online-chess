@@ -1,8 +1,8 @@
 package io.github.hulang1024.chess.games.reversi;
 
 import io.github.hulang1024.chess.games.Game;
+import io.github.hulang1024.chess.games.GameContext;
 import io.github.hulang1024.chess.games.GameStatesResponse;
-import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.games.reversi.rule.ChessboardState;
 import lombok.Getter;
 
@@ -17,8 +17,8 @@ public class ReversiGame extends Game {
     @Getter
     private ChessboardState chessboardState = new ChessboardState();
 
-    public ReversiGame(ReversiGameSettings gameSettings) {
-        super(gameSettings);
+    public ReversiGame(GameContext context) {
+        super(context);
     }
 
     public void putChess(ChessAction action) {
@@ -53,10 +53,10 @@ public class ReversiGame extends Game {
         List<ReversiGameplayStatesResponse.Chess> chesses = new ArrayList<>();
         for (int r = 0; r < chessboardState.getSize(); r++) {
             for (int c = 0; c < chessboardState.getSize(); c++) {
-                ChessHost chess = chessboardState.chessAt(r, c);
-                if (chess != null) {
+                int chess = chessboardState.chessAt(r, c);
+                if (chess != 0) {
                     ReversiGameplayStatesResponse.Chess sChess = new ReversiGameplayStatesResponse.Chess();
-                    sChess.setType(chess.code());
+                    sChess.setType(chess);
                     sChess.setRow(r);
                     sChess.setCol(c);
                     chesses.add(sChess);

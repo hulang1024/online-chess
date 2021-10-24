@@ -3,8 +3,6 @@ import Room from "src/online/room/Room";
 export default interface ResponseGameStates {
   room: Room | null;
   activeChessHost: number;
-  firstTimer: ResponseGameStateTimer;
-  secondTimer: ResponseGameStateTimer;
 }
 
 export interface ResponseChessPos {

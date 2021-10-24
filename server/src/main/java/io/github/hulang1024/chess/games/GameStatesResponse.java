@@ -7,6 +7,4 @@ import lombok.Data;
 public class GameStatesResponse {
     private Room room;
     private Integer activeChessHost;
-    private GameTimer firstTimer;
-    private GameTimer secondTimer;
 }

@@ -6,13 +6,13 @@ import lombok.Data;
 
 @Data
 public class GameOverServerMsg extends ServerMessage {
-    private Long winUserId;
+    private int winHost;
 
     private int cause;
 
-    public GameOverServerMsg(Long winUserId, GameOverCause cause) {
+    public GameOverServerMsg(int winHost, GameOverCause cause) {
       super("play.game_over");
-      this.winUserId = winUserId;
+      this.winHost = winHost;
       this.cause = cause.code();
     }
 }

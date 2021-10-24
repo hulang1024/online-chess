@@ -4,9 +4,9 @@ import com.alibaba.fastjson.annotation.JSONField;
 import io.github.hulang1024.chess.chat.Channel;
 import io.github.hulang1024.chess.chat.ChannelManager;
 import io.github.hulang1024.chess.games.Game;
+import io.github.hulang1024.chess.games.GameRuleset;
 import io.github.hulang1024.chess.games.GameSettings;
 import io.github.hulang1024.chess.games.GameUser;
-import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.user.User;
 import io.github.hulang1024.chess.user.UserManager;
 import lombok.Data;
@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 
 @Data
@@ -38,6 +39,8 @@ public class Room {
 
     @JSONField(serialize = false)
     private GameSettings gameSettings;
+
+    private GameRuleset ruleset;
 
     @JSONField(serialize = false)
     private Game game;
@@ -71,7 +74,8 @@ public class Room {
 
     private RoomSettings roomSettings;
 
-    public Room(ChannelManager channelManager, UserManager userManager) {
+    public Room(GameRuleset gameRuleset, ChannelManager channelManager, UserManager userManager) {
+        this.ruleset = gameRuleset;
         this.channelManager = channelManager;
         this.userManager = userManager;
     }
@@ -82,15 +86,12 @@ public class Room {
         joinedUser.setUser(user);
         joinedUser.setReady(user.equals(owner));
         joinedUser.setRoomOwner(user.equals(owner));
-
-        joinedUser.setChess(getUserCount() == 0
-            ? ChessHost.FIRST
-            : gameUsers.get(0).getChess().reverse());
+        ruleset.onJoin(this, joinedUser);
         gameUsers.add(joinedUser);
 
         channelManager.joinChannel(channel, user);
 
-        status = getUserCount() < 2 ? RoomStatus.OPEN : RoomStatus.BEGINNING;
+        status = isFull() ? RoomStatus.BEGINNING : RoomStatus.OPEN;
     }
 
     public void partUser(User user) {
@@ -121,7 +122,7 @@ public class Room {
 
     @JSONField(serialize = false)
     public boolean isFull() {
-        return getUserCount() == 2;
+        return getUserCount() == ruleset.getFullPlayerNumber();
     }
 
     @JSONField(serialize = false)
@@ -141,6 +142,12 @@ public class Room {
         return gameUsers.stream()
             .filter((u) -> !u.getUser().equals(user))
             .findFirst().get();
+    }
+
+    @JSONField(serialize = false)
+    public Stream<GameUser> getOtherUsers(User user) {
+        return gameUsers.stream()
+            .filter((u) -> !u.getUser().equals(user));
     }
 
     public int getSpectatorCount() {

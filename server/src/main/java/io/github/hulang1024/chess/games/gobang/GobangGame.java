@@ -1,8 +1,8 @@
 package io.github.hulang1024.chess.games.gobang;
 
 import io.github.hulang1024.chess.games.Game;
+import io.github.hulang1024.chess.games.GameContext;
 import io.github.hulang1024.chess.games.GameStatesResponse;
-import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.games.gobang.rule.ChessboardState;
 import lombok.Getter;
 
@@ -17,12 +17,13 @@ public class GobangGame extends Game {
     @Getter
     private ChessboardState chessboardState;
 
-    public GobangGame(GobangGameSettings gameSettings) {
-        super(gameSettings);
-        if (gameSettings == null) {
-            gameSettings = new GobangGameSettings();
+    public GobangGame(GameContext context) {
+        super(context);
+
+        if (context.getGameSettings() == null) {
+            context.setGameSettings(new GobangGameSettings());
         }
-        chessboardState = new ChessboardState(gameSettings.getChessboardSize());
+        chessboardState = new ChessboardState(((GobangGameSettings)getGameSettings()).getChessboardSize());
     }
 
     public void putChess(ChessAction action) {
@@ -39,7 +40,7 @@ public class GobangGame extends Game {
             return;
         }
         ChessAction lastAction = actionStack.pop();
-        chessboardState.setChess(lastAction.getPos(), null);
+        chessboardState.setChess(lastAction.getPos(), 0);
 
         turnActiveChessHost();
     }
@@ -61,10 +62,10 @@ public class GobangGame extends Game {
         List<GobangGameplayStatesResponse.Chess> chesses = new ArrayList<>();
         for (int r = 0; r < chessboardState.getSize(); r++) {
             for (int c = 0; c < chessboardState.getSize(); c++) {
-                ChessHost chess = chessboardState.chessAt(r, c);
-                if (chess != null) {
+                int chess = chessboardState.chessAt(r, c);
+                if (chess != 0) {
                     GobangGameplayStatesResponse.Chess sChess = new GobangGameplayStatesResponse.Chess();
-                    sChess.setType(chess.code());
+                    sChess.setType(chess);
                     sChess.setRow(r);
                     sChess.setCol(c);
                     chesses.add(sChess);

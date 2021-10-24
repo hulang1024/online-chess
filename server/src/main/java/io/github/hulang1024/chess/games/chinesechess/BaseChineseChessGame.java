@@ -1,9 +1,8 @@
 package io.github.hulang1024.chess.games.chinesechess;
 
 import io.github.hulang1024.chess.games.Game;
-import io.github.hulang1024.chess.games.GameSettings;
+import io.github.hulang1024.chess.games.GameContext;
 import io.github.hulang1024.chess.games.GameStatesResponse;
-import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.games.chinesechess.rule.Chess;
 import io.github.hulang1024.chess.games.chinesechess.rule.ChessboardState;
 import lombok.Getter;
@@ -19,8 +18,8 @@ public class BaseChineseChessGame extends Game {
     @Getter
     protected ChessboardState chessboardState = new ChessboardState();
 
-    public BaseChineseChessGame(GameSettings gameSettings) {
-        super(gameSettings);
+    public BaseChineseChessGame(GameContext context) {
+        super(context);
     }
 
     public void moveChess(ChessAction action) {
@@ -70,7 +69,7 @@ public class BaseChineseChessGame extends Game {
                 Chess chess = chessboardState.chessAt(r, c);
                 if (chess != null) {
                     ChineseChessGameStatesResponse.Chess sChess = new ChineseChessGameStatesResponse.Chess();
-                    sChess.setChessHost(chess.chessHost == ChessHost.FIRST ? 1 : 2);
+                    sChess.setChessHost(chess.chessHost);
                     sChess.setType(chess.type.name().charAt(0));
                     sChess.setRow(r);
                     sChess.setCol(c);

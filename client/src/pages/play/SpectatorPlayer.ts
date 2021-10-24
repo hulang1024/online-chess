@@ -75,10 +75,9 @@ export default class SpectatorPlayer extends Player {
     super.resultsGameOver(msg);
 
     let text = '';
-    if (msg.winUserId == null) {
+    if (msg.winHost == 0) {
       text = '平局';
     } else {
-      const winner = msg.winUserId ? this.getGameUserByUserId(msg.winUserId) as GameUser : null;
       if (msg.cause != GameOverCause.NORMAL) {
         let event = '';
         if (msg.cause == GameOverCause.TIMEOUT) {
@@ -87,12 +86,11 @@ export default class SpectatorPlayer extends Player {
           event = '认输';
         }
         if (event) {
-          const loser = ChessHost.reverse(winner?.chessHost as ChessHost);
-          text += `${this.getChessHostName(loser)}${event}，`;
+          const loseHost = ChessHost.reverse(msg.winHost as ChessHost);
+          text += `${this.getChessHostName(loseHost)}${event}，`;
         }
       }
-      const winnerName = winner?.user.value?.nickname || '';
-      text += `${this.getChessHostName(winner?.chessHost as ChessHost)} (${winnerName}) 胜！`;
+      text += `${this.getChessHostName(msg.winHost as ChessHost)} 胜！`;
     }
     this.showText(text);
   }

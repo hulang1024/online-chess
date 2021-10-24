@@ -9,9 +9,9 @@ import lombok.Data;
 @ClientMsgType("play.game_over")
 public class GameOverMsg extends ClientMessage {
     /**
-     * 为空表示平局
+     * 为0表示平局
      */
-    private Long winUserId;
+    private int winHost;
 
     private int cause;
 }

@@ -1,7 +1,6 @@
 package io.github.hulang1024.chess.games.gobang;
 
 import io.github.hulang1024.chess.games.GameUtils;
-import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.games.gobang.ws.ChessPutMsg;
 import io.github.hulang1024.chess.games.gobang.ws.ChessPutServerMsg;
 import io.github.hulang1024.chess.games.gobang.ws.ChessTargetPosMsg;
@@ -33,12 +32,12 @@ public class GobangGameplayListener extends AbstractMessageListener {
         }
 
         ChessAction action = new ChessAction();
-        action.setChess(ChessHost.from(chessPutMsg.getChess()));
+        action.setChess(chessPutMsg.getChess());
         action.setPos(chessPutMsg.getPos());
         ((GobangGame)room.getGame()).putChess(action);
 
         ChessPutServerMsg result = new ChessPutServerMsg();
-        result.setChess(action.getChess().code());
+        result.setChess(action.getChess());
         result.setPos(action.getPos());
         roomManager.broadcast(room, result, user);
     }

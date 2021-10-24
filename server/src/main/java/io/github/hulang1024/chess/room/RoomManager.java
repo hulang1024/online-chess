@@ -5,7 +5,9 @@ import io.github.hulang1024.chess.chat.ChannelManager;
 import io.github.hulang1024.chess.chat.ChannelType;
 import io.github.hulang1024.chess.chat.InfoMessage;
 import io.github.hulang1024.chess.chat.ws.ChatUpdatesServerMsg;
+import io.github.hulang1024.chess.games.GameFactory;
 import io.github.hulang1024.chess.games.GameState;
+import io.github.hulang1024.chess.games.GameType;
 import io.github.hulang1024.chess.games.GameUser;
 import io.github.hulang1024.chess.room.ws.*;
 import io.github.hulang1024.chess.spectator.SpectatorManager;
@@ -112,7 +114,10 @@ public class RoomManager {
             return null;
         }
 
-        Room createdRoom = new Room(channelManager, userManager);
+        Room createdRoom = new Room(
+            GameFactory.createGameRuleset(GameType.from(createRoomParam.getGameType())),
+            channelManager,
+            userManager);
         createdRoom.setId(nextRoomId());
         if (StringUtils.isNotBlank(createRoomParam.getName())) {
             createdRoom.setName(createRoomParam.getName());

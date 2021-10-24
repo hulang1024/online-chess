@@ -10,16 +10,28 @@ import io.github.hulang1024.chess.games.reversi.ReversiGame;
 import io.github.hulang1024.chess.games.reversi.ReversiGameSettings;
 
 public final class GameFactory {
-    public static Game createGame(GameSettings gameSettings) {
-        switch (gameSettings.getGameType()) {
+    public static GameRuleset createGameRuleset(GameType gameType) {
+        switch (gameType) {
             case chinesechess:
-                return new ChineseChessGame((ChineseChessGameSettings) gameSettings);
             case chinesechessDark:
-                return new ChineseChessDarkGame((ChineseChessDarkGameSettings) gameSettings);
             case gobang:
-                return new GobangGame((GobangGameSettings) gameSettings);
             case reversi:
-                return new ReversiGame((ReversiGameSettings) gameSettings);
+                return new P2GameRuleset();
+            default:
+                return null;
+        }
+    }
+
+    public static Game createGame(GameContext context) {
+        switch (context.getGameSettings().getGameType()) {
+            case chinesechess:
+                return new ChineseChessGame(context);
+            case chinesechessDark:
+                return new ChineseChessDarkGame(context);
+            case gobang:
+                return new GobangGame(context);
+            case reversi:
+                return new ReversiGame(context);
             default:
                 return null;
         }
@@ -39,6 +51,7 @@ public final class GameFactory {
                 break;
             case reversi:
                 gameSettings = new ReversiGameSettings();
+                break;
             default:
                 return null;
         }

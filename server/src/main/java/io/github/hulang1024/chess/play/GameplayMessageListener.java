@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.github.hulang1024.chess.chat.ChannelManager;
 import io.github.hulang1024.chess.chat.InfoMessage;
 import io.github.hulang1024.chess.games.*;
-import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.play.ws.*;
 import io.github.hulang1024.chess.play.ws.servermsg.*;
 import io.github.hulang1024.chess.room.Room;
@@ -22,7 +21,9 @@ import io.github.hulang1024.chess.ws.AbstractMessageListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class GameplayMessageListener extends AbstractMessageListener {
@@ -109,12 +110,12 @@ public class GameplayMessageListener extends AbstractMessageListener {
             return;
         }
 
-        User otherUser = room.getOtherUser(user).getUser();
-        if (otherUser == null) {
+        List<GameUser> otherUsers = room.getOtherUsers(user).collect(Collectors.toList());
+        if (otherUsers.isEmpty()) {
             return;
         }
         channelManager.broadcast(room.getChannel(), new InfoMessage(user.getNickname() + " 认输"));
-        gameOver(room, otherUser.getId(), GameOverCause.WHITE_FLAG);
+        gameOver(room, otherUsers.get(0).getChess(), GameOverCause.WHITE_FLAG);
     }
 
     private void onConfirmRequest(ConfirmRequestMsg confirmRequestMsg) {
@@ -145,7 +146,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
 
         if (confirmResponseMsg.isOk()) {
             if (confirmResponseMsg.getReqType() == ConfirmRequestType.DRAW.code()) {
-                gameOver(room, null, GameOverCause.DRAW);
+                gameOver(room, 0, GameOverCause.DRAW);
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.WITHDRAW.code()) {
                 withdraw(room);
             } else if (confirmResponseMsg.getReqType() == ConfirmRequestType.PAUSE_GAME.code()) {
@@ -159,34 +160,26 @@ public class GameplayMessageListener extends AbstractMessageListener {
     }
 
     private void startGame(Room room) {
-        Game round = GameFactory.createGame(room.getGameSettings());
-        round.setFirstTimer(new GameTimer(room.getGameSettings().getTimer()));
-        round.setSecondTimer(new GameTimer(room.getGameSettings().getTimer()));
-        round.start();
+        GameContext gameContext = new GameContext();
+        gameContext.setGameRuleset(room.getRuleset());
+        gameContext.setGameSettings(room.getGameSettings());
+        gameContext.setGameUsers(room.getGameUsers());
 
+        Game round = GameFactory.createGame(gameContext);
         room.setGame(round);
+        round.start();
 
         room.setGameCount(room.getGameCount() + 1);
 
         if (room.getGameCount() > 1) {
             // 第n个对局，交换棋方
-            GameUser gameUser1 = room.getGameUsers().get(0);
-            GameUser gameUser2 = room.getGameUsers().get(1);
-            gameUser1.setChess(gameUser1.getChess().reverse());
-            gameUser2.setChess(gameUser2.getChess().reverse());
+            gameContext.getGameRuleset().onNewRound(room);
         }
-
-        room.setStatus(RoomStatus.PLAYING);
 
         room.getGameUsers().forEach(gameUser -> {
             userActivityService.enter(gameUser.getUser(), UserActivity.PLAYING);
         });
-
-        GameUser firstGameUser = room.getGameUsers().stream()
-            .filter((u) -> u.getChess() == ChessHost.FIRST)
-            .findFirst().get();
-        GameUser secondGameUser = room.getOtherUser(firstGameUser.getUser());
-        roomManager.broadcast(room, new GameStartServerMsg(round, firstGameUser.getUser(), secondGameUser.getUser()));
+        roomManager.broadcast(room, new GameStartServerMsg(round));
         userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
         channelManager.broadcast(room.getChannel(), new InfoMessage("对局开始"));
     }
@@ -272,7 +265,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
             return;
         }
 
-        gameOver(room, msg.getWinUserId(), GameOverCause.from(msg.getCause()));
+        gameOver(room, msg.getWinHost(), GameOverCause.from(msg.getCause()));
     }
 
     private void withdraw(Room room) {
@@ -280,7 +273,7 @@ public class GameplayMessageListener extends AbstractMessageListener {
         roomManager.broadcast(room, new ChessWithdrawServerMsg());
     }
 
-    private void gameOver(Room room, Long winUserId, GameOverCause cause) {
+    private void gameOver(Room room, int winHost, GameOverCause cause) {
         room.setStatus(RoomStatus.BEGINNING);
         Game game = room.getGame();
         GameType gameType = game.getGameSettings().getGameType();
@@ -288,17 +281,22 @@ public class GameplayMessageListener extends AbstractMessageListener {
 
         room.getOtherUser(room.getOwner()).setReady(false);
 
-        User winUser = null;
-        if (winUserId != null) {
-            Optional<GameUser> winUserOpt = room.getGameUsers().stream()
-                .filter(user -> user.getUser().getId().equals(winUserId))
-                .findAny();
-            winUser = winUserOpt.get().getUser();
+        List<User> winUsers = new ArrayList<>();
+        List<User> loseUsers = new ArrayList<>();
+        if (winHost != 0) {
+            room.getGameUsers().stream()
+                .forEach(user -> {
+                    (user.getChess() == winHost ? winUsers : loseUsers).add(user.getUser());
+                });
             // 保存分数
             if (game.getGameSettings().isEnableRanking()) {
-                User loseUser = room.getOtherUser(winUser).getUser();
-                userStatsService.updateUser(winUser, gameType, GameResult.WIN);
-                userStatsService.updateUser(loseUser, gameType, GameResult.LOSE);
+                // todo: 批量保存
+                winUsers.forEach(user -> {
+                    userStatsService.updateUser(user, gameType, GameResult.WIN);
+                });
+                loseUsers.forEach(user -> {
+                    userStatsService.updateUser(user, gameType, GameResult.LOSE);
+                });
             }
         } else {
             // 保存分数
@@ -321,16 +319,23 @@ public class GameplayMessageListener extends AbstractMessageListener {
                     .in("id", userIds));
         }
 
-        roomManager.broadcast(room, new GameOverServerMsg(winUserId, cause));
+        roomManager.broadcast(room, new GameOverServerMsg(winHost, cause));
         userActivityService.broadcast(UserActivity.IN_LOBBY, new LobbyRoomUpdateServerMsg(room));
         room.getGameUsers().forEach(gameUser -> {
             gameUser.getUser().setPlayGameType(gameType.getCode());
             userActivityService.enter(gameUser.getUser(), UserActivity.IN_ROOM);
         });
-        channelManager.broadcast(room.getChannel(),
-            new InfoMessage(winUser == null
-                ? "平局"
-                : winUser.getNickname() + " 胜"));
+
+        String content = null;
+        if (winHost == 0) {
+            content = "平局";
+        } else {
+            String nicknames = winUsers.stream()
+                .map(user -> user.getNickname())
+                .collect(Collectors.joining(","));
+            content = nicknames + "胜";
+        }
+        channelManager.broadcast(room.getChannel(), new InfoMessage(content));
     }
 
     private void onChatStatusInGameMsg(ChatStatusInGameMsg msg) {

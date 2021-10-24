@@ -1,24 +1,24 @@
 package io.github.hulang1024.chess.games.reversi.rule;
 
-import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.games.chess.ChessPos;
+import io.github.hulang1024.chess.games.chess.P2Play;
 
 public class ChessboardState {
-    private ChessHost[][] array = new ChessHost[8][8];
+    private int[][] array = new int[8][8];
 
     public int getSize() {
         return 8;
     }
 
-    public ChessHost chessAt(ChessPos pos) {
+    public int chessAt(ChessPos pos) {
         return chessAt(pos.row, pos.col);
     }
 
-    public ChessHost chessAt(int row, int col) {
+    public int chessAt(int row, int col) {
         return array[row][col];
     }
 
-    public void setChess(ChessPos pos, ChessHost chess) {
+    public void setChess(ChessPos pos, int chess) {
         array[pos.row][pos.col] = chess;
     }
 
@@ -27,7 +27,7 @@ public class ChessboardState {
      * @param origin 起点位置
      * @param chess 反转参照棋子
      */
-    public void reverse(ChessPos origin, ChessHost chess) {
+    public void reverse(ChessPos origin, int chess) {
         // dx, dy：上,下,左,右,左上,右下,右上,左下
         int[] dirTable = new int[]{ 0, -1, 0, 1, -1, 0, 1, 0, -1, -1, 1, 1, 1, -1, -1, 1 };
 
@@ -40,8 +40,8 @@ public class ChessboardState {
                 if (true
                     && (curRow >= 0 && curRow < getSize())
                     && (curCol >= 0 && curCol < getSize())
-                    && (chessAt(curRow, curCol) == chess.reverse())) {
-                    setChess(new ChessPos(curRow, curCol), chess.reverse());
+                    && (chessAt(curRow, curCol) == P2Play.reverse(chess))) {
+                    setChess(new ChessPos(curRow, curCol), P2Play.reverse(chess));
                 } else {
                     break;
                 }

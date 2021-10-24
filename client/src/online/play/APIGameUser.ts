@@ -1,3 +1,4 @@
+import { ResponseGameStateTimer } from "src/rulesets/online/game_states_response";
 import User from "src/user/User";
 
 export default interface APIGameUser {
@@ -10,6 +11,8 @@ export default interface APIGameUser {
   ready: boolean;
 
   chess: number;
+
+  timer: ResponseGameStateTimer;
 
   roomOwner: boolean;
 }

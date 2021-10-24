@@ -17,6 +17,7 @@
             {label: '五子棋', value: 2},
             {label: '象棋', value: 1},
             {label: '揭棋', value: 3},
+            // {label: '黑白棋', value: 4},
             {label: '随机', value: 0},
           ]"
         />
@@ -138,6 +139,7 @@ import { GameType } from 'src/rulesets/GameType';
 import GobangGameSettings from 'src/rulesets/gobang/GobangGameSettings';
 import ChineseChessGameSettings from 'src/rulesets/chinesechess/ChineseChessGameSettings';
 import ChineseChessDarkGameSettings from 'src/rulesets/chinesechess-dark/ChineseChessDarkGameSettings';
+import ReversiGameSettings from 'src/rulesets/reversi/ReversiGameSettings';
 import { api } from 'src/boot/main';
 
 export default defineComponent({
@@ -210,6 +212,9 @@ export default defineComponent({
             break;
           case GameType.gobang:
             gameSettings = new GobangGameSettings(form.chessboardSize);
+            break;
+          case GameType.reversi:
+            gameSettings = new ReversiGameSettings();
             break;
           default:
             return;

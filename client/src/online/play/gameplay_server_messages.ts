@@ -7,13 +7,15 @@ export interface ResultsReadyMsg extends ServerMsg {
 }
 
 export interface GameStartedMsg extends ServerMsg {
-  firstChessUid: number;
-  secondChessUid: number;
+  userHosts: {
+    uid: number;
+    chess: number;
+  }[];
   initialStates: unknown;
 }
 
 export interface GameOverMsg extends ServerMsg {
-  winUserId: number;
+  winHost: number;
   cause: number;
 }
 

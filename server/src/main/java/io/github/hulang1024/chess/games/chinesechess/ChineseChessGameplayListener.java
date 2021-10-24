@@ -34,7 +34,7 @@ public class ChineseChessGameplayListener extends AbstractMessageListener {
         }
 
         ChessPickServerMsg chessPickServerMsg = new ChessPickServerMsg();
-        chessPickServerMsg.setChessHost(room.getGameUser(user).get().getChess().code());
+        chessPickServerMsg.setChessHost(room.getGameUser(user).get().getChess());
         chessPickServerMsg.setPos(chessPickMsg.getPos());
         chessPickServerMsg.setPickup(chessPickMsg.isPickup());
 
@@ -58,7 +58,7 @@ public class ChineseChessGameplayListener extends AbstractMessageListener {
         ((BaseChineseChessGame)room.getGame()).moveChess(action);
 
         ChessMoveServerMsg result = new ChessMoveServerMsg();
-        result.setChessHost(gameUser.getChess().code());
+        result.setChessHost(gameUser.getChess());
         result.setFromPos(chessMoveMsg.getFromPos());
         result.setToPos(chessMoveMsg.getToPos());
         roomManager.broadcast(room, result, user);

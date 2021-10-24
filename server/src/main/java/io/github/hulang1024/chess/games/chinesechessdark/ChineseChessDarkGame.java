@@ -1,13 +1,15 @@
 package io.github.hulang1024.chess.games.chinesechessdark;
 
+import io.github.hulang1024.chess.games.GameContext;
 import io.github.hulang1024.chess.games.GameInitialStates;
 import io.github.hulang1024.chess.games.chinesechess.BaseChineseChessGame;
 import io.github.hulang1024.chess.games.chinesechess.ChessAction;
 
 public class ChineseChessDarkGame extends BaseChineseChessGame {
 
-    public ChineseChessDarkGame(ChineseChessDarkGameSettings gameSettings) {
-        super(gameSettings);
+    public ChineseChessDarkGame(GameContext context) {
+        super(context);
+        ChineseChessDarkGameSettings gameSettings = (ChineseChessDarkGameSettings)context.getGameSettings();
         gameSettings.setCanWithdraw(false);
 
         if (gameSettings.isFullRandom()) {

@@ -20,8 +20,8 @@ export default class GameplayServer {
     this.socketService.send('play.resume_game');
   }
 
-  public gameOver(winUserId: number, cause: number) {
-    this.socketService.send('play.game_over', { winUserId, cause });
+  public gameOver(winHost: number, cause: number) {
+    this.socketService.send('play.game_over', { winHost, cause });
   }
 
   public gameContinue(isOk: boolean) {

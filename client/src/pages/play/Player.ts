@@ -159,7 +159,7 @@ export default class Player extends GameplayClient {
         }
         const winner = this.localUser.chessHost == winChessHost ? this.localUser : this.otherUser;
         setTimeout(() => {
-          this.gameplayServer.gameOver(winner.id as number, GameOverCause.NORMAL);
+          this.gameplayServer.gameOver(winner.chessHost, GameOverCause.NORMAL);
         }, 0);
       };
 
@@ -270,12 +270,8 @@ export default class Player extends GameplayClient {
         gameTimer.setTotalSeconds(gameSettings.timer.gameDuration);
         stepTimer.setTotalSeconds(gameSettings.timer.stepDuration);
         if (states) {
-          const timerState = ({
-            1: states.firstTimer,
-            2: states?.secondTimer,
-          } as {[chess: number]: ResponseGameStateTimer})[apiGameUser.chess];
-          gameTimer.ready(timerState.gameTime);
-          stepTimer.ready(timerState.stepTime);
+          gameTimer.ready(apiGameUser.timer.gameTime);
+          stepTimer.ready(apiGameUser.timer.stepTime);
         } else {
           gameTimer.ready();
           stepTimer.ready();
@@ -311,7 +307,7 @@ export default class Player extends GameplayClient {
       }
       this.userPlayInput.disable();
       // 如果步时/读秒时间用完
-      this.gameplayServer.gameOver(this.otherUser.id as number, GameOverCause.TIMEOUT);
+      this.gameplayServer.gameOver(this.otherUser.chessHost, GameOverCause.TIMEOUT);
     });
     this.localUser.stepTimer.setSoundEnabled(true);
 
@@ -426,22 +422,20 @@ export default class Player extends GameplayClient {
   protected gameStartBefore() { }
 
   protected gameStart(msg: GameplayMsgs.GameStartedMsg) {
-    const firstGameUser = this.getGameUserByUserId(msg.firstChessUid) as GameUser;
-    const secondGameUser = this.getGameUserByUserId(msg.secondChessUid) as GameUser;
     this.game.activeChessHost.value = null;
-    firstGameUser.chess.value = ChessHost.FIRST;
-    secondGameUser.chess.value = ChessHost.SECOND;
+    msg.userHosts.forEach(({ uid, chess }) => {
+      const gameUser = this.getGameUserByUserId(uid) as GameUser;
+      gameUser.chess.value = chess;
 
-    this.gameState.value = GameState.PLAYING;
-
-    const { gameSettings } = this.room.roomSettings;
-
-    [firstGameUser, secondGameUser].forEach(({ gameTimer, stepTimer }) => {
+      const { gameTimer, stepTimer } = gameUser;
+      const { gameSettings } = this.room.roomSettings;
       gameTimer.setTotalSeconds(gameSettings.timer.gameDuration);
       stepTimer.setTotalSeconds(gameSettings.timer.stepDuration);
       gameTimer.ready();
       stepTimer.ready();
     });
+
+    this.gameState.value = GameState.PLAYING;
 
     GameAudio.play('gameplay/started');
     this.showText(`开始对局`, 1000);
@@ -483,9 +477,12 @@ export default class Player extends GameplayClient {
 
     this.game.activeChessHost.value = null;
 
-    const loser = this.localUser.id == gameOverMsg.winUserId ? this.otherUser : this.localUser;
     if (gameOverMsg.cause == GameOverCause.TIMEOUT) {
-      loser.stepTimer.setCurrent(0);
+      [this.otherUser, this.localUser]
+        .filter((user) => user.chessHost !== gameOverMsg.winHost)
+        .forEach((loser) => {
+          loser.stepTimer.setCurrent(0);
+        });
     }
 
     if (this.isWatchingMode) {
@@ -494,7 +491,9 @@ export default class Player extends GameplayClient {
 
     api.localUser.playGameType = this.room.roomSettings.gameSettings.gameType;
 
-    const result = gameOverMsg.winUserId ? (this.localUser.id == gameOverMsg.winUserId ? 1 : 2) : 0;
+    const result = gameOverMsg.winHost
+      ? (this.localUser.chessHost == gameOverMsg.winHost ? 1 : 2)
+      : 0;
 
     const onGameEnd = () => {
       this.exitActiveOverlays();
@@ -686,6 +685,10 @@ export default class Player extends GameplayClient {
         [ChessHost.SECOND]: '黑方',
       },
       [GameType.gobang]: {
+        [ChessHost.FIRST]: '黑方',
+        [ChessHost.SECOND]: '白方',
+      },
+      [GameType.reversi]: {
         [ChessHost.FIRST]: '黑方',
         [ChessHost.SECOND]: '白方',
       },

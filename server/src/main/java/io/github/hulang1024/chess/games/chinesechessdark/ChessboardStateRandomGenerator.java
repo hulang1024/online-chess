@@ -1,6 +1,5 @@
 package io.github.hulang1024.chess.games.chinesechessdark;
 
-import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.games.chess.ChessPos;
 import io.github.hulang1024.chess.games.chinesechess.rule.Chess;
 import io.github.hulang1024.chess.games.chinesechess.rule.ChessEnum;
@@ -8,7 +7,7 @@ import io.github.hulang1024.chess.games.chinesechess.rule.ChessboardState;
 
 import java.util.*;
 
-/* package */ class ChessboardStateRandomGenerator {
+public class ChessboardStateRandomGenerator {
     private static final int[][] ORIGIN_POS_ARRAY = {
         {
             0, 0, 0, 1, 0, 2, 0, 3,
@@ -32,7 +31,6 @@ import java.util.*;
     };
 
     public static void generate(ChessboardState chessboardState) {
-        ChessHost[] hosts = {ChessHost.SECOND, ChessHost.FIRST};
         // 将帅位置
         ChessPos[] kingPosArray = {new ChessPos(0, 4), new ChessPos(9, 4)};
         // 两个棋方分别设置
@@ -45,7 +43,7 @@ import java.util.*;
             // 遍历打乱过的棋子类型，依次加到棋盘中
             for (int index = 0; index < chessTypes.size(); index++) {
                 // 创建一个棋子表示
-                Chess chess = new Chess(hosts[h], chessTypes.get(index));
+                Chess chess = new Chess(2 - h, chessTypes.get(index));
                 chess.isFront = false;
                 // 取一个棋子位置
                 int row = ORIGIN_POS_ARRAY[h][index * 2];
@@ -54,7 +52,7 @@ import java.util.*;
                 chessboardState.setChess(new ChessPos(row, col), chess);
             }
             // 将王加到棋盘
-            chessboardState.setChess(kingPosArray[h], new Chess(hosts[h], ChessEnum.K));
+            chessboardState.setChess(kingPosArray[h], new Chess(2 - h, ChessEnum.K));
         }
     }
 
@@ -63,18 +61,17 @@ import java.util.*;
      * @param chessboardState
      */
     public static void generateFull(ChessboardState chessboardState) {
-        ChessHost[] hosts = {ChessHost.SECOND, ChessHost.FIRST};
         // 创建所有的棋子表示，放进列表中
         List<Chess> allChesses = new ArrayList<>();
         for (int h = 0; h < 2; h++) {
             for (int index = 0; index < chessTypeArray.length; index++) {
                 // 创建一个棋子表示
-                Chess chess = new Chess(hosts[h], chessTypeArray[index]);
+                Chess chess = new Chess(2 - h, chessTypeArray[index]);
                 chess.isFront = false;
                 allChesses.add(chess);
             }
             // 创建将军的棋子表示
-            allChesses.add(new Chess(hosts[h], ChessEnum.K));
+            allChesses.add(new Chess(2 - h, ChessEnum.K));
         }
 
         // 随机列表元素位置

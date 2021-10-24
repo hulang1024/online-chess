@@ -1,6 +1,5 @@
 package io.github.hulang1024.chess.games;
 
-import io.github.hulang1024.chess.games.chess.ChessHost;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,31 +9,31 @@ import lombok.Setter;
  */
 public abstract class Game {
     @Getter
-    protected GameSettings gameSettings;
+    protected GameContext context;
 
     @Getter
     @Setter
     protected GameState state;
 
     @Getter
-    protected ChessHost activeChessHost;
+    protected int activeChessHost;
 
-    @Getter
-    @Setter
-    protected GameTimer firstTimer;
+    public Game(GameContext context) {
+        this.context = context;
 
-    @Getter
-    @Setter
-    protected GameTimer secondTimer;
+        context.getGameUsers().forEach(gameUser -> {
+            gameUser.setTimer(new GameTimer(getGameSettings().getTimer()));
+        });
+    }
 
-    public Game(GameSettings gameSettings) {
-        this.gameSettings = gameSettings;
+    public GameSettings getGameSettings() {
+        return context.getGameSettings();
     }
 
     public void start() {
-        this.activeChessHost = ChessHost.FIRST;
+        activeChessHost = 1;
         state = GameState.PLAYING;
-        firstTimer.start();
+        getTimer(0).start();
     }
 
     public void pause() {
@@ -49,23 +48,19 @@ public abstract class Game {
 
     public void over() {
         state = GameState.END;
-        firstTimer.stop();
-        secondTimer.stop();
+        context.getGameUsers().forEach(gameUser -> {
+            gameUser.getTimer().stop();
+        });
     }
 
     public void turnActiveChessHost() {
-        activeChessHost = activeChessHost.reverse();
-        if (activeChessHost == ChessHost.FIRST) {
-            firstTimer.start();
-            secondTimer.stop();
-        } else {
-            secondTimer.start();
-            firstTimer.stop();
-        }
+        getTimer(activeChessHost - 1).stop();
+        activeChessHost = 1 + activeChessHost++ % context.getGameUsers().size();
+        getTimer(activeChessHost - 1).start();
     }
 
     public GameTimer getActiveTimer() {
-        return activeChessHost == ChessHost.FIRST ? firstTimer : secondTimer;
+        return getTimer(activeChessHost - 1);
     }
 
     public GameInitialStates createGameInitialStatesResponse() {
@@ -76,17 +71,17 @@ public abstract class Game {
 
     public GameStatesResponse buildGameStatesResponse() {
         GameStatesResponse gameStates = createGameStatesResponse();
-        if (getActiveChessHost() != null) {
-            gameStates.setActiveChessHost(getActiveChessHost().code());
-        }
-        gameStates.setFirstTimer(firstTimer);
-        gameStates.setSecondTimer(secondTimer);
+        gameStates.setActiveChessHost(activeChessHost);
 
         if (state == GameState.PLAYING) {
             getActiveTimer().useTime();
         }
 
         return gameStates;
+    }
+
+    private GameTimer getTimer(int index) {
+        return context.getGameUsers().get(index).getTimer();
     }
 
     public abstract void withdraw();

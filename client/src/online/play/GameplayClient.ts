@@ -144,15 +144,12 @@ export default abstract class GameplayClient extends GameplayServer {
     this.otherUserStatusChanged(gameUser.status.value, gameUser);
   }
 
-  protected getGameUserByUserId(id: number): GameUser | null {
-    let gameUser: GameUser | null = null;
-    if (id == this.localUser.id) {
-      gameUser = this.localUser;
-    }
-    if (id == this.otherUser.id) {
-      gameUser = this.otherUser;
-    }
-    return gameUser;
+  protected getGameUserByUserId(id: number): GameUser | undefined {
+    return [this.localUser, this.otherUser].find((user) => user.id == id);
+  }
+
+  protected getGameUserByHost(host: number): GameUser | undefined {
+    return [this.localUser, this.otherUser].find((user) => user.chessHost == host);
   }
 
   protected abstract resultsReady(msg: GameplayMsgs.ResultsReadyMsg): void;

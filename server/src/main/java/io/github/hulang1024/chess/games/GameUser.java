@@ -1,7 +1,6 @@
 package io.github.hulang1024.chess.games;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import io.github.hulang1024.chess.games.chess.ChessHost;
 import io.github.hulang1024.chess.user.User;
 import io.github.hulang1024.chess.user.UserManager;
 import io.github.hulang1024.chess.user.UserStatus;
@@ -12,8 +11,9 @@ public class GameUser {
     private User user;
     private boolean isReady;
 
-    @JSONField(serialize = false)
-    private ChessHost chess;
+    private int chess;
+
+    private GameTimer timer;
 
     private boolean isRoomOwner;
 
@@ -27,11 +27,6 @@ public class GameUser {
     @JSONField(serialize = false)
     public UserStatus getStatus() {
         return user != null ? userManager.getUserStatus(user) : null;
-    }
-
-    @JSONField(name = "chess")
-    public Integer getChessCode() {
-        return chess.code();
     }
 
     @JSONField(name = "status")
