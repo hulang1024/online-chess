@@ -3,7 +3,7 @@ import ChessAction from "src/rulesets/chinesechess/ChessAction";
 import ChessPos from "src/rulesets/chinesechess/rule/ChessPos";
 import Bindable from "src/utils/bindables/Bindable";
 import GameUser from "src/online/play/GameUser";
-import ChineseChessGameplayServer from "./online/ChineseChessGameplayServer";
+import ChineseChessGameplayServer from "./online/ChinesechessGameplayServer";
 import DrawableChess from "./ui/DrawableChess";
 import DrawableChessboard from "./ui/ChineseChessDrawableChessboard";
 import UserPlayInput from "../UserPlayInput";

@@ -1,4 +1,4 @@
-import { onBeforeUnmount, onMounted } from "@vue/composition-api";
+import { onBeforeUnmount, onMounted } from "vue";
 import Signal from "src/utils/signals/Signal";
 import Ruleset from "src/rulesets/Ruleset";
 import DrawableChessboard from "src/rulesets/ui/DrawableChessboard";

@@ -18,7 +18,7 @@
 <script lang="ts">
 import {
   defineComponent, reactive, toRefs,
-} from '@vue/composition-api';
+} from 'vue';
 import { socketService } from 'src/boot/main';
 import UserOnlineCounters from 'src/online/user/UserOnlineCounters';
 import { StatOnlineCountMsg } from 'src/online/stat';

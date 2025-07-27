@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance } from '@vue/composition-api';
+import { defineComponent, getCurrentInstance } from 'vue';
 import Room from 'src/online/room/Room';
 import ResponseGameStates from 'src/rulesets/online/game_states_response';
 import PlayerView from './PlayerView.vue';
@@ -52,7 +52,7 @@ export default defineComponent({
     ReadyOverlay,
   },
   setup() {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
     const { params } = context.$route;
 
     const room = params.room as unknown as Room;

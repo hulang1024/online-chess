@@ -1,4 +1,4 @@
-import { onBeforeUnmount, ref } from "@vue/composition-api";
+import { onBeforeUnmount, ref } from "vue";
 import Timer from "./Timer";
 
 export default class CircleTimer {

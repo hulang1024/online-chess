@@ -90,7 +90,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, ref, watch,
-} from '@vue/composition-api';
+} from 'vue';
 import GetUsersRequest from 'src/online/user/GetUsersRequest';
 import SearchUserInfo from 'src/online/user/SearchUserInfo';
 import {
@@ -106,7 +106,7 @@ import UserOnlineCountPanel from './UserOnlineCountPanel.vue';
 export default defineComponent({
   components: { UserGridPanel, UserMenu, UserOnlineCountPanel },
   setup() {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
 
     const activeTab = ref('all');
     const loading = ref(true);

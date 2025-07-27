@@ -4,11 +4,11 @@ import GameUser from "src/online/play/GameUser";
 import GameRule from "../GameRule";
 import Ruleset from "../Ruleset";
 import GobangDrawableChessboard from "./ui/ReversiDrawableChessboard";
-import GobangGameRule from "./GobangGameRule";
-import GobangUserPlayInput from "./GobangUserPlayInput";
-import GobangClient from "./online/GobangClient";
-import GobangGameSettings from "./GobangGameSettings";
-import GobangPlayer from "./GobangPlayer";
+import GobangGameRule from "src/rulesets/gobang/GobangGameRule";
+import GobangUserPlayInput from "src/rulesets/gobang/GobangUserPlayInput";
+import GobangClient from "src/rulesets/gobang/online/GobangClient";
+import GobangGameSettings from "src/rulesets/gobang/GobangGameSettings";
+import GobangPlayer from "src/rulesets/gobang/GobangPlayer";
 
 export default class GobangRuleset extends Ruleset {
   // eslint-disable-next-line

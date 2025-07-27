@@ -29,7 +29,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, onMounted, PropType, ref,
-} from '@vue/composition-api';
+} from 'vue';
 import Channel from 'src/online/chat/Channel';
 import Message from 'src/online/chat/Message';
 import LocalEchoMessage from 'src/online/chat/LocalEchoMessage';
@@ -47,7 +47,7 @@ export default defineComponent({
     chatLineProps: Object,
   },
   setup(props) {
-    const ctx = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance()!.proxy as unknown as Vue;
     const channel = props.channel as Channel;
     const loading = createBoundRef(channel.loading);
     const messages = ref<Message[]>(channel?.messages || []);

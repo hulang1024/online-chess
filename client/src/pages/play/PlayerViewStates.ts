@@ -1,6 +1,6 @@
 import {
   computed, reactive, ref, Ref, watchEffect, watch, getCurrentInstance, onBeforeUnmount,
-} from "@vue/composition-api";
+} from "vue";
 import { channelManager, socketService } from "src/boot/main";
 import Channel from "src/online/chat/Channel";
 import ChannelType from "src/online/chat/ChannelType";
@@ -13,7 +13,7 @@ import GameUser from "../../online/play/GameUser";
 import Player from "./Player";
 
 export function usePlayerStates(player: Player) {
-  const context = getCurrentInstance() as Vue;
+  const context = getCurrentInstance()!.proxy as unknown as Vue;
 
   // 有些元素随窗口尺寸变化无法实现，因此在初始时就确定屏幕大小
   // eslint-disable-next-line

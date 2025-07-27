@@ -49,7 +49,7 @@
 import {
   computed,
   defineComponent, getCurrentInstance, onUnmounted, PropType, ref,
-} from '@vue/composition-api';
+} from 'vue';
 import { channelManager, socketService } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
 import User from 'src/user/User';
@@ -67,7 +67,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
     // eslint-disable-next-line
     const notify = context.$q.notify;
     const enabled = ref(true);

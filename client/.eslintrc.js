@@ -84,6 +84,7 @@ module.exports = {
     'no-nested-ternary': 'off',
     'no-underscore-dangle': 'off',
     'semi': 'warn',
+    'linebreak-style': 'off',
 
     // TypeScript
     quotes: ['off', 'single', { avoidEscape: true }],

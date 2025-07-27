@@ -122,7 +122,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, ref, watch,
-} from '@vue/composition-api';
+} from 'vue';
 import GetRankingRequest from 'src/online/ranking/GetRankingRequest';
 import SearchUserInfo from 'src/online/user/SearchUserInfo';
 import { api } from 'src/boot/main';
@@ -135,7 +135,7 @@ export default defineComponent({
   components: { UserAvatar },
   inject: ['showUserDetails'],
   setup() {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
     const isOpen = ref(false);
     const gameTypeActiveTab = ref(0);
     const rankingByActiveTab = ref(1);

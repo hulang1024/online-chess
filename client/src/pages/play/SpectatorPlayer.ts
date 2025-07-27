@@ -1,4 +1,4 @@
-import { onMounted } from "@vue/composition-api";
+import { onMounted } from "vue";
 import * as GameEvents from 'src/online/play/gameplay_server_messages';
 import GameState from "src/online/play/GameState";
 import GameOverCause from "src/online/play/GameOverCause";

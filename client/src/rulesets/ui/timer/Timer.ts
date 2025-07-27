@@ -1,4 +1,4 @@
-import { onUnmounted, ref } from "@vue/composition-api";
+import { onUnmounted, ref } from "vue";
 import GameAudio from "../../GameAudio";
 
 export enum TimerState {

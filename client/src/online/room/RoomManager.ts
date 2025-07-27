@@ -1,4 +1,4 @@
-import { ref } from "@vue/composition-api";
+import { ref } from "vue";
 import { api, socketService } from "src/boot/main";
 import APIAccess from "../api/APIAccess";
 import CreateRoomRequest from "./CreateRoomRequest";

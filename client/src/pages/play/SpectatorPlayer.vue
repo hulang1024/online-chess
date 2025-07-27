@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance } from '@vue/composition-api';
+import { defineComponent, getCurrentInstance } from 'vue';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
 import PlayerView from './PlayerView.vue';
 import ReadyOverlay from './ReadyOverlay.vue';
@@ -70,7 +70,7 @@ export default defineComponent({
     MainButtonsOverlay,
   },
   setup() {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
     const { spectateResponse } = context.$route.params as
       unknown as { spectateResponse: SpectateResponse };
 

@@ -4,9 +4,8 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, getCurrentInstance, onMounted } from '@vue/composition-api';
+import Vue, { defineComponent, getCurrentInstance, onMounted } from 'vue';
 import { Notify } from 'quasar';
-import Vue from 'vue';
 import VueRouter from 'vue-router';
 import User from 'src/user/User';
 import {
@@ -57,7 +56,7 @@ async function start(router: VueRouter) {
 export default defineComponent({
   name: 'App',
   setup() {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
 
     userManager.userOnline.add((user: number, nickname: string) => {
       Notify.create(`已上线：${nickname}`);

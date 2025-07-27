@@ -130,7 +130,7 @@
 <script lang="ts">
 import {
   computed, defineComponent, getCurrentInstance, ref, watch,
-} from '@vue/composition-api';
+} from 'vue';
 import { api, channelManager } from 'src/boot/main';
 import GetUserRequest from 'src/online/user/GetUserRequest';
 import UserDetails from 'src/online/user/UserDetails';
@@ -143,7 +143,7 @@ import UserStats from 'src/user/UserStats';
 export default defineComponent({
   components: { UserAvatar },
   setup() {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
     const { $q } = context;
     const _user = ref<UserDetails>();
     const userStats = ref<UserStats | null>(null);

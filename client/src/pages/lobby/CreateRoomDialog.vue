@@ -130,7 +130,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, reactive, ref, watch, toRefs,
-} from '@vue/composition-api';
+} from 'vue';
 import Room from 'src/online/room/Room';
 import RoomSettings from 'src/online/room/RoomSettings';
 import GameSettings from 'src/rulesets/GameSettings';
@@ -144,7 +144,7 @@ import { api } from 'src/boot/main';
 
 export default defineComponent({
   setup() {
-    const ctx = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance()!.proxy as unknown as Vue;
     const { $refs } = ctx;
 
     const INIT_VALUES = {

@@ -71,7 +71,7 @@
 <script lang="ts">
 import {
   computed, defineComponent, getCurrentInstance, PropType, ref,
-} from "@vue/composition-api";
+} from "vue";
 import device from "current-device";
 import { copyToClipboard } from 'quasar';
 import { api, channelManager } from "src/boot/main";
@@ -99,7 +99,7 @@ export default defineComponent({
   },
   inject: ['showUserDetails', 'chatAtUser'],
   setup(props) {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
     const message = props.message as Message;
     const sender = message?.sender;
 

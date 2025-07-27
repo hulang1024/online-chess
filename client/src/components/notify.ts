@@ -17,7 +17,7 @@ export default async function desktopNotify(msg: string): Promise<Notification |
 
   await new Promise((resolve, reject) => {
     if (Notification.permission == 'granted') {
-      resolve();
+      resolve(null);
     } else if (Notification.permission !== 'denied') {
       Notification.requestPermission().then((permission) => {
         if (permission == 'granted') {

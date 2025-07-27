@@ -79,7 +79,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, reactive, ref, watch,
-} from '@vue/composition-api';
+} from 'vue';
 import { audioManager, configManager } from 'src/boot/main';
 import { ConfigItem } from 'src/config/ConfigManager';
 
@@ -112,7 +112,7 @@ export default defineComponent({
 
     const supportDesktopNotify = ref('Notification' in window);
 
-    const ctx = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance()!.proxy as unknown as Vue;
 
     watch(configState, () => {
       ctx.$q.dark.set(configState.darkEnabled);

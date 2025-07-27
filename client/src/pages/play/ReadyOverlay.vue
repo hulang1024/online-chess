@@ -37,7 +37,7 @@
 <script lang="ts">
 import {
   defineComponent, PropType, ref, watch,
-} from '@vue/composition-api';
+} from 'vue';
 import GameState from 'src/online/play/GameState';
 import MainButtonsOverlay from './MainButtonsOverlay.vue';
 

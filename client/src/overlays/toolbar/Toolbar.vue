@@ -59,7 +59,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, onMounted, ref,
-} from '@vue/composition-api';
+} from 'vue';
 import UserButton from './UserButton.vue';
 
 export default defineComponent({
@@ -67,7 +67,7 @@ export default defineComponent({
     UserButton,
   },
   setup() {
-    const ctx = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance()!.proxy as unknown as Vue;
     const overlayRefs = ctx.$vnode.context?.$refs;
     const actives = ref<string[]>([]);
 

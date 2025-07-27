@@ -118,7 +118,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, onBeforeUnmount, PropType, ref,
-} from "@vue/composition-api";
+} from "vue";
 import User from "src/user/User";
 import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
@@ -153,7 +153,7 @@ export default defineComponent({
   },
   inject: ['showUserDetails'],
   setup(props) {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
 
     const onUserAvatarClick = () => {
       if (!props.user) {

@@ -24,13 +24,13 @@
   </q-dialog>
 </template>
 <script lang="ts">
-import { defineComponent, getCurrentInstance } from "@vue/composition-api";
+import { defineComponent, getCurrentInstance } from "vue";
 import FunctionTip from "../chinesechess/FunctionTip.vue";
 
 export default defineComponent({
   components: { FunctionTip },
   setup() {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
     return {
       show() {
         // eslint-disable-next-line

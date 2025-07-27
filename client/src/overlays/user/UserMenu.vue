@@ -83,7 +83,7 @@
 import {
   computed,
   defineComponent, getCurrentInstance, PropType, ref,
-} from "@vue/composition-api";
+} from "vue";
 import DeleteFriendRequest from 'src/online/friend/DeleteFriendRequest';
 import SpectateUserRequest from 'src/online/spectator/SpectateUserRequest';
 import SpectateResponse from 'src/online/spectator/APISpectateResponse';
@@ -99,7 +99,7 @@ export default defineComponent({
   },
   inject: ['showUserDetails', 'excludeToggle'],
   setup(props, { emit }) {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
     const { $router, $q } = context;
     const user = props.user as SearchUserInfo;
 

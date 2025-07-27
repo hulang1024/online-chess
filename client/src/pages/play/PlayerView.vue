@@ -336,7 +336,7 @@
 <script lang="ts">
 import {
   computed, defineComponent, PropType,
-} from '@vue/composition-api';
+} from 'vue';
 import GameState from 'src/online/play/GameState';
 import Room from 'src/online/room/Room';
 import ChineseChessDarkGameSettings from 'src/rulesets/chinesechess-dark/ChineseChessDarkGameSettings';
@@ -414,7 +414,7 @@ export default defineComponent({
   watch: {
     $route() {
       // eslint-disable-next-line
-      (this.reload as any)();
+      (this as any).reload();
     },
   },
   setup(props, { emit }) {

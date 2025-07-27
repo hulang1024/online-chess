@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, PropType } from 'vue';
 import APIGameUser from 'src/online/play/APIGameUser';
 import UserAvatar from 'src/user/components/UserAvatar.vue';
 import ChessKingIcon from 'src/rulesets/chinesechess/ui/ChessKingIcon.vue';

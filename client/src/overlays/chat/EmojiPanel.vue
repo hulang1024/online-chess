@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent } from 'vue';
 import emojiMap from 'src/assets/emoji';
 
 export default defineComponent({

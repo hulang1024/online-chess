@@ -23,7 +23,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, provide, ref, watch,
-} from '@vue/composition-api';
+} from 'vue';
 import User from 'src/user/User';
 import SocialBrowserOverlay from 'src/overlays/social/SocialBrowserOverlay.vue';
 import RankingOverlay from 'src/overlays/ranking/RankingOverlay.vue';
@@ -43,7 +43,7 @@ export default defineComponent({
     UserDetailsOverlay,
   },
   setup() {
-    const ctx = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance()!.proxy as unknown as Vue;
     const { $refs } = ctx;
 
     const onPageClick = () => {

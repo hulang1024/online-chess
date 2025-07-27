@@ -6,7 +6,7 @@
     >
       <div class="column items-center">
         <div class="text-subtitle1 q-mb-sm">
-          {{ _user.nickname }}
+          {{ _user && _user.nickname }}
         </div>
         <user-avatar
           :user="_user"
@@ -47,7 +47,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, reactive, ref,
-} from '@vue/composition-api';
+} from 'vue';
 import { api } from 'src/boot/main';
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import UploadAvatarRequest from 'src/online/user/UploadAvatarRequest';
@@ -62,7 +62,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const user = reactive<User>(props.user);
 
-    const ctx = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance()!.proxy as unknown as Vue;
 
     const uploading = ref(false);
 

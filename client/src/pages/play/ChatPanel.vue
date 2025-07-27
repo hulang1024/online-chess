@@ -23,7 +23,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, onMounted, provide, ref,
-} from '@vue/composition-api'
+} from 'vue'
 import Channel from 'src/online/chat/Channel';
 import ChatInputBox from 'src/overlays/chat/ChatInputBox.vue';
 import DrawableChannel from 'src/overlays/chat/DrawableChannel.vue';
@@ -32,7 +32,7 @@ import User from 'src/user/User';
 export default defineComponent({
   components: { DrawableChannel, ChatInputBox },
   setup() {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
     const channel = ref<Channel | null>(null);
     const channelHeight = ref<number>(0);
 

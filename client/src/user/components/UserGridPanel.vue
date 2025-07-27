@@ -49,7 +49,7 @@
 <script lang="ts">
 import {
   computed, defineComponent, PropType, watch, getCurrentInstance, reactive, toRefs,
-} from "@vue/composition-api";
+} from "vue";
 import UserAvatar from "src/user/components/UserAvatar.vue";
 import UserStatus from "src/user/UserStatus";
 import SearchUserInfo from 'src/online/user/SearchUserInfo';
@@ -61,7 +61,7 @@ export default defineComponent({
     user: Object as PropType<SearchUserInfo>,
   },
   setup(props) {
-    const ctx = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance()!.proxy as unknown as Vue;
     const states = reactive({
       userStatus: props.user?.status as UserStatus,
       isFriend: props.user?.isFriend,

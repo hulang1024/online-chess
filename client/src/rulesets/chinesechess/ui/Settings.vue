@@ -117,7 +117,7 @@ import { configManager } from "src/boot/main";
 import { ConfigItem } from "src/config/ConfigManager";
 import {
   defineComponent, getCurrentInstance, reactive, watch, ref, toRefs, onBeforeUnmount,
-} from "@vue/composition-api";
+} from "vue";
 import ChessHost from "src/rulesets/chess_host";
 import ChineseChessDrawableChessboard from "./ChineseChessDrawableChessboard";
 import { createIntialLayoutChessList } from "../rule/chess_map";
@@ -129,7 +129,7 @@ let chessboard: ChineseChessDrawableChessboard | null = null;
 
 export default defineComponent({
   setup() {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
     const chessboardThemeOptions: { label: string, value: string }[] = [];
     Object.keys(chessboardThemes).forEach((theme) => {
       chessboardThemeOptions.push({ label: chessboardThemes[theme].name, value: theme });

@@ -68,7 +68,7 @@
 import device from "current-device";
 import {
   defineComponent, getCurrentInstance, provide, ref, watch,
-} from '@vue/composition-api';
+} from 'vue';
 import { existsEmoji } from 'src/assets/emoji';
 import { api, channelManager } from 'src/boot/main';
 import Channel from 'src/online/chat/Channel';
@@ -84,7 +84,7 @@ import DrawableChannel from './DrawableChannel.vue';
 export default defineComponent({
   components: { DrawableChannel, ChatInputBox, UserAvatar },
   setup(props, { emit }) {
-    const ctx = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance()!.proxy as unknown as Vue;
     const isOpen = ref(false);
     const activeChannelTab = ref('#世界');
     const channels = ref<Channel[]>([]);
@@ -200,7 +200,7 @@ export default defineComponent({
     });
 
     channelManager.joinedChannels.removed.add((channel: Channel) => {
-      channels.value = channels.value.filter((ch: Channel) => ch.id != channel.id);
+      channels.value = channels.value.filter((ch) => ch.id != channel.id);
     });
 
     channelManager.currentChannel.changed.add((channel: Channel) => {

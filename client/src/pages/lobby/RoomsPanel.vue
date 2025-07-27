@@ -33,7 +33,7 @@
 <script lang="ts">
 import {
   defineComponent, PropType, Ref, ref, watch,
-} from '@vue/composition-api';
+} from 'vue';
 import Room from 'src/online/room/Room';
 import DrawableRoom from './DrawableRoom.vue';
 

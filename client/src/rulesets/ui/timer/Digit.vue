@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent } from 'vue';
 // 保证不等宽字体每个数字都等宽
 export default defineComponent({
   props: {

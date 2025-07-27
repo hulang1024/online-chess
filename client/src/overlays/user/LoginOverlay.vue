@@ -73,7 +73,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, reactive, Ref, ref, toRefs, watch,
-} from '@vue/composition-api';
+} from 'vue';
 import { api, configManager } from 'src/boot/main';
 import { githubOAuthUrl } from 'src/online/api/oauth';
 import { ConfigItem } from 'src/config/ConfigManager';
@@ -85,7 +85,7 @@ import CreateUserOverlay from './CreateUserOverlay.vue';
 export default defineComponent({
   components: { CreateUserOverlay },
   setup() {
-    const { $refs } = getCurrentInstance() as Vue;
+    const { $refs } = getCurrentInstance()!.proxy as unknown as Vue;
     const currentUser = api.localUser;
     const form = reactive({
       username: configManager.get(ConfigItem.username) as string,

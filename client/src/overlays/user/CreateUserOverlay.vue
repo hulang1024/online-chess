@@ -52,7 +52,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, reactive, Ref, ref, toRefs,
-} from '@vue/composition-api';
+} from 'vue';
 import User from 'src/user/User';
 import { githubOAuthUrl } from 'src/online/api/oauth';
 import { api } from 'src/boot/main';
@@ -60,7 +60,7 @@ import LogoutRequest from 'src/online/api/LogoutRequest';
 
 export default defineComponent({
   setup() {
-    const ctx = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance()!.proxy as unknown as Vue;
 
     const form = reactive({
       username: '',

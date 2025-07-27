@@ -1,6 +1,6 @@
 import ChessHost from 'src/rulesets/chess_host';
 import ChessPos from 'src/rulesets/gobang/ChessPos';
-import { ChessboardSizes } from './GobangDrawableChessboard';
+import { ChessboardSizes } from 'src/rulesets/gobang/ui/GobangDrawableChessboard';
 import './chess.scss';
 
 export default class DrawableChess {

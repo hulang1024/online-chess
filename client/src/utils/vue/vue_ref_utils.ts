@@ -1,4 +1,4 @@
-import { Ref, ref } from "@vue/composition-api";
+import { Ref, ref } from "vue";
 import Bindable from "../bindables/Bindable";
 
 export function bindableBindToRef<T>(bindable: Bindable<T>, toRef: Ref, init = true) {

@@ -31,7 +31,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, reactive, Ref, ref,
-} from '@vue/composition-api';
+} from 'vue';
 import { ConfigItem } from 'src/config/ConfigManager';
 import LogoutRequest from 'src/online/api/LogoutRequest';
 import RegisterRequest from 'src/online/api/RegisterRequest';
@@ -46,7 +46,7 @@ import LoginOverlay from '../user/LoginOverlay.vue';
 export default defineComponent({
   components: { UserAvatar, LoginOverlay, LoggedInUserOverlay },
   setup(props, { emit }) {
-    const { $refs, $q } = getCurrentInstance() as Vue;
+    const { $refs, $q } = getCurrentInstance()!.proxy as unknown as Vue;
     const user = reactive(api.localUser);
     const loading = ref(false);
 

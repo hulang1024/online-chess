@@ -12,7 +12,7 @@ import Room from 'src/online/room/Room';
 import * as GameplayMsgs from 'src/online/play/gameplay_server_messages';
 import ResponseGameStates, { ResponseGameStateTimer } from 'src/rulesets/online/game_states_response';
 import BindableBool from 'src/utils/bindables/BindableBool';
-import { onBeforeUnmount, onMounted } from '@vue/composition-api';
+import { onBeforeUnmount, onMounted } from 'vue';
 import { api, channelManager, userActivityClient } from 'src/boot/main';
 import Message from 'src/online/chat/Message';
 import InfoMessage from 'src/online/chat/InfoMessage';

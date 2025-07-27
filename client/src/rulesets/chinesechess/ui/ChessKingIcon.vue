@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from '@vue/composition-api';
+import { computed, defineComponent, PropType } from 'vue';
 import ChessHost from 'src/rulesets/chess_host';
 import ChessIcon from './ChessIcon.vue';
 

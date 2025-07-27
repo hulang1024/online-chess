@@ -78,7 +78,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, ref, watch,
-} from '@vue/composition-api';
+} from 'vue';
 import device from "current-device";
 import {
   api, socketService, userActivityClient, userManager,
@@ -96,7 +96,7 @@ export default defineComponent({
   components: { UserGridPanel, UserMenu, UserOnlineCountPanel },
   inject: ['showUserDetails'],
   setup(props, { emit }) {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
 
     const isOpen = ref(false);
     const activeTab = ref('all');

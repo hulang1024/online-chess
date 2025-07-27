@@ -26,7 +26,7 @@
 import {
   computed,
   defineComponent, PropType, reactive, toRefs, watch, ref,
-} from "@vue/composition-api";
+} from "vue";
 import User from "src/user/User";
 import { USERNAME_COLORS } from './colors';
 

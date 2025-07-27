@@ -105,7 +105,7 @@
 <script lang="ts">
 import {
   defineComponent, getCurrentInstance, onMounted, onBeforeUnmount, ref, watch, computed,
-} from '@vue/composition-api';
+} from 'vue';
 import desktopNotify, { requestNotificationPermission } from 'src/components/notify';
 import CreateRoomRequest from 'src/online/room/CreateRoomRequest';
 import QuickStartRequest from 'src/online/room/QuickStartRequest';
@@ -139,7 +139,7 @@ export default defineComponent({
     UsersPanel,
   },
   setup() {
-    const ctx = getCurrentInstance() as Vue;
+    const ctx = getCurrentInstance()!.proxy as unknown as Vue;
     const { $refs, $router, $q } = ctx;
     const roomManager = new RoomManager();
     const joining = ref(false);
@@ -170,7 +170,7 @@ export default defineComponent({
         (ctx.$refs.usersPanel as any).$el.style.height = `${height}px`;
       }
     };
-    onMounted(resize);
+    onMounted(() => resize(false));
 
     let pageHeightTimer: NodeJS.Timeout | null = null;
     const onChatOverlayActive = (isActive: boolean) => {

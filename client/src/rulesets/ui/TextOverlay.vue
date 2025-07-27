@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from '@vue/composition-api';
+import { defineComponent, ref, watch } from 'vue';
 
 export default defineComponent({
   props: {
@@ -28,12 +28,12 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const _visible = ref<boolean>(props.visible as boolean);
-    const _text = ref<string>(props.text as string);
+    const _visible = ref<boolean>(props.visible as unknown as boolean);
+    const _text = ref<string>(props.text as unknown as string);
 
     watch([() => props.visible, () => props.text], ([visible, text]) => {
-      _visible.value = visible as boolean;
-      _text.value = text as string;
+      _visible.value = !!visible;
+      _text.value = text as unknown as string;
     });
 
     let timer: NodeJS.Timeout | null = null;

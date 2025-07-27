@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent } from 'vue';
 import PureChessIcon from './PureChessIcon.vue';
 
 export default defineComponent({

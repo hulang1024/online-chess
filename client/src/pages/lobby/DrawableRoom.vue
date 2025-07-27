@@ -52,7 +52,7 @@
 import device from "current-device";
 import {
   defineComponent, PropType, getCurrentInstance, watch, reactive, toRefs, computed,
-} from '@vue/composition-api';
+} from 'vue';
 import JoinRoomRequest from 'src/online/room/JoinRoomRequest';
 import SpectateRoomRequest from 'src/online/spectator/SpectateRoomRequest';
 import { api } from 'src/boot/main';
@@ -80,7 +80,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const context = getCurrentInstance() as Vue;
+    const context = getCurrentInstance()!.proxy as unknown as Vue;
     const { $q, $router } = context;
 
     const room = reactive({
